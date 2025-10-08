@@ -12,31 +12,27 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
 
+    @State private var searchText: String = ""
+
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        TabView {
+            Tab("Steps", systemImage: "target"){
+                FastCreatorView()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+            Tab("Trainer", systemImage: "sparkles"){
+                
+            }
+            Tab("Profile", systemImage: "person.circle"){
+                Text("Documents")
+            }
+            Tab(role: .search){
+                NavigationStack{
+                    Text("Search")
                 }
             }
-        } detail: {
-            Text("Select an item")
         }
+        .searchable(text: $searchText, prompt: "Enter any search"
+                        )
     }
 
     private func addItem() {
@@ -52,6 +48,36 @@ struct ContentView: View {
                 modelContext.delete(items[index])
             }
         }
+    }
+}
+
+private struct SearchView: View {
+    let items: [Item]
+    @Binding var searchText: String
+
+    // Filtrado simple por texto en la fecha formateada
+    private var filteredItems: [Item] {
+        guard !searchText.isEmpty else { return items }
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return items.filter { item in
+            formatter.string(from: item.timestamp)
+                .localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    var body: some View {
+        List {
+            if filteredItems.isEmpty {
+                ContentUnavailableView.search(text: searchText)
+            } else {
+                ForEach(filteredItems) { item in
+                    Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                }
+            }
+        }
+        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Buscar por fecha")
     }
 }
 
