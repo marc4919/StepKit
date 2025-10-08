@@ -1,0 +1,22 @@
+# Xcode generated files
+*.xcworkspace
+*.xcuserstate
+*.xcscmblueprint
+
+# Build directories
+build/
+DerivedData/
+
+# Temporary files
+*.swp
+*.swo
+.DS_Store
+
+# User-specific files
+*.xcuserdata/
+.idea/
+*.moved-aside
+
+# macOS specific files
+.DS_Store
+.lock
