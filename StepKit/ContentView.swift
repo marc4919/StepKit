@@ -20,10 +20,10 @@ struct ContentView: View {
                 FastCreatorView()
             }
             Tab("Trainer", systemImage: "sparkles"){
-                
+                TrainerView()
             }
             Tab("Profile", systemImage: "person.circle"){
-                Text("Documents")
+                StepDetailView()
             }
             Tab(role: .search){
                 NavigationStack{
@@ -31,8 +31,40 @@ struct ContentView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Enter any search"
-                        )
+        .searchable(text: $searchText, prompt: "Enter any search")
+//        .tabViewBottomAccessory {
+//            HStack(spacing: 10) {
+//                HStack(spacing: 8) {
+//                    Image(systemName: "message.fill")
+//                        .foregroundStyle(.secondary)
+//                    TextField("Escribe un mensaje…", text: $searchText, axis: .vertical)
+//                        .textFieldStyle(.plain)
+//                        .font(.body)
+//                        .lineLimit(1...4)
+//                        .submitLabel(.send)
+//                }
+//                .padding(.horizontal, 12)
+//                .padding(.vertical, 8)
+//                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+//
+//                Button(action: {
+//                    print("Enviar: \(searchText)")
+//                }) {
+//                    Image(systemName: "paperplane.fill")
+//                        .font(.system(size: 17, weight: .semibold))
+//                }
+//                .buttonStyle(.borderedProminent)
+//                .controlSize(.large)
+//                .disabled(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+//                .opacity(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1)
+//            }
+//            .padding(.horizontal)
+//            .padding(.vertical, 8)
+//            .background(
+//                .ultraThinMaterial
+//                    .shadow(.drop(color: Color.black.opacity(0.05), radius: 8, x: 0, y: -2))
+//            )
+//        }
     }
 
     private func addItem() {
