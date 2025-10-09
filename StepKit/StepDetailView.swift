@@ -11,7 +11,7 @@ struct StepDetailView: View {
     @State var isExpanded: Bool = false
     var body: some View {
         NavigationStack {
-            Text("Hola")
+            Text("Detalle")
         }
         .overlay(alignment: .bottomTrailing){
             GlassEffectContainer {
