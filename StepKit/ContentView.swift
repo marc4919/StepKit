@@ -23,7 +23,7 @@ struct ContentView: View {
                 TrainerView()
             }
             Tab("Profile", systemImage: "person.circle"){
-                StepDetailView()
+                ProfileView()
             }
             Tab(role: .search){
                 NavigationStack{
