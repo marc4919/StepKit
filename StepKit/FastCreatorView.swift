@@ -9,6 +9,7 @@ import SwiftUI
 import UIKit
 
 struct FastCreatorView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var description = ""
     @State private var dueDate = Date()
     @State private var inconveniences = ""
@@ -45,9 +46,12 @@ struct FastCreatorView: View {
                 )
                 .ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // Contenedor con el formulario
+                GeometryReader { geometry in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            Spacer()
+                            
+                            // Contenedor con el formulario
                         VStack(alignment: .leading, spacing: 24) {
                         // Sección de Información Principal
                         VStack(alignment: .leading, spacing: 16) {
@@ -144,6 +148,7 @@ struct FastCreatorView: View {
                         Button("Guardar objetivo") {
                             // Acción de guardar
                             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            dismiss()
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
@@ -153,14 +158,23 @@ struct FastCreatorView: View {
                     .padding(24)
                     .glassEffect(.regular, in: .rect(cornerRadius: 20))
                     .padding(.horizontal, 16)
-                    
-                    Spacer()
-                }
+                        
+                        Spacer()
+                        }
+                        .frame(minHeight: geometry.size.height)
+                    }
                 }
             }
             .scrollDismissesKeyboard(.immediately)
             .navigationTitle("Nuevo Objetivo")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancelar") {
+                        dismiss()
+                    }
+                }
+            }
         }
         .navigationViewStyle(.stack) // Mejor para iPhone, evita split view
         .sheet(isPresented: $showingDateSheet) {
