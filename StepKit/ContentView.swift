@@ -17,7 +17,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             Tab("Steps", systemImage: "target"){
-                FastCreatorView()
+                GoalsListView()
             }
             Tab("Trainer", systemImage: "sparkles"){
                 TrainerView()
