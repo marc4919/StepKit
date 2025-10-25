@@ -14,13 +14,24 @@ struct Recipe {
     let name: String
     @Guide(description: "The description of the recipe.")
     let description: String
+    @Guide(description: "The Steps of the recipe.")
+    let steps: [String]
 }
 
-#Playground {    
-    let session = LanguageModelSession()
-        let response = try await session.respond(to: "Suggest a tradional Pakistani recipe", generating: Recipe.self)
+var answer: Recipe.PartiallyGenerated?
+
+#Playground {
+    do{
+        let session = LanguageModelSession()
+        let stream = session.streamResponse(to: "Suggest a tradional Bravas", generating: Recipe.self)
         
-        print(response.content)
-        print(response.content.name)
-        print(response.content.description)
+        for try await partialResponse in stream {
+            answer = partialResponse.content
+        }
+        
+        let article = try await stream.collect()
+        print(article.content.steps)
+    } catch {
+        print("Error generating recipe: \(error)")
+    }
 }
