@@ -6,64 +6,92 @@
 //
 
 import SwiftUI
-
-struct Goal: Identifiable, Hashable {
-    let id = UUID()
-    let title: String
-    let description: String
-    let progress: Double
-    let isCompleted: Bool
-    let dueDate: Date?
-}
-
-struct Step: Identifiable, Hashable {
-    let id = UUID()
-    let title: String
-    let description: String
-    let isCompleted: Bool
-    let goalId: UUID
-}
+import SwiftData
+import UIKit
 
 struct GoalsListView: View {
-    @State private var goals: [Goal] = [
-        Goal(title: "Caminar 10,000 pasos diarios", description: "Mantener un estilo de vida activo", progress: 0.75, isCompleted: false, dueDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())),
-        Goal(title: "Leer 2 libros este mes", description: "Mejorar conocimientos y cultura", progress: 0.5, isCompleted: false, dueDate: Calendar.current.date(byAdding: .day, value: 20, to: Date())),
-        Goal(title: "Aprender SwiftUI", description: "Dominar el desarrollo iOS", progress: 0.3, isCompleted: false, dueDate: Calendar.current.date(byAdding: .month, value: 2, to: Date())),
-        Goal(title: "Hacer ejercicio 3 veces por semana", description: "Mantener buena forma física", progress: 1.0, isCompleted: true, dueDate: nil)
-    ]
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse)
+    private var goalEntities: [GoalEntity]
+    
+    // Convertir entidades a view models
+    private var goals: [Goal] {
+        goalEntities.map { $0.toGoal() }
+    }
     
     @State private var selectedGoal: Goal?
     @State private var selectedStep: Step?
     @State private var showingFastCreator = false
+    @State private var animateEmptyState = false
+    @State private var goalToDelete: Goal?
+    @State private var showingDeleteConfirmation = false
+    @State private var navigationPath = NavigationPath()
     
-    // Ejemplo de pasos para el objetivo seleccionado
-    private var steps: [Step] {
-        guard let selectedGoal = selectedGoal else { return [] }
-        return [
-            Step(title: "Paso 1", description: "Primer paso del objetivo", isCompleted: true, goalId: selectedGoal.id),
-            Step(title: "Paso 2", description: "Segundo paso del objetivo", isCompleted: true, goalId: selectedGoal.id),
-            Step(title: "Paso 3", description: "Tercer paso del objetivo", isCompleted: false, goalId: selectedGoal.id),
-            Step(title: "Paso 4", description: "Cuarto paso del objetivo", isCompleted: false, goalId: selectedGoal.id)
-        ]
+    // Colores del tema
+    private let accentBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
+    private let accentHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
+    
+    // Goals activos y completados
+    private var activeGoals: [Goal] {
+        goals.filter { !$0.isCompleted }
+    }
+    
+    private var completedGoals: [Goal] {
+        goals.filter { $0.isCompleted }
     }
     
     var body: some View {
+        // Usar NavigationStack en iPhone, NavigationSplitView en iPad
+        if horizontalSizeClass == .compact {
+            compactLayout
+        } else {
+            regularLayout
+        }
+    }
+    
+    // MARK: - Compact Layout (iPhone)
+    private var compactLayout: some View {
+        NavigationStack(path: $navigationPath) {
+            goalsListContent
+                .navigationDestination(for: Goal.self) { goal in
+                    GoalDetailView(goal: goal)
+                }
+                .navigationDestination(for: Step.self) { step in
+                    StepDetailView(step: step)
+                }
+        }
+        .fullScreenCover(isPresented: $showingFastCreator) {
+            FastCreatorView { newGoal in
+                navigationPath.append(newGoal)
+            }
+        }
+        .sheet(isPresented: $showingDeleteConfirmation) {
+            deleteConfirmationSheet
+        }
+    }
+    
+    // MARK: - Regular Layout (iPad)
+    private var regularLayout: some View {
         NavigationSplitView {
-            SidebarView()
+            goalsListContent
         } content: {
             if let selectedGoal = selectedGoal {
-                ContentView(goal: selectedGoal)
+                KitView(goal: selectedGoal, steps: selectedGoal.steps, selectedStep: $selectedStep)
+                    .onChange(of: selectedGoal) { _, _ in
+                        selectedStep = nil
+                    }
             } else {
                 ContentUnavailableView(
-                    "Selecciona un Objetivo",
+                    "Selecciona un Kit",
                     systemImage: "list.bullet",
-                    description: Text("Elige un objetivo para ver sus pasos")
+                    description: Text("Elige un kit para ver sus pasos")
                 )
             }
         } detail: {
             if let selectedStep = selectedStep {
                 NavigationStack {
-                    StepDetailView()
+                    StepDetailView(step: selectedStep)
                         .navigationTitle(selectedStep.title)
                         .navigationBarTitleDisplayMode(.inline)
                 }
@@ -76,223 +104,221 @@ struct GoalsListView: View {
             }
         }
         .fullScreenCover(isPresented: $showingFastCreator) {
-            FastCreatorView()
+            FastCreatorView { newGoal in
+                selectedGoal = newGoal
+            }
+        }
+        .sheet(isPresented: $showingDeleteConfirmation) {
+            deleteConfirmationSheet
         }
     }
     
-    // MARK: - Sidebar View
+    // MARK: - Goals List Content
     @ViewBuilder
-    private func SidebarView() -> some View {
+    private var goalsListContent: some View {
         if goals.isEmpty {
-            VStack(spacing: 24) {
-                Image(systemName: "target")
-                    .font(.system(size: 80))
-                    .foregroundColor(.blue)
-                
-                Text("Da el primer paso")
-                    .font(.title)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                showingFastCreator = true
-            }
-            .navigationTitle("Mis Objetivos")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingFastCreator = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                }
-            }
+            EmptyStateContainerView(
+                animateEmptyState: $animateEmptyState,
+                showingFastCreator: $showingFastCreator
+            )
+            .navigationBarTitleDisplayMode(.inline)
         } else {
-            List(selection: $selectedGoal) {
-                ForEach(goals) { goal in
-                    GoalRowView(goal: goal)
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .tag(goal)
-                }
-                .onDelete(perform: deleteGoals)
-            }
-            .navigationTitle("Mis Objetivos")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingFastCreator = true
-                    } label: {
-                        Image(systemName: "plus")
+            List(selection: horizontalSizeClass == .regular ? $selectedGoal : nil) {
+                // Kits activos
+                if !activeGoals.isEmpty {
+                    Section {
+                        ForEach(activeGoals) { goal in
+                            goalRow(goal)
+                        }
+                    } header: {
+                        sectionHeader(title: "En progreso", icon: "target", count: activeGoals.count)
                     }
                 }
-                ToolbarItem(placement: .navigationBarLeading) {
-                    EditButton()
+                
+                // Kits completados
+                if !completedGoals.isEmpty {
+                    Section {
+                        ForEach(completedGoals) { goal in
+                            goalRow(goal)
+                        }
+                    } header: {
+                        sectionHeader(title: "Completados", icon: "checkmark.circle", count: completedGoals.count)
+                    }
                 }
             }
             .listStyle(.plain)
-        }
-    }
-    
-    // MARK: - Content View
-    @ViewBuilder
-    private func ContentView(goal: Goal) -> some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Información del objetivo
-                GoalDetailView(goal: goal)
-                
-                // Separador
-                Divider()
-                    .padding(.horizontal)
-                
-                // Lista de pasos
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Pasos")
-                            .font(.headline)
-                            .padding(.horizontal)
-                        Spacer()
-                    }
-                    
-                    List(steps, selection: $selectedStep) { step in
-                        StepRowView(step: step)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .tag(step)
-                    }
-                    .listStyle(.plain)
-                    .frame(minHeight: 300)
+            .listRowSpacing(10)
+            .scrollContentBackground(.hidden)
+            .background(Color(.systemGroupedBackground))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Mis Kits")
+                        .font(.headline)
+                        .fontWeight(.semibold)
                 }
-                .padding(.top)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingFastCreator = true
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    } label: {
+                        Image(systemName: "plus")
+                            .fontWeight(.semibold)
+                            .foregroundColor(accentBlue)
+                    }
+                }
             }
         }
-        .navigationTitle(goal.title)
-        .navigationBarTitleDisplayMode(.large)
-        .onChange(of: selectedGoal) { oldValue, newValue in
-            selectedStep = nil
+    }
+    
+    // MARK: - Goal Row
+    private func goalRow(_ goal: Goal) -> some View {
+        GoalRowView(goal: goal)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if horizontalSizeClass == .compact {
+                    // iPhone: Push navigation
+                    navigationPath.append(goal)
+                } else {
+                    // iPad: Selection-based
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        selectedGoal = goal
+                    }
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                Button {
+                    goalToDelete = goal
+                    showingDeleteConfirmation = true
+                } label: {
+                    Label("Eliminar", systemImage: "trash")
+                }
+                .tint(.red)
+            }
+    }
+    
+    // MARK: - Section Header
+    private func sectionHeader(title: String, icon: String, count: Int) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.subheadline.weight(.medium))
+                .foregroundColor(accentBlue)
+            
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Spacer()
+            
+            Text("\(count)")
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
         }
+        .textCase(nil)
+        .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
     }
     
-    private func addGoal() {
-        let newGoal = Goal(
-            title: "Nuevo Objetivo",
-            description: "Descripción del objetivo",
-            progress: 0.0,
-            isCompleted: false,
-            dueDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())
-        )
-        goals.append(newGoal)
-        selectedGoal = newGoal
-    }
-    
-    private func deleteGoals(at offsets: IndexSet) {
-        goals.remove(atOffsets: offsets)
-        if let selectedGoal = selectedGoal,
-           !goals.contains(selectedGoal) {
-            self.selectedGoal = nil
-        }
-    }
-}
-
-struct GoalRowView: View {
-    let goal: Goal
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
+    // MARK: - Delete Confirmation Sheet
+    private var deleteConfirmationSheet: some View {
+        VStack(spacing: 24) {
+            // Icono
+            ZStack {
+                Circle()
+                    .fill(Color.red.opacity(0.1))
+                    .frame(width: 72, height: 72)
+                
+                Image(systemName: "trash")
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundColor(.red)
+            }
+            .padding(.top, 24)
+            
+            // Texto
+            VStack(spacing: 8) {
+                Text("¿Eliminar este kit?")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                
+                if let goal = goalToDelete {
                     Text(goal.title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    Text(goal.description)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
                         .lineLimit(2)
                 }
                 
-                Spacer()
-                
-                if goal.isCompleted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .font(.title2)
-                } else {
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("\(Int(goal.progress * 100))%")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-                        
-                        if let dueDate = goal.dueDate {
-                            Text(dueDate, style: .date)
-                                .font(.caption2)
-                                .foregroundColor(.orange)
-                        }
-                    }
-                }
-            }
-            
-            if !goal.isCompleted {
-                ProgressView(value: goal.progress)
-                    .progressViewStyle(LinearProgressViewStyle())
-                    .scaleEffect(y: 0.8)
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(goal.isCompleted ? Color.green.opacity(0.3) : Color.clear, lineWidth: 1)
-        )
-    }
-}
-
-struct StepRowView: View {
-    let step: Step
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: step.isCompleted ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(step.isCompleted ? .green : .secondary)
-                .font(.title3)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(step.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                Text(step.description)
+                Text("Esta acción no se puede deshacer")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
+                    .padding(.top, 4)
             }
             
-            Spacer()
+            // Botones
+            VStack(spacing: 12) {
+                Button(role: .destructive) {
+                    if let goal = goalToDelete {
+                        withAnimation {
+                            deleteGoal(goal)
+                        }
+                    }
+                    showingDeleteConfirmation = false
+                } label: {
+                    Text("Eliminar")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                
+                Button {
+                    showingDeleteConfirmation = false
+                    goalToDelete = nil
+                } label: {
+                    Text("Cancelar")
+                        .font(.body.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .foregroundColor(.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(step.isCompleted ? Color.green.opacity(0.2) : Color.clear, lineWidth: 1)
-        )
+        .presentationDetents([.height(340)])
+        .presentationDragIndicator(.visible)
+    }
+    
+    // MARK: - Delete Goal
+    private func deleteGoal(_ goal: Goal) {
+        // Buscar la entidad correspondiente
+        if let entity = goalEntities.first(where: { $0.id == goal.id }) {
+            // Soft delete (marcar como eliminado)
+            entity.isDeleted = true
+            entity.deletedAt = Date()
+            entity.updatedAt = Date()
+            
+            // Limpiar selección si es necesario
+            if selectedGoal?.id == goal.id {
+                selectedGoal = nil
+            }
+            
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+        goalToDelete = nil
     }
 }
 
 #Preview {
     GoalsListView()
+        .modelContainer(for: [GoalEntity.self, StepEntity.self], inMemory: true)
 }
