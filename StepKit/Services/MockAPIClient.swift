@@ -92,7 +92,197 @@ final class MockAPIClient: APIClientProtocol {
         return request
     }
     
+    func streamKitGeneration(from request: AIGenerateKitRequest, token: String) -> AsyncThrowingStream<AIChatStreamEvent, Error> {
+        let shouldFail = shouldFailKitGeneration
+        let customError = kitGenerationError
+        let goalDescription = request.goalDescription
+        let dueDate = request.dueDate
+        let risks = request.inconveniences
+        
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    // Simular delay inicial
+                    try await Task.sleep(nanoseconds: 300_000_000) // 300ms
+                    
+                    // Si debe fallar
+                    if let error = customError {
+                        throw error
+                    }
+                    if shouldFail {
+                        throw APIError.premiumRequired
+                    }
+                    
+                    let kitId = UUID()
+                    let now = Date()
+                    let targetDate = self.dateFromString(dueDate) ?? Calendar.current.date(byAdding: .day, value: 30, to: now)!
+                    let horizonDays = Calendar.current.dateComponents([.day], from: now, to: targetDate).day ?? 30
+                    
+                    // Emitir kit_info
+                    let kitInfoEvent = AIChatStreamEvent(
+                        type: "kit_info",
+                        kitTitle: "Plan: \(goalDescription.prefix(50))",
+                        kpi: "Completar todos los pasos del plan",
+                        horizonDays: horizonDays,
+                        risks: risks,
+                        step: nil,
+                        stepIndex: nil,
+                        totalSteps: nil,
+                        kitId: nil,
+                        kit: nil,
+                        usage: nil,
+                        error: nil
+                    )
+                    continuation.yield(kitInfoEvent)
+                    
+                    try await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                    
+                    // Crear y emitir steps uno a uno
+                    let mockSteps = self.createMockStreamSteps(goalDescription: goalDescription, dueDate: dueDate)
+                    
+                    for (index, step) in mockSteps.enumerated() {
+                        let stepEvent = AIChatStreamEvent(
+                            type: "step",
+                            kitTitle: nil,
+                            kpi: nil,
+                            horizonDays: nil,
+                            risks: nil,
+                            step: step,
+                            stepIndex: index,
+                            totalSteps: mockSteps.count,
+                            kitId: nil,
+                            kit: nil,
+                            usage: nil,
+                            error: nil
+                        )
+                        continuation.yield(stepEvent)
+                        
+                        try await Task.sleep(nanoseconds: 300_000_000) // 300ms entre steps
+                    }
+                    
+                    // Emitir done con el kit completo
+                    let kitDTO = self.createMockKitDTO(kitId: kitId, goalDescription: goalDescription, dueDate: dueDate, risks: risks)
+                    let usage = UsageDTO(tokensIn: 150, tokensOut: 500, model: "mock-model")
+                    
+                    let doneEvent = AIChatStreamEvent(
+                        type: "done",
+                        kitTitle: nil,
+                        kpi: nil,
+                        horizonDays: nil,
+                        risks: nil,
+                        step: nil,
+                        stepIndex: nil,
+                        totalSteps: nil,
+                        kitId: kitId,
+                        kit: kitDTO,
+                        usage: usage,
+                        error: nil
+                    )
+                    continuation.yield(doneEvent)
+                    
+                    continuation.finish()
+                } catch {
+                    let errorEvent = AIChatStreamEvent(
+                        type: "error",
+                        kitTitle: nil,
+                        kpi: nil,
+                        horizonDays: nil,
+                        risks: nil,
+                        step: nil,
+                        stepIndex: nil,
+                        totalSteps: nil,
+                        kitId: nil,
+                        kit: nil,
+                        usage: nil,
+                        error: error.localizedDescription
+                    )
+                    continuation.yield(errorEvent)
+                    continuation.finish()
+                }
+            }
+        }
+    }
+    
     // MARK: - Mock Data Generators
+    
+    private func createMockStreamSteps(goalDescription: String, dueDate: String) -> [StreamStepOutput] {
+        return [
+            StreamStepOutput(
+                stepTitle: "Investigar y planificar",
+                description: StreamDescriptionOutput(
+                    short: "Investiga sobre '\(goalDescription.prefix(30))' y crea un plan inicial",
+                    long: "Dedica tiempo a investigar los fundamentos y mejores prácticas relacionadas con tu objetivo."
+                ),
+                estimateMinutes: 45,
+                suggestedDeadline: dueDate,
+                effortLevel: "medium",
+                adaptsTo: "Puedes dividirlo en sesiones más cortas",
+                blockedByPremium: false
+            ),
+            StreamStepOutput(
+                stepTitle: "Primeros pasos prácticos",
+                description: StreamDescriptionOutput(
+                    short: "Empieza con las acciones básicas",
+                    long: "Comienza a practicar o ejecutar las primeras acciones hacia tu objetivo."
+                ),
+                estimateMinutes: 60,
+                suggestedDeadline: dueDate,
+                effortLevel: "medium",
+                adaptsTo: "Ajusta la intensidad según tu disponibilidad",
+                blockedByPremium: false
+            ),
+            StreamStepOutput(
+                stepTitle: "Consolidar el progreso",
+                description: StreamDescriptionOutput(
+                    short: "Refuerza lo aprendido y avanza",
+                    long: "Revisa tu progreso, identifica áreas de mejora y continúa avanzando."
+                ),
+                estimateMinutes: 45,
+                suggestedDeadline: dueDate,
+                effortLevel: "medium",
+                adaptsTo: "Puedes hacer revisiones más frecuentes si lo prefieres",
+                blockedByPremium: false
+            ),
+            StreamStepOutput(
+                stepTitle: "Completar el objetivo",
+                description: StreamDescriptionOutput(
+                    short: "Finaliza y evalúa tu progreso",
+                    long: "Realiza las acciones finales para completar tu objetivo."
+                ),
+                estimateMinutes: 30,
+                suggestedDeadline: dueDate,
+                effortLevel: "low",
+                adaptsTo: "Dedica el tiempo necesario para una buena evaluación final",
+                blockedByPremium: false
+            )
+        ]
+    }
+    
+    private func createMockKitDTO(kitId: UUID, goalDescription: String, dueDate: String, risks: [String]) -> KitDTO {
+        let now = Date()
+        let steps = createMockSteps(for: kitId, goalDescription: goalDescription, dueDate: dueDate)
+        
+        return KitDTO(
+            id: kitId,
+            userId: nil,
+            title: "Plan: \(goalDescription.prefix(50))",
+            kpi: "Completar todos los pasos del plan",
+            horizonDays: Calendar.current.dateComponents([.day], from: now, to: dateFromString(dueDate) ?? now).day ?? 30,
+            metaType: "personal",
+            metaTags: ["generated", "ai"],
+            risks: risks,
+            version: 1,
+            progress: 0.0,
+            sourceModel: "mock-model",
+            promptVersion: 1,
+            rawArguments: nil,
+            createdAt: now,
+            updatedAt: now,
+            deletedAt: nil,
+            deleted: false,
+            steps: steps
+        )
+    }
     
     private func createMockKitResponse(from request: AIGenerateKitRequest) -> AIGenerateKitResponse {
         let kitId = UUID()

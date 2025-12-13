@@ -12,33 +12,42 @@ import UIKit
 struct GoalsListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.syncManager) private var syncManager
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse)
     private var goalEntities: [GoalEntity]
-    
-    // Convertir entidades a view models
-    private var goals: [Goal] {
-        goalEntities.map { $0.toGoal() }
-    }
-    
-    @State private var selectedGoal: Goal?
-    @State private var selectedStep: Step?
+
+    // Query adicional de StepEntities para forzar observación de cambios en steps
+    // SwiftData tiene un bug conocido donde cambios en relaciones no disparan actualizaciones
+    @Query private var allSteps: [StepEntity]
+
+    @State private var selectedGoalEntity: GoalEntity?
+    @State private var selectedGoalId: UUID?
+    @State private var selectedStepEntity: StepEntity?
     @State private var showingFastCreator = false
     @State private var animateEmptyState = false
-    @State private var goalToDelete: Goal?
+    @State private var goalEntityToDelete: GoalEntity?
     @State private var showingDeleteConfirmation = false
-    @State private var navigationPath = NavigationPath()
-    
+    @State private var navigationPath: [UUID] = []
+
     // Colores del tema
     private let accentBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
     private let accentHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
-    
-    // Goals activos y completados
-    private var activeGoals: [Goal] {
-        goals.filter { !$0.isCompleted }
+
+    // Checksum de steps completados para forzar re-render cuando cambia
+    private var stepsCompletionChecksum: Int {
+        allSteps.filter { $0.isCompleted }.count
     }
-    
-    private var completedGoals: [Goal] {
-        goals.filter { $0.isCompleted }
+
+    // GoalEntities activos y completados
+    private var activeGoalEntities: [GoalEntity] {
+        // Acceder al checksum fuerza dependencia de allSteps
+        _ = stepsCompletionChecksum
+        return goalEntities.filter { !$0.isCompleted }
+    }
+
+    private var completedGoalEntities: [GoalEntity] {
+        _ = stepsCompletionChecksum
+        return goalEntities.filter { $0.isCompleted }
     }
     
     var body: some View {
@@ -54,32 +63,46 @@ struct GoalsListView: View {
     private var compactLayout: some View {
         NavigationStack(path: $navigationPath) {
             goalsListContent
-                .navigationDestination(for: Goal.self) { goal in
-                    GoalDetailView(goal: goal)
-                }
-                .navigationDestination(for: Step.self) { step in
-                    StepDetailView(step: step)
+                .navigationDestination(for: GoalEntity.ID.self) { goalId in
+                    if let goalEntity = goalEntities.first(where: { $0.id == goalId }) {
+                        GoalDetailView(goalEntity: goalEntity)
+                    }
                 }
         }
         .fullScreenCover(isPresented: $showingFastCreator) {
             FastCreatorView { newGoal in
-                navigationPath.append(newGoal)
+                navigationPath.append(newGoal.id)
             }
         }
         .sheet(isPresented: $showingDeleteConfirmation) {
             deleteConfirmationSheet
         }
+        .onChange(of: goalEntities) { _, newGoals in
+            // Apple-recommended: state-driven navigation cleanup
+            // Remove any IDs from path that no longer exist in goalEntities
+            let validIds = Set(newGoals.map { $0.id })
+            let hasInvalidIds = navigationPath.contains { !validIds.contains($0) }
+
+            if hasInvalidIds {
+                // Pop sin animación para transición suave
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    navigationPath.removeAll { !validIds.contains($0) }
+                }
+            }
+        }
     }
-    
+
     // MARK: - Regular Layout (iPad)
     private var regularLayout: some View {
         NavigationSplitView {
             goalsListContent
         } content: {
-            if let selectedGoal = selectedGoal {
-                KitView(goal: selectedGoal, steps: selectedGoal.steps, selectedStep: $selectedStep)
-                    .onChange(of: selectedGoal) { _, _ in
-                        selectedStep = nil
+            if let goalEntity = selectedGoalEntity {
+                GoalDetailView(goalEntity: goalEntity)
+                    .onChange(of: selectedGoalEntity) { _, _ in
+                        selectedStepEntity = nil
                     }
             } else {
                 ContentUnavailableView(
@@ -89,10 +112,10 @@ struct GoalsListView: View {
                 )
             }
         } detail: {
-            if let selectedStep = selectedStep {
+            if let stepEntity = selectedStepEntity {
                 NavigationStack {
-                    StepDetailView(step: selectedStep)
-                        .navigationTitle(selectedStep.title)
+                    StepDetailView(stepEntity: stepEntity)
+                        .navigationTitle(stepEntity.title)
                         .navigationBarTitleDisplayMode(.inline)
                 }
             } else {
@@ -105,44 +128,56 @@ struct GoalsListView: View {
         }
         .fullScreenCover(isPresented: $showingFastCreator) {
             FastCreatorView { newGoal in
-                selectedGoal = newGoal
+                // Buscar el GoalEntity correspondiente
+                if let entity = goalEntities.first(where: { $0.id == newGoal.id }) {
+                    selectedGoalEntity = entity
+                }
             }
         }
         .sheet(isPresented: $showingDeleteConfirmation) {
             deleteConfirmationSheet
         }
+        .onChange(of: goalEntities) { _, newGoals in
+            // Limpiar selección si el goal seleccionado ya no existe
+            if let selectedId = selectedGoalId,
+               !newGoals.contains(where: { $0.id == selectedId }) {
+                selectedGoalEntity = nil
+                selectedGoalId = nil
+                selectedStepEntity = nil
+            }
+        }
     }
-    
+
     // MARK: - Goals List Content
     @ViewBuilder
     private var goalsListContent: some View {
-        if goals.isEmpty {
+        if goalEntities.isEmpty {
             EmptyStateContainerView(
                 animateEmptyState: $animateEmptyState,
                 showingFastCreator: $showingFastCreator
             )
             .navigationBarTitleDisplayMode(.inline)
         } else {
-            List(selection: horizontalSizeClass == .regular ? $selectedGoal : nil) {
+            List(selection: horizontalSizeClass == .regular ? $selectedGoalId : nil) {
                 // Kits activos
-                if !activeGoals.isEmpty {
+                if !activeGoalEntities.isEmpty {
                     Section {
-                        ForEach(activeGoals) { goal in
-                            goalRow(goal)
+                        ForEach(activeGoalEntities) { goalEntity in
+                            goalRow(goalEntity)
                         }
                     } header: {
-                        sectionHeader(title: "En progreso", icon: "target", count: activeGoals.count)
+                        sectionHeader(title: "En progreso", icon: "target", count: activeGoalEntities.count)
                     }
                 }
-                
+
                 // Kits completados
-                if !completedGoals.isEmpty {
+                if !completedGoalEntities.isEmpty {
                     Section {
-                        ForEach(completedGoals) { goal in
-                            goalRow(goal)
+                        ForEach(completedGoalEntities) { goalEntity in
+                            goalRow(goalEntity)
                         }
                     } header: {
-                        sectionHeader(title: "Completados", icon: "checkmark.circle", count: completedGoals.count)
+                        sectionHeader(title: "Completados", icon: "checkmark.circle", count: completedGoalEntities.count)
                     }
                 }
             }
@@ -168,21 +203,28 @@ struct GoalsListView: View {
                     }
                 }
             }
+            .onChange(of: selectedGoalId) { _, newId in
+                if let newId, let entity = goalEntities.first(where: { $0.id == newId }) {
+                    selectedGoalEntity = entity
+                } else {
+                    selectedGoalEntity = nil
+                }
+            }
         }
     }
     
     // MARK: - Goal Row
-    private func goalRow(_ goal: Goal) -> some View {
-        GoalRowView(goal: goal)
+    private func goalRow(_ goalEntity: GoalEntity) -> some View {
+        GoalRowView(goalEntity: goalEntity)
             .contentShape(Rectangle())
             .onTapGesture {
                 if horizontalSizeClass == .compact {
-                    // iPhone: Push navigation
-                    navigationPath.append(goal)
+                    // iPhone: Push navigation con ID
+                    navigationPath.append(goalEntity.id)
                 } else {
-                    // iPad: Selection-based
+                    // iPad: Selection-based con entity
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        selectedGoal = goal
+                        selectedGoalId = goalEntity.id
                     }
                 }
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -192,7 +234,7 @@ struct GoalsListView: View {
             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 Button {
-                    goalToDelete = goal
+                    goalEntityToDelete = goalEntity
                     showingDeleteConfirmation = true
                 } label: {
                     Label("Eliminar", systemImage: "trash")
@@ -221,7 +263,7 @@ struct GoalsListView: View {
                 .foregroundColor(.secondary)
         }
         .textCase(nil)
-        .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
     }
     
     // MARK: - Delete Confirmation Sheet
@@ -232,39 +274,39 @@ struct GoalsListView: View {
                 Circle()
                     .fill(Color.red.opacity(0.1))
                     .frame(width: 72, height: 72)
-                
+
                 Image(systemName: "trash")
                     .font(.system(size: 28, weight: .medium))
                     .foregroundColor(.red)
             }
             .padding(.top, 24)
-            
+
             // Texto
             VStack(spacing: 8) {
                 Text("¿Eliminar este kit?")
                     .font(.title3)
                     .fontWeight(.semibold)
-                
-                if let goal = goalToDelete {
-                    Text(goal.title)
+
+                if let goalEntity = goalEntityToDelete {
+                    Text(goalEntity.title)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                 }
-                
+
                 Text("Esta acción no se puede deshacer")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.top, 4)
             }
-            
+
             // Botones
             VStack(spacing: 12) {
                 Button(role: .destructive) {
-                    if let goal = goalToDelete {
+                    if let goalEntity = goalEntityToDelete {
                         withAnimation {
-                            deleteGoal(goal)
+                            deleteGoalEntity(goalEntity)
                         }
                     }
                     showingDeleteConfirmation = false
@@ -277,10 +319,10 @@ struct GoalsListView: View {
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                
+
                 Button {
                     showingDeleteConfirmation = false
-                    goalToDelete = nil
+                    goalEntityToDelete = nil
                 } label: {
                     Text("Cancelar")
                         .font(.body.weight(.medium))
@@ -297,24 +339,32 @@ struct GoalsListView: View {
         .presentationDetents([.height(340)])
         .presentationDragIndicator(.visible)
     }
-    
+
     // MARK: - Delete Goal
-    private func deleteGoal(_ goal: Goal) {
-        // Buscar la entidad correspondiente
-        if let entity = goalEntities.first(where: { $0.id == goal.id }) {
-            // Soft delete (marcar como eliminado)
-            entity.isDeleted = true
-            entity.deletedAt = Date()
-            entity.updatedAt = Date()
-            
-            // Limpiar selección si es necesario
-            if selectedGoal?.id == goal.id {
-                selectedGoal = nil
-            }
-            
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    private func deleteGoalEntity(_ entity: GoalEntity) {
+        let now = Date()
+
+        // Soft delete del goal usando el método dedicado
+        entity.markAsDeleted(at: now)
+
+        // Cascade: soft delete de todos los steps
+        for step in entity.steps {
+            step.deletedAt = now
+            step.markModified()
         }
-        goalToDelete = nil
+
+        // Limpiar selección si es necesario
+        if selectedGoalEntity?.id == entity.id {
+            selectedGoalEntity = nil
+            selectedGoalId = nil
+        }
+
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        // Trigger sync después de eliminar
+        syncManager?.handleDataChange()
+
+        goalEntityToDelete = nil
     }
 }
 

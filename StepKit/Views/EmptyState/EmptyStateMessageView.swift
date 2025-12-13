@@ -16,7 +16,9 @@ struct EmptyStateMessageView: View {
     let sphereHighlight: Color
     let sphereBase: Color
     let action: () -> Void
-    
+
+    @State private var showButton = false
+
     var body: some View {
         VStack(spacing: 22) {
             // Textos agrupados
@@ -25,14 +27,14 @@ struct EmptyStateMessageView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
-                
+
                 Text(subtitle)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
-            
+
             // Botón CTA
             Button(action: action) {
                 HStack(spacing: 8) {
@@ -61,6 +63,16 @@ struct EmptyStateMessageView: View {
             }
             .buttonStyle(.plain)
             .padding(.top, 40)
+            .opacity(showButton ? 1 : 0)
+            .offset(y: showButton ? 0 : 20)
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.4).delay(0.3)) {
+                showButton = true
+            }
+        }
+        .onDisappear {
+            showButton = false
         }
     }
 }

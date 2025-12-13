@@ -24,7 +24,8 @@ final class GoalEntity {
     var updatedAt: Date
     var deletedAt: Date?
     var isDeleted: Bool
-    
+    var notificationsEnabled: Bool
+
     @Relationship(deleteRule: .cascade, inverse: \StepEntity.goal)
     var steps: [StepEntity] = []
     
@@ -42,7 +43,8 @@ final class GoalEntity {
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         deletedAt: Date? = nil,
-        isDeleted: Bool = false
+        isDeleted: Bool = false,
+        notificationsEnabled: Bool = true
     ) {
         self.id = id
         self.planTitle = planTitle
@@ -58,6 +60,7 @@ final class GoalEntity {
         self.updatedAt = updatedAt
         self.deletedAt = deletedAt
         self.isDeleted = isDeleted
+        self.notificationsEnabled = notificationsEnabled
     }
     
     // MARK: - Conversion from KitDTO
@@ -114,5 +117,83 @@ final class GoalEntity {
     var dueDate: Date? {
         steps.compactMap { $0.suggestedDeadline }.max()
     }
+
+    // MARK: - Modification Tracking
+
+    /// Marca la entidad como modificada localmente (actualiza timestamp y versión)
+    func markModified() {
+        updatedAt = Date()
+        version += 1
+    }
+
+    /// Marca la entidad como eliminada (soft delete)
+    func markAsDeleted(at date: Date = Date()) {
+        isDeleted = true
+        deletedAt = date
+        updatedAt = date
+        version += 1
+    }
+
+    // MARK: - Sync Conversion
+
+    /// Convierte la entidad a DTO para sincronización
+    func toSyncDTO() -> KitSyncDTO {
+        KitSyncDTO(
+            id: id,
+            title: planTitle,
+            kpi: kpi,
+            horizonDays: horizonDays,
+            metaType: metaType,
+            metaTags: metaTags,
+            risks: risks,
+            version: version,
+            progress: computedProgress,
+            sourceModel: sourceModel,
+            promptVersion: nil,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            deleted: isDeleted,
+            steps: nil  // Steps se envían por separado
+        )
+    }
+
+    /// Actualiza la entidad desde un DTO del servidor
+    func update(from dto: KitSyncDTO) {
+        planTitle = dto.title
+        kpi = dto.kpi
+        horizonDays = dto.horizonDays
+        metaType = dto.metaType
+        metaTags = dto.metaTags
+        risks = dto.risks
+        version = dto.version
+        progress = dto.progress ?? computedProgress
+        sourceModel = dto.sourceModel
+        createdAt = dto.createdAt ?? createdAt
+        updatedAt = dto.updatedAt
+        deletedAt = dto.deletedAt
+        isDeleted = dto.deleted
+    }
+
+    /// Crea una entidad desde un DTO de sync
+    convenience init(fromSync dto: KitSyncDTO) {
+        self.init(
+            id: dto.id ?? UUID(),
+            planTitle: dto.title,
+            horizonDays: dto.horizonDays,
+            kpi: dto.kpi,
+            metaType: dto.metaType,
+            metaTags: dto.metaTags,
+            risks: dto.risks,
+            version: dto.version,
+            progress: dto.progress ?? 0.0,
+            sourceModel: dto.sourceModel,
+            createdAt: dto.createdAt ?? Date(),
+            updatedAt: dto.updatedAt,
+            deletedAt: dto.deletedAt,
+            isDeleted: dto.deleted
+        )
+    }
 }
+
 

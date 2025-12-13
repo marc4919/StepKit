@@ -6,11 +6,23 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct GoalDetailView: View {
-    let goal: Goal
+    @Bindable var goalEntity: GoalEntity
     @State private var showingExtendedInfo = false
-    
+    @State private var showingAnnotations = false
+    @State private var displayedProgress: Double
+    @State private var displayedPercentage: Int
+    @State private var shouldAnimateOnReturn = false
+
+    init(goalEntity: GoalEntity) {
+        self.goalEntity = goalEntity
+        let progress = goalEntity.computedProgress
+        _displayedProgress = State(initialValue: progress)
+        _displayedPercentage = State(initialValue: Int(progress * 100))
+    }
+
     // Colores del tema
     private let accentBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
     private let accentHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
@@ -21,7 +33,7 @@ struct GoalDetailView: View {
             VStack(spacing: 20) {
                 // Header con icono y título
                 headerSection
-                
+
                 // Sección de pasos
                 stepsSection
             }
@@ -32,7 +44,14 @@ struct GoalDetailView: View {
         .navigationTitle("Kit")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    showingAnnotations = true
+                } label: {
+                    Image(systemName: "note.text.badge.plus")
+                        .foregroundColor(accentBlue)
+                }
+
                 Button {
                     showingExtendedInfo = true
                 } label: {
@@ -42,7 +61,26 @@ struct GoalDetailView: View {
             }
         }
         .sheet(isPresented: $showingExtendedInfo) {
-            ExtendedKitInfoView(goal: goal)
+            ExtendedKitInfoView(goalEntity: goalEntity)
+        }
+        .sheet(isPresented: $showingAnnotations) {
+            KitAnnotationsView(goal: goalEntity.toGoal())
+        }
+        .onAppear {
+            let currentProgress = goalEntity.computedProgress
+
+            // Solo animar si volvemos de StepDetailView con cambios
+            if shouldAnimateOnReturn && displayedProgress != currentProgress {
+                withAnimation(.easeInOut(duration: 0.7)) {
+                    displayedProgress = currentProgress
+                    displayedPercentage = Int(currentProgress * 100)
+                }
+            }
+            shouldAnimateOnReturn = false
+        }
+        .onDisappear {
+            // Marcar que al volver debemos verificar si hay cambios
+            shouldAnimateOnReturn = true
         }
     }
     
@@ -56,8 +94,8 @@ struct GoalDetailView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                goal.isCompleted ? Color.green.opacity(0.2) : accentHighlight.opacity(0.2),
-                                goal.isCompleted ? Color.green.opacity(0.05) : accentBlue.opacity(0.05),
+                                goalEntity.isCompleted ? Color.green.opacity(0.2) : accentHighlight.opacity(0.2),
+                                goalEntity.isCompleted ? Color.green.opacity(0.05) : accentBlue.opacity(0.05),
                                 .clear
                             ],
                             center: .center,
@@ -66,61 +104,64 @@ struct GoalDetailView: View {
                         )
                     )
                     .frame(width: 100, height: 100)
-                
+
                 // Progreso circular
                 Circle()
                     .stroke(
-                        goal.isCompleted ? Color.green.opacity(0.15) : accentBlue.opacity(0.15),
+                        goalEntity.isCompleted ? Color.green.opacity(0.15) : accentBlue.opacity(0.15),
                         lineWidth: 6
                     )
                     .frame(width: 72, height: 72)
-                
+
                 Circle()
-                    .trim(from: 0, to: goal.progress)
+                    .trim(from: 0, to: displayedProgress)
                     .stroke(
-                        goal.isCompleted
+                        goalEntity.isCompleted
                             ? LinearGradient(colors: [.green, .green.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)
                             : LinearGradient(colors: [accentHighlight, accentBlue], startPoint: .topLeading, endPoint: .bottomTrailing),
                         style: StrokeStyle(lineWidth: 6, lineCap: .round)
                     )
                     .frame(width: 72, height: 72)
                     .rotationEffect(.degrees(-90))
-                
+                    .animation(.easeInOut(duration: 0.7), value: displayedProgress)
+
                 // Contenido central
-                if goal.isCompleted {
+                if goalEntity.isCompleted {
                     Image(systemName: "checkmark")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.green)
                 } else {
-                    Text("\(Int(goal.progress * 100))%")
+                    Text("\(displayedPercentage)%")
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(accentBlue)
+                        .contentTransition(.numericText())
+                        .animation(.easeInOut(duration: 0.7), value: displayedPercentage)
                 }
             }
-            
+
             // Título y KPI
             VStack(spacing: 8) {
-                Text(goal.planTitle)
+                Text(goalEntity.planTitle)
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
-                
-                Text(goal.kpi)
+
+                Text(goalEntity.kpi)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 16)
-            
+
             // Contador de pasos
             HStack(spacing: 6) {
                 Image(systemName: "list.bullet")
                     .font(.caption)
                     .foregroundColor(accentBlue)
-                
-                Text("\(goal.steps.filter { $0.isCompleted }.count) de \(goal.steps.count) pasos completados")
+
+                Text("\(goalEntity.steps.filter { $0.isCompleted }.count) de \(goalEntity.steps.count) pasos completados")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -136,6 +177,11 @@ struct GoalDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
     
+    // Steps ordenados por order
+    private var sortedSteps: [StepEntity] {
+        goalEntity.steps.sorted { $0.order < $1.order }
+    }
+
     // MARK: - Steps Section
     private var stepsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -144,14 +190,14 @@ struct GoalDetailView: View {
                 Image(systemName: "list.bullet")
                     .font(.subheadline.weight(.medium))
                     .foregroundColor(accentBlue)
-                
+
                 Text("Pasos")
                     .font(.headline)
                     .foregroundColor(.primary)
-                
+
                 Spacer()
-                
-                Text("\(goal.steps.count)")
+
+                Text("\(goalEntity.steps.count)")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
@@ -160,18 +206,18 @@ struct GoalDetailView: View {
                     .background(Color(.tertiarySystemFill))
                     .clipShape(Capsule())
             }
-            
-            if goal.steps.isEmpty {
+
+            if goalEntity.steps.isEmpty {
                 // Estado vacío
                 emptyStepsView
             } else {
                 // Lista de pasos
                 VStack(spacing: 0) {
-                    ForEach(Array(goal.steps.enumerated()), id: \.element.id) { index, step in
+                    ForEach(Array(sortedSteps.enumerated()), id: \.element.id) { index, stepEntity in
                         NavigationLink {
-                            StepDetailView(step: step, stepNumber: index + 1)
+                            StepDetailView(stepEntity: stepEntity, stepNumber: index + 1)
                         } label: {
-                            stepRow(step, index: index + 1, isLast: index == goal.steps.count - 1)
+                            stepRow(stepEntity, index: index + 1, isLast: index == sortedSteps.count - 1)
                         }
                         .buttonStyle(.plain)
                     }
@@ -206,16 +252,16 @@ struct GoalDetailView: View {
     }
     
     // MARK: - Step Row
-    private func stepRow(_ step: Step, index: Int, isLast: Bool) -> some View {
+    private func stepRow(_ stepEntity: StepEntity, index: Int, isLast: Bool) -> some View {
         VStack(spacing: 0) {
             HStack(spacing: 14) {
                 // Indicador de paso
                 ZStack {
                     Circle()
-                        .fill(step.isCompleted ? Color.green.opacity(0.1) : accentBlue.opacity(0.1))
+                        .fill(stepEntity.isCompleted ? Color.green.opacity(0.1) : accentBlue.opacity(0.1))
                         .frame(width: 44, height: 44)
-                    
-                    if step.isCompleted {
+
+                    if stepEntity.isCompleted {
                         Image(systemName: "checkmark")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.green)
@@ -226,34 +272,44 @@ struct GoalDetailView: View {
                             .foregroundColor(accentBlue)
                     }
                 }
-                
+
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(step.stepTitle)
+                    Text(stepEntity.stepTitle)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(.primary)
                         .lineLimit(2)
-                    
-                    Text(step.description.short)
+
+                    Text(stepEntity.descriptionShort)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(2)
-                    
-                    // Tiempo estimado
-                    if step.estimateMinutes > 0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "clock")
-                                .font(.caption2)
-                            Text(formatMinutes(step.estimateMinutes))
-                                .font(.caption)
+
+                    // Tiempo estimado y fecha
+                    HStack(spacing: 8) {
+                        if stepEntity.estimateMinutes > 0 {
+                            HStack(spacing: 4) {
+                                Image(systemName: "clock")
+                                Text(formatMinutes(stepEntity.estimateMinutes))
+                            }
                         }
-                        .foregroundStyle(.tertiary)
-                        .padding(.top, 2)
+                        if let deadline = stepEntity.suggestedDeadline {
+                            if stepEntity.estimateMinutes > 0 {
+                                Text("•")
+                            }
+                            HStack(spacing: 4) {
+                                Image(systemName: "calendar")
+                                Text(deadline, format: .dateTime.day().month(.abbreviated))
+                            }
+                        }
                     }
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 2)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .fontWeight(.semibold)
@@ -261,7 +317,7 @@ struct GoalDetailView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            
+
             if !isLast {
                 Divider()
                     .padding(.leading, 74)
@@ -286,7 +342,20 @@ struct GoalDetailView: View {
 }
 
 #Preview {
-    NavigationStack {
-        GoalDetailView(goal: .preview)
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, configurations: config)
+    let goalEntity = GoalEntity(
+        planTitle: "Aprender SwiftUI",
+        horizonDays: 42,
+        kpi: "Completar 5 proyectos funcionales",
+        metaType: "learning",
+        metaTags: ["technical", "desk"],
+        risks: ["Falta de tiempo", "Curva de aprendizaje"]
+    )
+    container.mainContext.insert(goalEntity)
+
+    return NavigationStack {
+        GoalDetailView(goalEntity: goalEntity)
     }
+    .modelContainer(container)
 }

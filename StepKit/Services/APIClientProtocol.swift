@@ -28,5 +28,13 @@ protocol APIClientProtocol {
     ///   - token: Token JWT de autenticación
     /// - Returns: URLRequest configurado con el token de autenticación
     func authenticatedRequest(path: String, method: String, token: String) -> URLRequest
+    
+    /// Genera un kit usando IA con streaming SSE
+    /// Emite eventos: kit_info -> step (x N) -> done
+    /// - Parameters:
+    ///   - request: Datos del objetivo a generar
+    ///   - token: Token JWT de autenticación
+    /// - Returns: Stream de eventos de creación del kit
+    func streamKitGeneration(from request: AIGenerateKitRequest, token: String) -> AsyncThrowingStream<AIChatStreamEvent, Error>
 }
 

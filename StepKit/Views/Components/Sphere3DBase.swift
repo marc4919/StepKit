@@ -12,9 +12,9 @@ struct Sphere3DBase: View {
     let size: CGFloat
     let animate: Bool
     
-    private let sphereHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
-    private let sphereBase = Color(red: 0.0, green: 0.48, blue: 1.0)
-    private let sphereDark = Color(red: 0.0, green: 0.3, blue: 0.7)
+    private let sphereHighlight = Color(red: 0.55, green: 0.88, blue: 1.0)
+    private let sphereBase = Color(red: 0.35, green: 0.75, blue: 1.0)
+    private let sphereDark = Color(red: 0.25, green: 0.6, blue: 0.95)
     private let glowColor = Color(red: 0.2, green: 0.6, blue: 1.0)
     
     var body: some View {

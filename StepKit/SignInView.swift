@@ -320,9 +320,22 @@ struct SignInView: View {
                 return "La respuesta de Apple no ha sido válida. Vuelve a intentarlo en unos minutos."
             case .notHandled:
                 return "La solicitud de inicio de sesión no se ha podido procesar. Inténtalo de nuevo."
+            case .notInteractive:
+                return "La solicitud de inicio de sesión requiere interacción del usuario."
+            case .matchedExcludedCredential:
+                return "La credencial está excluida. Inténtalo de nuevo."
+            case .credentialImport:
+                return "Error al importar la credencial. Inténtalo de nuevo."
+            case .credentialExport:
+                return "Error al exportar la credencial. Inténtalo de nuevo."
+            case .preferSignInWithApple:
+                return "Se prefiere usar Sign in with Apple. Inténtalo de nuevo."
+            case .deviceNotConfiguredForPasskeyCreation:
+                return "El dispositivo no está configurado para crear passkeys. Verifica la configuración."
             case .unknown:
-                fallthrough
+                return "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde."
             @unknown default:
+                // Casos futuros no conocidos en tiempo de compilación
                 return "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde."
             }
         }

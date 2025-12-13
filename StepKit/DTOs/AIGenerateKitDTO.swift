@@ -22,6 +22,7 @@ struct AIGenerateKitRequest: Codable {
     let inconveniences: [String]
     let progressState: String // "just starting", "in progress", "almost done"
     let complexityScore: Double // 0.0-1.0
+    let promptVersion: Int // 1 = heavyweight, 2 = lightweight
     
     /// Crea un request a partir de los datos del formulario
     /// - Parameters:
@@ -29,11 +30,13 @@ struct AIGenerateKitRequest: Codable {
     ///   - dueDate: Fecha objetivo
     ///   - dailyMinutes: Minutos disponibles al día (default: 60)
     ///   - obstacles: Lista de obstáculos/inconvenientes
+    ///   - useHeavyweight: Si usar el modelo pesado (determinado por foundation model)
     init(
         description: String,
         dueDate: Date,
         dailyMinutes: Int = 60,
-        obstacles: [String] = []
+        obstacles: [String] = [],
+        useHeavyweight: Bool = false
     ) {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -52,6 +55,10 @@ struct AIGenerateKitRequest: Codable {
         let baseComplexity = min(1.0, Double(obstacles.count) * 0.15)
         let timeComplexity = daysUntilDeadline < 7 ? 0.3 : (daysUntilDeadline < 30 ? 0.1 : 0.0)
         self.complexityScore = min(1.0, baseComplexity + timeComplexity + 0.3) // Base de 0.3
+        
+        // Versión del prompt determinada por foundation model
+        // 1 = heavyweight (modelo potente), 2 = lightweight (modelo ligero)
+        self.promptVersion = useHeavyweight ? 1 : 2
     }
 }
 

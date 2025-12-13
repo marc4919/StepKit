@@ -42,7 +42,7 @@ struct Kit: Identifiable {
 @Generable(
     description: "Dual description for a step: short (preview) and long (detailed guidance)."
 )
-struct StepDescription {
+struct PlaygroundStepDescription {
     @Guide(description: "Short preview (≈1 line) with concrete action and numbers.")
     var short: String
 
@@ -60,7 +60,7 @@ struct PlanStep: Identifiable {
     var stepTitle: String
 
     @Guide(description: "Short/long descriptions for preview and detail. Must include numbers, specific methods, and adaptation to constraints.")
-    var description: StepDescription
+    var description: PlaygroundStepDescription
 
     @Guide(
         description: "Estimated effort in minutes. Must be 25–90; if it needs more, split into parts.",
@@ -74,19 +74,4 @@ struct PlanStep: Identifiable {
     var suggestedDeadline: String
 }
 
-@Generable(
-    description: "Recommendation for which AI model to use based on goal complexity analysis."
-)
-struct ModelRecommendation {
-    @Guide(description: "Recommended model", .anyOf(["lightweight", "heavyweight"]))
-    var recommendedModel: String
-
-    @Guide(
-        description: "Confidence level in the recommendation (0-100).",
-        .range(0...100)
-    )
-    var confidence: Int
-
-    @Guide(description: "1-2 sentence explanation in same language as goal_description.")
-    var reasoning: String
-}
+// ModelRecommendation está definido en ComplexityRouter.swift

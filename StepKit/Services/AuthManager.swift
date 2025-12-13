@@ -23,8 +23,8 @@ final class AuthManager: AuthManaging {
     private let profileNameKey = "stepkit_profile_display_name"
     private let keychain: KeychainManager
     
-    init(keychain: KeychainManager = .shared) {
-        self.keychain = keychain
+    init(keychain: KeychainManager? = nil) {
+        self.keychain = keychain ?? KeychainManager.shared
         // Cargar token guardado al iniciar
         loadStoredAuth()
     }
