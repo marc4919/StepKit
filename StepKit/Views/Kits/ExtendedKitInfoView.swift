@@ -16,10 +16,6 @@ struct ExtendedKitInfoView: View {
     @State private var kitNotificationsEnabled: Bool = true
     @AppStorage("globalNotificationsEnabled") private var globalNotificationsEnabled = true
 
-    // Colores del tema
-    private let accentBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
-    private let accentHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
-    private let glowColor = Color(red: 0.2, green: 0.6, blue: 1.0)
 
     var body: some View {
         NavigationStack {
@@ -77,12 +73,12 @@ struct ExtendedKitInfoView: View {
                 HStack(spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(accentBlue.opacity(0.1))
+                            .fill(Color.accentColor.opacity(0.1))
                             .frame(width: 36, height: 36)
 
                         Image(systemName: "bell.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(accentBlue)
+                            .foregroundColor(.accentColor)
                     }
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -96,7 +92,7 @@ struct ExtendedKitInfoView: View {
                     }
                 }
             }
-            .tint(accentBlue)
+            .tint(.accentColor)
             .disabled(!globalNotificationsEnabled)
             .opacity(globalNotificationsEnabled ? 1 : 0.5)
             .padding(16)
@@ -253,8 +249,8 @@ struct ExtendedKitInfoView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                goalEntity.isCompleted ? Color.green.opacity(0.3) : accentHighlight.opacity(0.3),
-                                goalEntity.isCompleted ? Color.green.opacity(0.1) : accentBlue.opacity(0.1),
+                                goalEntity.isCompleted ? Color.green.opacity(0.3) : Color.accentHighlight.opacity(0.3),
+                                goalEntity.isCompleted ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1),
                                 .clear
                             ],
                             center: .center,
@@ -267,13 +263,9 @@ struct ExtendedKitInfoView: View {
                 // Círculo de fondo
                 Circle()
                     .fill(
-                        LinearGradient(
-                            colors: goalEntity.isCompleted
-                                ? [Color.green.opacity(0.2), Color.green.opacity(0.1)]
-                                : [accentHighlight.opacity(0.2), accentBlue.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        goalEntity.isCompleted
+                            ? LinearGradient.completedWithOpacity( 0.2)
+                            : LinearGradient.accentWithOpacity( 0.2)
                     )
                     .frame(width: 64, height: 64)
 
@@ -282,8 +274,8 @@ struct ExtendedKitInfoView: View {
                     .font(.system(size: 28, weight: .medium))
                     .foregroundStyle(
                         goalEntity.isCompleted
-                            ? LinearGradient(colors: [.green, .green.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                            : LinearGradient(colors: [accentHighlight, accentBlue], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            ? LinearGradient.completedGradient
+                            : LinearGradient.accentGradient
                     )
             }
 
@@ -314,7 +306,7 @@ struct ExtendedKitInfoView: View {
                 value: "\(Int(goalEntity.computedProgress * 100))%",
                 label: "Progreso",
                 icon: "chart.pie.fill",
-                color: goalEntity.isCompleted ? .green : accentBlue
+                color: goalEntity.isCompleted ? .green : .accentColor
             )
 
             // Pasos completados
@@ -371,7 +363,7 @@ struct ExtendedKitInfoView: View {
                 // Horizonte
                 infoRow(
                     icon: "hourglass",
-                    iconColor: accentBlue,
+                    iconColor: .accentColor,
                     title: "Horizonte",
                     value: "\(goalEntity.horizonDays) días",
                     showDivider: goalEntity.dueDate != nil
@@ -410,12 +402,12 @@ struct ExtendedKitInfoView: View {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(accentBlue.opacity(0.1))
+                    .fill(Color.accentColor.opacity(0.1))
                     .frame(width: 36, height: 36)
 
                 Image(systemName: typeIcon(for: goalEntity.metaType))
                     .font(.system(size: 16))
-                    .foregroundColor(accentBlue)
+                    .foregroundColor(.accentColor)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -481,7 +473,7 @@ struct ExtendedKitInfoView: View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.subheadline.weight(.medium))
-                .foregroundColor(accentBlue)
+                .foregroundColor(.accentColor)
 
             Text(title)
                 .font(.headline)

@@ -14,9 +14,6 @@ struct KitView: View {
     let steps: [Step]
     @Binding var selectedStep: Step?
     
-    // Colores del tema
-    private let accentBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
-    private let accentHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
     
     var body: some View {
         List(selection: $selectedStep) {
@@ -38,7 +35,7 @@ struct KitView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "list.bullet")
                         .font(.subheadline.weight(.medium))
-                        .foregroundColor(accentBlue)
+                        .foregroundColor(.accentColor)
                     
                     Text("Pasos")
                         .font(.subheadline)
@@ -63,7 +60,7 @@ struct KitView: View {
                     // Mostrar info extendida
                 } label: {
                     Image(systemName: "info.circle")
-                        .foregroundColor(accentBlue)
+                        .foregroundColor(.accentColor)
                 }
             }
         }
@@ -78,8 +75,8 @@ struct KitView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                goal.isCompleted ? Color.green.opacity(0.2) : accentHighlight.opacity(0.2),
-                                goal.isCompleted ? Color.green.opacity(0.05) : accentBlue.opacity(0.05),
+                                goal.isCompleted ? Color.green.opacity(0.2) : Color.accentHighlight.opacity(0.2),
+                                goal.isCompleted ? Color.green.opacity(0.05) : Color.accentColor.opacity(0.05),
                                 .clear
                             ],
                             center: .center,
@@ -88,20 +85,20 @@ struct KitView: View {
                         )
                     )
                     .frame(width: 80, height: 80)
-                
+
                 Circle()
                     .stroke(
-                        goal.isCompleted ? Color.green.opacity(0.15) : accentBlue.opacity(0.15),
+                        goal.isCompleted ? Color.green.opacity(0.15) : Color.accentColor.opacity(0.15),
                         lineWidth: 5
                     )
                     .frame(width: 60, height: 60)
-                
+
                 Circle()
                     .trim(from: 0, to: goal.progress)
                     .stroke(
                         goal.isCompleted
-                            ? LinearGradient(colors: [.green, .green.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                            : LinearGradient(colors: [accentHighlight, accentBlue], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            ? LinearGradient.completedGradient
+                            : LinearGradient.accentGradient,
                         style: StrokeStyle(lineWidth: 5, lineCap: .round)
                     )
                     .frame(width: 60, height: 60)
@@ -115,7 +112,7 @@ struct KitView: View {
                     Text("\(Int(goal.progress * 100))%")
                         .font(.callout)
                         .fontWeight(.bold)
-                        .foregroundColor(accentBlue)
+                        .foregroundColor(.accentColor)
                 }
             }
             
@@ -129,7 +126,7 @@ struct KitView: View {
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle")
                     .font(.caption)
-                    .foregroundColor(accentBlue)
+                    .foregroundColor(.accentColor)
                 
                 Text("\(steps.filter { $0.isCompleted }.count) de \(steps.count) completados")
                     .font(.caption)
@@ -137,7 +134,7 @@ struct KitView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(accentBlue.opacity(0.1))
+            .background(Color.accentColor.opacity(0.1))
             .clipShape(Capsule())
         }
         .frame(maxWidth: .infinity)
@@ -150,7 +147,7 @@ struct KitView: View {
             // Indicador de paso
             ZStack {
                 Circle()
-                    .fill(step.isCompleted ? Color.green.opacity(0.1) : accentBlue.opacity(0.1))
+                    .fill(step.isCompleted ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1))
                     .frame(width: 40, height: 40)
                 
                 if step.isCompleted {
@@ -161,7 +158,7 @@ struct KitView: View {
                     Text("\(index)")
                         .font(.subheadline)
                         .fontWeight(.bold)
-                        .foregroundColor(accentBlue)
+                        .foregroundColor(.accentColor)
                 }
             }
             

@@ -27,20 +27,6 @@ struct StepKitApp: App {
         ])
     }
 
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            GoalEntity.self,
-            StepEntity.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
     var body: some Scene {
         WindowGroup {
             Group {
@@ -68,7 +54,7 @@ struct StepKitApp: App {
                             // Inicializar sync si no existe
                             if syncService == nil {
                                 let service = SyncService(authManager: authManager)
-                                service.configure(with: sharedModelContainer.mainContext)
+                                service.configure(with: PersistenceController.shared.container.mainContext)
                                 syncService = service
 
                                 let manager = SyncManager(syncService: service)
@@ -97,6 +83,6 @@ struct StepKitApp: App {
         .environment(authManager)
         .environment(\.apiClient, APIClient())
         .environment(\.syncManager, syncManager)
-        .modelContainer(sharedModelContainer)
+        .modelContainer(PersistenceController.shared.container)
     }
 }

@@ -153,9 +153,9 @@ struct CalendarUIView: UIViewRepresentable {
             return 0
         }
 
-        // Colores de la app
-        private let stepColor = UIColor(red: 0.55, green: 0.82, blue: 1.0, alpha: 1.0)      // accentHighlight
-        private let deadlineColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)  // accentBlue
+        // Colores de la app (usando UIColor centralizado)
+        private var stepColor: UIColor { .uiAccentHighlight }
+        private var deadlineColor: UIColor { parent.accentColor }
 
         // Indicador de steps (puntos azul claro según cantidad)
         private func createStepsIndicator(count: Int) -> UIView {

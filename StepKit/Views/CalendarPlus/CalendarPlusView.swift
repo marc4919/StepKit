@@ -47,10 +47,6 @@ struct CalendarPlusView: View {
     // Tip
     private let createKitTip = CreateKitFromCalendarTip()
 
-    // Colores del tema
-    private let accentBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
-    private let accentHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
-    private let glowColor = Color(red: 0.2, green: 0.6, blue: 1.0)
 
     // Kits del día seleccionado
     private var goalsForSelectedDate: [GoalEntity] {
@@ -152,7 +148,7 @@ struct CalendarPlusView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: GoalNavigation.self) { nav in
                 if let goalEntity = goalEntities.first(where: { $0.id == nav.id }) {
-                    GoalDetailView(goalEntity: goalEntity)
+                    KitDetailView(kitEntity: goalEntity)
                 }
             }
             .navigationDestination(for: StepNavigation.self) { nav in
@@ -180,7 +176,7 @@ struct CalendarPlusView: View {
                 selectedDate: $selectedDate,
                 stepsPerDay: stepsPerDay,
                 deadlinesPerDay: deadlinesPerDay,
-                accentColor: UIColor(accentBlue)
+                accentColor: UIColor.tintColor
             )
             .frame(height: 450)
 
@@ -189,7 +185,7 @@ struct CalendarPlusView: View {
                 Spacer()
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(accentHighlight)
+                        .fill(Color.accentHighlight)
                         .frame(width: 6, height: 6)
                     Text("Pasos")
                         .font(.caption2)
@@ -197,7 +193,7 @@ struct CalendarPlusView: View {
                 }
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(accentBlue)
+                        .fill(Color.accentColor)
                         .frame(width: 6, height: 6)
                     Text("Deadline")
                         .font(.caption2)
@@ -220,7 +216,7 @@ struct CalendarPlusView: View {
             HStack {
                 Image(systemName: "checklist")
                     .font(.subheadline)
-                    .foregroundStyle(accentBlue)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("Pasos del día")
                     .font(.subheadline)
@@ -234,7 +230,7 @@ struct CalendarPlusView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(accentBlue)
+                    .background(Color.accentColor)
                     .clipShape(Capsule())
             }
 
@@ -255,7 +251,7 @@ struct CalendarPlusView: View {
                                 .font(.caption2)
                         }
                         .font(.caption)
-                        .foregroundStyle(accentBlue)
+                        .foregroundStyle(Color.accentColor)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 4)
                     }
@@ -347,7 +343,7 @@ struct CalendarPlusView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "flag.fill")
                             .font(.subheadline)
-                            .foregroundStyle(accentBlue)
+                            .foregroundStyle(Color.accentColor)
 
                         Text("Deadlines")
                             .font(.headline)
@@ -368,7 +364,7 @@ struct CalendarPlusView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(accentBlue)
+                        .background(Color.accentColor)
                         .clipShape(Capsule())
                 }
             }
@@ -404,13 +400,7 @@ struct CalendarPlusView: View {
         VStack(spacing: 12) {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 36))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [accentHighlight.opacity(0.6), accentBlue.opacity(0.4)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .foregroundStyle(LinearGradient.accentWithOpacity( 0.6))
 
             Text("Sin kits para este día")
                 .font(.subheadline)
@@ -431,17 +421,13 @@ struct CalendarPlusView: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .stroke(accentBlue.opacity(0.2), lineWidth: 3)
+                        .stroke(Color.accentColor.opacity(0.2), lineWidth: 3)
                         .frame(width: 44, height: 44)
 
                     Circle()
                         .trim(from: 0, to: progress)
                         .stroke(
-                            LinearGradient(
-                                colors: [accentHighlight, accentBlue],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
+                            LinearGradient.accentGradient,
                             style: StrokeStyle(lineWidth: 3, lineCap: .round)
                         )
                         .frame(width: 44, height: 44)
@@ -450,7 +436,7 @@ struct CalendarPlusView: View {
                     Text("\(Int(progress * 100))%")
                         .font(.caption2)
                         .fontWeight(.semibold)
-                        .foregroundColor(accentBlue)
+                        .foregroundColor(.accentColor)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -489,7 +475,7 @@ struct CalendarPlusView: View {
             ZStack {
                 // Fondo circular mínimo para que el glassEffect tenga forma
                 Circle()
-                    .fill(accentBlue.opacity(0.15))
+                    .fill(Color.accentColor.opacity(0.15))
 
                 // Ícono blanco
                 Image(systemName: "plus")
@@ -497,12 +483,12 @@ struct CalendarPlusView: View {
                     .foregroundColor(.white)
             }
             .frame(width: 56, height: 56, alignment: .center)
-            .glassEffect(.regular.tint(accentBlue).interactive(), in: Circle())
+            .glassEffect(.regular.tint(.accentColor).interactive(), in: Circle())
             .overlay(
                 Circle()
-                    .stroke(accentHighlight.opacity(0.5), lineWidth: 0.5)
+                    .stroke(Color.accentHighlight.opacity(0.5), lineWidth: 0.5)
             )
-            .shadow(color: glowColor.opacity(0.3), radius: 12, x: 0, y: 6)
+            .glowShadow(opacity: 0.3, radius: 12, y: 6)
         }
         .buttonStyle(.plain)
         .popoverTip(createKitTip, arrowEdge: .bottom)

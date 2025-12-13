@@ -17,8 +17,6 @@ struct KitAnnotationsView: View {
     @State private var annotations: [String] = []
     @FocusState private var isTextFieldFocused: Bool
 
-    private let accentBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
-    private let accentHighlight = Color(red: 0.55, green: 0.82, blue: 1.0)
 
     var body: some View {
         NavigationStack {
@@ -70,7 +68,7 @@ struct KitAnnotationsView: View {
                     .foregroundStyle(
                         newAnnotation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                             ? Color(.tertiaryLabel)
-                            : accentBlue
+                            : Color.accentColor
                     )
             }
             .disabled(newAnnotation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -86,13 +84,7 @@ struct KitAnnotationsView: View {
 
             Image(systemName: "note.text")
                 .font(.system(size: 48))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [accentHighlight.opacity(0.6), accentBlue.opacity(0.4)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .foregroundStyle(LinearGradient.accentWithOpacity( 0.6))
 
             Text("Sin anotaciones")
                 .font(.headline)
@@ -125,7 +117,7 @@ struct KitAnnotationsView: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "note.text")
                 .font(.subheadline)
-                .foregroundColor(accentBlue)
+                .foregroundColor(.accentColor)
                 .padding(.top, 2)
 
             Text(annotation)
