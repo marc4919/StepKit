@@ -2,7 +2,7 @@
 //  KitCreationStreamingProgress.swift
 //  StepKit
 //
-//  Extracted from FastCreatorView.swift
+//  Extracted from KitCreatorView.swift
 //
 
 import SwiftUI
@@ -86,7 +86,7 @@ struct KitCreationStreamingProgress: View {
                 if streamingState.isComplete {
                     Image(systemName: "checkmark")
                         .font(.system(size: 32, weight: .semibold))
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                 } else {
                     Image(systemName: "sparkles")
                         .font(.system(size: 28, weight: .medium))
@@ -97,7 +97,7 @@ struct KitCreationStreamingProgress: View {
 
             Text(streamingState.statusText)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .animation(.easeInOut, value: streamingState.statusText)
         }
         .padding(.vertical, 8)
@@ -109,13 +109,13 @@ struct KitCreationStreamingProgress: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .bold()
+                .foregroundStyle(.primary)
 
             if let kpi = streamingState.kpi {
                 Text(kpi)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
 
             if let days = streamingState.horizonDays {
@@ -125,7 +125,7 @@ struct KitCreationStreamingProgress: View {
                     Text("\(days) días")
                         .font(.caption)
                 }
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -141,7 +141,7 @@ struct KitCreationStreamingProgress: View {
             HStack {
                 Image(systemName: "list.bullet")
                     .font(.subheadline.weight(.medium))
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("Pasos")
                     .font(.headline)
@@ -151,12 +151,12 @@ struct KitCreationStreamingProgress: View {
                 if let total = streamingState.totalSteps {
                     Text("\(streamingState.steps.count) de \(total)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
 
             VStack(spacing: 12) {
-                ForEach(Array(streamingState.steps.enumerated()), id: \.offset) { index, step in
+                ForEach(streamingState.steps.enumerated(), id: \.offset) { index, step in
                     StreamingStepRowPreview(step: step, index: index)
                         .transition(.asymmetric(
                             insertion: .opacity.combined(with: .move(edge: .trailing)).combined(with: .scale(scale: 0.95)),
@@ -181,7 +181,7 @@ struct KitCreationStreamingProgress: View {
 
             Text("Generando siguiente paso...")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
@@ -202,7 +202,7 @@ struct KitCreationStreamingProgress: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(LinearGradient.accentGradient)
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .glowShadow(opacity: 0.3, radius: 8, y: 4)
             }
@@ -214,7 +214,7 @@ struct KitCreationStreamingProgress: View {
                 Text("Descartar kit")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             .padding(.top, 4)
         }
@@ -227,11 +227,11 @@ struct KitCreationStreamingProgress: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 40))
-                .foregroundColor(.orange)
+                .foregroundStyle(.orange)
 
             Text(streamingState.error ?? "Ha ocurrido un error")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
             Button {
@@ -242,7 +242,7 @@ struct KitCreationStreamingProgress: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Color(.secondarySystemGroupedBackground))
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)

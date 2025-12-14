@@ -10,7 +10,7 @@ struct FastCreatorDateRow: View {
             Text("Fecha objetivo")
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
 
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -24,18 +24,18 @@ struct FastCreatorDateRow: View {
 
                         Image(systemName: "calendar")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                     }
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(date, format: .dateTime.weekday(.wide))
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.primary)
+                            .foregroundStyle(.primary)
 
                         Text(date, format: .dateTime.day().month(.wide).year())
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
 
                     Spacer()
@@ -43,7 +43,7 @@ struct FastCreatorDateRow: View {
                     Image(systemName: "chevron.right")
                         .font(.caption)
                         .fontWeight(.semibold)
-                        .foregroundColor(Color(.tertiaryLabel))
+                        .foregroundStyle(Color(.tertiaryLabel))
                 }
                 .padding(12)
                 .background(Color(.systemBackground))
@@ -62,10 +62,10 @@ struct FastCreatorDateRow: View {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.caption)
-                        .foregroundColor(.orange)
+                        .foregroundStyle(.orange)
                     Text("La fecha seleccionada ya ha pasado")
                         .font(.caption)
-                        .foregroundColor(.orange)
+                        .foregroundStyle(.orange)
                 }
                 .padding(.top, 4)
             }

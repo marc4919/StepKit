@@ -2,7 +2,7 @@
 //  KitCreationFormContent.swift
 //  StepKit
 //
-//  Extracted from FastCreatorView.swift
+//  Extracted from KitCreatorView.swift
 //
 
 import SwiftUI
@@ -14,7 +14,7 @@ struct KitCreationFormContent: View {
     @Binding var dailyAvailableTime: String
     @Binding var showingDateSheet: Bool
     
-    var focusedField: FocusState<FastCreatorField?>.Binding
+    var focusedField: FocusState<KitCreatorField?>.Binding
     let todayStart: Date
     let isDateInPast: Bool
     let isFormValid: Bool
@@ -27,8 +27,8 @@ struct KitCreationFormContent: View {
                     headerSection
                     
                     // Main Info Section
-                    FastCreatorSection(icon: "doc.text", title: "Información Principal") {
-                        FastCreatorTextField(
+                    KitCreatorSection(icon: "doc.text", title: "Información Principal") {
+                        KitCreatorTextField(
                             title: "¿Qué quieres conseguir?",
                             placeholder: "Ej: Aprender a tocar guitarra, correr una maratón...",
                             text: $description,
@@ -36,7 +36,7 @@ struct KitCreationFormContent: View {
                             fieldType: .description
                         )
                         
-                        FastCreatorDateRow(
+                        KitCreatorDateRow(
                             date: $dueDate,
                             isDateInPast: isDateInPast,
                             onTap: {
@@ -47,13 +47,13 @@ struct KitCreationFormContent: View {
                     }
                     
                     // Additional Info Section
-                    FastCreatorSection(icon: "lightbulb", title: "Información Adicional") {
+                    KitCreatorSection(icon: "lightbulb", title: "Información Adicional") {
                         Text("Opcional pero nos ayuda a personalizar tu plan")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .padding(.top, -8)
                         
-                        FastCreatorTextField(
+                        KitCreatorTextField(
                             title: "Tiempo disponible",
                             placeholder: "Ej: 2 horas / semana, 30 min al día, solo fines de semana…",
                             text: $dailyAvailableTime,
@@ -61,7 +61,7 @@ struct KitCreationFormContent: View {
                             fieldType: .time
                         )
                         
-                        FastCreatorTextField(
+                        KitCreatorTextField(
                             title: "¿Qué obstáculos anticipas?",
                             placeholder: "Ej: Poco tiempo, falta de experiencia...",
                             text: $inconveniences,
@@ -112,11 +112,11 @@ struct KitCreationFormContent: View {
             Text("Define tu objetivo")
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
 
             Text("Solo necesitamos algunos detalles")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 20)
         }
@@ -141,7 +141,7 @@ struct KitCreationFormContent: View {
                     ? LinearGradient.accentGradient
                     : LinearGradient.disabledGradient
             )
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .shadow(color: isFormValid ? Color.accentColor.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
         }

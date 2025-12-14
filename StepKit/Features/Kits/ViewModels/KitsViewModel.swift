@@ -17,7 +17,7 @@ final class KitsViewModel {
     var navigationPath: [UUID] = []
     
     // MARK: - UI State
-    var showingFastCreator = false
+    var showingKitCreator = false
     var animateEmptyState = false
     var showingDeleteConfirmation = false
     var kitEntityToDelete: GoalEntity?

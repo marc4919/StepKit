@@ -12,7 +12,7 @@ struct FastCreatorTextField: View {
             Text(title)
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
 
             TextField(placeholder, text: $text, axis: .vertical)
                 .lineLimit(2...4)

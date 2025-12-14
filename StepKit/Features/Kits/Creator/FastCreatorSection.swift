@@ -10,11 +10,11 @@ struct FastCreatorSection<Content: View>: View {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.subheadline.weight(.medium))
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 Text(title)
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
             }
 
             VStack(alignment: .leading, spacing: 20) {

@@ -74,7 +74,7 @@ struct DateSelectionSheet: View {
 
                         Text(daysRemaining == 0 ? "Hoy" : "En \(daysRemaining) días")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
 
@@ -110,7 +110,7 @@ struct DateSelectionSheet: View {
                                 ? AnyShapeStyle(LinearGradient(colors: [Color.accentHighlight, Color.accentColor], startPoint: .topLeading, endPoint: .bottomTrailing))
                                 : AnyShapeStyle(Color(.secondarySystemGroupedBackground))
                         )
-                        .foregroundColor(isSelected ? .white : .primary)
+                        .foregroundStyle(isSelected ? .white : .primary)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)

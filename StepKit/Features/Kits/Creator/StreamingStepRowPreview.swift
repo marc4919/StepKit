@@ -2,7 +2,7 @@
 //  StreamingStepRowPreview.swift
 //  StepKit
 //
-//  Extracted from FastCreatorView.swift
+//  Extracted from KitCreatorView.swift
 //
 
 import SwiftUI
@@ -20,19 +20,19 @@ struct StreamingStepRowPreview: View {
 
                 Text("\(index + 1)")
                     .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.accentColor)
+                    .bold()
+                    .foregroundStyle(Color.accentColor)
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(step.stepTitle)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Text(step.description.short)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(2)
 
                 HStack(spacing: 8) {
@@ -41,7 +41,7 @@ struct StreamingStepRowPreview: View {
                     Label(step.effortLevel, systemImage: "flame")
                 }
                 .font(.caption2)
-                .foregroundColor(Color(.tertiaryLabel))
+                .foregroundStyle(Color(.tertiaryLabel))
             }
 
             Spacer()
