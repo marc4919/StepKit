@@ -41,11 +41,11 @@ struct SearchEmptyStateView: View {
                 Text("Encuentra tus kits y pasos")
                     .font(.title3)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Text("Escribe en el buscador para empezar")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 

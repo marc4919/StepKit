@@ -60,11 +60,11 @@ struct AssistantConversationView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Asistente IA")
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                 
                 Text("Pregúntame lo que necesites")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             
             Spacer()
@@ -102,7 +102,7 @@ struct AssistantConversationView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 4) {
-                    ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
+                    ForEach(messages.enumerated(), id: \.element.id) { index, message in
                         let isFirstInGroup = isFirstMessageInGroup(at: index)
                         let isLastInGroup = isLastMessageInGroup(at: index)
                         
@@ -148,7 +148,8 @@ struct AssistantConversationView: View {
             }
             .onChange(of: isInputFocused.wrappedValue) { _, focused in
                 if focused {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(150))
                         scrollToBottom(proxy: proxy)
                     }
                 }
@@ -208,7 +209,8 @@ struct AssistantConversationView: View {
     }
     
     private func scrollToBottom(proxy: ScrollViewProxy) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(50))
             withAnimation(.easeOut(duration: 0.2)) {
                 proxy.scrollTo("bottom", anchor: .bottom)
             }

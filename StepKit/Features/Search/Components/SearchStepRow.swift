@@ -22,7 +22,7 @@ struct SearchStepRow: View {
 
                     Image(systemName: "list.bullet")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                 }
 
                 // Contenido
@@ -30,12 +30,12 @@ struct SearchStepRow: View {
                     Text(step.stepTitle)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                         .lineLimit(2)
 
                     Text(step.description.short)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .lineLimit(2)
 
                     // Tiempo estimado
@@ -56,7 +56,7 @@ struct SearchStepRow: View {
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(Color(.tertiaryLabel))
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
             .appCardStyle(backgroundColor: Color(.secondarySystemGroupedBackground))
         }

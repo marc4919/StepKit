@@ -12,25 +12,11 @@ struct SignInView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AuthManager.self) private var authManager
     @Environment(\.apiClient) private var apiClient
+    @State private var isSigningIn = false
+    @State private var errorMessage: String?
     
-    @State private var viewModel: SignInViewModel?
     
     var body: some View {
-        Group {
-            if let viewModel {
-                content(viewModel: viewModel)
-            } else {
-                ProgressView()
-            }
-        }
-        .task {
-            if viewModel == nil {
-                viewModel = SignInViewModel(authService: apiClient, authManager: authManager)
-            }
-        }
-    }
-    
-    private func content(viewModel: SignInViewModel) -> some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 Spacer()
@@ -46,7 +32,7 @@ struct SignInView: View {
                 Spacer()
                 
                 // Sign in section
-                signInSection(viewModel: viewModel)
+                signInSection
                     .padding(.horizontal, 24)
                     .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? 16 : 32)
             }
@@ -98,12 +84,12 @@ struct SignInView: View {
             VStack(spacing: 8) {
                 Text("StepKit")
                     .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .bold()
+                    .foregroundStyle(.primary)
                 
                 Text("Alcanza tus objetivos, paso a paso")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -142,14 +128,14 @@ struct SignInView: View {
                 
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(color)
+                    .foregroundStyle(color)
             }
             .frame(width: 36)
             
             Text(title)
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
             
             Spacer()
@@ -158,16 +144,16 @@ struct SignInView: View {
     }
     
     // MARK: - Sign In Section
-    private func signInSection(viewModel: SignInViewModel) -> some View {
+    private var signInSection: some View {
         VStack(spacing: 20) {
             // Mensaje de error
-            if let error = viewModel.errorMessage {
+            if let error = errorMessage {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundStyle(.orange)
                     Text(error)
                         .font(.caption)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                         .multilineTextAlignment(.leading)
                 }
                 .padding(.horizontal, 16)
@@ -184,22 +170,27 @@ struct SignInView: View {
             SignInWithAppleButton(.signIn) { request in
                 request.requestedScopes = [.fullName, .email]
             } onCompletion: { result in
-                viewModel.handleSignInResult(result)
+                switch result {
+                case .success(let authorization):
+                    handleSuccessfulLogin(with: authorization)
+                case .failure(let error):
+                    handleLoginError(with: error)
+                }
             }
             .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
             .frame(height: 54)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .disabled(viewModel.isSigningIn)
-            .opacity(viewModel.isSigningIn ? 0.6 : 1.0)
+            .disabled(isSigningIn)
+            .opacity(isSigningIn ? 0.6 : 1.0)
             
             // Indicador de carga
-            if viewModel.isSigningIn {
+            if isSigningIn {
                 HStack(spacing: 8) {
                     ProgressView()
                         .scaleEffect(0.8)
                     Text("Autenticando...")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.top, 4)
             }
@@ -208,27 +199,139 @@ struct SignInView: View {
             VStack(spacing: 4) {
                 Text("Al continuar, aceptas nuestros")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                 
                 HStack(spacing: 4) {
                     Button("Términos de uso") {
                         // Abrir términos
                     }
                     .font(.caption)
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
                     
                     Text("y")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     
                     Button("Política de privacidad") {
                         // Abrir privacidad
                     }
                     .font(.caption)
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
                 }
             }
         }
+    }
+    
+    // MARK: - Auth Handlers
+    private func handleSuccessfulLogin(with authorization: ASAuthorization) {
+        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let identityTokenData = appleIDCredential.identityToken,
+              let identityToken = String(data: identityTokenData, encoding: .utf8) else {
+            // Mensaje más humano cuando falla la obtención del token
+            errorMessage = "No hemos podido completar el inicio de sesión con Apple. Vuelve a intentarlo."
+            return
+        }
+        
+        // Intentar construir un nombre de usuario amigable a partir de los datos de Apple
+        let displayNameFromApple: String = {
+            if let fullName = appleIDCredential.fullName {
+                let components = [fullName.givenName, fullName.familyName]
+                    .compactMap { $0 }
+                    .joined(separator: " ")
+                if !components.trimmingCharacters(in: .whitespaces).isEmpty {
+                    return components
+                }
+            }
+            // Fallback: usar el email la primera vez que Apple lo proporciona
+            if let email = appleIDCredential.email,
+               !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return email
+            }
+            return ""
+        }()
+        
+        isSigningIn = true
+        errorMessage = nil
+        
+        Task {
+            do {
+                let response = try await apiClient.signInWithApple(identityToken: identityToken)
+                
+                await MainActor.run {
+                    authManager.saveAuth(token: response.token, user: response.user)
+                    
+                    if !displayNameFromApple.isEmpty {
+                        authManager.updateDisplayName(displayNameFromApple)
+                    }
+                    
+                    isSigningIn = false
+                    // La navegación se manejará automáticamente por el estado de isAuthenticated en StepKitApp
+                }
+            } catch {
+                await MainActor.run {
+                    isSigningIn = false
+                    // Mostrar mensaje amigable según el tipo de error
+                    errorMessage = userFriendlyAuthErrorMessage(from: error)
+                    print("Error al autenticar: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func handleLoginError(with error: Error) {
+        // Errores provenientes directamente de Sign in with Apple (por ejemplo, cancelado)
+        errorMessage = userFriendlyAuthErrorMessage(from: error)
+        print("Could not authenticate: \(error.localizedDescription)")
+    }
+    
+    // MARK: - Error Mapping
+    
+    /// Convierte errores técnicos (Apple, red, backend) en mensajes claros para el usuario.
+    private func userFriendlyAuthErrorMessage(from error: Error) -> String {
+        // Errores de tu API
+        if let apiError = error as? APIError, let description = apiError.errorDescription {
+            return description
+        }
+        
+        // Errores de Sign in with Apple
+        if let authError = error as? ASAuthorizationError {
+            switch authError.code {
+            case .canceled:
+                return "Has cancelado el inicio de sesión."
+            case .failed:
+                return "No se pudo completar el inicio de sesión con Apple. Inténtalo de nuevo."
+            case .invalidResponse:
+                return "La respuesta de Apple no ha sido válida. Vuelve a intentarlo en unos minutos."
+            case .notHandled:
+                return "La solicitud de inicio de sesión no se ha podido procesar. Inténtalo de nuevo."
+            case .notInteractive:
+                return "La solicitud de inicio de sesión requiere interacción del usuario."
+            case .matchedExcludedCredential:
+                return "La credencial está excluida. Inténtalo de nuevo."
+            case .credentialImport:
+                return "Error al importar la credencial. Inténtalo de nuevo."
+            case .credentialExport:
+                return "Error al exportar la credencial. Inténtalo de nuevo."
+            case .preferSignInWithApple:
+                return "Se prefiere usar Sign in with Apple. Inténtalo de nuevo."
+            case .deviceNotConfiguredForPasskeyCreation:
+                return "El dispositivo no está configurado para crear passkeys. Verifica la configuración."
+            case .unknown:
+                return "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde."
+            @unknown default:
+                // Casos futuros no conocidos en tiempo de compilación
+                return "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde."
+            }
+        }
+        
+        // Errores de red típicos
+        let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain {
+            return "No se ha podido conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo."
+        }
+        
+        // Fallback genérico
+        return "No se pudo completar la autenticación. Inténtalo de nuevo más tarde."
     }
 }
 

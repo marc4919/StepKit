@@ -45,7 +45,7 @@ struct OnboardingView: View {
 
             // TabView con slides
             TabView(selection: $currentPage) {
-                ForEach(Array(slides.enumerated()), id: \.offset) { index, slide in
+                ForEach(slides.enumerated(), id: \.offset) { index, slide in
                     OnboardingSlide(
                         icon: slide.icon,
                         title: slide.title,
@@ -98,7 +98,7 @@ struct OnboardingView: View {
                         .font(.subheadline.weight(.semibold))
                 }
             }
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
@@ -134,13 +134,13 @@ struct OnboardingSlide: View {
             VStack(spacing: 16) {
                 Text(title)
                     .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .bold()
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
 
                 Text(subtitle)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .padding(.horizontal, 32)

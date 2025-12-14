@@ -23,7 +23,7 @@ struct QuickActionSuggestions: View {
     let onActionTapped: (QuickAction) -> Void
     
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             HStack(spacing: 10) {
                 ForEach(actions) { action in
                     Button {
@@ -47,7 +47,7 @@ struct QuickActionSuggestions: View {
                             Capsule()
                                 .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
                         )
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -55,6 +55,7 @@ struct QuickActionSuggestions: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
+        .scrollIndicators(.hidden)
         .background(Color(.secondarySystemGroupedBackground).opacity(0.5))
     }
 }
