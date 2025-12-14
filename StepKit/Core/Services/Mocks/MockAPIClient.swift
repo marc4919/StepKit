@@ -49,7 +49,7 @@ final class MockAPIClient: APIClientProtocol {
     
     func signInWithApple(identityToken: String) async throws -> AuthResponse {
         // Simular latencia de red
-        try await Task.sleep(nanoseconds: UInt64(simulatedDelay * 1_000_000_000))
+        try await Task.sleep(for: .milliseconds(Int(simulatedDelay * 1000)))
         
         // Si hay un error configurado, lanzarlo
         if let error = loginError {
@@ -75,7 +75,7 @@ final class MockAPIClient: APIClientProtocol {
     
     func generateKit(from request: AIGenerateKitRequest, token: String) async throws -> AIGenerateKitResponse {
         // Simular latencia de red (la IA tarda más)
-        try await Task.sleep(nanoseconds: UInt64(kitGenerationDelay * 1_000_000_000))
+        try await Task.sleep(for: .milliseconds(Int(kitGenerationDelay * 1000)))
         
         // Si hay un error configurado, lanzarlo
         if let error = kitGenerationError {
@@ -93,7 +93,9 @@ final class MockAPIClient: APIClientProtocol {
     
     func authenticatedRequest(path: String, method: String, token: String) -> URLRequest {
         // Para mocks, simplemente crear un request básico
-        let url = URL(string: "https://mock-api.example.com\(path)")!
+        guard let url = URL(string: "https://mock-api.example.com\(path)") else {
+            fatalError("Invalid mock URL")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -112,7 +114,7 @@ final class MockAPIClient: APIClientProtocol {
             Task {
                 do {
                     // Simular delay inicial
-                    try await Task.sleep(nanoseconds: 300_000_000) // 300ms
+                    try await Task.sleep(for: .milliseconds(300)) // 300ms
                     
                     // Si debe fallar
                     if let error = customError {
@@ -144,7 +146,7 @@ final class MockAPIClient: APIClientProtocol {
                     )
                     continuation.yield(kitInfoEvent)
                     
-                    try await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                    try await Task.sleep(for: .milliseconds(200)) // 200ms
                     
                     // Crear y emitir steps uno a uno
                     let mockSteps = MockDataGenerators.createMockStreamSteps(goalDescription: goalDescription, dueDate: dueDate)
@@ -166,7 +168,7 @@ final class MockAPIClient: APIClientProtocol {
                         )
                         continuation.yield(stepEvent)
                         
-                        try await Task.sleep(nanoseconds: 300_000_000) // 300ms entre steps
+                        try await Task.sleep(for: .milliseconds(300)) // 300ms entre steps
                     }
                     
                     // Emitir done con el kit completo
@@ -214,7 +216,7 @@ final class MockAPIClient: APIClientProtocol {
     
     func verifySubscription(transactionId: String, token: String) async throws -> VerifySubscriptionResponse {
         // Simular latencia
-        try await Task.sleep(nanoseconds: UInt64(simulatedDelay * 1_000_000_000))
+        try await Task.sleep(for: .milliseconds(Int(simulatedDelay * 1000)))
         
         if let error = verifySubscriptionError {
             throw error

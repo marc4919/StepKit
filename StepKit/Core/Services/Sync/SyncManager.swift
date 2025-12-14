@@ -38,7 +38,7 @@ final class SyncManager {
     private let minSyncInterval: TimeInterval = 60
 
     /// Tiempo de debounce para agrupar cambios rápidos (milisegundos)
-    private let debounceDelay: UInt64 = 500_000_000  // 500ms
+    private let debounceDelay: Duration = .milliseconds(500)
 
     /// Intervalo de sincronización periódica (segundos)
     private let periodicSyncInterval: TimeInterval = 300  // 5 minutos
@@ -88,7 +88,7 @@ final class SyncManager {
 
         debounceTask = Task {
             // Esperar el tiempo de debounce
-            try? await Task.sleep(nanoseconds: debounceDelay)
+            try? await Task.sleep(for: .milliseconds(500))
 
             // Verificar que no fue cancelado
             guard !Task.isCancelled else { return }
@@ -173,7 +173,7 @@ final class SyncManager {
         periodicSyncTask = Task {
             while !Task.isCancelled {
                 // Esperar el intervalo
-                try? await Task.sleep(nanoseconds: UInt64(periodicSyncInterval) * 1_000_000_000)
+                try? await Task.sleep(for: .seconds(300))
 
                 // Verificar que no fue cancelado
                 guard !Task.isCancelled else { break }
