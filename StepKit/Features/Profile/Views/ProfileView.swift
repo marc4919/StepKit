@@ -105,17 +105,17 @@ struct ProfileView: View {
 
                     Image(systemName: "bell.fill")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.orange)
+                        .foregroundStyle(.orange)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Notificaciones")
                         .font(.body)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
 
                     Text("Recordatorios de pasos pendientes")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -148,12 +148,12 @@ struct ProfileView: View {
                             
                             Image(systemName: "rectangle.portrait.and.arrow.right")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.red)
+                                .foregroundStyle(.red)
                         }
                         
                         Text("Cerrar sesión")
                             .font(.body)
-                            .foregroundColor(.red)
+                            .foregroundStyle(.red)
                         
                         Spacer()
                     }
@@ -175,11 +175,11 @@ struct ProfileView: View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.subheadline.weight(.medium))
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
 
             Text(title)
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
         }
     }
 

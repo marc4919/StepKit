@@ -25,19 +25,19 @@ struct SettingsRow: View {
 
                         Image(systemName: icon)
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(iconColor)
+                            .foregroundStyle(iconColor)
                     }
 
                     Text(title)
                         .font(.body)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
 
                     Spacer()
 
                     Image(systemName: "chevron.right")
                         .font(.caption)
                         .fontWeight(.semibold)
-                        .foregroundColor(Color(.tertiaryLabel))
+                        .foregroundStyle(Color(.tertiaryLabel))
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)

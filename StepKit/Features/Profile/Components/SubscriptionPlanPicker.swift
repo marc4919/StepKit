@@ -37,23 +37,23 @@ struct PlanOptionCard: View {
                         Text(plan.title)
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundColor(.primary)
+                            .foregroundStyle(.primary)
 
                         if plan.isPopular {
                             Text("POPULAR")
                                 .font(.caption2)
-                                .fontWeight(.bold)
+                                .bold()
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(LinearGradient.accentGradient)
-                                .foregroundColor(.white)
+                                .foregroundStyle(.white)
                                 .clipShape(Capsule())
                         }
                     }
 
                     Text(plan.billingInfo(from: product))
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
@@ -62,13 +62,13 @@ struct PlanOptionCard: View {
                     Text(plan.displayPrice(from: product))
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
 
                     if let savings = plan.savings {
                         Text(savings)
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundColor(.green)
+                            .foregroundStyle(.green)
                     }
                 }
             }
@@ -104,11 +104,11 @@ struct SubscriptionPlanPicker: View {
             HStack(spacing: 8) {
                 Image(systemName: "creditcard")
                     .font(.subheadline.weight(.medium))
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("Elige tu plan")
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
             }
 
             if isLoading {

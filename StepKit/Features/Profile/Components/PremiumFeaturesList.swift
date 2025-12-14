@@ -26,25 +26,25 @@ struct FeatureBenefitRow: View {
 
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(iconColor)
+                        .foregroundStyle(iconColor)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
 
                     Text(description)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
                 Image(systemName: "checkmark")
                     .font(.caption.weight(.bold))
-                    .foregroundColor(.green)
+                    .foregroundStyle(.green)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -65,11 +65,11 @@ struct PremiumFeaturesList: View {
             HStack(spacing: 8) {
                 Image(systemName: "star.fill")
                     .font(.subheadline.weight(.medium))
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("Beneficios Premium")
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
             }
 
             VStack(spacing: 0) {

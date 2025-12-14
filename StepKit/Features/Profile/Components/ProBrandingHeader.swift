@@ -45,12 +45,12 @@ struct ProBrandingHeader: View {
             VStack(spacing: 6) {
                 Text("StepKit Pro")
                     .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .bold()
+                    .foregroundStyle(.primary)
 
                 Text("Desbloquea todo el potencial")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 16)

@@ -28,12 +28,12 @@ struct ProfileHeaderSection: View {
             VStack(spacing: 4) {
                 Text(displayName)
                     .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .bold()
+                    .foregroundStyle(.primary)
 
                 Text(displayTier)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 16)

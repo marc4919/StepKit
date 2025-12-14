@@ -16,11 +16,11 @@ struct PrivacyPolicyView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("Políticas de Privacidad")
                         .font(.title2)
-                        .fontWeight(.bold)
+                        .bold()
                     
                     Text("Última actualización: Octubre 2024")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     
                     VStack(alignment: .leading, spacing: 16) {
                         policySection(number: "1", title: "Información que recopilamos", content: "Recopilamos información que nos proporcionas directamente, como tus objetivos, progreso y preferencias dentro de la aplicación.")
@@ -44,7 +44,7 @@ struct PrivacyPolicyView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
                 }
             }
         }
@@ -58,7 +58,7 @@ struct PrivacyPolicyView: View {
             
             Text(content)
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)

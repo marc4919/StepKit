@@ -19,18 +19,18 @@ struct SubscriptionBanner: View {
 
                     Image(systemName: "crown.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(.yellow)
+                        .foregroundStyle(.yellow)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Desbloquea StepKit Pro")
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
 
                     Text("Accede a todas las funciones premium")
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.85))
+                        .foregroundStyle(.white.opacity(0.85))
                 }
 
                 Spacer()
@@ -38,7 +38,7 @@ struct SubscriptionBanner: View {
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundStyle(.white.opacity(0.7))
             }
             .padding(16)
             .background(LinearGradient.accentGradient)

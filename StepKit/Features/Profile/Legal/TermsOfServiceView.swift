@@ -16,11 +16,11 @@ struct TermsOfServiceView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("Términos de Uso de StepKit")
                         .font(.title2)
-                        .fontWeight(.bold)
+                        .bold()
                     
                     Text("Última actualización: Octubre 2024")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     
                     VStack(alignment: .leading, spacing: 16) {
                         termSection(number: "1", title: "Aceptación de los términos", content: "Al usar StepKit, aceptas estos términos de uso. Si no estás de acuerdo, no uses la aplicación.")
@@ -42,7 +42,7 @@ struct TermsOfServiceView: View {
                     Button("Cerrar") {
                         dismiss()
                     }
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
                 }
             }
         }
@@ -56,7 +56,7 @@ struct TermsOfServiceView: View {
             
             Text(content)
                 .font(.body)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
