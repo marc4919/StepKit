@@ -15,6 +15,8 @@ enum SlideAnimation {
 
 struct OnboardingView: View {
     @State private var currentPage = 0
+    @State private var showAIConsent = false
+    @Environment(AIConsentManager.self) private var consentManager
     var onComplete: () -> Void
 
 
@@ -40,43 +42,51 @@ struct OnboardingView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            // TabView con slides
-            TabView(selection: $currentPage) {
-                ForEach(slides.enumerated(), id: \.offset) { index, slide in
-                    OnboardingSlide(
-                        icon: slide.icon,
-                        title: slide.title,
-                        subtitle: slide.subtitle,
-                        animation: slide.animation,
-                        isVisible: currentPage == index
-                    )
-                    .tag(index)
+        Group {
+            if showAIConsent {
+                AIConsentView {
+                    onComplete()
                 }
+            } else {
+                VStack(spacing: 0) {
+                    Spacer()
+
+                    // TabView con slides
+                    TabView(selection: $currentPage) {
+                        ForEach(slides.enumerated(), id: \.offset) { index, slide in
+                            OnboardingSlide(
+                                icon: slide.icon,
+                                title: slide.title,
+                                subtitle: slide.subtitle,
+                                animation: slide.animation,
+                                isVisible: currentPage == index
+                            )
+                            .tag(index)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .always))
+                    .indexViewStyle(.page(backgroundDisplayMode: .always))
+
+                    Spacer()
+
+                    // Botón de acción
+                    actionButton
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 48)
+                }
+                .background(
+                    LinearGradient(
+                        colors: [
+                            Color(.systemBackground),
+                            Color.accentColor.opacity(0.05)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+                )
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
-
-            Spacer()
-
-            // Botón de acción
-            actionButton
-                .padding(.horizontal, 24)
-                .padding(.bottom, 48)
         }
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(.systemBackground),
-                    Color.accentColor.opacity(0.05)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
     }
 
     private var actionButton: some View {
@@ -86,7 +96,10 @@ struct OnboardingView: View {
                     currentPage += 1
                 }
             } else {
-                onComplete()
+                // Mostrar pantalla de consentimiento de IA antes de completar
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showAIConsent = true
+                }
             }
         } label: {
             HStack(spacing: 8) {
@@ -205,9 +218,11 @@ struct OnboardingSlide: View {
 // MARK: - Previews
 #Preview("Slide 1") {
     OnboardingView(onComplete: {})
+        .environment(AIConsentManager())
 }
 
 #Preview("Dark Mode") {
     OnboardingView(onComplete: {})
         .preferredColorScheme(.dark)
+        .environment(AIConsentManager())
 }

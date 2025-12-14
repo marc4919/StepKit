@@ -25,6 +25,7 @@ struct KitCreatorView: View {
     @Environment(\.apiClient) private var apiClient: any APIClientProtocol
     @Environment(\.syncManager) private var syncManager
     @Environment(AuthManager.self) private var authManager
+    @Environment(AIConsentManager.self) private var consentManager
 
     // Callback cuando se crea un kit exitosamente
     var onKitCreated: ((Goal) -> Void)?
@@ -39,6 +40,7 @@ struct KitCreatorView: View {
     // MARK: - View State
     
     @FocusState private var focusedField: KitCreatorField?
+    @State private var showAIConsent = false
     
     // MARK: - Initialization
     
@@ -79,6 +81,12 @@ struct KitCreatorView: View {
                     isDateInPast: vm.isDateInPast,
                     isFormValid: vm.isFormValid,
                     onCreate: {
+                        // Verificar consentimiento de IA antes de crear
+                        guard consentManager.hasConsent else {
+                            showAIConsent = true
+                            return
+                        }
+                        
                         if let token = authManager.token {
                             vm.createKit(token: token)
                         } else {
@@ -128,6 +136,12 @@ struct KitCreatorView: View {
             Text(vm.errorMessage ?? "Ha ocurrido un error inesperado")
         }
         .interactiveDismissDisabled(vm.viewState != .form)
+        .fullScreenCover(isPresented: $showAIConsent) {
+            AIConsentView {
+                showAIConsent = false
+            }
+            .interactiveDismissDisabled()
+        }
         .onAppear {
              // Dependencies are injected via .task
         }
@@ -158,6 +172,7 @@ struct KitCreatorView: View {
 #Preview {
     KitCreatorView()
         .environment(AuthManager())
+        .environment(AIConsentManager())
         .environment(\.apiClient, MockAPIClient())
         .modelContainer(for: [GoalEntity.self, StepEntity.self], inMemory: true)
 }

@@ -19,6 +19,8 @@ struct SubscriptionView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showSuccessAlert = false
+    @State private var showingTermsOfService = false
+    @State private var showingPrivacyPolicy = false
 
 
     var body: some View {
@@ -64,6 +66,12 @@ struct SubscriptionView: View {
             }
         } message: {
             Text("Tu suscripcion a StepKit Pro esta activa. Disfruta de todas las funciones premium.")
+        }
+        .sheet(isPresented: $showingTermsOfService) {
+            TermsOfServiceView()
+        }
+        .sheet(isPresented: $showingPrivacyPolicy) {
+            PrivacyPolicyView()
         }
     }
 
@@ -303,16 +311,35 @@ struct SubscriptionView: View {
 
     // MARK: - Legal Text
     private var legalText: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             Text("7 dias gratis, despues \(selectedPlan.displayPrice(from: selectedProduct))")
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.primary)
-
+            
             Text("Cancela en cualquier momento desde la App Store")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+            
+            HStack(spacing: 4) {
+                Button("Términos de uso") {
+                    showingTermsOfService = true
+                }
+                .font(.caption)
+                .foregroundColor(.accentColor)
+                
+                Text("y")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Button("Política de privacidad") {
+                    showingPrivacyPolicy = true
+                }
+                .font(.caption)
+                .foregroundColor(.accentColor)
+            }
+            .padding(.top, 4)
         }
     }
 

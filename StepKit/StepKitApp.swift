@@ -13,8 +13,10 @@ import UserNotifications
 @main
 struct StepKitApp: App {
     @State private var authManager = AuthManager()
+    @State private var aiConsentManager = AIConsentManager()
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showOnboarding = false
+    @State private var showAIConsent = false
     @Environment(\.scenePhase) private var scenePhase
 
     // Sync
@@ -39,9 +41,18 @@ struct StepKitApp: App {
                             }
                             .interactiveDismissDisabled()
                         }
+                        .fullScreenCover(isPresented: $showAIConsent) {
+                            AIConsentView {
+                                showAIConsent = false
+                            }
+                            .interactiveDismissDisabled()
+                        }
                         .onAppear {
                             if !hasCompletedOnboarding {
                                 showOnboarding = true
+                            } else if !aiConsentManager.hasConsent {
+                                // Si completó onboarding pero no tiene consentimiento, mostrarlo
+                                showAIConsent = true
                             }
                         }
                         .task {
@@ -81,6 +92,7 @@ struct StepKitApp: App {
             }
         }
         .environment(authManager)
+        .environment(aiConsentManager)
         .environment(\.apiClient, APIClient())
         .environment(\.syncManager, syncManager)
         .modelContainer(PersistenceController.shared.container)

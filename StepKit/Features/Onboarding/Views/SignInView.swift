@@ -14,6 +14,8 @@ struct SignInView: View {
     @Environment(\.apiClient) private var apiClient
     @State private var isSigningIn = false
     @State private var errorMessage: String?
+    @State private var showingTermsOfService = false
+    @State private var showingPrivacyPolicy = false
     
     
     var body: some View {
@@ -50,6 +52,12 @@ struct SignInView: View {
             )
             .ignoresSafeArea()
         )
+        .sheet(isPresented: $showingTermsOfService) {
+            TermsOfServiceView()
+        }
+        .sheet(isPresented: $showingPrivacyPolicy) {
+            PrivacyPolicyView()
+        }
     }
     
     // MARK: - Branding Section
@@ -203,7 +211,7 @@ struct SignInView: View {
                 
                 HStack(spacing: 4) {
                     Button("Términos de uso") {
-                        // Abrir términos
+                        showingTermsOfService = true
                     }
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
@@ -213,7 +221,7 @@ struct SignInView: View {
                         .foregroundColor(.secondary)
                     
                     Button("Política de privacidad") {
-                        // Abrir privacidad
+                        showingPrivacyPolicy = true
                     }
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
