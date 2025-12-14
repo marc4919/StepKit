@@ -57,6 +57,14 @@ extension LinearGradient {
         )
     }
 
+    /// Pending/revert state gradient (orange tones)
+    /// Used for buttons that revert completed state to pending
+    static let pendingGradient = LinearGradient(
+        colors: [Color.orange, Color.orange.opacity(0.8)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
     // MARK: - Premium Gradients
 
     /// Premium feature gradient (gold → orange)

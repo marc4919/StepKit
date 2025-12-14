@@ -10,7 +10,7 @@ import SwiftUI
 /// Contenedor principal del estado vacío con animación y mensaje
 struct EmptyStateContainerView: View {
     @Binding var animateEmptyState: Bool
-    @Binding var showingFastCreator: Bool
+    @Binding var showingKitCreator: Bool
     
     
     var body: some View {
@@ -41,7 +41,7 @@ struct EmptyStateContainerView: View {
                     subtitle: "Crea tu primer kit y empieza a avanzar",
                     buttonTitle: "Crear kit"
                 ) {
-                    showingFastCreator = true
+                    showingKitCreator = true
                 }
                 
                 Spacer()
@@ -51,7 +51,7 @@ struct EmptyStateContainerView: View {
         .background(Color(.systemBackground))
         .contentShape(Rectangle())
         .onTapGesture {
-            showingFastCreator = true
+            showingKitCreator = true
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -64,7 +64,7 @@ struct EmptyStateContainerView: View {
 #Preview {
     EmptyStateContainerView(
         animateEmptyState: .constant(true),
-        showingFastCreator: .constant(false)
+        showingKitCreator: .constant(false)
     )
 }
 

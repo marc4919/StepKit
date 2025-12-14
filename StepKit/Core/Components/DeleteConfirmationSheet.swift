@@ -36,7 +36,7 @@ struct DeleteConfirmationSheet: View {
 
                 Image(systemName: "trash")
                     .font(.system(size: 28, weight: .medium))
-                    .foregroundColor(.red)
+                    .foregroundStyle(.red)
             }
             .padding(.top, 24)
 
@@ -49,14 +49,14 @@ struct DeleteConfirmationSheet: View {
                 if !title.isEmpty {
                     Text(title)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                 }
 
                 Text("Esta acción no se puede deshacer")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .padding(.top, 4)
             }
 
@@ -68,7 +68,7 @@ struct DeleteConfirmationSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(Color.red)
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
@@ -78,7 +78,7 @@ struct DeleteConfirmationSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(Color(.secondarySystemGroupedBackground))
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
             }
