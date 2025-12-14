@@ -196,20 +196,14 @@ struct StepAdaptationCard: View {
         HStack(spacing: 14) {
             Image(systemName: "sparkles")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.orange, .yellow],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .foregroundStyle(LinearGradient.accentGradient)
                 .frame(width: 28)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Adaptado para ti")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(.orange)
+                    .foregroundStyle(Color.accentColor)
                     .textCase(.uppercase)
                     .tracking(0.5)
                 
@@ -221,13 +215,11 @@ struct StepAdaptationCard: View {
             Spacer()
         }
         .padding(16)
-        .background(
+        .background(LinearGradient.accentWithOpacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.orange.opacity(0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(Color.orange.opacity(0.2), lineWidth: 1)
-                )
+                .stroke(LinearGradient.accentWithOpacity(0.2), lineWidth: 1)
         )
     }
 }

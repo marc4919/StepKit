@@ -17,7 +17,7 @@ struct KitsListCompactView: View {
     
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
-            KitsListContentView(
+            KitsListBodyView(
                 activeKits: activeKits,
                 completedKits: completedKits,
                 viewModel: viewModel,
@@ -29,8 +29,8 @@ struct KitsListCompactView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $viewModel.showingFastCreator) {
-            FastCreatorView { newKit in
+        .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
+            KitCreatorView { newKit in
                 viewModel.navigationPath.append(newKit.id)
             }
         }

@@ -39,12 +39,12 @@ struct StepMetadataCard: View {
                 HStack(spacing: 14) {
                     Image(systemName: effortIcon)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(effortColor)
+                        .foregroundStyle(effortColor)
                         .frame(width: 24)
                     
                     Text("Nivel de esfuerzo")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     
                     Spacer()
                     
@@ -71,19 +71,19 @@ struct StepMetadataCard: View {
             HStack(spacing: 14) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(iconColor)
+                    .foregroundStyle(iconColor)
                     .frame(width: 24)
                 
                 Text(title)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                 
                 Spacer()
                 
                 Text(value)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
@@ -102,7 +102,7 @@ struct StepMetadataCard: View {
             Text(effortLevelText)
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(effortColor)
+                .foregroundStyle(effortColor)
             
             HStack(spacing: 3) {
                 ForEach(0..<3, id: \.self) { index in

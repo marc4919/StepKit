@@ -40,12 +40,12 @@ struct KitRowView: View {
                 Text(kitEntity.title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .lineLimit(2)
 
                 Text(kitEntity.kpi)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
 
                 // Fecha objetivo
@@ -56,7 +56,7 @@ struct KitRowView: View {
                         Text(dueDate, format: .dateTime.day().month(.abbreviated))
                             .font(.caption)
                     }
-                    .foregroundColor(isDueSoon ? .orange : .secondary)
+                    .foregroundStyle(isDueSoon ? .orange : .secondary)
                 }
             }
 
@@ -100,12 +100,12 @@ struct KitRowView: View {
             if isCompleted {
                 Image(systemName: "checkmark")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.green)
+                .foregroundStyle(.green)
             } else {
                 Text("\(Int(progress * 100))")
                     .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.accentColor)
+                    .bold()
+                    .foregroundStyle(Color.accentColor)
             }
         }
     }

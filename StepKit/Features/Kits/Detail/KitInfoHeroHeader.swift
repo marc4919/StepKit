@@ -55,13 +55,13 @@ struct KitInfoHeroHeader: View {
             VStack(spacing: 6) {
                 Text(title)
                     .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .bold()
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
 
                 Text(kpi)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 16)

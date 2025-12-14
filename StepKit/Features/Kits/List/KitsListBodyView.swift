@@ -1,5 +1,5 @@
 //
-//  KitsListContentView.swift
+//  KitsListBodyView.swift
 //  StepKit
 //
 //  Created by StepKit Refactor.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct KitsListContentView: View {
+struct KitsListBodyView: View {
     let activeKits: [GoalEntity]
     let completedKits: [GoalEntity]
     @Bindable var viewModel: KitsViewModel
@@ -18,7 +18,7 @@ struct KitsListContentView: View {
             if activeKits.isEmpty && completedKits.isEmpty {
                 EmptyStateContainerView(
                     animateEmptyState: $viewModel.animateEmptyState,
-                    showingFastCreator: $viewModel.showingFastCreator
+                    showingKitCreator: $viewModel.showingKitCreator
                 )
                 .navigationBarTitleDisplayMode(.inline)
             } else {
@@ -58,12 +58,12 @@ struct KitsListContentView: View {
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
-                            viewModel.showingFastCreator = true
+                            viewModel.showingKitCreator = true
                             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         } label: {
                             Image(systemName: "plus")
                                 .fontWeight(.semibold)
-                                .foregroundColor(.accentColor)
+                                .foregroundStyle(Color.accentColor)
                         }
                     }
                 }

@@ -27,7 +27,7 @@ struct KitView: View {
             
             // Pasos del kit
             Section {
-                ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                ForEach(steps.enumerated(), id: \.element.id) { index, step in
                     stepRow(step, index: index + 1)
                         .tag(step)
                 }
@@ -35,7 +35,7 @@ struct KitView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "list.bullet")
                         .font(.subheadline.weight(.medium))
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                     
                     Text("Pasos")
                         .font(.subheadline)
@@ -46,7 +46,7 @@ struct KitView: View {
                     Text("\(steps.count)")
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 .textCase(nil)
             }
@@ -60,7 +60,7 @@ struct KitView: View {
                     // Mostrar info extendida
                 } label: {
                     Image(systemName: "info.circle")
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                 }
             }
         }
@@ -107,30 +107,30 @@ struct KitView: View {
                 if goal.isCompleted {
                     Image(systemName: "checkmark")
                         .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.green)
+                        .foregroundStyle(.green)
                 } else {
                     Text("\(Int(goal.progress * 100))%")
                         .font(.callout)
-                        .fontWeight(.bold)
-                        .foregroundColor(.accentColor)
+                        .bold()
+                        .foregroundStyle(Color.accentColor)
                 }
             }
             
             // KPI
             Text(goal.kpi)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             
             // Contador de pasos
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle")
                     .font(.caption)
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
                 
                 Text("\(steps.filter { $0.isCompleted }.count) de \(steps.count) completados")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -153,12 +153,12 @@ struct KitView: View {
                 if step.isCompleted {
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.green)
+                        .foregroundStyle(.green)
                 } else {
                     Text("\(index)")
                         .font(.subheadline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.accentColor)
+                        .bold()
+                        .foregroundStyle(Color.accentColor)
                 }
             }
             
@@ -166,12 +166,12 @@ struct KitView: View {
                 Text(step.stepTitle)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .lineLimit(2)
                 
                 Text(step.description.short)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(2)
                 
                 // Tiempo estimado
@@ -192,7 +192,7 @@ struct KitView: View {
             Image(systemName: "chevron.right")
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(Color(.tertiaryLabel))
+                .foregroundStyle(Color(.tertiaryLabel))
         }
         .padding(.vertical, 8)
         .contentShape(Rectangle())

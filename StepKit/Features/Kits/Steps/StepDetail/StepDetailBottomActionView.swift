@@ -46,12 +46,12 @@ struct StepDetailBottomActionView: View {
                     .font(.body)
                     .fontWeight(.semibold)
             }
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
                 stepEntity.isCompleted
-                    ? LinearGradient.disabledGradient
+                    ? LinearGradient.pendingGradient
                     : LinearGradient.accentGradient
             )
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))

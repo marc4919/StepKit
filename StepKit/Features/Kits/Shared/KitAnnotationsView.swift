@@ -88,11 +88,11 @@ struct KitAnnotationsView: View {
 
             Text("Sin anotaciones")
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
 
             Text("Agrega notas personales para este kit")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
             Spacer()
@@ -104,7 +104,7 @@ struct KitAnnotationsView: View {
     private var annotationsList: some View {
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(Array(annotations.enumerated()), id: \.offset) { index, annotation in
+                ForEach(annotations.enumerated(), id: \.offset) { index, annotation in
                     annotationCard(annotation, index: index)
                 }
             }
@@ -117,12 +117,12 @@ struct KitAnnotationsView: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "note.text")
                 .font(.subheadline)
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
                 .padding(.top, 2)
 
             Text(annotation)
                 .font(.subheadline)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Button {
@@ -130,7 +130,7 @@ struct KitAnnotationsView: View {
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.subheadline)
-                    .foregroundColor(Color(.tertiaryLabel))
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
         }
         .padding(14)

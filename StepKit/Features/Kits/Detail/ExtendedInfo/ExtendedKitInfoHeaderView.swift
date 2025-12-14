@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct KitHeaderView: View {
+struct ExtendedKitInfoHeaderView: View {
     let goalEntity: GoalEntity
     
     var body: some View {

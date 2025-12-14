@@ -2,7 +2,7 @@
 //  KitProgressStatsCard.swift
 //  StepKit
 //
-//  Extracted from ExtendedKitInfoView.swift
+//  Extracted from KitInfoSheetView.swift
 //
 
 import SwiftUI
@@ -51,17 +51,17 @@ struct KitProgressStatsCard: View {
 
                 Image(systemName: icon)
                     .font(.system(size: 18))
-                    .foregroundColor(color)
+                    .foregroundStyle(color)
             }
 
             Text(value)
                 .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .bold()
+                .foregroundStyle(.primary)
 
             Text(label)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)

@@ -22,7 +22,7 @@ struct ExtendedKitInfoView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     // Header con icono
-                    KitHeaderView(goalEntity: goalEntity)
+                    ExtendedKitInfoHeaderView(goalEntity: goalEntity)
 
                     // Estadísticas rápidas
                     KitStatsView(goalEntity: goalEntity)
@@ -82,7 +82,7 @@ struct ExtendedKitInfoView: View {
 
                         Image(systemName: "bell.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                     }
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -92,7 +92,7 @@ struct ExtendedKitInfoView: View {
 
                         Text("Recordar antes de cada paso")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -113,7 +113,7 @@ struct ExtendedKitInfoView: View {
                     Text("Activa las notificaciones globales en tu Perfil")
                         .font(.caption)
                 }
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .padding(.horizontal, 4)
             }
         }
@@ -146,7 +146,7 @@ struct ExtendedKitInfoView: View {
                     .fontWeight(.medium)
                 Spacer()
             }
-            .foregroundColor(.red)
+            .foregroundStyle(.red)
             .padding(.vertical, 14)
             .background(Color(.secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -182,11 +182,11 @@ struct ExtendedKitInfoView: View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.subheadline.weight(.medium))
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
 
             Text(title)
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
         }
         .padding(.horizontal, 4)
     }

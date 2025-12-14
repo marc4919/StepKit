@@ -36,19 +36,19 @@ struct KitDetailView: View {
                     showingAnnotations = true
                 } label: {
                     Image(systemName: "note.text.badge.plus")
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                 }
 
                 Button {
                     showingExtendedInfo = true
                 } label: {
                     Image(systemName: "info.circle")
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                 }
             }
         }
         .sheet(isPresented: $showingExtendedInfo) {
-            ExtendedKitInfoView(goalEntity: kitEntity)
+            KitInfoSheetView(goalEntity: kitEntity)
         }
         .sheet(isPresented: $showingAnnotations) {
             KitAnnotationsView(goal: kitEntity.toGoal())
@@ -67,18 +67,18 @@ struct KitDetailView: View {
             HStack(spacing: 8) {
                 Image(systemName: "list.bullet")
                     .font(.subheadline.weight(.medium))
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("Pasos")
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Spacer()
 
                 Text("\(kitEntity.steps.count)")
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color(.tertiarySystemFill))
@@ -91,11 +91,11 @@ struct KitDetailView: View {
             } else {
                 // Lista de pasos
                 VStack(spacing: 0) {
-                    ForEach(Array(sortedSteps.enumerated()), id: \.element.id) { index, stepEntity in
+                    ForEach(sortedSteps.enumerated(), id: \.element.id) { index, stepEntity in
                         NavigationLink {
                             StepDetailView(stepEntity: stepEntity, stepNumber: index + 1)
                         } label: {
-                            KitStepRowView(stepEntity: stepEntity, index: index + 1, isLast: index == sortedSteps.count - 1)
+                            StepRowView(stepEntity: stepEntity, index: index + 1, isLast: index == sortedSteps.count - 1)
                         }
                         .buttonStyle(.plain)
                     }
@@ -115,7 +115,7 @@ struct KitDetailView: View {
             
             Text("No hay pasos definidos")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)

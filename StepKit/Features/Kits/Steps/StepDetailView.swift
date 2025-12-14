@@ -46,7 +46,7 @@ struct StepDetailView: View {
                     }
                 } label: {
                     Image(systemName: stepEntity.notificationEnabled ? "bell.fill" : "bell.slash")
-                        .foregroundColor(stepEntity.notificationEnabled ? .accentColor : .secondary)
+                        .foregroundStyle(stepEntity.notificationEnabled ? Color.accentColor : .secondary)
                         .symbolEffect(.bounce, value: stepEntity.notificationEnabled)
                 }
             }

@@ -17,7 +17,7 @@ struct KitsListRegularView: View {
     
     var body: some View {
         NavigationSplitView {
-            KitsListContentView(
+            KitsListBodyView(
                 activeKits: activeKits,
                 completedKits: completedKits,
                 viewModel: viewModel,
@@ -51,8 +51,8 @@ struct KitsListRegularView: View {
                 )
             }
         }
-        .fullScreenCover(isPresented: $viewModel.showingFastCreator) {
-            FastCreatorView { newKit in
+        .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
+            KitCreatorView { newKit in
                 // Buscar el GoalEntity correspondiente
                 if let entity = kitEntities.first(where: { $0.id == newKit.id }) {
                     viewModel.selectedKitEntity = entity

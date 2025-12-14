@@ -26,7 +26,8 @@ struct StepCompletionToggleButton: View {
                 iconRotation += isCompleted ? -360 : 360
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(100))
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     buttonScale = 1.0
                 }
@@ -43,12 +44,12 @@ struct StepCompletionToggleButton: View {
                     .font(.body)
                     .fontWeight(.semibold)
             }
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
                 isCompleted
-                    ? LinearGradient.disabledGradient
+                    ? LinearGradient.pendingGradient
                     : LinearGradient.accentGradient
             )
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))

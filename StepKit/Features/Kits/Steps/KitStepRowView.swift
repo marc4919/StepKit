@@ -18,12 +18,12 @@ struct KitStepRowView: View {
                     if stepEntity.isCompleted {
                         Image(systemName: "checkmark")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.green)
+                            .foregroundStyle(.green)
                     } else {
                         Text("\(index)")
                             .font(.subheadline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.accentColor)
+                            .bold()
+                            .foregroundStyle(Color.accentColor)
                     }
                 }
 
@@ -31,12 +31,12 @@ struct KitStepRowView: View {
                     Text(stepEntity.stepTitle)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                         .lineLimit(2)
 
                     Text(stepEntity.descriptionShort)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .lineLimit(2)
 
                     // Tiempo estimado y fecha
@@ -67,7 +67,7 @@ struct KitStepRowView: View {
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(Color(.tertiaryLabel))
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)

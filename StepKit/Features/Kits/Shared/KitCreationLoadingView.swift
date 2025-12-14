@@ -95,7 +95,7 @@ private struct LoadingSpinner: View {
             // Icono central
             Image(systemName: "sparkles")
                 .font(.system(size: 22, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
                 .scaleEffect(pulseScale)
         }
         .onAppear {
@@ -129,11 +129,11 @@ private struct LoadingText: View {
             Text("Creando tu kit")
                 .font(.title2)
                 .fontWeight(.semibold)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
             
             Text(tips[currentTipIndex])
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .animation(.easeInOut(duration: 0.3), value: currentTipIndex)
         }
         .onAppear {

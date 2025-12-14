@@ -57,12 +57,12 @@ struct KitDetailHeaderView: View {
                 if kitEntity.isCompleted {
                     Image(systemName: "checkmark")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.green)
+                    .foregroundStyle(.green)
                 } else {
                     Text("\(displayedPercentage)%")
                     .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(.accentColor)
+                    .bold()
+                    .foregroundStyle(Color.accentColor)
                     .contentTransition(.numericText())
                     .animation(.easeInOut(duration: 0.7), value: displayedPercentage)
                 }
@@ -72,13 +72,13 @@ struct KitDetailHeaderView: View {
             VStack(spacing: 8) {
                 Text(kitEntity.planTitle)
                     .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .bold()
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
 
                 Text(kitEntity.kpi)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 16)
@@ -87,11 +87,11 @@ struct KitDetailHeaderView: View {
             HStack(spacing: 6) {
                 Image(systemName: "list.bullet")
                     .font(.caption)
-                    .foregroundColor(.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("\(kitEntity.steps.filter { $0.isCompleted }.count) de \(kitEntity.steps.count) pasos completados")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
