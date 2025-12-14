@@ -6,12 +6,9 @@
 //
 
 import Foundation
-import OSLog
 
 /// Cliente HTTP real para comunicarse con el backend
 final class APIClient: APIClientProtocol {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "StepKit", category: "APIClient")
-    
     /// URL base del servidor según el entorno
     #if DEBUG
     // TODO: Cambiar a localhost:8080 para desarrollo local
@@ -41,9 +38,7 @@ final class APIClient: APIClientProtocol {
     }
     
     func generateKit(from request: AIGenerateKitRequest, token: String) async throws -> AIGenerateKitResponse {
-        guard let url = URL(string: "\(baseURL)/ai/chat-sync") else {
-            throw APIError.invalidURL
-        }
+        let url = URL(string: "\(baseURL)/ai/chat-sync")!
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -62,7 +57,7 @@ final class APIClient: APIClientProtocol {
         // Debug: imprimir respuesta del servidor
         #if DEBUG
         if let jsonString = String(data: data, encoding: .utf8) {
-            logger.debug("📥 Backend response: \(jsonString.prefix(2000))")
+            print("📥 Backend response: \(jsonString.prefix(2000))")
         }
         #endif
         
@@ -72,23 +67,25 @@ final class APIClient: APIClientProtocol {
 
             do {
                 let response = try decoder.decode(AIGenerateKitResponse.self, from: data)
-                logger.info("✅ Kit decodificado: \(response.kit?.title ?? "sin título"), steps: \(response.kit?.steps?.count ?? 0)")
+                #if DEBUG
+                print("✅ Kit decodificado: \(response.kit?.title ?? "sin título"), steps: \(response.kit?.steps?.count ?? 0)")
+                #endif
                 return response
             } catch {
-                logger.error("❌ Error de decodificación: \(error.localizedDescription)")
                 #if DEBUG
+                print("❌ Error de decodificación: \(error)")
                 if let decodingError = error as? DecodingError {
                     switch decodingError {
                     case .keyNotFound(let key, let context):
-                        logger.error("   Key not found: \(key.stringValue) at \(context.codingPath)")
+                        print("   Key not found: \(key.stringValue) at \(context.codingPath)")
                     case .typeMismatch(let type, let context):
-                        logger.error("   Type mismatch: expected \(type) at \(context.codingPath)")
+                        print("   Type mismatch: expected \(type) at \(context.codingPath)")
                     case .valueNotFound(let type, let context):
-                        logger.error("   Value not found: \(type) at \(context.codingPath)")
+                        print("   Value not found: \(type) at \(context.codingPath)")
                     case .dataCorrupted(let context):
-                        logger.error("   Data corrupted: \(context.debugDescription) at \(context.codingPath)")
+                        print("   Data corrupted: \(context)")
                     @unknown default:
-                        logger.error("   Unknown decoding error")
+                        print("   Unknown decoding error")
                     }
                 }
                 #endif
@@ -107,9 +104,7 @@ final class APIClient: APIClientProtocol {
     }
     
     func authenticatedRequest(path: String, method: String = "GET", token: String) -> URLRequest {
-        guard let url = URL(string: "\(baseURL)\(path)") else {
-            fatalError("Invalid URL: \(baseURL)\(path)")
-        }
+        let url = URL(string: "\(baseURL)\(path)")!
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -126,9 +121,7 @@ final class APIClient: APIClientProtocol {
     ///   - token: JWT token de autenticación
     /// - Returns: Estado actual del servidor + conflictos detectados
     func syncBatch(_ request: SyncBatchRequest, token: String) async throws -> SyncBatchResponse {
-        guard let url = URL(string: "\(baseURL)/sync/batch") else {
-            throw APIError.invalidURL
-        }
+        let url = URL(string: "\(baseURL)/sync/batch")!
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -140,7 +133,7 @@ final class APIClient: APIClientProtocol {
 
         #if DEBUG
         if let bodyString = String(data: urlRequest.httpBody!, encoding: .utf8) {
-            logger.debug("📤 Sync request: \(bodyString.prefix(1000))")
+            print("📤 Sync request: \(bodyString.prefix(1000))")
         }
         #endif
 
@@ -152,7 +145,7 @@ final class APIClient: APIClientProtocol {
 
         #if DEBUG
         if let jsonString = String(data: data, encoding: .utf8) {
-            logger.debug("📥 Sync response (\(httpResponse.statusCode)): \(jsonString.prefix(1000))")
+            print("📥 Sync response (\(httpResponse.statusCode)): \(jsonString.prefix(1000))")
         }
         #endif
 
@@ -176,9 +169,7 @@ final class APIClient: APIClientProtocol {
     ///   - token: JWT authentication token
     /// - Returns: Verification response with updated tier and subscription info
     func verifySubscription(transactionId: String, token: String) async throws -> VerifySubscriptionResponse {
-        guard let url = URL(string: "\(baseURL)/subscription/verify") else {
-            throw APIError.invalidURL
-        }
+        let url = URL(string: "\(baseURL)/subscription/verify")!
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -210,16 +201,11 @@ final class APIClient: APIClientProtocol {
 
     func streamKitGeneration(from request: AIGenerateKitRequest, token: String) -> AsyncThrowingStream<AIChatStreamEvent, Error> {
         let baseURL = self.baseURL
-        // Capture logger for the closure
-        let logger = self.logger
 
         return AsyncThrowingStream { continuation in
             Task {
                 do {
-                    guard let url = URL(string: "\(baseURL)/ai/chat") else {
-                        continuation.finish(throwing: APIError.invalidURL)
-                        return
-                    }
+                    let url = URL(string: "\(baseURL)/ai/chat")!
                     var urlRequest = URLRequest(url: url)
                     urlRequest.httpMethod = "POST"
                     urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -256,7 +242,7 @@ final class APIClient: APIClientProtocol {
                     let eventStream = SSEParser.parse(bytes, as: AIChatStreamEvent.self)
                     for try await event in eventStream {
                         #if DEBUG
-                        logger.debug("✅ SSE Event: type=\(event.type), step=\(event.step != nil ? "present" : "nil")")
+                        print("✅ SSE Event: type=\(event.type), step=\(event.step != nil ? "present" : "nil")")
                         #endif
                         continuation.yield(event)
                     }

@@ -16,18 +16,18 @@ struct SectionHeaderView: View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.accentColor)
+                .foregroundColor(.accentColor)
 
             Text(title)
                 .font(.headline)
-                .foregroundStyle(.primary)
+                .foregroundColor(.primary)
 
             Spacer()
 
             Text("\(count)")
                 .font(.caption)
                 .fontWeight(.medium)
-                .foregroundStyle(.secondary)
+                .foregroundColor(.secondary)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
                 .background(Color.accentColor.opacity(0.1))

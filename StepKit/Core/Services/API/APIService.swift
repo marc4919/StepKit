@@ -72,7 +72,6 @@ enum APIError: Error, LocalizedError {
     case decodingError(Error)
     case premiumRequired
     case quotaExceeded
-    case invalidURL
     
     var errorDescription: String? {
         switch self {
@@ -90,8 +89,6 @@ enum APIError: Error, LocalizedError {
             return "Esta función requiere una suscripción premium"
         case .quotaExceeded:
             return "Has alcanzado el límite de uso mensual"
-        case .invalidURL:
-            return "URL inválida"
         }
     }
 }

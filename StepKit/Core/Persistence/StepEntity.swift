@@ -134,7 +134,6 @@ final class StepEntity {
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt
-        )
     }
 
     /// Actualiza la entidad desde un DTO del servidor

@@ -51,11 +51,11 @@ struct AIUsageIndicator: View {
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
                 .font(.subheadline)
-                .foregroundStyle(usageLevel.iconColor)
+                .foregroundColor(usageLevel.iconColor)
 
             Text("IA disponible este mes: \(remaining) / \(quota)")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundColor(.secondary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
@@ -68,16 +68,16 @@ struct AIUsageIndicator: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .font(.subheadline)
-                    .foregroundStyle(.gray)
+                    .foregroundColor(.gray)
 
                 Text("Has usado toda la ayuda IA de este mes")
                     .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .foregroundColor(.primary)
             }
 
             Text("Premium desbloquea acompanamiento continuo.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundColor(.secondary)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -158,12 +158,12 @@ struct AIUsageIndicatorCompact: View {
             HStack(spacing: 6) {
                 Image(systemName: "sparkles")
                     .font(.caption)
-                    .foregroundStyle(color)
+                    .foregroundColor(color)
 
                 Text("\(remaining)")
                     .font(.caption.monospacedDigit())
                     .fontWeight(.medium)
-                    .foregroundStyle(color)
+                    .foregroundColor(color)
 
                 // Mini progress bar
                 GeometryReader { geometry in
@@ -226,7 +226,7 @@ struct AIUsageIndicatorCompact: View {
         AIUsageIndicatorCompact(used: 100, quota: 20, isPremium: true)
         Text("Premium users don't see the indicator")
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundColor(.secondary)
     }
     .padding()
 }

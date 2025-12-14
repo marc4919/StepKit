@@ -74,7 +74,6 @@ struct StepSyncDTO: Codable {
     let createdAt: Date?
     let updatedAt: Date?
     let deletedAt: Date?
-
     /// Computed: el servidor usa deletedAt para Steps, no deleted
     var deleted: Bool {
         deletedAt != nil
