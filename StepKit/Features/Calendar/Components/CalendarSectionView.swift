@@ -15,7 +15,7 @@ struct CalendarSectionView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            CalendarUIView(
+            UIKitCalendarView(
                 selectedDate: $selectedDate,
                 stepsPerDay: stepsPerDay,
                 deadlinesPerDay: deadlinesPerDay,

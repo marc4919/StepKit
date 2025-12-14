@@ -33,7 +33,7 @@ struct CalendarStepsSectionView: View {
                 Text("\(steps.count)")
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(Color.accentColor)
@@ -100,7 +100,7 @@ struct CompactStepRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(step.stepTitle)
                     .font(.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 HStack(spacing: 8) {
@@ -131,7 +131,7 @@ struct CompactStepRow: View {
             Image(systemName: "chevron.right")
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(Color(.tertiaryLabel))
+                .foregroundStyle(Color(.tertiaryLabel))
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)

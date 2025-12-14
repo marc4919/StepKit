@@ -18,7 +18,7 @@ struct CalendarPlusView: View {
     private var goalEntities: [GoalEntity]
 
     @State private var selectedDate: Date = Date()
-    @State private var showingFastCreator = false
+    @State private var showingKitCreator = false
     @State private var navigationPath = NavigationPath()
     @State private var stepsExpanded = false
 
@@ -128,7 +128,7 @@ struct CalendarPlusView: View {
                     HStack {
                         Spacer()
                         CalendarFABButton(tip: createKitTip) {
-                            showingFastCreator = true
+                            showingKitCreator = true
                         }
                     }
                     .padding(.trailing, 20)
@@ -151,8 +151,8 @@ struct CalendarPlusView: View {
                     ContentUnavailableView("Paso no encontrado", systemImage: "exclamationmark.triangle")
                 }
             }
-            .fullScreenCover(isPresented: $showingFastCreator) {
-                FastCreatorView(
+            .fullScreenCover(isPresented: $showingKitCreator) {
+                KitCreatorView(
                     onKitCreated: { _ in },
                     initialDate: selectedDate
                 )

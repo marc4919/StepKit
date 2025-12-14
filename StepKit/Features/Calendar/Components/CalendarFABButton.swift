@@ -26,7 +26,7 @@ struct CalendarFABButton: View {
                 // Ícono blanco
                 Image(systemName: "plus")
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
             }
             .frame(width: 56, height: 56, alignment: .center)
             .glassEffect(.regular.tint(.accentColor).interactive(), in: Circle())

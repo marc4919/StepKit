@@ -34,12 +34,12 @@ struct CalendarKitsSectionView: View {
 
                         Text("Deadlines")
                             .font(.headline)
-                            .foregroundColor(.primary)
+                            .foregroundStyle(.primary)
                     }
 
                     Text(deadlineSubtitle)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
@@ -48,7 +48,7 @@ struct CalendarKitsSectionView: View {
                     Text("\(goals.count)")
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(Color.accentColor)
@@ -82,7 +82,7 @@ struct CalendarEmptyStateView: View {
 
             Text("Sin kits para este día")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
 
             Text("Pulsa + para crear uno")
                 .font(.caption)
@@ -123,19 +123,19 @@ struct CalendarKitRow: View {
                     Text("\(Int(progress * 100))%")
                         .font(.caption2)
                         .fontWeight(.semibold)
-                        .foregroundColor(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(goal.title)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
 
                     let pendingSteps = goal.steps.filter { !$0.isCompleted }.count
                     Text("\(pendingSteps) paso\(pendingSteps == 1 ? "" : "s") pendiente\(pendingSteps == 1 ? "" : "s")")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
@@ -143,7 +143,7 @@ struct CalendarKitRow: View {
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(Color(.tertiaryLabel))
+                    .foregroundStyle(Color(.tertiaryLabel))
             }
             .padding(14)
             .background(Color(.systemBackground))

@@ -103,7 +103,7 @@ struct CalendarUIView: UIViewRepresentable {
             guard let dateComponents = dateComponents,
                   let date = Calendar.current.date(from: dateComponents) else { return }
 
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self.parent.selectedDate = date
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }
