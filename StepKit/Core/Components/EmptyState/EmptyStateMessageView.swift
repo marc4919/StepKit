@@ -31,11 +31,14 @@ struct EmptyStateMessageView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(title). \(subtitle)")
 
             // Botón CTA
             Button(action: action) {
                 HStack(spacing: 8) {
                     Image(systemName: "plus.circle.fill")
+                        .accessibilityHidden(true)
                     Text(buttonTitle)
                 }
                 .font(.headline)
@@ -53,6 +56,9 @@ struct EmptyStateMessageView: View {
                 .glowShadow()
             }
             .buttonStyle(.plain)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(buttonTitle)
+            .accessibilityHint("Toca dos veces para \(buttonTitle.lowercased())")
             .padding(.top, 40)
             .opacity(showButton ? 1 : 0)
             .offset(y: showButton ? 0 : 20)

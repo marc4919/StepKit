@@ -56,6 +56,10 @@ struct StepDetailBottomActionView: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(stepEntity.isCompleted ? "Marcar como pendiente" : "Marcar como completado")
+        .accessibilityValue(stepEntity.isCompleted ? "Completado" : "Pendiente")
+        .accessibilityHint("Toca dos veces para cambiar el estado de completado del paso")
         .scaleEffect(buttonScale)
         .animation(.easeInOut(duration: 0.2), value: stepEntity.isCompleted)
         .padding(.horizontal, 20)

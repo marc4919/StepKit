@@ -125,6 +125,9 @@ struct OnboardingView: View {
             .glowShadow()
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(currentPage == slides.count - 1 ? "Empezar" : "Siguiente")
+        .accessibilityHint(currentPage == slides.count - 1 ? "Comienza usando StepKit" : "Muestra la siguiente pantalla de introducción")
     }
 }
 
@@ -175,14 +178,17 @@ struct OnboardingSlide: View {
                     )
                 )
                 .frame(width: 140, height: 140)
+                .accessibilityHidden(true)
 
             // Círculo de fondo
             Circle()
                 .fill(LinearGradient.accentWithOpacity( 0.2))
                 .frame(width: 100, height: 100)
+                .accessibilityHidden(true)
 
-            // Icono con animación
+            // Icono con animación (decorativo, la información está en el título)
             iconImage
+                .accessibilityHidden(true)
         }
         .onChange(of: isVisible) { _, newValue in
             if newValue {

@@ -27,6 +27,7 @@ struct SettingsRow: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(iconColor)
                     }
+                    .accessibilityHidden(true)
 
                     Text(title)
                         .font(.body)
@@ -38,6 +39,7 @@ struct SettingsRow: View {
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundStyle(Color(.tertiaryLabel))
+                        .accessibilityHidden(true)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
@@ -49,5 +51,8 @@ struct SettingsRow: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(title)
+        .accessibilityHint("Toca dos veces para abrir esta configuración")
     }
 }

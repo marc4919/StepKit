@@ -38,6 +38,9 @@ struct KitDetailView: View {
                     Image(systemName: "note.text.badge.plus")
                         .foregroundStyle(Color.accentColor)
                 }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("Añadir anotación")
+                .accessibilityHint("Abre la vista para añadir anotaciones al kit")
 
                 Button {
                     showingExtendedInfo = true
@@ -45,6 +48,9 @@ struct KitDetailView: View {
                     Image(systemName: "info.circle")
                         .foregroundStyle(Color.accentColor)
                 }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("Información del kit")
+                .accessibilityHint("Muestra información detallada del kit")
             }
         }
         .sheet(isPresented: $showingExtendedInfo) {
@@ -68,6 +74,7 @@ struct KitDetailView: View {
                 Image(systemName: "list.bullet")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(Color.accentColor)
+                    .accessibilityHidden(true)
 
                 Text("Pasos")
                     .font(.headline)
@@ -98,6 +105,9 @@ struct KitDetailView: View {
                             StepRowView(stepEntity: stepEntity, index: index + 1, isLast: index == sortedSteps.count - 1)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityLabel("Paso \(index + 1) de \(sortedSteps.count): \(stepEntity.stepTitle)")
+                        .accessibilityHint("Toca dos veces para abrir los detalles del paso")
                     }
                 }
                 .background(Color(.systemBackground))
@@ -112,6 +122,7 @@ struct KitDetailView: View {
             Image(systemName: "list.bullet.clipboard")
                 .font(.system(size: 36))
                 .foregroundStyle(LinearGradient.accentWithOpacity( 0.6))
+                .accessibilityHidden(true)
             
             Text("No hay pasos definidos")
                 .font(.subheadline)

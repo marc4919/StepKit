@@ -23,6 +23,7 @@ struct CalendarStepsSectionView: View {
                 Image(systemName: "checklist")
                     .font(.subheadline)
                     .foregroundStyle(Color.accentColor)
+                    .accessibilityHidden(true)
 
                 Text("Pasos del día")
                     .font(.subheadline)
@@ -38,6 +39,7 @@ struct CalendarStepsSectionView: View {
                     .padding(.vertical, 3)
                     .background(Color.accentColor)
                     .clipShape(Capsule())
+                    .accessibilityLabel("\(steps.count) pasos")
             }
 
             VStack(spacing: 8) {
@@ -61,6 +63,9 @@ struct CalendarStepsSectionView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 4)
                     }
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityLabel(stepsExpanded ? "Ver menos pasos" : "Ver \(steps.count - 3) pasos más")
+                    .accessibilityHint(stepsExpanded ? "Oculta algunos pasos" : "Muestra todos los pasos del día")
                 }
             }
         }
@@ -80,6 +85,9 @@ struct SwipeableStepRow: View {
             CompactStepRow(step: step)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("Paso: \(step.stepTitle)")
+        .accessibilityHint("Toca dos veces para abrir los detalles del paso")
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button {
                 onToggle()
@@ -108,6 +116,7 @@ struct CompactStepRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "clock")
                                 .font(.caption2)
+                                .accessibilityHidden(true)
                             Text(CalendarHelpers.formatMinutes(step.estimateMinutes))
                                 .font(.caption2)
                         }
@@ -117,6 +126,7 @@ struct CompactStepRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "target")
                                 .font(.caption2)
+                                .accessibilityHidden(true)
                             Text(kitTitle)
                                 .font(.caption2)
                                 .lineLimit(1)
@@ -132,10 +142,12 @@ struct CompactStepRow: View {
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(Color(.tertiaryLabel))
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityElement(children: .ignore)
     }
 }

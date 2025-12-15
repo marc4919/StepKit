@@ -76,10 +76,12 @@ struct ChatMessageBubble: View {
                     Circle()
                         .fill(LinearGradient.accentWithOpacity( 0.2))
                         .frame(width: 28, height: 28)
+                        .accessibilityHidden(true)
 
                     Image(systemName: "sparkles")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color.accentColor)
+                        .accessibilityHidden(true)
                 }
             } else {
                 Color.clear
@@ -148,10 +150,12 @@ struct ChatMessageBubble: View {
                     Circle()
                         .fill(Color.accentColor.opacity(0.15))
                         .frame(width: 28, height: 28)
+                        .accessibilityHidden(true)
                     
                     Image(systemName: "person.fill")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color.accentColor)
+                        .accessibilityHidden(true)
                 }
             } else {
                 Color.clear
@@ -171,10 +175,12 @@ struct TypingIndicatorBubble: View {
                 Circle()
                     .fill(LinearGradient.accentWithOpacity( 0.2))
                     .frame(width: 28, height: 28)
+                    .accessibilityHidden(true)
 
                 Image(systemName: "sparkles")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.accentColor)
+                    .accessibilityHidden(true)
             }
             
             // Burbuja con puntos animados
@@ -197,5 +203,7 @@ struct TypingIndicatorBubble: View {
             
             Spacer(minLength: 50)
         }
+        .accessibilityLabel("El asistente está escribiendo")
+        .accessibilityValue("Esperando respuesta")
     }
 }

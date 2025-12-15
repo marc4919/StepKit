@@ -50,6 +50,7 @@ struct QuickActionSuggestions: View {
                         .foregroundStyle(.primary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(.isButton)
                 }
             }
             .padding(.horizontal, 16)

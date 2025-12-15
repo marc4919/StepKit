@@ -88,6 +88,7 @@ struct PlanOptionCard: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
 

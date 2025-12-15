@@ -46,5 +46,6 @@ struct SubscriptionBanner: View {
             .glowShadow()
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
     }
 }

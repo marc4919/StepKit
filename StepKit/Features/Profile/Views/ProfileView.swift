@@ -107,6 +107,7 @@ struct ProfileView: View {
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.orange)
                 }
+                .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Notificaciones")
@@ -117,11 +118,14 @@ struct ProfileView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Notificaciones. Recordatorios de pasos pendientes")
             }
         }
         .tint(.accentColor)
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
+        .accessibilityHint("Cuando está activado, recibirás recordatorios de pasos pendientes. Al desactivarlo, se cancelan todas las notificaciones programadas")
         .onChange(of: globalNotificationsEnabled) { _, newValue in
             if !newValue {
                 // Cancelar todas las notificaciones si se desactiva
@@ -150,6 +154,7 @@ struct ProfileView: View {
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(.red)
                         }
+                        .accessibilityHidden(true)
                         
                         Text("Cerrar sesión")
                             .font(.body)
@@ -161,6 +166,9 @@ struct ProfileView: View {
                     .padding(.vertical, 12)
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("Cerrar sesión")
+                .accessibilityHint("Cierra la sesión actual y regresa a la pantalla de inicio de sesión")
             }
             .background(Color(.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -176,6 +184,7 @@ struct ProfileView: View {
             Image(systemName: icon)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(Color.accentColor)
+                .accessibilityHidden(true)
 
             Text(title)
                 .font(.headline)

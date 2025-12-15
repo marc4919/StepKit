@@ -215,6 +215,7 @@ struct SignInView: View {
                     }
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
+                    .accessibilityAddTraits(.isButton)
                     
                     Text("y")
                         .font(.caption)
@@ -225,6 +226,7 @@ struct SignInView: View {
                     }
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
+                    .accessibilityAddTraits(.isButton)
                 }
             }
         }

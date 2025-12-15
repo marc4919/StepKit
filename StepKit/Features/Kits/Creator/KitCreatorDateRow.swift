@@ -54,6 +54,7 @@ struct KitCreatorDateRow: View {
                 )
             }
             .buttonStyle(.plain)
+            .accessibilityAddTraits(.isButton)
             .accessibilityLabel("Fecha objetivo")
             .accessibilityValue(date.formatted(.dateTime.weekday(.wide).day().month(.wide).year()))
             .accessibilityHint("Toca para cambiar la fecha objetivo")

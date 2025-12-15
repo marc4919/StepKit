@@ -24,6 +24,7 @@ struct SearchKitRow: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                 }
+                .accessibilityHidden(true)
 
                 // Contenido
                 VStack(alignment: .leading, spacing: 4) {
@@ -45,9 +46,14 @@ struct SearchKitRow: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(Color(.tertiaryLabel))
+                    .accessibilityHidden(true)
             }
             .appCardStyle(backgroundColor: Color(.secondarySystemGroupedBackground))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("Kit: \(kit.planTitle)")
+        .accessibilityValue("KPI: \(kit.kpi)")
+        .accessibilityHint("Toca dos veces para abrir los detalles del kit")
     }
 }

@@ -49,6 +49,10 @@ struct StepDetailView: View {
                         .foregroundStyle(stepEntity.notificationEnabled ? Color.accentColor : .secondary)
                         .symbolEffect(.bounce, value: stepEntity.notificationEnabled)
                 }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel(stepEntity.notificationEnabled ? "Desactivar notificación" : "Activar notificación")
+                .accessibilityValue(stepEntity.notificationEnabled ? "Activo" : "Inactivo")
+                .accessibilityHint("Activa o desactiva el recordatorio de este paso")
             }
         }
     }

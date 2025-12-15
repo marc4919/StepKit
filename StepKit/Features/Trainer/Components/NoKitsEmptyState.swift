@@ -16,16 +16,18 @@ struct NoKitsEmptyState: View {
             Spacer()
                 .frame(maxHeight: 200)
 
-            // Icono con estilo
+            // Icono con estilo (decorativo, la información está en los textos)
             ZStack {
                 Circle()
                     .fill(LinearGradient.accentWithOpacity( 0.3))
                     .frame(width: 80, height: 80)
+                    .accessibilityHidden(true)
 
                 Image(systemName: "bubble.left.and.bubble.right.fill")
                     .font(.system(size: 36, weight: .medium))
                     .foregroundStyle(LinearGradient.accentGradient)
                     .symbolEffect(.wiggle, options: .repeating)
+                    .accessibilityHidden(true)
             }
 
             // Textos
@@ -41,6 +43,8 @@ struct NoKitsEmptyState: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Primero, crea tu kit. Para poder ayudarte con tu progreso, necesito que tengas al menos un kit activo.")
 
             Spacer()
                 .frame(maxHeight: 30)
@@ -52,6 +56,7 @@ struct NoKitsEmptyState: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "plus.circle.fill")
+                        .accessibilityHidden(true)
                     Text("Crear kit")
                 }
                 .font(.headline)
@@ -69,6 +74,9 @@ struct NoKitsEmptyState: View {
                 .glowShadow()
             }
             .buttonStyle(.plain)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel("Crear kit")
+            .accessibilityHint("Toca dos veces para crear tu primer kit")
             .opacity(showButton ? 1 : 0)
             .offset(y: showButton ? 0 : 20)
 

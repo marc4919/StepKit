@@ -31,6 +31,7 @@ struct CalendarKitsSectionView: View {
                         Image(systemName: "flag.fill")
                             .font(.subheadline)
                             .foregroundStyle(Color.accentColor)
+                            .accessibilityHidden(true)
 
                         Text("Deadlines")
                             .font(.headline)
@@ -79,6 +80,7 @@ struct CalendarEmptyStateView: View {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 36))
                 .foregroundStyle(LinearGradient.accentWithOpacity(0.6))
+                .accessibilityHidden(true)
 
             Text("Sin kits para este día")
                 .font(.subheadline)
@@ -90,6 +92,8 @@ struct CalendarEmptyStateView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Sin kits para este día. Pulsa + para crear uno")
     }
 }
 
@@ -101,6 +105,10 @@ struct CalendarKitRow: View {
     init(goal: GoalEntity) {
         self.goal = goal
         self.progress = goal.computedProgress
+    }
+    
+    private var pendingSteps: Int {
+        goal.steps.filter { !$0.isCompleted }.count
     }
     
     var body: some View {
@@ -132,7 +140,6 @@ struct CalendarKitRow: View {
                         .fontWeight(.medium)
                         .foregroundStyle(.primary)
 
-                    let pendingSteps = goal.steps.filter { !$0.isCompleted }.count
                     Text("\(pendingSteps) paso\(pendingSteps == 1 ? "" : "s") pendiente\(pendingSteps == 1 ? "" : "s")")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -144,11 +151,17 @@ struct CalendarKitRow: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(Color(.tertiaryLabel))
+                    .accessibilityHidden(true)
             }
             .padding(14)
             .background(Color(.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .accessibilityElement(children: .ignore)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("Kit: \(goal.title)")
+        .accessibilityValue("Progreso: \(Int(progress * 100))%, \(pendingSteps) paso\(pendingSteps == 1 ? "" : "s") pendiente\(pendingSteps == 1 ? "" : "s")")
+        .accessibilityHint("Toca dos veces para abrir los detalles del kit")
     }
 }

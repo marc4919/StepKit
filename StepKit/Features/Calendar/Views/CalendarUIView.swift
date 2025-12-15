@@ -31,6 +31,8 @@ struct CalendarUIView: UIViewRepresentable {
         calendarView.wantsDateDecorations = true
         calendarView.backgroundColor = .clear
         calendarView.translatesAutoresizingMaskIntoConstraints = false
+        // UICalendarView proporciona accesibilidad automática para fechas y navegación
+        calendarView.accessibilityLabel = "Calendario de pasos y fechas límite"
 
         // Mostrar el mes actual
         let visibleComponents = Calendar.current.dateComponents([.year, .month], from: selectedDate)
@@ -167,12 +169,15 @@ struct CalendarUIView: UIViewRepresentable {
 
             let container = UIView(frame: CGRect(x: 0, y: 0, width: totalWidth, height: containerHeight))
             container.transform = CGAffineTransform(translationX: 0, y: -12)
+            container.isAccessibilityElement = true
+            container.accessibilityLabel = "\(count) paso\(count == 1 ? "" : "s") programado\(count == 1 ? "" : "s")"
 
             var xOffset: CGFloat = 0
             for _ in 0..<dotsToShow {
                 let dot = UIView(frame: CGRect(x: xOffset, y: 0, width: dotSize, height: dotSize))
                 dot.backgroundColor = stepColor
                 dot.layer.cornerRadius = dotSize / 2
+                dot.isAccessibilityElement = false
                 container.addSubview(dot)
                 xOffset += dotSize + spacing
             }
@@ -186,10 +191,13 @@ struct CalendarUIView: UIViewRepresentable {
             let containerHeight: CGFloat = size + 2
             let container = UIView(frame: CGRect(x: 0, y: 0, width: size, height: containerHeight))
             container.transform = CGAffineTransform(translationX: 0, y: -8)
+            container.isAccessibilityElement = true
+            container.accessibilityLabel = "Tiene fecha límite"
             
             let dot = UIView(frame: CGRect(x: 0, y: 0, width: size, height: size))
             dot.backgroundColor = deadlineColor
             dot.layer.cornerRadius = size / 2
+            dot.isAccessibilityElement = false
             container.addSubview(dot)
             
             return container
@@ -206,6 +214,8 @@ struct CalendarUIView: UIViewRepresentable {
 
             let container = UIView(frame: CGRect(x: 0, y: 0, width: totalWidth, height: containerHeight))
             container.transform = CGAffineTransform(translationX: 0, y: -12)
+            container.isAccessibilityElement = true
+            container.accessibilityLabel = "\(stepsCount) paso\(stepsCount == 1 ? "" : "s") y fecha límite"
 
             var xOffset: CGFloat = 0
 
@@ -214,6 +224,7 @@ struct CalendarUIView: UIViewRepresentable {
                 let dot = UIView(frame: CGRect(x: xOffset, y: 0, width: dotSize, height: dotSize))
                 dot.backgroundColor = stepColor
                 dot.layer.cornerRadius = dotSize / 2
+                dot.isAccessibilityElement = false
                 container.addSubview(dot)
                 xOffset += dotSize + spacing
             }
@@ -223,6 +234,7 @@ struct CalendarUIView: UIViewRepresentable {
             let deadlineDot = UIView(frame: CGRect(x: xOffset, y: deadlineY, width: ringSize, height: ringSize))
             deadlineDot.backgroundColor = deadlineColor
             deadlineDot.layer.cornerRadius = ringSize / 2
+            deadlineDot.isAccessibilityElement = false
             container.addSubview(deadlineDot)
 
             return container

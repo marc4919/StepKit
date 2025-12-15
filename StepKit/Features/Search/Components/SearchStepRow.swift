@@ -24,6 +24,7 @@ struct SearchStepRow: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                 }
+                .accessibilityHidden(true)
 
                 // Contenido
                 VStack(alignment: .leading, spacing: 4) {
@@ -43,6 +44,7 @@ struct SearchStepRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "clock")
                                 .font(.caption2)
+                                .accessibilityHidden(true)
                             Text(step.estimateMinutes.formattedDuration())
                                 .font(.caption)
                         }
@@ -57,9 +59,14 @@ struct SearchStepRow: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(Color(.tertiaryLabel))
+                    .accessibilityHidden(true)
             }
             .appCardStyle(backgroundColor: Color(.secondarySystemGroupedBackground))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("Paso: \(step.stepTitle)")
+        .accessibilityValue(step.estimateMinutes > 0 ? "Tiempo estimado: \(step.estimateMinutes.formattedDuration())" : "")
+        .accessibilityHint("Toca dos veces para abrir los detalles del paso")
     }
 }

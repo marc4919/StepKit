@@ -16,7 +16,7 @@ struct ModelNotAvailableState: View {
         VStack(spacing: 24) {
             Spacer()
 
-            // Icono
+            // Icono (decorativo, la información está en el título y mensaje)
             ZStack {
                 Circle()
                     .fill(
@@ -27,6 +27,7 @@ struct ModelNotAvailableState: View {
                         )
                     )
                     .frame(width: 80, height: 80)
+                    .accessibilityHidden(true)
 
                 Image(systemName: "sparkles.slash")
                     .font(.system(size: 36, weight: .medium))
@@ -37,6 +38,7 @@ struct ModelNotAvailableState: View {
                             endPoint: .bottomTrailing
                         )
                     )
+                    .accessibilityHidden(true)
             }
 
             VStack(spacing: 12) {

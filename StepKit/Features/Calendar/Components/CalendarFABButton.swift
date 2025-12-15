@@ -37,7 +37,10 @@ struct CalendarFABButton: View {
             .glowShadow(opacity: 0.3, radius: 12, y: 6)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
         .popoverTip(tip, arrowEdge: .bottom)
         .fixedSize()
+        .accessibilityLabel("Crear kit desde calendario")
+        .accessibilityHint("Abre el creador de kits")
     }
 }

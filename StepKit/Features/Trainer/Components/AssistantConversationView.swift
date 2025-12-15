@@ -51,10 +51,12 @@ struct AssistantConversationView: View {
                 Circle()
                 .fill(LinearGradient.accentWithOpacity( 0.25))
                 .frame(width: 44, height: 44)
+                .accessibilityHidden(true)
 
                 Image(systemName: "sparkles")
                     .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(LinearGradient.accentGradient)
+                    .accessibilityHidden(true)
             }
             
             VStack(alignment: .leading, spacing: 2) {
@@ -78,6 +80,9 @@ struct AssistantConversationView: View {
                     .font(.title3)
                     .foregroundStyle(Color.accentColor.opacity(0.7))
             }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel("Nueva conversación")
+            .accessibilityHint("Inicia una nueva conversación borrando los mensajes actuales")
             
             // Botón para mostrar/ocultar acciones rápidas
             Button {
@@ -90,6 +95,9 @@ struct AssistantConversationView: View {
                     .font(.title3)
                     .foregroundStyle(Color.accentColor.opacity(0.7))
             }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(showQuickActions ? "Ocultar acciones rápidas" : "Mostrar acciones rápidas")
+            .accessibilityHint("Muestra u oculta las sugerencias de acciones rápidas")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -178,6 +186,7 @@ struct AssistantConversationView: View {
                 .focused(isInputFocused)
                 .submitLabel(.send)
                 .onSubmit(onSendMessage)
+                .accessibilityHint("Escribe tu pregunta para el asistente IA. El mensaje se enviará cuando toques el botón enviar o presiones enviar en el teclado")
             
             // Botón enviar
             Button(action: onSendMessage) {
@@ -190,6 +199,10 @@ struct AssistantConversationView: View {
                 )
             }
             .disabled(isSendDisabled)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel("Enviar mensaje")
+            .accessibilityValue(isSendDisabled ? "Deshabilitado" : "")
+            .accessibilityHint("Envía tu mensaje al asistente IA")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

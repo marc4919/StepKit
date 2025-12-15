@@ -80,6 +80,7 @@ struct SubscriptionView: View {
         HStack(spacing: 10) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundColor(.orange)
+                .accessibilityHidden(true)
 
             Text(message)
                 .font(.subheadline)
@@ -93,10 +94,16 @@ struct SubscriptionView: View {
                 Image(systemName: "xmark")
                     .foregroundColor(.secondary)
             }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel("Cerrar mensaje de error")
+            .accessibilityHint("Oculta este mensaje de error")
         }
         .padding()
         .background(Color.orange.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Error: \(message)")
+        .accessibilityAddTraits(.updatesFrequently)
     }
 
     // MARK: - Header Section
@@ -132,6 +139,7 @@ struct SubscriptionView: View {
                         )
                     )
                     .shadow(color: Color.orange.opacity(0.5), radius: 8, x: 0, y: 4)
+                    .accessibilityHidden(true)
             }
 
             VStack(spacing: 6) {
@@ -155,6 +163,7 @@ struct SubscriptionView: View {
                 Image(systemName: "star.fill")
                     .font(.subheadline.weight(.medium))
                     .foregroundColor(.accentColor)
+                    .accessibilityHidden(true)
 
                 Text("Beneficios Premium")
                     .font(.headline)
@@ -217,6 +226,7 @@ struct SubscriptionView: View {
                 Image(systemName: "creditcard")
                     .font(.subheadline.weight(.medium))
                     .foregroundColor(.accentColor)
+                    .accessibilityHidden(true)
 
                 Text("Elige tu plan")
                     .font(.headline)
@@ -230,6 +240,8 @@ struct SubscriptionView: View {
                         .padding()
                     Spacer()
                 }
+                .accessibilityLabel("Cargando planes de suscripción")
+                .accessibilityAddTraits(.updatesFrequently)
             } else {
                 VStack(spacing: 12) {
                     // Plan anual (recomendado)
@@ -292,6 +304,10 @@ struct SubscriptionView: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .shadow(color: isLoading ? .clear : Color.glowColor.opacity(0.4), radius: 12, x: 0, y: 6)
         }
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(isLoading ? "Procesando suscripción" : "Comenzar prueba gratuita")
+        .accessibilityValue(isLoading ? "Procesando" : selectedProduct == nil ? "No disponible" : "")
+        .accessibilityHint("Inicia el proceso de suscripción al plan seleccionado")
         .disabled(isLoading || selectedProduct == nil)
     }
 
@@ -306,6 +322,9 @@ struct SubscriptionView: View {
                 .font(.subheadline)
                 .foregroundColor(.accentColor)
         }
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("Restaurar compras")
+        .accessibilityHint("Restaura las compras anteriores realizadas desde este dispositivo")
         .disabled(isLoading)
     }
 
@@ -328,6 +347,8 @@ struct SubscriptionView: View {
                 }
                 .font(.caption)
                 .foregroundColor(.accentColor)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint("Abre los términos de uso")
                 
                 Text("y")
                     .font(.caption)
@@ -338,6 +359,8 @@ struct SubscriptionView: View {
                 }
                 .font(.caption)
                 .foregroundColor(.accentColor)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint("Abre la política de privacidad")
             }
             .padding(.top, 4)
         }
@@ -498,6 +521,7 @@ struct FeatureRow: View {
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(iconColor)
+                        .accessibilityHidden(true)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -510,12 +534,15 @@ struct FeatureRow: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(title). \(description)")
 
                 Spacer()
 
                 Image(systemName: "checkmark")
                     .font(.caption.weight(.bold))
                     .foregroundColor(.green)
+                    .accessibilityHidden(true)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -535,6 +562,22 @@ struct PlanCard: View {
     let isSelected: Bool
     let action: () -> Void
 
+    private var planAccessibilityLabel: String {
+        var label = "Plan \(plan.title)"
+        if plan.isPopular {
+            label += ", Popular"
+        }
+        label += ", \(plan.billingInfo(from: product))"
+        label += ", \(plan.displayPrice(from: product))"
+        if let savings = plan.savings {
+            label += ", \(savings)"
+        }
+        if isSelected {
+            label += ", Seleccionado"
+        }
+        return label
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
@@ -550,6 +593,7 @@ struct PlanCard: View {
                             .frame(width: 14, height: 14)
                     }
                 }
+                .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
@@ -605,8 +649,12 @@ struct PlanCard: View {
                         lineWidth: isSelected ? 2 : 1
                     )
             )
+            .accessibilityElement(children: .ignore)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityLabel(planAccessibilityLabel)
+        .accessibilityHint("Toca dos veces para seleccionar este plan de suscripción")
     }
 }
 

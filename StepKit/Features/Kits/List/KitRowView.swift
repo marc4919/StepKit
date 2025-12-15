@@ -74,6 +74,9 @@ struct KitRowView: View {
                     lineWidth: 1.5
                 )
         )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Kit: \(kitEntity.title)")
+        .accessibilityValue("\(isCompleted ? "Completado" : "Progreso: \(Int(progress * 100))%"), KPI: \(kitEntity.kpi)\(dueDateText)")
     }
 
     // MARK: - Progress Indicator
@@ -108,6 +111,8 @@ struct KitRowView: View {
                     .foregroundStyle(Color.accentColor)
             }
         }
+        .accessibilityLabel("Progreso del kit")
+        .accessibilityValue(isCompleted ? "Completado" : "\(Int(progress * 100))% completado")
     }
 
     // MARK: - Helpers
@@ -115,6 +120,11 @@ struct KitRowView: View {
         guard let dueDate = dueDate else { return false }
         let daysRemaining = Calendar.current.dateComponents([.day], from: Date(), to: dueDate).day ?? 0
         return daysRemaining <= 3 && daysRemaining >= 0
+    }
+    
+    private var dueDateText: String {
+        guard let dueDate = dueDate, !isCompleted else { return "" }
+        return ", Fecha objetivo: \(dueDate.formatted(.dateTime.day().month(.abbreviated)))"
     }
 }
 

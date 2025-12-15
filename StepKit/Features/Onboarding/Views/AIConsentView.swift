@@ -201,6 +201,7 @@ struct AIConsentView: View {
                                 .font(.caption)
                                 .foregroundStyle(Color.accentColor)
                         }
+                        .accessibilityAddTraits(.isButton)
                     }
                 }
                 
@@ -211,6 +212,7 @@ struct AIConsentView: View {
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
     }
     
     // MARK: - Continue Button
@@ -242,6 +244,7 @@ struct AIConsentView: View {
         }
         .disabled(!hasAccepted)
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
     }
 }
 
