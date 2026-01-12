@@ -1,3 +1,4 @@
+
 //
 //  SubscriptionView.swift
 //  StepKit
@@ -15,13 +16,9 @@ struct SubscriptionView: View {
     @Environment(AuthManager.self) private var authManager
     @EnvironmentObject private var apiClient: APIClientWrapper
 
-    @State private var selectedPlan: SubscriptionPlan = .yearly
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-    @State private var showSuccessAlert = false
+    @State private var viewModel = SubscriptionViewModel()
     @State private var showingTermsOfService = false
     @State private var showingPrivacyPolicy = false
-
 
     var body: some View {
         ScrollView {
@@ -30,7 +27,7 @@ struct SubscriptionView: View {
                 headerSection
 
                 // Error message
-                if let error = errorMessage {
+                if let error = viewModel.errorMessage {
                     errorBanner(error)
                 }
 
@@ -60,7 +57,7 @@ struct SubscriptionView: View {
         .task {
             await storeKitManager.loadProducts()
         }
-        .alert("Suscripcion activada", isPresented: $showSuccessAlert) {
+        .alert("Suscripcion activada", isPresented: $viewModel.showSuccessAlert) {
             Button("Continuar") {
                 dismiss()
             }
@@ -89,7 +86,7 @@ struct SubscriptionView: View {
             Spacer()
 
             Button {
-                errorMessage = nil
+                viewModel.errorMessage = nil
             } label: {
                 Image(systemName: "xmark")
                     .foregroundColor(.secondary)
@@ -248,10 +245,10 @@ struct SubscriptionView: View {
                     PlanCard(
                         plan: .yearly,
                         product: storeKitManager.yearlyProduct,
-                        isSelected: selectedPlan == .yearly
+                        isSelected: viewModel.selectedPlan == .yearly
                     ) {
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedPlan = .yearly
+                            viewModel.selectedPlan = .yearly
                         }
                     }
 
@@ -259,10 +256,10 @@ struct SubscriptionView: View {
                     PlanCard(
                         plan: .monthly,
                         product: storeKitManager.monthlyProduct,
-                        isSelected: selectedPlan == .monthly
+                        isSelected: viewModel.selectedPlan == .monthly
                     ) {
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedPlan = .monthly
+                            viewModel.selectedPlan = .monthly
                         }
                     }
                 }
@@ -277,11 +274,15 @@ struct SubscriptionView: View {
     private var subscribeButton: some View {
         Button {
             Task {
-                await subscribeToPlan()
+                await viewModel.subscribeToPlan(
+                    storeKitManager: storeKitManager,
+                    apiClient: apiClient.client,
+                    authManager: authManager
+                )
             }
         } label: {
             HStack(spacing: 8) {
-                if isLoading {
+                if viewModel.isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.8)
@@ -290,32 +291,36 @@ struct SubscriptionView: View {
                         .font(.body.weight(.semibold))
                 }
 
-                Text(isLoading ? "Procesando..." : "Comenzar prueba gratuita")
+                Text(viewModel.isLoading ? "Procesando..." : "Comenzar prueba gratuita")
                     .font(.body.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
-                isLoading
+                viewModel.isLoading
                     ? LinearGradient.disabledGradient
                     : LinearGradient.accentGradient
             )
             .foregroundColor(.white)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .shadow(color: isLoading ? .clear : Color.glowColor.opacity(0.4), radius: 12, x: 0, y: 6)
+            .shadow(color: viewModel.isLoading ? .clear : Color.glowColor.opacity(0.4), radius: 12, x: 0, y: 6)
         }
         .accessibilityAddTraits(.isButton)
-        .accessibilityLabel(isLoading ? "Procesando suscripción" : "Comenzar prueba gratuita")
-        .accessibilityValue(isLoading ? "Procesando" : selectedProduct == nil ? "No disponible" : "")
+        .accessibilityLabel(viewModel.isLoading ? "Procesando suscripción" : "Comenzar prueba gratuita")
+        .accessibilityValue(viewModel.isLoading ? "Procesando" : selectedProduct == nil ? "No disponible" : "")
         .accessibilityHint("Inicia el proceso de suscripción al plan seleccionado")
-        .disabled(isLoading || selectedProduct == nil)
+        .disabled(viewModel.isLoading || selectedProduct == nil)
     }
 
     // MARK: - Restore Button
     private var restoreButton: some View {
         Button {
             Task {
-                await restorePurchases()
+                await viewModel.restorePurchases(
+                    storeKitManager: storeKitManager,
+                    apiClient: apiClient.client,
+                    authManager: authManager
+                )
             }
         } label: {
             Text("Restaurar compras")
@@ -325,13 +330,13 @@ struct SubscriptionView: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel("Restaurar compras")
         .accessibilityHint("Restaura las compras anteriores realizadas desde este dispositivo")
-        .disabled(isLoading)
+        .disabled(viewModel.isLoading)
     }
 
     // MARK: - Legal Text
     private var legalText: some View {
         VStack(spacing: 8) {
-            Text("7 dias gratis, despues \(selectedPlan.displayPrice(from: selectedProduct))")
+            Text("7 dias gratis, despues \(viewModel.selectedPlan.displayPrice(from: selectedProduct))")
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.primary)
@@ -369,74 +374,12 @@ struct SubscriptionView: View {
     // MARK: - Helpers
 
     private var selectedProduct: Product? {
-        switch selectedPlan {
+        switch viewModel.selectedPlan {
         case .monthly:
             return storeKitManager.monthlyProduct
         case .yearly:
             return storeKitManager.yearlyProduct
         }
-    }
-
-    private func subscribeToPlan() async {
-        guard let product = selectedProduct else {
-            errorMessage = "Producto no disponible"
-            return
-        }
-
-        isLoading = true
-        errorMessage = nil
-
-        do {
-            // 1. Purchase with StoreKit
-            let transaction = try await storeKitManager.purchase(product)
-
-            // 2. Verify with backend
-            if let token = authManager.token {
-                let transactionId = String(transaction.originalID)
-                _ = try await apiClient.client.verifySubscription(
-                    transactionId: transactionId,
-                    token: token
-                )
-
-                // 3. Refresh user info
-                // TODO: Refresh auth manager with new user info
-            }
-
-            showSuccessAlert = true
-        } catch StoreKitError.userCancelled {
-            // User cancelled, no error message needed
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-
-        isLoading = false
-    }
-
-    private func restorePurchases() async {
-        isLoading = true
-        errorMessage = nil
-
-        await storeKitManager.restorePurchases()
-
-        if storeKitManager.hasActiveSubscription {
-            // Verify with backend
-            if let token = authManager.token,
-               let transactionId = await storeKitManager.getOriginalTransactionId() {
-                do {
-                    _ = try await apiClient.client.verifySubscription(
-                        transactionId: transactionId,
-                        token: token
-                    )
-                    showSuccessAlert = true
-                } catch {
-                    errorMessage = "Error al verificar la suscripcion: \(error.localizedDescription)"
-                }
-            }
-        } else {
-            errorMessage = "No se encontraron compras anteriores"
-        }
-
-        isLoading = false
     }
 }
 

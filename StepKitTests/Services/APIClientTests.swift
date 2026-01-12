@@ -6,9 +6,11 @@
 //
 
 import Testing
+import Foundation
 @testable import StepKit
 
 @Suite("MockAPIClient Tests")
+@MainActor
 struct MockAPIClientTests {
     
     @Test("Should return success response by default")
@@ -82,5 +84,6 @@ struct MockAPIClientTests {
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
     }
 }
+
 
 

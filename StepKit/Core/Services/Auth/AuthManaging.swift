@@ -25,6 +25,10 @@ protocol AuthManaging {
     ///   - user: La información del usuario
     func saveAuth(token: String, user: UserInfo)
     
+    /// Actualiza la información del usuario en memoria y persistencia
+    /// - Parameter user: Nueva información del usuario
+    func updateUser(_ user: UserInfo)
+    
     /// Cierra sesión y limpia todos los datos de autenticación
     func signOut()
 }

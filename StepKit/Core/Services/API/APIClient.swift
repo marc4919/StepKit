@@ -196,6 +196,35 @@ final class APIClient: APIClientProtocol {
             throw APIError.serverError(httpResponse.statusCode, errorMessage)
         }
     }
+    
+    // MARK: - User Profile
+    
+    func getUserProfile(token: String) async throws -> UserInfo {
+        let url = URL(string: "\(baseURL)/me")!
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "GET"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        
+        switch httpResponse.statusCode {
+        case 200...299:
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let profile = try decoder.decode(UserProfileResponse.self, from: data)
+            return UserInfo(from: profile)
+        case 401:
+            throw APIError.notAuthenticated
+        default:
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw APIError.serverError(httpResponse.statusCode, errorMessage)
+        }
+    }
 
     // MARK: - Streaming Kit Generation
 

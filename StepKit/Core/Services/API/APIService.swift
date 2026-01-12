@@ -15,12 +15,17 @@ struct AuthResponse: Codable {
     let user: UserInfo
 }
 
-/// Información del usuario devuelta por el backend
+/// Información del usuario simplificada (usada en Auth y persistencia)
 struct UserInfo: Codable {
-    let id: String // UUID como string desde JSON
+    let id: String // UUID como string
     let tier: String
     let monthlyTokensUsed: Int
     let monthlyTokenQuota: Int
+    
+    // Campos opcionales que vienen del perfil completo
+    var monthlyAICalls: Int?
+    var monthlyAICallsQuota: Int?
+    var activeKitsCount: Int?
 
     /// Convierte el id string a UUID
     var uuid: UUID? {
@@ -30,6 +35,49 @@ struct UserInfo: Codable {
     var isPremium: Bool {
         tier == "premium"
     }
+    
+    init(id: String, tier: String, monthlyTokensUsed: Int, monthlyTokenQuota: Int, monthlyAICalls: Int? = nil, monthlyAICallsQuota: Int? = nil, activeKitsCount: Int? = nil) {
+        self.id = id
+        self.tier = tier
+        self.monthlyTokensUsed = monthlyTokensUsed
+        self.monthlyTokenQuota = monthlyTokenQuota
+        self.monthlyAICalls = monthlyAICalls
+        self.monthlyAICallsQuota = monthlyAICallsQuota
+        self.activeKitsCount = activeKitsCount
+    }
+    
+    init(from profile: UserProfileResponse) {
+        self.id = profile.id.uuidString
+        self.tier = profile.tier
+        self.monthlyTokensUsed = profile.limits.monthlyTokensUsed
+        self.monthlyTokenQuota = profile.limits.monthlyTokenQuota
+        self.monthlyAICalls = profile.limits.monthlyAICalls
+        self.monthlyAICallsQuota = profile.limits.monthlyAICallsQuota
+        self.activeKitsCount = profile.limits.activeKitsCount
+    }
+}
+
+/// Respuesta completa del perfil de usuario (GET /me)
+struct UserProfileResponse: Codable {
+    let id: UUID
+    let tier: String
+    let subscription: SubscriptionInfo?
+    let limits: UserLimits
+    let aiUsageMonth: AIUsageMonth?
+}
+
+struct SubscriptionInfo: Codable {
+    let status: String
+    let expiresAt: Date?
+    let productId: String?
+    let autoRenewEnabled: Bool?
+}
+
+struct AIUsageMonth: Codable {
+    let month: String
+    let tokensIn: Int
+    let tokensOut: Int
+    let requests: Int
 }
 
 /// Respuesta del endpoint de verificación de suscripción

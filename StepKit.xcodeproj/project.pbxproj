@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D8ACDEDE2EF092E400F0A4B9 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8ACDEDD2EF092E400F0A4B9 /* StoreKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		D8C11B932E94216B006BBA7F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -25,6 +29,7 @@
 
 /* Begin PBXFileReference section */
 		D83E29032EEF1A7F008D0AD0 /* StepKitPlayground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StepKitPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8ACDEDD2EF092E400F0A4B9 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		D8C11B832E94216A006BBA7F /* StepKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StepKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8C11B922E94216B006BBA7F /* StepKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StepKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8C11B9C2E94216B006BBA7F /* StepKitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StepKitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -92,6 +97,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8ACDEDE2EF092E400F0A4B9 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +118,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D8ACDEDC2EF092E400F0A4B9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D8ACDEDD2EF092E400F0A4B9 /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		D8C11B7A2E942169006BBA7F = {
 			isa = PBXGroup;
 			children = (
@@ -119,6 +133,7 @@
 				D8C11B952E94216B006BBA7F /* StepKitTests */,
 				D8C11B9F2E94216B006BBA7F /* StepKitUITests */,
 				D83E29042EEF1A7F008D0AD0 /* StepKitPlayground */,
+				D8ACDEDC2EF092E400F0A4B9 /* Frameworks */,
 				D8C11B842E94216A006BBA7F /* Products */,
 			);
 			sourceTree = "<group>";

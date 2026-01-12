@@ -45,6 +45,15 @@ final class MockAPIClient: APIClientProtocol {
     /// Respuesta mock para verificación de suscripción
     var mockVerifySubscriptionResponse: VerifySubscriptionResponse?
     
+    /// Si es true, la obtención del perfil fallará
+    var shouldFailUserProfile = false
+    
+    /// Error personalizado para obtención del perfil
+    var userProfileError: Error?
+    
+    /// Respuesta mock para el perfil de usuario
+    var mockUserProfile: UserInfo?
+    
     // MARK: - APIClientProtocol
     
     func signInWithApple(identityToken: String) async throws -> AuthResponse {
@@ -229,6 +238,29 @@ final class MockAPIClient: APIClientProtocol {
             expiresAt: Calendar.current.date(byAdding: .month, value: 1, to: Date()),
             status: "active",
             productId: "com.stepkit.premium.monthly"
+        )
+    }
+    
+    func getUserProfile(token: String) async throws -> UserInfo {
+        // Simular latencia
+        try await Task.sleep(for: .seconds(simulatedDelay))
+        
+        if let error = userProfileError {
+            throw error
+        }
+        
+        if shouldFailUserProfile {
+            throw APIError.notAuthenticated
+        }
+        
+        return mockUserProfile ?? UserInfo(
+            id: UUID().uuidString,
+            tier: "premium",
+            monthlyTokensUsed: 1500,
+            monthlyTokenQuota: 10000,
+            monthlyAICalls: 5,
+            monthlyAICallsQuota: 100,
+            activeKitsCount: 2
         )
     }
 }

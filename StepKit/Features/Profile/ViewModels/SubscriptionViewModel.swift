@@ -21,7 +21,7 @@ final class SubscriptionViewModel {
     
     // MARK: - Actions
     
-    func subscribeToPlan(storeKitManager: StoreKitManager, apiClient: any APIClientProtocol, authManager: AuthManager) async {
+    func subscribeToPlan(storeKitManager: StoreKitManager, apiClient: any APIClientProtocol, authManager: any AuthManaging) async {
         guard let product = selectedProduct(storeKitManager: storeKitManager) else {
             errorMessage = "Producto no disponible"
             return
@@ -37,28 +37,16 @@ final class SubscriptionViewModel {
             // 2. Verify with backend
             if let token = authManager.token {
                 let transactionId = String(transaction.originalID)
-                // Assuming APIClientProtocol has verifySubscription or similar. 
-                // In SubscriptionView.swift it was calling `apiClient.client.verifySubscription`.
-                // If APIClientProtocol doesn't have it, we might need to cast or fix protocol.
-                // Let's assume APIClientProtocol has it or we access concrete if needed, but protocol is better.
-                // Checking KitCreatorView, it used `apiClient.streamKitGeneration`.
-                // I'll check if APIClientProtocol has verifySubscription.
-                // If not, I'll use `apiClient` as is (if it was concrete in View).
-                // View used `EnvironmentObject private var apiClient: APIClientWrapper`.
-                // Wrapper had `var client: APIClient`.
-                // So it was using concrete APIClient.
-                // I'll stick to `any APIClientProtocol` and assume it has the method, or cast.
-                // But wait, `KitCreatorView` used `any APIClientProtocol`.
-                // I'll try to use `any APIClientProtocol`. If it fails to compile, user can fix or I fix.
-                // Actually, I'll check `APIClientProtocol` definition if I can.
-                // But I'll just use `any APIClientProtocol` for now.
+                
+                // Verify subscription
                 _ = try await apiClient.verifySubscription(
                     transactionId: transactionId,
                     token: token
                 )
 
                 // 3. Refresh user info
-                // TODO: Refresh auth manager with new user info
+                let updatedUser = try await apiClient.getUserProfile(token: token)
+                authManager.updateUser(updatedUser)
             }
 
             showSuccessAlert = true
@@ -71,7 +59,7 @@ final class SubscriptionViewModel {
         isLoading = false
     }
     
-    func restorePurchases(storeKitManager: StoreKitManager, apiClient: any APIClientProtocol, authManager: AuthManager) async {
+    func restorePurchases(storeKitManager: StoreKitManager, apiClient: any APIClientProtocol, authManager: any AuthManaging) async {
         isLoading = true
         errorMessage = nil
 
@@ -82,10 +70,16 @@ final class SubscriptionViewModel {
             if let token = authManager.token,
                let transactionId = await storeKitManager.getOriginalTransactionId() {
                 do {
+                    // Verify subscription
                     _ = try await apiClient.verifySubscription(
                         transactionId: transactionId,
                         token: token
                     )
+                    
+                    // Refresh user info
+                    let updatedUser = try await apiClient.getUserProfile(token: token)
+                    authManager.updateUser(updatedUser)
+                    
                     showSuccessAlert = true
                 } catch {
                     errorMessage = "Error al verificar la suscripcion: \(error.localizedDescription)"

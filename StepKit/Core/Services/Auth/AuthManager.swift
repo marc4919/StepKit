@@ -73,6 +73,19 @@ final class AuthManager: AuthManaging {
         }
     }
     
+    /// Actualiza la información del usuario en memoria y persistencia
+    /// - Parameter user: Nueva información del usuario
+    func updateUser(_ user: UserInfo) {
+        self.currentUser = user
+        
+        // Actualizar persistencia
+        do {
+            try keychain.save(user, forKey: userKey)
+        } catch {
+            print("Error al actualizar información del usuario: \(error)")
+        }
+    }
+    
     /// Cierra sesión y limpia todos los datos de autenticación
     func signOut() {
         token = nil

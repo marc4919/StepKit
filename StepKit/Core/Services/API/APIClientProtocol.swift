@@ -34,8 +34,13 @@ protocol APIClientProtocol: AuthServiceProtocol {
     /// - Parameters:
     ///   - request: Datos del objetivo a generar
     ///   - token: Token JWT de autenticación
-    /// - Returns: Stream de eventos de creación del kit
+    /// Returns: Stream de eventos de creación del kit
     func streamKitGeneration(from request: AIGenerateKitRequest, token: String) -> AsyncThrowingStream<AIChatStreamEvent, Error>
+    
+    /// Verifica una transacción de StoreKit con el backend
     func verifySubscription(transactionId: String, token: String) async throws -> VerifySubscriptionResponse
+    
+    /// Obtiene el perfil completo del usuario (GET /me)
+    func getUserProfile(token: String) async throws -> UserInfo
 }
 

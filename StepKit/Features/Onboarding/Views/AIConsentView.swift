@@ -258,3 +258,4 @@ struct AIConsentView: View {
         .preferredColorScheme(.dark)
         .environment(AIConsentManager())
 }
+

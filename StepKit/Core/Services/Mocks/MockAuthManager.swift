@@ -38,6 +38,10 @@ final class MockAuthManager: AuthManaging {
         self.isAuthenticated = true
     }
     
+    func updateUser(_ user: UserInfo) {
+        self.currentUser = user
+    }
+    
     func signOut() {
         token = nil
         currentUser = nil
