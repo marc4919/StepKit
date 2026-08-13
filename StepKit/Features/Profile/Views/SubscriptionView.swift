@@ -14,7 +14,7 @@ struct SubscriptionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.storeKitManager) private var storeKitManager
     @Environment(AuthManager.self) private var authManager
-    @EnvironmentObject private var apiClient: APIClientWrapper
+    @Environment(\.apiClient) private var apiClient
 
     @State private var viewModel = SubscriptionViewModel()
     @State private var showingTermsOfService = false
@@ -276,7 +276,7 @@ struct SubscriptionView: View {
             Task {
                 await viewModel.subscribeToPlan(
                     storeKitManager: storeKitManager,
-                    apiClient: apiClient.client,
+                    apiClient: apiClient,
                     authManager: authManager
                 )
             }
@@ -318,7 +318,7 @@ struct SubscriptionView: View {
             Task {
                 await viewModel.restorePurchases(
                     storeKitManager: storeKitManager,
-                    apiClient: apiClient.client,
+                    apiClient: apiClient,
                     authManager: authManager
                 )
             }
@@ -601,20 +601,10 @@ struct PlanCard: View {
     }
 }
 
-// MARK: - API Client Wrapper for Environment
-final class APIClientWrapper: ObservableObject {
-    @Published private(set) var client: APIClient
-
-    init(client: APIClient = APIClient()) {
-        self.client = client
-    }
-}
-
 #Preview {
     NavigationStack {
         SubscriptionView()
             .environment(AuthManager())
-            .environmentObject(APIClientWrapper())
+            .environment(\.apiClient, MockAPIClient())
     }
 }
-

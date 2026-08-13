@@ -63,15 +63,22 @@ final class StoreKitManager {
     }
 
     /// Purchases a subscription product
-    /// - Parameter product: The product to purchase
+    /// - Parameters:
+    ///   - product: The product to purchase.
+    ///   - appAccountToken: Stable StepKit account UUID signed into the transaction.
     /// - Returns: The verified transaction if successful
-    func purchase(_ product: Product) async throws -> StoreKit.Transaction {
+    func purchase(
+        _ product: Product,
+        appAccountToken: UUID
+    ) async throws -> StoreKit.Transaction {
         isLoading = true
         error = nil
 
         defer { isLoading = false }
 
-        let result = try await product.purchase()
+        let result = try await product.purchase(
+            options: [.appAccountToken(appAccountToken)]
+        )
 
         switch result {
         case .success(let verification):

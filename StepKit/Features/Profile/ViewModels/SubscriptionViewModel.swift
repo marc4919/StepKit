@@ -26,28 +26,35 @@ final class SubscriptionViewModel {
             errorMessage = "Producto no disponible"
             return
         }
+        guard authManager.isAuthenticated,
+              let appAccountToken = authManager.currentUser?.uuid,
+              let token = authManager.token else {
+            errorMessage = "Necesitas una sesión válida para suscribirte"
+            return
+        }
 
         isLoading = true
         errorMessage = nil
 
         do {
             // 1. Purchase with StoreKit
-            let transaction = try await storeKitManager.purchase(product)
+            let transaction = try await storeKitManager.purchase(
+                product,
+                appAccountToken: appAccountToken
+            )
 
             // 2. Verify with backend
-            if let token = authManager.token {
-                let transactionId = String(transaction.originalID)
-                
-                // Verify subscription
-                _ = try await apiClient.verifySubscription(
-                    transactionId: transactionId,
-                    token: token
-                )
+            let transactionId = String(transaction.originalID)
 
-                // 3. Refresh user info
-                let updatedUser = try await apiClient.getUserProfile(token: token)
-                authManager.updateUser(updatedUser)
-            }
+            // Verify subscription
+            _ = try await apiClient.verifySubscription(
+                transactionId: transactionId,
+                token: token
+            )
+
+            // 3. Refresh user info
+            let updatedUser = try await apiClient.getUserProfile(token: token)
+            authManager.updateUser(updatedUser)
 
             showSuccessAlert = true
         } catch StoreKitError.userCancelled {

@@ -18,6 +18,7 @@ struct StepKitApp: App {
     @State private var showOnboarding = false
     @State private var showAIConsent = false
     @Environment(\.scenePhase) private var scenePhase
+    private let apiClient = APIClient()
 
     // Sync
     @State private var syncService: SyncService?
@@ -32,7 +33,10 @@ struct StepKitApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if authManager.isAuthenticated {
+                if authManager.isRestoringSession {
+                    ProgressView("Validando sesión…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if authManager.isAuthenticated {
                     ContentView()
                         .fullScreenCover(isPresented: $showOnboarding) {
                             OnboardingView {
@@ -77,6 +81,18 @@ struct StepKitApp: App {
                     SignInView()
                 }
             }
+            .task {
+                if let restoredUser = await authManager.validateStoredSession(using: apiClient) {
+                    do {
+                        try PersistenceController.shared.claimLegacyData(for: restoredUser.id)
+                    } catch {
+                        #if DEBUG
+                        print("Could not claim legacy local data: \(error)")
+                        #endif
+                    }
+                    authManager.completeStoredSessionRestore(with: restoredUser)
+                }
+            }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
                     syncManager?.handleAppForeground()
@@ -93,7 +109,7 @@ struct StepKitApp: App {
         }
         .environment(authManager)
         .environment(aiConsentManager)
-        .environment(\.apiClient, APIClient())
+        .environment(\.apiClient, apiClient)
         .environment(\.syncManager, syncManager)
         .modelContainer(PersistenceController.shared.container)
     }

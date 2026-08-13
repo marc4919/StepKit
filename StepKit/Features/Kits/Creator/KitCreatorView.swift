@@ -150,7 +150,8 @@ struct KitCreatorView: View {
     // MARK: - Actions
 
     private func cancelAndDismiss(vm: KitCreatorViewModel) {
-        vm.cancelGeneration(modelContext: modelContext)
+        guard let ownerID = authManager.currentUser?.id else { return }
+        vm.cancelGeneration(modelContext: modelContext, ownerID: ownerID)
         
         // Si estamos en form, cerrar. Si no, volver al form.
         if vm.viewState == .form {
@@ -159,7 +160,8 @@ struct KitCreatorView: View {
     }
 
     private func saveAndNavigate(vm: KitCreatorViewModel) {
-        if let goal = vm.saveKit(in: modelContext) {
+        guard let ownerID = authManager.currentUser?.id else { return }
+        if let goal = vm.saveKit(in: modelContext, ownerID: ownerID) {
             // Trigger sync
             syncManager?.handleDataChange()
             

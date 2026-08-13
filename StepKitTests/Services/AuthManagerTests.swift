@@ -6,14 +6,16 @@
 //
 
 import Testing
+import Foundation
 @testable import StepKit
 
 @Suite("AuthManager Tests")
+@MainActor
 struct AuthManagerTests {
     
     @Test("Should start unauthenticated")
     func startsUnauthenticated() {
-        let keychain = KeychainManager.shared
+        let keychain = InMemoryKeychainStore()
         let authManager = AuthManager(keychain: keychain)
         
         #expect(authManager.isAuthenticated == false)
@@ -23,7 +25,7 @@ struct AuthManagerTests {
     
     @Test("Should save auth and become authenticated")
     func savesAuth() {
-        let keychain = KeychainManager.shared
+        let keychain = InMemoryKeychainStore()
         let authManager = AuthManager(keychain: keychain)
         
         let user = UserInfo(
@@ -42,7 +44,7 @@ struct AuthManagerTests {
     
     @Test("Should sign out and clear auth")
     func signsOut() {
-        let keychain = KeychainManager.shared
+        let keychain = InMemoryKeychainStore()
         let authManager = AuthManager(keychain: keychain)
         
         let user = UserInfo(
@@ -59,9 +61,67 @@ struct AuthManagerTests {
         #expect(authManager.currentUser == nil)
         #expect(authManager.token == nil)
     }
+
+    @Test("Stored credentials require server validation")
+    func storedCredentialsRequireValidation() async {
+        let keychain = InMemoryKeychainStore()
+        let originalUser = UserInfo(
+            id: UUID().uuidString,
+            tier: "free",
+            monthlyTokensUsed: 0,
+            monthlyTokenQuota: 1000
+        )
+
+        let initialManager = AuthManager(keychain: keychain)
+        initialManager.saveAuth(token: "stored-token", user: originalUser)
+
+        let restoredManager = AuthManager(keychain: keychain)
+        #expect(restoredManager.isAuthenticated == false)
+        #expect(restoredManager.isRestoringSession == true)
+
+        let apiClient = MockAPIClient()
+        apiClient.simulatedDelay = 0
+        apiClient.mockUserProfile = originalUser
+
+        let validatedUser = await restoredManager.validateStoredSession(using: apiClient)
+        #expect(validatedUser?.id == originalUser.id)
+        #expect(restoredManager.isAuthenticated == false)
+
+        if let validatedUser {
+            restoredManager.completeStoredSessionRestore(with: validatedUser)
+        }
+        #expect(restoredManager.isAuthenticated == true)
+        #expect(restoredManager.isRestoringSession == false)
+    }
+
+    @Test("Rejected stored credentials fail closed")
+    func rejectedStoredCredentialsFailClosed() async {
+        let keychain = InMemoryKeychainStore()
+        let user = UserInfo(
+            id: UUID().uuidString,
+            tier: "free",
+            monthlyTokensUsed: 0,
+            monthlyTokenQuota: 1000
+        )
+
+        let initialManager = AuthManager(keychain: keychain)
+        initialManager.saveAuth(token: "expired-token", user: user)
+
+        let restoredManager = AuthManager(keychain: keychain)
+        let apiClient = MockAPIClient()
+        apiClient.simulatedDelay = 0
+        apiClient.shouldFailUserProfile = true
+
+        let validatedUser = await restoredManager.validateStoredSession(using: apiClient)
+        #expect(validatedUser == nil)
+        #expect(restoredManager.isAuthenticated == false)
+        #expect(restoredManager.isRestoringSession == false)
+        #expect(restoredManager.token == nil)
+    }
 }
 
 @Suite("MockAuthManager Tests")
+@MainActor
 struct MockAuthManagerTests {
     
     @Test("Should allow custom initial state")
@@ -102,5 +162,31 @@ struct MockAuthManagerTests {
     }
 }
 
+@MainActor
+private final class InMemoryKeychainStore: KeychainStoring {
+    private var values: [String: Data] = [:]
+
+    func save<T: Codable>(_ value: T, forKey key: String) throws {
+        values[key] = try JSONEncoder().encode(value)
+    }
+
+    func get<T: Codable>(forKey key: String) throws -> T? {
+        guard let data = values[key] else { return nil }
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    func saveString(_ value: String, forKey key: String) throws {
+        values[key] = Data(value.utf8)
+    }
+
+    func getString(forKey key: String) throws -> String? {
+        guard let data = values[key] else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    func delete(forKey key: String) throws {
+        values.removeValue(forKey: key)
+    }
+}
 
 

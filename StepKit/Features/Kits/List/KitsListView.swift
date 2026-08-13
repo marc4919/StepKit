@@ -12,6 +12,7 @@ import SwiftData
 struct KitsListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(AuthManager.self) private var authManager
     
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse)
     private var kitEntities: [GoalEntity]
@@ -23,22 +24,30 @@ struct KitsListView: View {
     @State private var viewModel = KitsViewModel()
 
     // MARK: - Computed Properties
+
+    private var currentOwnerID: String? { authManager.currentUser?.id }
+
+    private var visibleKitEntities: [GoalEntity] {
+        guard let currentOwnerID else { return [] }
+        return kitEntities.filter { $0.ownerID == currentOwnerID }
+    }
     
     // Checksum de steps completados para forzar re-render cuando cambia
     private var stepsCompletionChecksum: Int {
-        allSteps.filter { $0.isCompleted }.count
+        guard let currentOwnerID else { return 0 }
+        return allSteps.filter { $0.ownerID == currentOwnerID && $0.isCompleted }.count
     }
 
     // GoalEntities activos y completados
     private var activeKitEntities: [GoalEntity] {
         // Acceder al checksum fuerza dependencia de allSteps
         _ = stepsCompletionChecksum
-        return kitEntities.filter { !$0.isCompleted }
+        return visibleKitEntities.filter { !$0.isCompleted }
     }
 
     private var completedKitEntities: [GoalEntity] {
         _ = stepsCompletionChecksum
-        return kitEntities.filter { $0.isCompleted }
+        return visibleKitEntities.filter { $0.isCompleted }
     }
     
     // MARK: - Body
@@ -49,14 +58,14 @@ struct KitsListView: View {
                 KitsListCompactView(
                     activeKits: activeKitEntities,
                     completedKits: completedKitEntities,
-                    kitEntities: kitEntities,
+                    kitEntities: visibleKitEntities,
                     viewModel: viewModel
                 )
             } else {
                 KitsListRegularView(
                     activeKits: activeKitEntities,
                     completedKits: completedKitEntities,
-                    kitEntities: kitEntities,
+                    kitEntities: visibleKitEntities,
                     viewModel: viewModel
                 )
             }

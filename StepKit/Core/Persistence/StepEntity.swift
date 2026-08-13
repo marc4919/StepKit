@@ -11,6 +11,7 @@ import SwiftData
 @Model
 final class StepEntity {
     @Attribute(.unique) var id: UUID
+    var ownerID: String = ""
     var stepTitle: String
     var descriptionShort: String
     var descriptionLong: String
@@ -30,6 +31,7 @@ final class StepEntity {
     
     init(
         id: UUID = UUID(),
+        ownerID: String = "",
         stepTitle: String,
         descriptionShort: String,
         descriptionLong: String,
@@ -46,6 +48,7 @@ final class StepEntity {
         notificationEnabled: Bool = true
     ) {
         self.id = id
+        self.ownerID = ownerID
         self.stepTitle = stepTitle
         self.descriptionShort = descriptionShort
         self.descriptionLong = descriptionLong
@@ -67,6 +70,7 @@ final class StepEntity {
     convenience init(from dto: StepDTO, goal: GoalEntity) {
         self.init(
             id: dto.id ?? UUID(),
+            ownerID: goal.ownerID,
             stepTitle: dto.title,
             descriptionShort: dto.descriptionShort,
             descriptionLong: dto.descriptionLong,
@@ -155,9 +159,10 @@ final class StepEntity {
     }
 
     /// Crea una entidad desde un DTO de sync
-    convenience init(fromSync dto: StepSyncDTO, goal: GoalEntity) {
+    convenience init(fromSync dto: StepSyncDTO, goal: GoalEntity, ownerID: String) {
         self.init(
             id: dto.id ?? UUID(),
+            ownerID: ownerID,
             stepTitle: dto.title,
             descriptionShort: dto.descriptionShort,
             descriptionLong: dto.descriptionLong,
@@ -175,5 +180,4 @@ final class StepEntity {
         self.goal = goal
     }
 }
-
 

@@ -7,8 +7,12 @@
 
 import Foundation
 
+protocol SyncNetworkServicing {
+    func syncBatch(_ request: SyncBatchRequest, token: String) async throws -> SyncBatchResponse
+}
+
 /// Servicio encargado de la comunicación de red para la sincronización
-struct SyncNetworkService {
+struct SyncNetworkService: SyncNetworkServicing {
     private let client: HTTPClient
     private let baseURL: String
     

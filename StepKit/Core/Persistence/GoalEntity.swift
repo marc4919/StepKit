@@ -11,6 +11,7 @@ import SwiftData
 @Model
 final class GoalEntity {
     @Attribute(.unique) var id: UUID
+    var ownerID: String = ""
     var planTitle: String
     var horizonDays: Int
     var kpi: String
@@ -31,6 +32,7 @@ final class GoalEntity {
     
     init(
         id: UUID = UUID(),
+        ownerID: String = "",
         planTitle: String,
         horizonDays: Int,
         kpi: String,
@@ -47,6 +49,7 @@ final class GoalEntity {
         notificationsEnabled: Bool = true
     ) {
         self.id = id
+        self.ownerID = ownerID
         self.planTitle = planTitle
         self.horizonDays = horizonDays
         self.kpi = kpi
@@ -65,9 +68,10 @@ final class GoalEntity {
     
     // MARK: - Conversion from KitDTO
     
-    convenience init(from dto: KitDTO) {
+    convenience init(from dto: KitDTO, ownerID: String) {
         self.init(
             id: dto.id ?? UUID(),
+            ownerID: ownerID,
             planTitle: dto.title,
             horizonDays: dto.horizonDays,
             kpi: dto.kpi,
@@ -176,9 +180,10 @@ final class GoalEntity {
     }
 
     /// Crea una entidad desde un DTO de sync
-    convenience init(fromSync dto: KitSyncDTO) {
+    convenience init(fromSync dto: KitSyncDTO, ownerID: String) {
         self.init(
             id: dto.id ?? UUID(),
+            ownerID: ownerID,
             planTitle: dto.title,
             horizonDays: dto.horizonDays,
             kpi: dto.kpi,
@@ -195,5 +200,4 @@ final class GoalEntity {
         )
     }
 }
-
 

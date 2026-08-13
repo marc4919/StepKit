@@ -215,7 +215,7 @@ final class KitCreatorViewModel {
         }
     }
     
-    func cancelGeneration(modelContext: ModelContext) {
+    func cancelGeneration(modelContext: ModelContext, ownerID: String) {
         // Marcar como cancelado
         isCancelled = true
         
@@ -226,7 +226,7 @@ final class KitCreatorViewModel {
         // Manejar el kit que puede haberse creado en el servidor
         if let kitId = streamingState.kitId {
             // Caso 1: Ya tenemos el kitId (el servidor completó) - eliminar directamente
-            deleteKitById(kitId, in: modelContext)
+            deleteKitById(kitId, ownerID: ownerID, in: modelContext)
         } else if viewState == .streaming || viewState == .loading {
             // Caso 2: No tenemos kitId pero estábamos en proceso
             // El servidor puede crear el kit - marcar sesión como cancelada
@@ -241,11 +241,11 @@ final class KitCreatorViewModel {
         }
     }
     
-    func saveKit(in modelContext: ModelContext) -> Goal? {
-        guard let kitDTO = streamingState.kit else { return nil }
+    func saveKit(in modelContext: ModelContext, ownerID: String) -> Goal? {
+        guard let kitDTO = streamingState.kit, !ownerID.isEmpty else { return nil }
         
         // Guardar en SwiftData
-        let goalEntity = GoalEntity(from: kitDTO)
+        let goalEntity = GoalEntity(from: kitDTO, ownerID: ownerID)
         modelContext.insert(goalEntity)
         
         // Añadir los steps
@@ -337,10 +337,12 @@ final class KitCreatorViewModel {
     }
     
     /// Elimina un kit por su ID creando una entidad local marcada como eliminada
-    private func deleteKitById(_ kitId: UUID, in modelContext: ModelContext) {
+    private func deleteKitById(_ kitId: UUID, ownerID: String, in modelContext: ModelContext) {
+        guard !ownerID.isEmpty else { return }
         let now = Date()
         let deletedKit = GoalEntity(
             id: kitId,
+            ownerID: ownerID,
             planTitle: streamingState.kitTitle ?? "Cancelled",
             horizonDays: streamingState.horizonDays ?? 0,
             kpi: streamingState.kpi ?? "",

@@ -13,6 +13,7 @@ import Observation
 @Observable
 final class AuthManager: AuthManaging {
     var isAuthenticated = false
+    var isRestoringSession = false
     var currentUser: UserInfo?
     
     /// Nombre a mostrar en el perfil (puede venir de Apple o de la API)
@@ -21,11 +22,12 @@ final class AuthManager: AuthManaging {
     private let tokenKey = "stepkit_jwt_token"
     private let userKey = "stepkit_user_info"
     private let profileNameKey = "stepkit_profile_display_name"
-    private let keychain: KeychainManager
+    private let keychain: any KeychainStoring
     
-    init(keychain: KeychainManager? = nil) {
+    init(keychain: (any KeychainStoring)? = nil) {
         self.keychain = keychain ?? KeychainManager.shared
-        // Cargar token guardado al iniciar
+        // Las credenciales almacenadas no se consideran una sesión válida hasta
+        // que el backend las confirme mediante GET /me.
         loadStoredAuth()
     }
     
@@ -40,7 +42,6 @@ final class AuthManager: AuthManaging {
             do {
                 if let token = newValue {
                     try keychain.saveString(token, forKey: tokenKey)
-                    isAuthenticated = true
                 } else {
                     try keychain.delete(forKey: tokenKey)
                     try keychain.delete(forKey: userKey)
@@ -64,6 +65,8 @@ final class AuthManager: AuthManaging {
     func saveAuth(token: String, user: UserInfo) {
         self.token = token
         self.currentUser = user
+        self.isRestoringSession = false
+        self.isAuthenticated = true
         
         // Guardar también la info del usuario en Keychain
         do {
@@ -91,11 +94,37 @@ final class AuthManager: AuthManaging {
         token = nil
         currentUser = nil
         displayName = nil
+        isRestoringSession = false
         do {
             try keychain.delete(forKey: profileNameKey)
         } catch {
             print("Error al borrar el nombre de perfil: \(error)")
         }
+    }
+
+    /// Valida las credenciales persistidas sin activar todavía la sesión local.
+    /// El llamador puede migrar de forma segura datos legacy antes de mostrar contenido.
+    func validateStoredSession(using apiClient: any APIClientProtocol) async -> UserInfo? {
+        guard isRestoringSession, let storedToken = token else {
+            isRestoringSession = false
+            return nil
+        }
+
+        do {
+            return try await apiClient.getUserProfile(token: storedToken)
+        } catch {
+            // Fallo cerrado: una credencial que el servidor no ha confirmado no
+            // concede acceso a datos locales ni remotos.
+            signOut()
+            return nil
+        }
+    }
+
+    /// Activa una sesión previamente validada por el servidor.
+    func completeStoredSessionRestore(with user: UserInfo) {
+        updateUser(user)
+        isRestoringSession = false
+        isAuthenticated = true
     }
     
     /// Actualiza el nombre a mostrar y lo persiste.
@@ -118,7 +147,8 @@ final class AuthManager: AuthManaging {
             // Cargar token
             if let storedToken = try keychain.getString(forKey: tokenKey),
                !storedToken.isEmpty {
-                isAuthenticated = true
+                isAuthenticated = false
+                isRestoringSession = true
                 
                 // Cargar info del usuario si existe
                 if let storedUser: UserInfo = try keychain.get(forKey: userKey) {
@@ -132,15 +162,16 @@ final class AuthManager: AuthManaging {
                 }
             } else {
                 isAuthenticated = false
+                isRestoringSession = false
                 currentUser = nil
                 displayName = nil
             }
         } catch {
             print("Error al cargar autenticación almacenada: \(error)")
             isAuthenticated = false
+            isRestoringSession = false
             currentUser = nil
             displayName = nil
         }
     }
 }
-

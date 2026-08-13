@@ -11,12 +11,18 @@ import UIKit
 import FoundationModels
 
 struct TrainerView: View {
+    @Environment(AuthManager.self) private var authManager
     // MARK: - SwiftData Query
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse)
     private var goalEntities: [GoalEntity]
 
     /// Indica si el usuario tiene kits (real, basado en SwiftData)
-    private var hasKits: Bool { !goalEntities.isEmpty }
+    private var visibleGoalEntities: [GoalEntity] {
+        guard let ownerID = authManager.currentUser?.id else { return [] }
+        return goalEntities.filter { $0.ownerID == ownerID }
+    }
+
+    private var hasKits: Bool { !visibleGoalEntities.isEmpty }
 
     // MARK: - ViewModel
     @State private var viewModel = TrainerViewModel()
@@ -39,8 +45,8 @@ struct TrainerView: View {
                         isResponding: $vm.isResponding,
                         isInputFocused: $isInputFocused,
                         quickActions: viewModel.quickActions,
-                        onSendMessage: { viewModel.sendDraft(goals: goalEntities) },
-                        onQuickAction: { viewModel.sendQuickAction($0, goals: goalEntities) },
+                        onSendMessage: { viewModel.sendDraft(goals: visibleGoalEntities) },
+                        onQuickAction: { viewModel.sendQuickAction($0, goals: visibleGoalEntities) },
                         onResetConversation: { viewModel.showingResetAlert = true }
                     )
                 } else {
@@ -87,13 +93,13 @@ struct TrainerView: View {
         .alert("Nueva conversación", isPresented: $vm.showingResetAlert) {
             Button("Cancelar", role: .cancel) { }
             Button("Reiniciar", role: .destructive) {
-                viewModel.resetConversation(goals: goalEntities)
+                viewModel.resetConversation(goals: visibleGoalEntities)
             }
         } message: {
             Text("¿Quieres empezar una nueva conversación? Se borrarán los mensajes actuales.")
         }
         .onAppear {
-            viewModel.onAppear(goals: goalEntities)
+            viewModel.onAppear(goals: visibleGoalEntities)
         }
         .onDisappear {
             viewModel.onDisappear()

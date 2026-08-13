@@ -12,6 +12,7 @@ import FoundationModels
 struct CalendarPlusView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
+    @Environment(AuthManager.self) private var authManager
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted },
            sort: \GoalEntity.createdAt,
            order: .reverse)
@@ -25,10 +26,15 @@ struct CalendarPlusView: View {
     // Tip
     private let createKitTip = CreateKitFromCalendarTip()
 
+    private var visibleGoalEntities: [GoalEntity] {
+        guard let ownerID = authManager.currentUser?.id else { return [] }
+        return goalEntities.filter { $0.ownerID == ownerID }
+    }
+
 
     // Kits del día seleccionado
     private var goalsForSelectedDate: [GoalEntity] {
-        goalEntities.filter { entity in
+        visibleGoalEntities.filter { entity in
             guard let dueDate = entity.dueDate else { return false }
             return Calendar.current.isDate(dueDate, inSameDayAs: selectedDate)
         }
@@ -36,7 +42,7 @@ struct CalendarPlusView: View {
 
     // Steps del día seleccionado (excluye eliminados)
     private var stepsForSelectedDate: [StepEntity] {
-        goalEntities.flatMap { $0.steps }
+        visibleGoalEntities.flatMap { $0.steps }
             .filter { step in
                 guard step.deletedAt == nil else { return false }  // Excluir eliminados
                 guard let deadline = step.suggestedDeadline else { return false }
@@ -50,7 +56,7 @@ struct CalendarPlusView: View {
         var result: [DateComponents: Int] = [:]
         let calendar = Calendar.current
 
-        for goal in goalEntities {
+        for goal in visibleGoalEntities {
             for step in goal.steps {
                 guard step.deletedAt == nil else { continue }  // Excluir eliminados
                 guard let deadline = step.suggestedDeadline else { continue }
@@ -66,7 +72,7 @@ struct CalendarPlusView: View {
         var result: [DateComponents: Int] = [:]
         let calendar = Calendar.current
 
-        for goal in goalEntities {
+        for goal in visibleGoalEntities {
             guard let dueDate = goal.dueDate else { continue }
             let components = calendar.dateComponents([.year, .month, .day], from: dueDate)
             result[components, default: 0] += 1
@@ -138,12 +144,12 @@ struct CalendarPlusView: View {
             .navigationTitle("Calendario")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: GoalNavigation.self) { nav in
-                if let goalEntity = goalEntities.first(where: { $0.id == nav.id }) {
+                if let goalEntity = visibleGoalEntities.first(where: { $0.id == nav.id }) {
                     KitDetailView(kitEntity: goalEntity)
                 }
             }
             .navigationDestination(for: StepNavigation.self) { nav in
-                if let stepEntity = goalEntities.flatMap(\.steps).first(where: { $0.id == nav.id }) {
+                if let stepEntity = visibleGoalEntities.flatMap(\.steps).first(where: { $0.id == nav.id }) {
                     let sortedSteps = stepEntity.goal?.steps.sorted { $0.order < $1.order } ?? []
                     let stepIndex = sortedSteps.firstIndex(where: { $0.id == nav.id }) ?? 0
                     StepDetailView(stepEntity: stepEntity, stepNumber: stepIndex + 1)

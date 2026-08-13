@@ -11,27 +11,45 @@ import SwiftUI
 
 /// Servicio principal de sincronización que orquesta la comunicación entre Core Data y el Backend
 @Observable
+@MainActor
 final class SyncService {
     // MARK: - Properties
     
     var isSyncing = false
     var lastSyncDate: Date? {
         get {
-            UserDefaults.standard.object(forKey: "lastSyncDate") as? Date
+            guard let key = syncCursorKey else { return nil }
+            return preferences.object(forKey: key) as? Date
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "lastSyncDate")
+            guard let key = syncCursorKey else { return }
+            preferences.set(newValue, forKey: key)
         }
     }
     
     private let authManager: AuthManager
-    private let networkService: SyncNetworkService
+    private let networkService: any SyncNetworkServicing
+    private let preferences: UserDefaults
     private var modelContext: ModelContext?
+
+    private var ownerID: String? {
+        guard let id = authManager.currentUser?.id, !id.isEmpty else { return nil }
+        return id
+    }
+
+    private var syncCursorKey: String? {
+        ownerID.map { "stepkit.lastSyncDate.\($0)" }
+    }
     
     // MARK: - Init
     
-    init(authManager: AuthManager) {
+    init(
+        authManager: AuthManager,
+        networkService: (any SyncNetworkServicing)? = nil,
+        preferences: UserDefaults = .standard
+    ) {
         self.authManager = authManager
+        self.preferences = preferences
         // Inicializamos el servicio de red con el HTTPClient por defecto
         let httpClient = HTTPClient()
         // Asumimos URL por defecto o la pasamos si es necesario. 
@@ -41,7 +59,8 @@ final class SyncService {
         #else
         let baseURL = "https://stepkitserver-production.up.railway.app"
         #endif
-        self.networkService = SyncNetworkService(client: httpClient, baseURL: baseURL)
+        self.networkService = networkService
+            ?? SyncNetworkService(client: httpClient, baseURL: baseURL)
     }
     
     func configure(with context: ModelContext) {
@@ -67,19 +86,20 @@ final class SyncService {
         guard !isSyncing else { return }
         guard let context = modelContext else { return }
         guard let token = authManager.token else { return }
+        guard let ownerID else { return }
         
         isSyncing = true
         defer { isSyncing = false }
         
         do {
             // 1. Recopilar cambios locales
-            let request = try fetchLocalChanges(context: context)
+            let request = try fetchLocalChanges(context: context, ownerID: ownerID)
             
             // 2. Enviar al servidor
             let response = try await networkService.syncBatch(request, token: token)
             
             // 3. Aplicar cambios del servidor
-            try await applyServerChanges(response, context: context)
+            try await applyServerChanges(response, context: context, ownerID: ownerID)
             
             // 4. Actualizar fecha
             lastSyncDate = Date()
@@ -92,13 +112,17 @@ final class SyncService {
     
     // MARK: - Private Helpers
     
-    private func fetchLocalChanges(context: ModelContext) throws -> SyncBatchRequest {
+    private func fetchLocalChanges(context: ModelContext, ownerID: String) throws -> SyncBatchRequest {
         // Fetch Goals
-        let goalDescriptor = FetchDescriptor<GoalEntity>()
+        let goalDescriptor = FetchDescriptor<GoalEntity>(
+            predicate: #Predicate { $0.ownerID == ownerID }
+        )
         let allGoals = try context.fetch(goalDescriptor)
         
         // Fetch Steps
-        let stepDescriptor = FetchDescriptor<StepEntity>()
+        let stepDescriptor = FetchDescriptor<StepEntity>(
+            predicate: #Predicate { $0.ownerID == ownerID }
+        )
         let allSteps = try context.fetch(stepDescriptor)
         
         // Filtrar modificados desde el último sync
@@ -124,12 +148,18 @@ final class SyncService {
         return SyncBatchRequest(kits: kitsDTOs, steps: stepsDTOs)
     }
     
-    private func applyServerChanges(_ response: SyncBatchResponse, context: ModelContext) async throws {
+    private func applyServerChanges(
+        _ response: SyncBatchResponse,
+        context: ModelContext,
+        ownerID: String
+    ) async throws {
         // 1. Procesar Kits
         for kitDTO in response.kits {
             if let id = kitDTO.id {
                 // Buscar existente
-                let descriptor = FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.id == id })
+                let descriptor = FetchDescriptor<GoalEntity>(
+                    predicate: #Predicate { $0.id == id && $0.ownerID == ownerID }
+                )
                 let existing = try context.fetch(descriptor).first
                 
                 if let existing {
@@ -139,7 +169,7 @@ final class SyncService {
                         existing.update(from: kitDTO)
                     }
                 } else if !kitDTO.deleted {
-                    let newGoal = GoalEntity(fromSync: kitDTO)
+                    let newGoal = GoalEntity(fromSync: kitDTO, ownerID: ownerID)
                     context.insert(newGoal)
                 }
             }
@@ -151,7 +181,9 @@ final class SyncService {
         // 2. Procesar Steps
         for stepDTO in response.steps {
             if let id = stepDTO.id {
-                let descriptor = FetchDescriptor<StepEntity>(predicate: #Predicate { $0.id == id })
+                let descriptor = FetchDescriptor<StepEntity>(
+                    predicate: #Predicate { $0.id == id && $0.ownerID == ownerID }
+                )
                 let existing = try context.fetch(descriptor).first
                 
                 if let existing {
@@ -163,9 +195,15 @@ final class SyncService {
                 } else if !stepDTO.deleted {
                     // Buscar padre
                     let kitId = stepDTO.kitId
-                    let goalDescriptor = FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.id == kitId })
+                    let goalDescriptor = FetchDescriptor<GoalEntity>(
+                        predicate: #Predicate { $0.id == kitId && $0.ownerID == ownerID }
+                    )
                     if let parent = try context.fetch(goalDescriptor).first {
-                        let newStep = StepEntity(fromSync: stepDTO, goal: parent)
+                        let newStep = StepEntity(
+                            fromSync: stepDTO,
+                            goal: parent,
+                            ownerID: ownerID
+                        )
                         context.insert(newStep)
                     } else {
                         print("⚠️ Orphaned step received: \(stepDTO.title) for kit \(kitId)")

@@ -8,8 +8,16 @@
 import Foundation
 import Security
 
+protocol KeychainStoring: AnyObject {
+    func save<T: Codable>(_ value: T, forKey key: String) throws
+    func get<T: Codable>(forKey key: String) throws -> T?
+    func saveString(_ value: String, forKey key: String) throws
+    func getString(forKey key: String) throws -> String?
+    func delete(forKey key: String) throws
+}
+
 /// Utilidad para guardar y recuperar datos del Keychain de forma segura
-class KeychainManager {
+final class KeychainManager: KeychainStoring {
     static let shared = KeychainManager()
     
     private let service: String
@@ -148,5 +156,4 @@ enum KeychainError: Error, LocalizedError {
         }
     }
 }
-
 

@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct SearchView: View {
+    @Environment(AuthManager.self) private var authManager
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse)
     private var goalEntities: [GoalEntity]
 
@@ -19,13 +20,25 @@ struct SearchView: View {
     @State private var navigationPath = NavigationPath()
     
     // MARK: - Computed Properties
+
+    private var currentOwnerID: String? { authManager.currentUser?.id }
+
+    private var visibleGoalEntities: [GoalEntity] {
+        guard let currentOwnerID else { return [] }
+        return goalEntities.filter { $0.ownerID == currentOwnerID }
+    }
+
+    private var visibleStepEntities: [StepEntity] {
+        guard let currentOwnerID else { return [] }
+        return stepEntities.filter { $0.ownerID == currentOwnerID }
+    }
     
     private var goals: [Goal] {
-        goalEntities.map { $0.toGoal() }
+        visibleGoalEntities.map { $0.toGoal() }
     }
     
     private var steps: [Step] {
-        stepEntities
+        visibleStepEntities
             .filter { step in
                 guard let goal = step.goal else { return false }
                 return !goal.isDeleted
@@ -70,12 +83,12 @@ struct SearchView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Buscar kits y pasos...")
             .navigationDestination(for: GoalEntity.ID.self) { kitId in
-                if let kitEntity = goalEntities.first(where: { $0.id == kitId }) {
+                if let kitEntity = visibleGoalEntities.first(where: { $0.id == kitId }) {
                     KitDetailView(kitEntity: kitEntity)
                 }
             }
             .navigationDestination(for: StepEntity.ID.self) { stepId in
-                if let stepEntity = stepEntities.first(where: { $0.id == stepId }) {
+                if let stepEntity = visibleStepEntities.first(where: { $0.id == stepId }) {
                     let sortedSteps = stepEntity.goal?.steps.sorted { $0.order < $1.order } ?? []
                     let stepIndex = sortedSteps.firstIndex(where: { $0.id == stepId }) ?? 0
                     StepDetailView(stepEntity: stepEntity, stepNumber: stepIndex + 1)
