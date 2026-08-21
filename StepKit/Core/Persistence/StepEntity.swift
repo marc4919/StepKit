@@ -111,11 +111,12 @@ final class StepEntity {
 
     // MARK: - Modification Tracking
 
-    /// Marca la entidad como modificada localmente (actualiza timestamp)
-    func markModified() {
-        updatedAt = Date()
+    /// Marca la entidad como modificada localmente (actualiza timestamp).
+    /// Nunca retrocede el reloj LWW si el estado remoto observado estaba adelantado.
+    func markModified(at date: Date = Date()) {
+        updatedAt = max(date, updatedAt.addingTimeInterval(0.001))
         // También marca el goal parent como modificado
-        goal?.markModified()
+        goal?.markModified(at: updatedAt)
     }
 
     // MARK: - Sync Conversion
@@ -180,4 +181,3 @@ final class StepEntity {
         self.goal = goal
     }
 }
-

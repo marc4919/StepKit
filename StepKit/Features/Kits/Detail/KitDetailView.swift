@@ -11,9 +11,16 @@ import SwiftUI
 import SwiftData
 
 struct KitDetailView: View {
+    private enum PresentedSheet: String, Identifiable {
+        case edit
+        case information
+        case annotations
+
+        var id: String { rawValue }
+    }
+
     @Bindable var kitEntity: GoalEntity
-    @State private var showingExtendedInfo = false
-    @State private var showingAnnotations = false
+    @State private var presentedSheet: PresentedSheet?
 
     var body: some View {
         ScrollView {
@@ -33,7 +40,17 @@ struct KitDetailView: View {
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
-                    showingAnnotations = true
+                    presentedSheet = .edit
+                } label: {
+                    Image(systemName: "pencil")
+                        .foregroundStyle(Color.accentColor)
+                }
+                .accessibilityIdentifier("kit.edit")
+                .accessibilityLabel("Editar Kit")
+                .accessibilityHint("Permite cambiar el título y el indicador de éxito del Kit")
+
+                Button {
+                    presentedSheet = .annotations
                 } label: {
                     Image(systemName: "note.text.badge.plus")
                         .foregroundStyle(Color.accentColor)
@@ -43,7 +60,7 @@ struct KitDetailView: View {
                 .accessibilityHint("Abre la vista para añadir anotaciones al kit")
 
                 Button {
-                    showingExtendedInfo = true
+                    presentedSheet = .information
                 } label: {
                     Image(systemName: "info.circle")
                         .foregroundStyle(Color.accentColor)
@@ -53,11 +70,15 @@ struct KitDetailView: View {
                 .accessibilityHint("Muestra información detallada del kit")
             }
         }
-        .sheet(isPresented: $showingExtendedInfo) {
-            KitInfoSheetView(goalEntity: kitEntity)
-        }
-        .sheet(isPresented: $showingAnnotations) {
-            KitAnnotationsView(goal: kitEntity.toGoal())
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .edit:
+                KitEditSheetView(kitEntity: kitEntity)
+            case .information:
+                KitInfoSheetView(goalEntity: kitEntity)
+            case .annotations:
+                KitAnnotationsView(goal: kitEntity.toGoal())
+            }
         }
     }
     

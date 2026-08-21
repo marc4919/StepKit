@@ -30,14 +30,26 @@ final class StepKitUITests: XCTestCase {
         static let submitKit = "kitCreator.create"
         static let saveKit = "kitCreator.save"
         static let stepRow = "step.row"
+        static let editKit = "kit.edit"
+        static let kitEditTitle = "kitEdit.title"
+        static let kitEditKPI = "kitEdit.kpi"
+        static let kitEditSave = "kitEdit.save"
+        static let editStep = "step.edit"
+        static let stepEditTitle = "stepEdit.title"
+        static let stepEditShortDescription = "stepEdit.shortDescription"
+        static let stepEditSave = "stepEdit.save"
         static let toggleCompletion = "step.toggleCompletion"
         static let confirmDelete = "delete.confirm"
         static let signOut = "profile.signOut"
         static let signInWithApple = "auth.signInWithApple"
     }
 
-    private let fixtureTitle = "Plan E2E estable"
-    private let fixtureFirstStep = "Preparar el entorno de prueba"
+    private let originalFixtureTitle = "Plan E2E estable"
+    private let editedFixtureTitle = "Plan E2E editado"
+    private let editedFixtureKPI = "Validación E2E sincronizada"
+    private let originalFirstStep = "Preparar el entorno de prueba"
+    private let editedFirstStep = "Preparar el entorno editado"
+    private let editedFirstStepDescription = "Entorno validado y listo para continuar"
     private let defaultTimeout: TimeInterval = 15
     private var app: XCUIApplication!
 
@@ -72,7 +84,7 @@ final class StepKitUITests: XCTestCase {
         XCTAssertNotEqual(ownerA, ownerB, "Las cuentas E2E deben resolver usuarios distintos")
         deleteAllVisibleKits()
 
-        // Login A, creación determinista y edición soportada (completar un paso).
+        // Login A, creación determinista, edición real de Kit y Step y completado.
         launch(account: Account.a)
         waitForHomeAndInitialSync()
         XCTAssertEqual(currentOwnerID(), ownerA)
@@ -83,11 +95,19 @@ final class StepKitUITests: XCTestCase {
         XCTAssertEqual(stepRows.count, 3)
         attachScreenshot(named: "GOAL-003-A-Kit-created")
 
+        let kitEditCheckpoint = editFixtureKit()
+        waitForSyncAdvance(from: kitEditCheckpoint, operation: "editar el Kit")
+        attachScreenshot(named: "GOAL-003-A-Kit-edited")
+
         let firstStep = stepRows
-            .matching(NSPredicate(format: "label CONTAINS %@", fixtureFirstStep))
+            .matching(NSPredicate(format: "label CONTAINS %@", originalFirstStep))
             .firstMatch
         XCTAssertTrue(firstStep.waitForExistence(timeout: defaultTimeout))
         firstStep.tap()
+
+        let stepEditCheckpoint = editFirstStep()
+        waitForSyncAdvance(from: stepEditCheckpoint, operation: "editar el paso")
+        attachScreenshot(named: "GOAL-003-A-Step-edited")
 
         let completionButton = element(Identifier.toggleCompletion)
         XCTAssertTrue(completionButton.waitForExistence(timeout: defaultTimeout))
@@ -104,7 +124,7 @@ final class StepKitUITests: XCTestCase {
         launchStoredSession()
         waitForHomeAndInitialSync()
         XCTAssertEqual(currentOwnerID(), ownerA)
-        assertFixtureKitCount(1)
+        assertFixtureKitCount(1, title: editedFixtureTitle)
         assertFirstStepIsCompleted()
 
         // Segundo cliente lógico: borra todo lo local y rehidrata desde servidor.
@@ -112,7 +132,7 @@ final class StepKitUITests: XCTestCase {
         completeOnboardingAndConsentIfNeeded()
         waitForHomeAndInitialSync()
         XCTAssertEqual(currentOwnerID(), ownerA)
-        assertFixtureKitCount(1)
+        assertFixtureKitCount(1, title: editedFixtureTitle)
         assertFirstStepIsCompleted()
         attachScreenshot(named: "GOAL-003-A-Remote-rehydration")
 
@@ -132,7 +152,7 @@ final class StepKitUITests: XCTestCase {
         launch(account: Account.a)
         waitForHomeAndInitialSync()
         XCTAssertEqual(currentOwnerID(), ownerA)
-        assertFixtureKitCount(1)
+        assertFixtureKitCount(1, title: editedFixtureTitle)
         assertFirstStepIsCompleted()
         attachScreenshot(named: "GOAL-003-Account-isolation")
 
@@ -153,7 +173,7 @@ final class StepKitUITests: XCTestCase {
         launch(account: Account.b)
         waitForHomeAndInitialSync()
         XCTAssertEqual(currentOwnerID(), ownerB)
-        assertFixtureKitCount(1)
+        assertFixtureKitCount(1, title: originalFixtureTitle)
         let bCleanupCheckpoint = currentSyncCheckpoint()
         deleteFirstVisibleKit()
         waitForSyncAdvance(from: bCleanupCheckpoint, operation: "limpiar el Kit de B")
@@ -323,7 +343,7 @@ final class StepKitUITests: XCTestCase {
 
         let save = element(Identifier.saveKit)
         XCTAssertTrue(save.waitForExistence(timeout: 30), "El fixture AI no terminó")
-        XCTAssertTrue(app.staticTexts[fixtureTitle].exists)
+        XCTAssertTrue(app.staticTexts[originalFixtureTitle].exists)
         scrollUpUntilHittable(save)
         save.tap()
         XCTAssertTrue(stepRows.firstMatch.waitForExistence(timeout: defaultTimeout))
@@ -331,17 +351,66 @@ final class StepKitUITests: XCTestCase {
     }
 
     @MainActor
+    private func editFixtureKit() -> SyncCheckpoint {
+        let checkpoint = currentSyncCheckpoint()
+        let edit = element(Identifier.editKit)
+        XCTAssertTrue(edit.waitForExistence(timeout: defaultTimeout))
+        edit.tap()
+
+        let title = element(Identifier.kitEditTitle)
+        let kpi = element(Identifier.kitEditKPI)
+        XCTAssertTrue(title.waitForExistence(timeout: defaultTimeout))
+        XCTAssertTrue(kpi.waitForExistence(timeout: defaultTimeout))
+        replaceText(in: title, with: editedFixtureTitle)
+        replaceText(in: kpi, with: editedFixtureKPI)
+
+        let save = element(Identifier.kitEditSave)
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(app.staticTexts[editedFixtureTitle].waitForExistence(timeout: defaultTimeout))
+        XCTAssertTrue(app.staticTexts[editedFixtureKPI].waitForExistence(timeout: defaultTimeout))
+        return checkpoint
+    }
+
+    @MainActor
+    private func editFirstStep() -> SyncCheckpoint {
+        let checkpoint = currentSyncCheckpoint()
+        let edit = element(Identifier.editStep)
+        XCTAssertTrue(edit.waitForExistence(timeout: defaultTimeout))
+        edit.tap()
+
+        let title = element(Identifier.stepEditTitle)
+        let shortDescription = element(Identifier.stepEditShortDescription)
+        XCTAssertTrue(title.waitForExistence(timeout: defaultTimeout))
+        XCTAssertTrue(shortDescription.waitForExistence(timeout: defaultTimeout))
+        replaceText(in: title, with: editedFirstStep)
+        replaceText(in: shortDescription, with: editedFirstStepDescription)
+
+        let save = element(Identifier.stepEditSave)
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(app.staticTexts[editedFirstStep].waitForExistence(timeout: defaultTimeout))
+        XCTAssertTrue(app.staticTexts[editedFirstStepDescription].waitForExistence(timeout: defaultTimeout))
+        return checkpoint
+    }
+
+    @MainActor
     private func assertFirstStepIsCompleted() {
         returnToKitsRoot()
-        let row = fixtureRows.firstMatch
+        let row = kitRows
+            .matching(NSPredicate(format: "label == %@", "Kit: \(editedFixtureTitle)"))
+            .firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: defaultTimeout))
         row.tap()
+        XCTAssertTrue(app.staticTexts[editedFixtureKPI].waitForExistence(timeout: defaultTimeout))
 
         let firstStep = stepRows
-            .matching(NSPredicate(format: "label CONTAINS %@", fixtureFirstStep))
+            .matching(NSPredicate(format: "label CONTAINS %@", editedFirstStep))
             .firstMatch
         XCTAssertTrue(firstStep.waitForExistence(timeout: defaultTimeout))
         firstStep.tap()
+
+        XCTAssertTrue(app.staticTexts[editedFirstStepDescription].waitForExistence(timeout: defaultTimeout))
 
         let completionButton = element(Identifier.toggleCompletion)
         XCTAssertTrue(completionButton.waitForExistence(timeout: defaultTimeout))
@@ -350,11 +419,12 @@ final class StepKitUITests: XCTestCase {
     }
 
     @MainActor
-    private func assertFixtureKitCount(_ expectedCount: Int) {
+    private func assertFixtureKitCount(_ expectedCount: Int, title: String) {
+        let matchingRows = kitRows.matching(NSPredicate(format: "label == %@", "Kit: \(title)"))
         XCTAssertTrue(waitUntil(timeout: defaultTimeout) {
-            self.fixtureRows.count == expectedCount
+            matchingRows.count == expectedCount
         })
-        XCTAssertEqual(fixtureRows.count, expectedCount)
+        XCTAssertEqual(matchingRows.count, expectedCount)
         XCTAssertEqual(kitRows.count, expectedCount)
     }
 
@@ -477,11 +547,6 @@ final class StepKitUITests: XCTestCase {
     }
 
     @MainActor
-    private var fixtureRows: XCUIElementQuery {
-        kitRows.matching(NSPredicate(format: "label == %@", "Kit: \(fixtureTitle)"))
-    }
-
-    @MainActor
     private var stepRows: XCUIElementQuery {
         app.descendants(matching: .any).matching(identifier: Identifier.stepRow)
     }
@@ -504,6 +569,14 @@ final class StepKitUITests: XCTestCase {
             remainingSwipes -= 1
         }
         XCTAssertTrue(element.isHittable, "El elemento no llegó a una posición interactuable")
+    }
+
+    @MainActor
+    private func replaceText(in element: XCUIElement, with replacement: String) {
+        element.tap()
+        element.typeKey("a", modifierFlags: .command)
+        element.typeText(replacement)
+        XCTAssertEqual(element.value as? String, replacement)
     }
 
     @MainActor

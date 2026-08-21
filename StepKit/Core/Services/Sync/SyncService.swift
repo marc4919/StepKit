@@ -90,14 +90,16 @@ final class SyncService {
             // Este límite se captura antes de construir/enviar el batch. Una
             // mutación que ocurra mientras la red está suspendida tendrá un
             // `updatedAt` posterior y deberá entrar en la siguiente pasada.
+            // Los relojes futuros ya presentes sí se envían: el cursor avanza
+            // solo hasta este cutoff y, por tanto, se reintentan de forma
+            // idempotente hasta que el reloj local los alcance.
             let cutoff = now()
 
             // 1. Recopilar cambios locales
             let request = try fetchLocalChanges(
                 context: context,
                 ownerID: ownerID,
-                after: previousCursor,
-                through: cutoff
+                after: previousCursor
             )
             
             // 2. Enviar al servidor
@@ -134,8 +136,7 @@ final class SyncService {
     private func fetchLocalChanges(
         context: ModelContext,
         ownerID: String,
-        after previousCursor: Date?,
-        through cutoff: Date
+        after previousCursor: Date?
     ) throws -> SyncBatchRequest {
         // Fetch Goals
         let goalDescriptor = FetchDescriptor<GoalEntity>(
@@ -158,19 +159,15 @@ final class SyncService {
         
         if let previousCursor {
             kitsDTOs = allGoals
-                .filter { $0.updatedAt > previousCursor && $0.updatedAt <= cutoff }
+                .filter { $0.updatedAt > previousCursor }
                 .map { $0.toSyncDTO() }
             
             stepsDTOs = allSteps
-                .filter { $0.updatedAt > previousCursor && $0.updatedAt <= cutoff }
+                .filter { $0.updatedAt > previousCursor }
                 .map { $0.toSyncDTO() }
         } else {
-            kitsDTOs = allGoals
-                .filter { $0.updatedAt <= cutoff }
-                .map { $0.toSyncDTO() }
-            stepsDTOs = allSteps
-                .filter { $0.updatedAt <= cutoff }
-                .map { $0.toSyncDTO() }
+            kitsDTOs = allGoals.map { $0.toSyncDTO() }
+            stepsDTOs = allSteps.map { $0.toSyncDTO() }
         }
         
         return SyncBatchRequest(kits: kitsDTOs, steps: stepsDTOs)

@@ -13,6 +13,7 @@ struct StepDetailView: View {
     var stepNumber: Int = 1
     @State private var buttonScale: CGFloat = 1.0
     @State private var iconRotation: Double = 0
+    @State private var showingEditor = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
@@ -39,7 +40,17 @@ struct StepDetailView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    showingEditor = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .foregroundStyle(Color.accentColor)
+                }
+                .accessibilityIdentifier("step.edit")
+                .accessibilityLabel("Editar paso")
+                .accessibilityHint("Permite cambiar el título y las descripciones del paso")
+
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                         toggleStepNotification()
@@ -54,6 +65,9 @@ struct StepDetailView: View {
                 .accessibilityValue(stepEntity.notificationEnabled ? "Activo" : "Inactivo")
                 .accessibilityHint("Activa o desactiva el recordatorio de este paso")
             }
+        }
+        .sheet(isPresented: $showingEditor) {
+            StepEditSheetView(stepEntity: stepEntity)
         }
     }
 

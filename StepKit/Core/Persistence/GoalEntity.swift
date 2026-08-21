@@ -124,17 +124,19 @@ final class GoalEntity {
 
     // MARK: - Modification Tracking
 
-    /// Marca la entidad como modificada localmente (actualiza timestamp y versión)
-    func markModified() {
-        updatedAt = Date()
+    /// Marca la entidad como modificada localmente (actualiza timestamp y versión).
+    /// Nunca retrocede el reloj LWW si el estado remoto observado estaba adelantado.
+    func markModified(at date: Date = Date()) {
+        updatedAt = max(date, updatedAt.addingTimeInterval(0.001))
         version += 1
     }
 
     /// Marca la entidad como eliminada (soft delete)
     func markAsDeleted(at date: Date = Date()) {
+        let deletionDate = max(date, updatedAt.addingTimeInterval(0.001))
         isDeleted = true
-        deletedAt = date
-        updatedAt = date
+        deletedAt = deletionDate
+        updatedAt = deletionDate
         version += 1
     }
 
@@ -200,4 +202,3 @@ final class GoalEntity {
         )
     }
 }
-

@@ -36,7 +36,8 @@ struct SyncConcurrencyTests {
         step.goal = goal
 
         // Ya existe antes del request, pero su reloj es posterior al primer
-        // cutoff. No forma parte de un batch cuyo cursor no puede cubrirlo.
+        // cutoff. Debe enviarse igualmente: el cursor no lo cubre y se repetirá
+        // de forma idempotente hasta que el reloj local lo alcance.
         let futureDatedGoal = GoalEntity(
             ownerID: "account-a",
             planTitle: "Future dated kit",
@@ -74,7 +75,7 @@ struct SyncConcurrencyTests {
 
         let firstRequest = try #require(network.requests.first)
         #expect(firstRequest.kits.map(\.id).contains(goal.id))
-        #expect(!firstRequest.kits.map(\.id).contains(futureDatedGoal.id))
+        #expect(firstRequest.kits.map(\.id).contains(futureDatedGoal.id))
         #expect(firstRequest.steps.map(\.id).contains(step.id))
         #expect(manager.isSyncing)
 
