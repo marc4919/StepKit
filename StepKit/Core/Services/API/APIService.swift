@@ -112,7 +112,7 @@ struct UserLimits: Codable {
 
 // MARK: - Error Types
 
-enum APIError: Error, LocalizedError {
+enum APIError: Error, LocalizedError, CustomStringConvertible {
     case invalidResponse
     case serverError(Int, String)
     case notAuthenticated
@@ -125,8 +125,8 @@ enum APIError: Error, LocalizedError {
         switch self {
         case .invalidResponse:
             return "Respuesta inválida del servidor"
-        case .serverError(let code, let message):
-            return "Error del servidor (\(code)): \(message)"
+        case .serverError(let code, _):
+            return "Error del servidor (\(code))"
         case .notAuthenticated:
             return "No estás autenticado"
         case .networkError(let error):
@@ -138,5 +138,9 @@ enum APIError: Error, LocalizedError {
         case .quotaExceeded:
             return "Has alcanzado el límite de uso mensual"
         }
+    }
+
+    var description: String {
+        errorDescription ?? "Error de API"
     }
 }

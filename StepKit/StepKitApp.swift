@@ -17,14 +17,33 @@ struct StepKitApp: App {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showOnboarding = false
     @State private var showAIConsent = false
+    @State private var didBootstrapAuthentication = false
     @Environment(\.scenePhase) private var scenePhase
-    private let apiClient = APIClient()
+    private let appEnvironment: AppEnvironment
+    private let apiClient: APIClient
+    #if DEBUG
+    private let e2eAuthenticationMode: E2EAuthenticationLaunchMode
+    private let shouldSuppressNotificationsForE2E: Bool
+    #endif
 
     // Sync
     @State private var syncService: SyncService?
     @State private var syncManager: SyncManager?
 
     init() {
+        let appEnvironment = AppEnvironment.current
+        self.appEnvironment = appEnvironment
+        self.apiClient = APIClient(environment: appEnvironment)
+
+        #if DEBUG
+        let launchArguments = ProcessInfo.processInfo.arguments
+        self.e2eAuthenticationMode = E2ELaunchConfiguration
+            .authenticationMode(arguments: launchArguments)
+        self.shouldSuppressNotificationsForE2E = E2ELaunchConfiguration
+            .shouldSuppressNotifications(arguments: launchArguments)
+        NetworkDiagnostics.logEnvironment(appEnvironment)
+        #endif
+
         try? Tips.configure([
             .displayFrequency(.immediate)
         ])
@@ -61,14 +80,19 @@ struct StepKitApp: App {
                         }
                         .task {
                             // Solicitar permisos de notificación y verificar estado
-                            await NotificationService.shared.checkAuthorizationStatus()
-                            if !NotificationService.shared.isAuthorized {
-                                await NotificationService.shared.requestAuthorization()
+                            if shouldRequestNotifications {
+                                await NotificationService.shared.checkAuthorizationStatus()
+                                if !NotificationService.shared.isAuthorized {
+                                    await NotificationService.shared.requestAuthorization()
+                                }
                             }
 
                             // Inicializar sync si no existe
                             if syncService == nil {
-                                let service = SyncService(authManager: authManager)
+                                let service = SyncService(
+                                    authManager: authManager,
+                                    environment: appEnvironment
+                                )
                                 service.configure(with: PersistenceController.shared.container.mainContext)
                                 syncService = service
 
@@ -82,16 +106,7 @@ struct StepKitApp: App {
                 }
             }
             .task {
-                if let restoredUser = await authManager.validateStoredSession(using: apiClient) {
-                    do {
-                        try PersistenceController.shared.claimLegacyData(for: restoredUser.id)
-                    } catch {
-                        #if DEBUG
-                        print("Could not claim legacy local data: \(error)")
-                        #endif
-                    }
-                    authManager.completeStoredSessionRestore(with: restoredUser)
-                }
+                await bootstrapAuthenticationIfNeeded()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
@@ -112,5 +127,72 @@ struct StepKitApp: App {
         .environment(\.apiClient, apiClient)
         .environment(\.syncManager, syncManager)
         .modelContainer(PersistenceController.shared.container)
+    }
+
+    @MainActor
+    private func bootstrapAuthenticationIfNeeded() async {
+        guard !didBootstrapAuthentication else { return }
+        didBootstrapAuthentication = true
+
+        #if DEBUG
+        switch e2eAuthenticationMode {
+        case .invalid:
+            // Una combinación contradictoria nunca restaura una sesión previa
+            // ni activa un bypass de autenticación.
+            authManager.signOut()
+            return
+
+        case let .invalidStoredSession(shouldResetLocalState):
+            do {
+                if shouldResetLocalState {
+                    try E2ELocalStateResetter().reset(authentication: authManager)
+                }
+                try authManager.seedInvalidStoredSessionForE2E()
+            } catch {
+                authManager.signOut()
+                NetworkDiagnostics.logError(error, operation: "Invalid stored E2E session")
+                return
+            }
+
+        case let .account(account, shouldResetLocalState):
+            if shouldResetLocalState {
+                do {
+                    try E2ELocalStateResetter().reset(authentication: authManager)
+                } catch {
+                    authManager.signOut()
+                    NetworkDiagnostics.logError(error, operation: "Local E2E reset")
+                    return
+                }
+            }
+
+            do {
+                let response = try await apiClient.signInForE2E(
+                    account: account
+                )
+                // La sesión pasa por el mismo AuthManager, Keychain y recuperación
+                // de ownership que Sign in with Apple.
+                authManager.saveAuth(token: response.token, user: response.user)
+            } catch {
+                authManager.signOut()
+                NetworkDiagnostics.logError(error, operation: "E2E authentication")
+            }
+            return
+
+        case .normal:
+            break
+        }
+        #endif
+
+        if let restoredUser = await authManager.validateStoredSession(using: apiClient) {
+            authManager.completeStoredSessionRestore(with: restoredUser)
+        }
+    }
+
+    private var shouldRequestNotifications: Bool {
+        #if DEBUG
+        !shouldSuppressNotificationsForE2E
+        #else
+        true
+        #endif
     }
 }

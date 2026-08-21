@@ -165,54 +165,58 @@ struct AIConsentView: View {
     // MARK: - Consent Checkbox
     
     private var consentCheckbox: some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                hasAccepted.toggle()
-            }
-        } label: {
-            HStack(alignment: .top, spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(hasAccepted ? AnyShapeStyle(LinearGradient.accentGradient) : AnyShapeStyle(Color(.systemGray5)))
-                        .frame(width: 24, height: 24)
-                    
-                    if hasAccepted {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
-                    }
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    hasAccepted.toggle()
                 }
-                
-                VStack(alignment: .leading, spacing: 4) {
+            } label: {
+                HStack(alignment: .top, spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(hasAccepted ? AnyShapeStyle(LinearGradient.accentGradient) : AnyShapeStyle(Color(.systemGray5)))
+                            .frame(width: 24, height: 24)
+
+                        if hasAccepted {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                    }
+
                     Text("Acepto compartir mis datos con servicios de IA externos")
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                         .multilineTextAlignment(.leading)
-                    
-                    HStack(spacing: 4) {
-                        Text("He leído y acepto la")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        Button {
-                            showingPrivacyPolicy = true
-                        } label: {
-                            Text("Política de Privacidad")
-                                .font(.caption)
-                                .foregroundStyle(Color.accentColor)
-                        }
-                        .accessibilityAddTraits(.isButton)
-                    }
+
+                    Spacer()
                 }
-                
-                Spacer()
+                .contentShape(Rectangle())
             }
-            .padding(16)
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("consent.accept")
+            .accessibilityLabel("Aceptar el uso de IA")
+            .accessibilityValue(hasAccepted ? "Aceptado" : "No aceptado")
+
+            HStack(spacing: 4) {
+                Text("He leído y acepto la")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Button {
+                    showingPrivacyPolicy = true
+                } label: {
+                    Text("Política de Privacidad")
+                        .font(.caption)
+                        .foregroundStyle(Color.accentColor)
+                }
+                .accessibilityIdentifier("consent.privacyPolicy")
+            }
+            .padding(.leading, 36)
         }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(.isButton)
+        .padding(16)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
     
     // MARK: - Continue Button
@@ -245,6 +249,8 @@ struct AIConsentView: View {
         .disabled(!hasAccepted)
         .buttonStyle(.plain)
         .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("consent.continue")
+        .accessibilityLabel("Continuar")
     }
 }
 
@@ -258,4 +264,3 @@ struct AIConsentView: View {
         .preferredColorScheme(.dark)
         .environment(AIConsentManager())
 }
-

@@ -601,6 +601,7 @@ struct PlanCard: View {
     }
 }
 
+#if DEBUG
 #Preview {
     NavigationStack {
         SubscriptionView()
@@ -608,3 +609,4 @@ struct PlanCard: View {
             .environment(\.apiClient, MockAPIClient())
     }
 }
+#endif

@@ -35,7 +35,12 @@ final class NotificationService {
             isAuthorized = granted
             return granted
         } catch {
-            print("❌ NotificationService: Error solicitando permisos - \(error)")
+            #if DEBUG
+            print(
+                "❌ NotificationService: authorization failed, " +
+                "errorType=\(String(describing: type(of: error)))"
+            )
+            #endif
             return false
         }
     }
@@ -89,10 +94,15 @@ final class NotificationService {
         do {
             try await center.add(request)
             #if DEBUG
-            print("✅ NotificationService: Notificación programada para \(step.stepTitle) el \(notificationDate)")
+            print("✅ NotificationService: scheduled step=\(step.id)")
             #endif
         } catch {
-            print("❌ NotificationService: Error programando notificación - \(error)")
+            #if DEBUG
+            print(
+                "❌ NotificationService: scheduling failed, " +
+                "errorType=\(String(describing: type(of: error)))"
+            )
+            #endif
         }
     }
 
@@ -123,7 +133,7 @@ final class NotificationService {
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
 
         #if DEBUG
-        print("🔕 NotificationService: Notificaciones canceladas para kit \(goal.planTitle)")
+        print("🔕 NotificationService: cancelled count=\(identifiers.count)")
         #endif
     }
 

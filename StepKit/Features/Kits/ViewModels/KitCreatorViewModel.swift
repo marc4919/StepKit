@@ -266,7 +266,7 @@ final class KitCreatorViewModel {
             return goalEntity.toGoal()
         } catch {
             #if DEBUG
-            print("❌ Error al guardar en SwiftData: \(error)")
+            print("❌ Kit persistence failed: type=\(String(describing: type(of: error)))")
             #endif
             return nil
         }
@@ -366,17 +366,16 @@ final class KitCreatorViewModel {
             #endif
         } catch {
             #if DEBUG
-            print("❌ Error saving deleted kit: \(error)")
+            print("❌ Kit tombstone persistence failed: type=\(String(describing: type(of: error)))")
             #endif
         }
     }
     
     /// Marca la sesión de creación como cancelada para que el sync elimine kits huérfanos
     private func markSessionAsCancelled() {
-        let cancelledAt = Date()
-        UserDefaults.standard.set(cancelledAt, forKey: "lastCancelledKitCreationAt")
+        UserDefaults.standard.set(Date(), forKey: "lastCancelledKitCreationAt")
         #if DEBUG
-        print("⚠️ Kit creation session marked as cancelled at \(cancelledAt)")
+        print("⚠️ Kit creation session marked as cancelled")
         #endif
     }
 }

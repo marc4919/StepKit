@@ -126,6 +126,7 @@ struct OnboardingView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("onboarding.action")
         .accessibilityLabel(currentPage == slides.count - 1 ? "Empezar" : "Siguiente")
         .accessibilityHint(currentPage == slides.count - 1 ? "Comienza usando StepKit" : "Muestra la siguiente pantalla de introducción")
     }

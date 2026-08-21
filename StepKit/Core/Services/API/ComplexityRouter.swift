@@ -131,7 +131,10 @@ actor ComplexityRouter {
             let useHeavyweight = recommendation.recommendedModel == "heavyweight"
 
             #if DEBUG
-            print("🧠 ComplexityRouter: \(useHeavyweight ? "HEAVYWEIGHT" : "LIGHTWEIGHT") (\(recommendation.confidence)%) - \(recommendation.reasoning.prefix(60))")
+            print(
+                "🧠 ComplexityRouter: model=\(useHeavyweight ? "heavyweight" : "lightweight"), " +
+                "confidence=\(recommendation.confidence)"
+            )
             #endif
 
             return ComplexityResult(
@@ -142,7 +145,10 @@ actor ComplexityRouter {
             
         } catch {
             #if DEBUG
-            print("⚠️ ComplexityRouter: Error - \(error.localizedDescription.prefix(60)) → using LIGHTWEIGHT")
+            print(
+                "⚠️ ComplexityRouter: fallback=lightweight, " +
+                "errorType=\(String(describing: type(of: error)))"
+            )
             #endif
             return ComplexityResult(
                 useHeavyweight: false,
@@ -159,4 +165,3 @@ extension ComplexityRouter {
     /// Instancia compartida del router
     static let shared = ComplexityRouter()
 }
-

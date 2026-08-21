@@ -1,3 +1,4 @@
+#if DEBUG
 //
 //  MockDataGenerators.swift
 //  StepKit
@@ -205,3 +206,4 @@ enum MockDataGenerators {
         return formatter.date(from: dateString)
     }
 }
+#endif

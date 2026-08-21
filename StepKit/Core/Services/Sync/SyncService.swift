@@ -18,18 +18,19 @@ final class SyncService {
     var isSyncing = false
     var lastSyncDate: Date? {
         get {
-            guard let key = syncCursorKey else { return nil }
-            return preferences.object(forKey: key) as? Date
+            guard let ownerID else { return nil }
+            return syncCursor(for: ownerID)
         }
         set {
-            guard let key = syncCursorKey else { return }
-            preferences.set(newValue, forKey: key)
+            guard let ownerID else { return }
+            setSyncCursor(newValue, for: ownerID)
         }
     }
     
     private let authManager: AuthManager
     private let networkService: any SyncNetworkServicing
     private let preferences: UserDefaults
+    private let now: @MainActor () -> Date
     private var modelContext: ModelContext?
 
     private var ownerID: String? {
@@ -37,30 +38,22 @@ final class SyncService {
         return id
     }
 
-    private var syncCursorKey: String? {
-        ownerID.map { "stepkit.lastSyncDate.\($0)" }
-    }
-    
     // MARK: - Init
     
     init(
         authManager: AuthManager,
+        environment: AppEnvironment? = nil,
         networkService: (any SyncNetworkServicing)? = nil,
-        preferences: UserDefaults = .standard
+        preferences: UserDefaults = .standard,
+        now: @escaping @MainActor () -> Date = Date.init
     ) {
         self.authManager = authManager
         self.preferences = preferences
-        // Inicializamos el servicio de red con el HTTPClient por defecto
+        self.now = now
+        let environment = environment ?? .current
         let httpClient = HTTPClient()
-        // Asumimos URL por defecto o la pasamos si es necesario. 
-        // Para simplificar usamos la misma base que APIClient
-        #if DEBUG
-        let baseURL = "https://stepkitserver-production.up.railway.app"
-        #else
-        let baseURL = "https://stepkitserver-production.up.railway.app"
-        #endif
         self.networkService = networkService
-            ?? SyncNetworkService(client: httpClient, baseURL: baseURL)
+            ?? SyncNetworkService(client: httpClient, baseURL: environment.apiBaseURL)
     }
     
     func configure(with context: ModelContext) {
@@ -71,14 +64,15 @@ final class SyncService {
     
     /// Ejecuta sync si ha pasado el intervalo mínimo
     func syncIfNeeded(minInterval: TimeInterval) async {
-        guard let lastSync = lastSyncDate else {
-            try? await syncAll()
-            return
-        }
-        
-        if Date().timeIntervalSince(lastSync) > minInterval {
-            try? await syncAll()
-        }
+        guard needsSync(minInterval: minInterval) else { return }
+        try? await syncAll()
+    }
+
+    /// Consulta síncrona usada por `SyncManager` para que también los eventos
+    /// de foreground pasen por su cola serializada.
+    func needsSync(minInterval: TimeInterval) -> Bool {
+        guard let lastSync = lastSyncDate else { return true }
+        return now().timeIntervalSince(lastSync) > minInterval
     }
     
     /// Ejecuta una sincronización completa
@@ -87,32 +81,62 @@ final class SyncService {
         guard let context = modelContext else { return }
         guard let token = authManager.token else { return }
         guard let ownerID else { return }
+        let previousCursor = syncCursor(for: ownerID)
         
         isSyncing = true
         defer { isSyncing = false }
         
         do {
+            // Este límite se captura antes de construir/enviar el batch. Una
+            // mutación que ocurra mientras la red está suspendida tendrá un
+            // `updatedAt` posterior y deberá entrar en la siguiente pasada.
+            let cutoff = now()
+
             // 1. Recopilar cambios locales
-            let request = try fetchLocalChanges(context: context, ownerID: ownerID)
+            let request = try fetchLocalChanges(
+                context: context,
+                ownerID: ownerID,
+                after: previousCursor,
+                through: cutoff
+            )
             
             // 2. Enviar al servidor
             let response = try await networkService.syncBatch(request, token: token)
+
+            // Una respuesta de A no puede aplicarse ni avanzar el cursor si el
+            // usuario cerró sesión o cambió a B durante la espera de red.
+            guard self.ownerID == ownerID, authManager.token == token else {
+                throw SyncServiceError.authenticationChanged
+            }
             
             // 3. Aplicar cambios del servidor
-            try await applyServerChanges(response, context: context, ownerID: ownerID)
+            try applyServerChanges(
+                response,
+                context: context,
+                ownerID: ownerID,
+                preservingChangesAfter: cutoff
+            )
             
-            // 4. Actualizar fecha
-            lastSyncDate = Date()
+            // 4. Avanzar solo hasta el límite cubierto por este request. Nunca
+            // hasta la hora de respuesta, que podría saltarse cambios locales.
+            setSyncCursor(cutoff, for: ownerID)
             
         } catch {
-            print("❌ Sync Error: \(error)")
+            #if DEBUG
+            NetworkDiagnostics.logError(error, operation: "Sync")
+            #endif
             throw error
         }
     }
     
     // MARK: - Private Helpers
     
-    private func fetchLocalChanges(context: ModelContext, ownerID: String) throws -> SyncBatchRequest {
+    private func fetchLocalChanges(
+        context: ModelContext,
+        ownerID: String,
+        after previousCursor: Date?,
+        through cutoff: Date
+    ) throws -> SyncBatchRequest {
         // Fetch Goals
         let goalDescriptor = FetchDescriptor<GoalEntity>(
             predicate: #Predicate { $0.ownerID == ownerID }
@@ -132,17 +156,21 @@ final class SyncService {
         let kitsDTOs: [KitSyncDTO]
         let stepsDTOs: [StepSyncDTO]
         
-        if let lastSync = lastSyncDate {
+        if let previousCursor {
             kitsDTOs = allGoals
-                .filter { $0.updatedAt > lastSync }
+                .filter { $0.updatedAt > previousCursor && $0.updatedAt <= cutoff }
                 .map { $0.toSyncDTO() }
             
             stepsDTOs = allSteps
-                .filter { $0.updatedAt > lastSync }
+                .filter { $0.updatedAt > previousCursor && $0.updatedAt <= cutoff }
                 .map { $0.toSyncDTO() }
         } else {
-            kitsDTOs = allGoals.map { $0.toSyncDTO() }
-            stepsDTOs = allSteps.map { $0.toSyncDTO() }
+            kitsDTOs = allGoals
+                .filter { $0.updatedAt <= cutoff }
+                .map { $0.toSyncDTO() }
+            stepsDTOs = allSteps
+                .filter { $0.updatedAt <= cutoff }
+                .map { $0.toSyncDTO() }
         }
         
         return SyncBatchRequest(kits: kitsDTOs, steps: stepsDTOs)
@@ -151,8 +179,9 @@ final class SyncService {
     private func applyServerChanges(
         _ response: SyncBatchResponse,
         context: ModelContext,
-        ownerID: String
-    ) async throws {
+        ownerID: String,
+        preservingChangesAfter cutoff: Date
+    ) throws {
         // 1. Procesar Kits
         for kitDTO in response.kits {
             if let id = kitDTO.id {
@@ -163,6 +192,10 @@ final class SyncService {
                 let existing = try context.fetch(descriptor).first
                 
                 if let existing {
+                    // El snapshot se calculó a partir del estado enviado antes
+                    // del cutoff. No puede sobrescribir una edición posterior.
+                    guard existing.updatedAt <= cutoff else { continue }
+
                     if kitDTO.deleted {
                         context.delete(existing)
                     } else {
@@ -187,6 +220,8 @@ final class SyncService {
                 let existing = try context.fetch(descriptor).first
                 
                 if let existing {
+                    guard existing.updatedAt <= cutoff else { continue }
+
                     if stepDTO.deleted {
                         context.delete(existing)
                     } else {
@@ -206,7 +241,9 @@ final class SyncService {
                         )
                         context.insert(newStep)
                     } else {
-                        print("⚠️ Orphaned step received: \(stepDTO.title) for kit \(kitId)")
+                        #if DEBUG
+                        print("⚠️ Orphaned step received: id=\(id), kit=\(kitId)")
+                        #endif
                     }
                 }
             }
@@ -214,4 +251,20 @@ final class SyncService {
         
         try context.save()
     }
+
+    private func syncCursor(for ownerID: String) -> Date? {
+        preferences.object(forKey: syncCursorKey(for: ownerID)) as? Date
+    }
+
+    private func setSyncCursor(_ date: Date?, for ownerID: String) {
+        preferences.set(date, forKey: syncCursorKey(for: ownerID))
+    }
+
+    private func syncCursorKey(for ownerID: String) -> String {
+        "stepkit.lastSyncDate.\(ownerID)"
+    }
+}
+
+private enum SyncServiceError: Error {
+    case authenticationChanged
 }

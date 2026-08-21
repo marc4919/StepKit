@@ -25,12 +25,13 @@ actor HTTPClient {
             throw APIError.invalidResponse
         }
         
-        // Debug: imprimir respuesta si hay error o en debug
         #if DEBUG
         if !(200...299).contains(httpResponse.statusCode) {
-             if let jsonString = String(data: data, encoding: .utf8) {
-                 print("❌ HTTP Error \(httpResponse.statusCode): \(jsonString)")
-             }
+            NetworkDiagnostics.logResponse(
+                operation: "HTTP request failed",
+                statusCode: httpResponse.statusCode,
+                byteCount: data.count
+            )
         }
         #endif
         
@@ -85,24 +86,9 @@ actor HTTPClient {
             return try decoder.decode(T.self, from: data)
         } catch {
             #if DEBUG
-            print("❌ Decoding Error: \(error)")
-            if let decodingError = error as? DecodingError {
-                switch decodingError {
-                case .keyNotFound(let key, let context):
-                    print("   Key not found: \(key.stringValue) at \(context.codingPath)")
-                case .typeMismatch(let type, let context):
-                    print("   Type mismatch: expected \(type) at \(context.codingPath)")
-                case .valueNotFound(let type, let context):
-                    print("   Value not found: \(type) at \(context.codingPath)")
-                case .dataCorrupted(let context):
-                    print("   Data corrupted: \(context)")
-                @unknown default:
-                    print("   Unknown decoding error")
-                }
-            }
+            NetworkDiagnostics.logDecodingError(error, operation: "HTTP response")
             #endif
             throw APIError.decodingError(error)
         }
     }
 }
-

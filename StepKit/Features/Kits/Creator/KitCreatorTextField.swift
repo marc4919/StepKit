@@ -28,6 +28,18 @@ struct KitCreatorTextField: View {
                 }
                 .focused(focusBinding, equals: fieldType)
                 .id("\(fieldType)Field")
+                .accessibilityIdentifier(accessibilityIdentifier)
+        }
+    }
+
+    private var accessibilityIdentifier: String {
+        switch fieldType {
+        case .description:
+            return "kitCreator.description"
+        case .obstacles:
+            return "kitCreator.obstacles"
+        case .time:
+            return "kitCreator.availableTime"
         }
     }
 }

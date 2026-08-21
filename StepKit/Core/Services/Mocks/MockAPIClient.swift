@@ -1,3 +1,4 @@
+#if DEBUG
 //
 //  MockAPIClient.swift
 //  StepKit
@@ -264,4 +265,4 @@ final class MockAPIClient: APIClientProtocol {
         )
     }
 }
-
+#endif

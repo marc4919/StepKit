@@ -23,7 +23,9 @@ struct PersistenceController {
         do {
             container = try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Puede aparecer en un crash report de Release: conservar solo el
+            // modo técnico, nunca el error subyacente ni rutas del sandbox.
+            fatalError("Could not create StepKit ModelContainer; inMemory=\(inMemory)")
         }
     }
 
@@ -44,14 +46,65 @@ struct PersistenceController {
         for goal in legacyGoals {
             goal.ownerID = ownerID
         }
-        for step in legacySteps {
+        let claimableSteps = legacySteps.filter { step in
+            step.goal == nil || step.goal?.ownerID == ownerID
+        }
+        for step in claimableSteps {
             step.ownerID = ownerID
         }
 
-        if !legacyGoals.isEmpty || !legacySteps.isEmpty {
+        guard !legacyGoals.isEmpty || !claimableSteps.isEmpty else { return }
+
+        do {
             try context.save()
+        } catch {
+            // Mantener la operación reintentable si SwiftData no pudo confirmar
+            // la transacción. El marcador de Keychain tampoco se eliminará.
+            for goal in legacyGoals {
+                goal.ownerID = ""
+            }
+            for step in claimableSteps {
+                step.ownerID = ""
+            }
+            throw error
         }
     }
+
+    @MainActor
+    func hasUnownedLegacyData() throws -> Bool {
+        let context = container.mainContext
+        let legacyGoals = try context.fetch(
+            FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.ownerID == "" })
+        )
+        if !legacyGoals.isEmpty {
+            return true
+        }
+
+        let legacySteps = try context.fetch(
+            FetchDescriptor<StepEntity>(predicate: #Predicate { $0.ownerID == "" })
+        )
+        return legacySteps.contains { step in
+            step.goal == nil || step.goal?.ownerID.isEmpty == true
+        }
+    }
+
+    #if DEBUG
+    @MainActor
+    func resetLocalDataForE2E() throws {
+        let context = container.mainContext
+        let steps = try context.fetch(FetchDescriptor<StepEntity>())
+        let goals = try context.fetch(FetchDescriptor<GoalEntity>())
+
+        for step in steps {
+            context.delete(step)
+        }
+        for goal in goals {
+            context.delete(goal)
+        }
+
+        try context.save()
+    }
+    #endif
     
     @MainActor
     static var previewContainer: ModelContainer = {
@@ -59,3 +112,5 @@ struct PersistenceController {
         return controller.container
     }()
 }
+
+extension PersistenceController: LegacyDataClaiming {}

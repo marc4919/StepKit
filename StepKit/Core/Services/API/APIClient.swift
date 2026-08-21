@@ -9,26 +9,18 @@ import Foundation
 
 /// Cliente HTTP real para comunicarse con el backend
 final class APIClient: APIClientProtocol {
-    /// URL base del servidor según el entorno
-    #if DEBUG
-    // TODO: Cambiar a localhost:8080 para desarrollo local
-    private static let defaultBaseURL = "https://stepkitserver-production.up.railway.app"
-    #else
-    private static let defaultBaseURL = "https://stepkitserver-production.up.railway.app"
-    #endif
-
     /// URL base del servidor
-    private let baseURL: String
+    private let baseURL: URL
     
     private let httpClient: HTTPClient
     private let authService: AuthService
 
-    /// Inicializa el cliente con una URL base
-    /// - Parameter baseURL: URL base del servidor (default: localhost en DEBUG, Railway en RELEASE)
-    init(baseURL: String = defaultBaseURL) {
-        self.baseURL = baseURL
+    /// Inicializa el cliente desde la única configuración validada de la app.
+    init(environment: AppEnvironment? = nil) {
+        let environment = environment ?? .current
+        self.baseURL = environment.apiBaseURL
         self.httpClient = HTTPClient()
-        self.authService = AuthService(client: httpClient, baseURL: baseURL)
+        self.authService = AuthService(client: httpClient, baseURL: environment.apiBaseURL)
     }
     
     // MARK: - APIClientProtocol
@@ -36,9 +28,15 @@ final class APIClient: APIClientProtocol {
     func signInWithApple(identityToken: String) async throws -> AuthResponse {
         return try await authService.signInWithApple(identityToken: identityToken)
     }
+
+    #if DEBUG
+    func signInForE2E(account: E2EAccountAlias) async throws -> AuthResponse {
+        try await authService.signInForE2E(account: account)
+    }
+    #endif
     
     func generateKit(from request: AIGenerateKitRequest, token: String) async throws -> AIGenerateKitResponse {
-        let url = URL(string: "\(baseURL)/ai/chat-sync")!
+        let url = baseURL.appending(path: "ai/chat-sync")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -54,11 +52,12 @@ final class APIClient: APIClientProtocol {
             throw APIError.invalidResponse
         }
         
-        // Debug: imprimir respuesta del servidor
         #if DEBUG
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("📥 Backend response: \(jsonString.prefix(2000))")
-        }
+        NetworkDiagnostics.logResponse(
+            operation: "Kit generation",
+            statusCode: httpResponse.statusCode,
+            byteCount: data.count
+        )
         #endif
         
         switch httpResponse.statusCode {
@@ -68,26 +67,12 @@ final class APIClient: APIClientProtocol {
             do {
                 let response = try decoder.decode(AIGenerateKitResponse.self, from: data)
                 #if DEBUG
-                print("✅ Kit decodificado: \(response.kit?.title ?? "sin título"), steps: \(response.kit?.steps?.count ?? 0)")
+                print("✅ Kit decoded: steps=\(response.kit?.steps?.count ?? 0)")
                 #endif
                 return response
             } catch {
                 #if DEBUG
-                print("❌ Error de decodificación: \(error)")
-                if let decodingError = error as? DecodingError {
-                    switch decodingError {
-                    case .keyNotFound(let key, let context):
-                        print("   Key not found: \(key.stringValue) at \(context.codingPath)")
-                    case .typeMismatch(let type, let context):
-                        print("   Type mismatch: expected \(type) at \(context.codingPath)")
-                    case .valueNotFound(let type, let context):
-                        print("   Value not found: \(type) at \(context.codingPath)")
-                    case .dataCorrupted(let context):
-                        print("   Data corrupted: \(context)")
-                    @unknown default:
-                        print("   Unknown decoding error")
-                    }
-                }
+                NetworkDiagnostics.logDecodingError(error, operation: "Kit generation")
                 #endif
                 throw APIError.decodingError(error)
             }
@@ -104,7 +89,7 @@ final class APIClient: APIClientProtocol {
     }
     
     func authenticatedRequest(path: String, method: String = "GET", token: String) -> URLRequest {
-        let url = URL(string: "\(baseURL)\(path)")!
+        let url = baseURL.appending(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -121,7 +106,7 @@ final class APIClient: APIClientProtocol {
     ///   - token: JWT token de autenticación
     /// - Returns: Estado actual del servidor + conflictos detectados
     func syncBatch(_ request: SyncBatchRequest, token: String) async throws -> SyncBatchResponse {
-        let url = URL(string: "\(baseURL)/sync/batch")!
+        let url = baseURL.appending(path: "sync/batch")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -132,9 +117,11 @@ final class APIClient: APIClientProtocol {
         urlRequest.httpBody = try encoder.encode(request)
 
         #if DEBUG
-        if let bodyString = String(data: urlRequest.httpBody!, encoding: .utf8) {
-            print("📤 Sync request: \(bodyString.prefix(1000))")
-        }
+        NetworkDiagnostics.logRequest(
+            operation: "Sync",
+            byteCount: urlRequest.httpBody?.count ?? 0,
+            itemCount: request.kits.count + request.steps.count
+        )
         #endif
 
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
@@ -144,9 +131,11 @@ final class APIClient: APIClientProtocol {
         }
 
         #if DEBUG
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("📥 Sync response (\(httpResponse.statusCode)): \(jsonString.prefix(1000))")
-        }
+        NetworkDiagnostics.logResponse(
+            operation: "Sync",
+            statusCode: httpResponse.statusCode,
+            byteCount: data.count
+        )
         #endif
 
         switch httpResponse.statusCode {
@@ -169,7 +158,7 @@ final class APIClient: APIClientProtocol {
     ///   - token: JWT authentication token
     /// - Returns: Verification response with updated tier and subscription info
     func verifySubscription(transactionId: String, token: String) async throws -> VerifySubscriptionResponse {
-        let url = URL(string: "\(baseURL)/subscription/verify")!
+        let url = baseURL.appending(path: "subscription/verify")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -200,7 +189,7 @@ final class APIClient: APIClientProtocol {
     // MARK: - User Profile
     
     func getUserProfile(token: String) async throws -> UserInfo {
-        let url = URL(string: "\(baseURL)/me")!
+        let url = baseURL.appending(path: "me")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "GET"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -234,7 +223,7 @@ final class APIClient: APIClientProtocol {
         return AsyncThrowingStream { continuation in
             Task {
                 do {
-                    let url = URL(string: "\(baseURL)/ai/chat")!
+                    let url = baseURL.appending(path: "ai/chat")
                     var urlRequest = URLRequest(url: url)
                     urlRequest.httpMethod = "POST"
                     urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")

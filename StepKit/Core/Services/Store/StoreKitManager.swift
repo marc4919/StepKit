@@ -56,7 +56,9 @@ final class StoreKitManager {
             await updatePurchasedProducts()
         } catch {
             self.error = error
-            print("Failed to load products: \(error)")
+            #if DEBUG
+            print("StoreKit products load failed: type=\(String(describing: type(of: error)))")
+            #endif
         }
 
         isLoading = false
@@ -108,7 +110,9 @@ final class StoreKitManager {
             await updatePurchasedProducts()
         } catch {
             self.error = error
-            print("Failed to restore purchases: \(error)")
+            #if DEBUG
+            print("StoreKit restore failed: type=\(String(describing: type(of: error)))")
+            #endif
         }
 
         isLoading = false
@@ -175,7 +179,9 @@ final class StoreKitManager {
             await updatePurchasedProducts()
             await transaction.finish()
         } catch {
-            print("Transaction verification failed: \(error)")
+            #if DEBUG
+            print("StoreKit verification failed: type=\(String(describing: type(of: error)))")
+            #endif
         }
     }
 

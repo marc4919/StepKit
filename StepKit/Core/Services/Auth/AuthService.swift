@@ -14,9 +14,9 @@ protocol AuthServiceProtocol {
 /// Servicio encargado de la autenticación
 struct AuthService: AuthServiceProtocol {
     private let client: HTTPClient
-    private let baseURL: String
+    private let baseURL: URL
     
-    init(client: HTTPClient, baseURL: String) {
+    init(client: HTTPClient, baseURL: URL) {
         self.client = client
         self.baseURL = baseURL
     }
@@ -25,9 +25,7 @@ struct AuthService: AuthServiceProtocol {
     /// - Parameter identityToken: Token de identidad de Apple
     /// - Returns: Respuesta con token JWT y usuario
     func signInWithApple(identityToken: String) async throws -> AuthResponse {
-        guard let url = URL(string: "\(baseURL)/auth/apple") else {
-            throw APIError.invalidResponse
-        }
+        let url = baseURL.appending(path: "auth/apple")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -38,4 +36,25 @@ struct AuthService: AuthServiceProtocol {
         
         return try await client.request(request)
     }
+
+    #if DEBUG
+    /// Autenticación determinista para pruebas E2E locales. El tipo y la ruta no
+    /// existen en compilaciones Release.
+    func signInForE2E(account: E2EAccountAlias) async throws -> AuthResponse {
+        try await client.request(Self.makeE2ERequest(baseURL: baseURL, account: account))
+    }
+
+    static func makeE2ERequest(baseURL: URL, account: E2EAccountAlias) throws -> URLRequest {
+        let url = baseURL.appending(path: "auth/e2e")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(E2ELoginRequest(alias: account))
+        return request
+    }
+
+    private struct E2ELoginRequest: Encodable {
+        let alias: E2EAccountAlias
+    }
+    #endif
 }

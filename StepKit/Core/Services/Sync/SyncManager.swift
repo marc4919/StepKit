@@ -21,16 +21,22 @@ final class SyncManager {
     private var syncTask: Task<Void, Never>?
     private var debounceTask: Task<Void, Never>?
     private var periodicSyncTask: Task<Void, Never>?
+    private var syncRequested = false
 
-    /// Indica si hay una sincronización en curso
-    var isSyncing: Bool {
-        syncService.isSyncing
-    }
+    /// Permanece activo durante toda la operación observable, incluidas las
+    /// pasadas que se hayan solicitado mientras un request estaba suspendido.
+    private(set) var isSyncing = false
 
     /// Última fecha de sincronización exitosa
     var lastSyncDate: Date? {
         syncService.lastSyncDate
     }
+
+    #if DEBUG
+    /// Contador por proceso para que una prueba E2E pueda distinguir el cursor
+    /// persistido de una sincronización realmente completada en este arranque.
+    private(set) var completedSyncCount = 0
+    #endif
 
     // MARK: - Configuration
 
@@ -71,7 +77,7 @@ final class SyncManager {
         #endif
 
         syncTask?.cancel()
-        syncTask = nil
+        syncRequested = false
 
         debounceTask?.cancel()
         debounceTask = nil
@@ -103,9 +109,14 @@ final class SyncManager {
         print("📱 SyncManager: App entered foreground")
         #endif
 
-        // Sincronizar si ha pasado el intervalo mínimo
-        Task {
-            await syncService.syncIfNeeded(minInterval: minSyncInterval)
+        // También este origen pasa por la misma cola: ninguna petición puede
+        // competir con otra ni perderse por el guard interno del servicio.
+        Task { [weak self] in
+            guard let self,
+                  syncService.needsSync(minInterval: minSyncInterval) else {
+                return
+            }
+            await executeSync()
         }
     }
 
@@ -138,33 +149,54 @@ final class SyncManager {
     // MARK: - Private Methods
 
     private func executeSync() async {
-        // Evitar múltiples syncs simultáneos
-        guard syncTask == nil else {
+        // Registrar primero la intención. Si ya hay una operación en curso, su
+        // bucle hará otra pasada y este llamador esperará a que termine todo el
+        // drenaje, no solo el request que encontró activo.
+        syncRequested = true
+
+        if let syncTask {
             #if DEBUG
             print("⏳ SyncManager: Sync already running, queuing...")
             #endif
+            await syncTask.value
             return
         }
 
-        syncTask = Task {
+        isSyncing = true
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await drainSyncRequests()
+        }
+        syncTask = task
+        await task.value
+    }
+
+    private func drainSyncRequests() async {
+        defer {
+            syncTask = nil
+            isSyncing = false
+        }
+
+        while syncRequested, !Task.isCancelled {
+            syncRequested = false
+
             do {
                 #if DEBUG
                 print("🔄 SyncManager: Starting sync...")
                 #endif
                 try await syncService.syncAll()
                 #if DEBUG
+                completedSyncCount += 1
                 print("✅ SyncManager: Sync completed successfully")
                 #endif
             } catch {
                 #if DEBUG
-                print("❌ SyncManager: Sync failed - \(error.localizedDescription)")
+                print("❌ SyncManager: Sync failed")
                 #endif
-                // Errores se manejan silenciosamente según los requisitos
+                // El siguiente trigger puede reintentar; no se expone contenido
+                // del error ni se avanza el cursor en la pasada fallida.
             }
         }
-
-        await syncTask?.value
-        syncTask = nil
     }
 
     private func startPeriodicSync() {
@@ -188,15 +220,6 @@ final class SyncManager {
     }
 }
 
-// MARK: - Environment Key
-
-private struct SyncManagerKey: EnvironmentKey {
-    static let defaultValue: SyncManager? = nil
-}
-
 extension EnvironmentValues {
-    var syncManager: SyncManager? {
-        get { self[SyncManagerKey.self] }
-        set { self[SyncManagerKey.self] = newValue }
-    }
+    @Entry var syncManager: SyncManager? = nil
 }

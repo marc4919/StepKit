@@ -167,6 +167,7 @@ struct ProfileView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(.isButton)
+                .accessibilityIdentifier("profile.signOut")
                 .accessibilityLabel("Cerrar sesión")
                 .accessibilityHint("Cierra la sesión actual y regresa a la pantalla de inicio de sesión")
             }
@@ -226,6 +227,7 @@ struct ProfileView: View {
         .environment(AuthManager())
 }
 
+#if DEBUG
 #Preview("Authenticated User") {
     let mockAuth = MockAuthManager(
         isAuthenticated: true,
@@ -257,7 +259,5 @@ struct ProfileView: View {
     return ProfileView()
         .environment(mockAuth)
 }
-
-
-
+#endif
 

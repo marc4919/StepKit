@@ -73,7 +73,9 @@ struct StepDetailView: View {
         do {
             try modelContext.save()
         } catch {
-            print("Error al guardar notificación del step: \(error)")
+            #if DEBUG
+            print("Step notification preference persistence failed")
+            #endif
         }
 
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -98,7 +100,9 @@ struct StepDetailView: View {
             // Trigger sync después de cambio
             syncManager?.handleDataChange()
         } catch {
-            print("Error al guardar step: \(error)")
+            #if DEBUG
+            print("Step completion persistence failed")
+            #endif
         }
     }
 }

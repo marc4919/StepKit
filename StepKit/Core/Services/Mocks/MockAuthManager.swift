@@ -1,3 +1,4 @@
+#if DEBUG
 //
 //  MockAuthManager.swift
 //  StepKit
@@ -48,5 +49,5 @@ final class MockAuthManager: AuthManaging {
         isAuthenticated = false
     }
 }
-
+#endif
 

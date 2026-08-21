@@ -92,7 +92,12 @@ struct KitService {
                                         let event = try JSONDecoder().decode(AIChatStreamEvent.self, from: jsonData)
                                         continuation.yield(event)
                                     } catch {
-                                        print("❌ SSE Decode error: \(error)")
+                                        #if DEBUG
+                                        NetworkDiagnostics.logDecodingError(
+                                            error,
+                                            operation: "Kit service SSE frame"
+                                        )
+                                        #endif
                                     }
                                 }
                             }

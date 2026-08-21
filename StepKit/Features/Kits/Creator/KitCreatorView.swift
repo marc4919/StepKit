@@ -171,6 +171,7 @@ struct KitCreatorView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     KitCreatorView()
         .environment(AuthManager())
@@ -178,3 +179,4 @@ struct KitCreatorView: View {
         .environment(\.apiClient, MockAPIClient())
         .modelContainer(for: [GoalEntity.self, StepEntity.self], inMemory: true)
 }
+#endif

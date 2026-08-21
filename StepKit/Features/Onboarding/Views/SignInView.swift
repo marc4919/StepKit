@@ -190,6 +190,7 @@ struct SignInView: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .disabled(isSigningIn)
             .opacity(isSigningIn ? 0.6 : 1.0)
+            .accessibilityIdentifier("auth.signInWithApple")
             
             // Indicador de carga
             if isSigningIn {
@@ -282,7 +283,9 @@ struct SignInView: View {
                     isSigningIn = false
                     // Mostrar mensaje amigable según el tipo de error
                     errorMessage = userFriendlyAuthErrorMessage(from: error)
-                    print("Error al autenticar: \(error)")
+                    #if DEBUG
+                    print("Authentication failed: type=\(String(describing: type(of: error)))")
+                    #endif
                 }
             }
         }
@@ -291,7 +294,9 @@ struct SignInView: View {
     private func handleLoginError(with error: Error) {
         // Errores provenientes directamente de Sign in with Apple (por ejemplo, cancelado)
         errorMessage = userFriendlyAuthErrorMessage(from: error)
-        print("Could not authenticate: \(error.localizedDescription)")
+        #if DEBUG
+        print("Apple authorization failed: type=\(String(describing: type(of: error)))")
+        #endif
     }
     
     // MARK: - Error Mapping
@@ -358,6 +363,7 @@ struct SignInView: View {
         .environment(\.apiClient, APIClient())
 }
 
+#if DEBUG
 #Preview("Mock - Login Success") {
     let mockAPI = MockAPIClient()
     mockAPI.shouldFailLogin = false
@@ -377,3 +383,4 @@ struct SignInView: View {
         .environment(AuthManager())
         .environment(\.apiClient, mockAPI)
 }
+#endif

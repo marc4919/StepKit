@@ -106,6 +106,7 @@ struct KitDetailView: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityAddTraits(.isButton)
+                        .accessibilityIdentifier("step.row")
                         .accessibilityLabel("Paso \(index + 1) de \(sortedSteps.count): \(stepEntity.stepTitle)")
                         .accessibilityHint("Toca dos veces para abrir los detalles del paso")
                     }

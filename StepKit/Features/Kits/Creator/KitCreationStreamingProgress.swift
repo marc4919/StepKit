@@ -207,6 +207,7 @@ struct KitCreationStreamingProgress: View {
                 .glowShadow(opacity: 0.3, radius: 8, y: 4)
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("kitCreator.save")
 
             Button {
                 onDiscard()
@@ -216,6 +217,7 @@ struct KitCreationStreamingProgress: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityIdentifier("kitCreator.discard")
             .padding(.top, 4)
         }
         .padding(.top, 8)

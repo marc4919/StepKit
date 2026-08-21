@@ -57,6 +57,7 @@ struct EmptyStateMessageView: View {
             }
             .buttonStyle(.plain)
             .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("emptyState.primaryAction")
             .accessibilityLabel(buttonTitle)
             .accessibilityHint("Toca dos veces para \(buttonTitle.lowercased())")
             .padding(.top, 40)
@@ -84,4 +85,3 @@ struct EmptyStateMessageView: View {
         print("Crear kit tapped")
     }
 }
-

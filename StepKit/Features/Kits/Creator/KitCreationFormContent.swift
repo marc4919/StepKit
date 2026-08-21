@@ -146,6 +146,7 @@ struct KitCreationFormContent: View {
             .shadow(color: isFormValid ? Color.accentColor.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
         }
         .disabled(!isFormValid)
+        .accessibilityIdentifier("kitCreator.create")
         .padding(.top, 8)
     }
 }

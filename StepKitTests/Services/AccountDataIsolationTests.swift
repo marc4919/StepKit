@@ -46,8 +46,10 @@ struct AccountDataIsolationTests {
         let context = persistence.container.mainContext
         let goalA = makeGoal(ownerID: "account-a", title: "A")
         let goalB = makeGoal(ownerID: "account-b", title: "B")
+        let quarantinedLegacy = makeGoal(ownerID: "", title: "Legacy")
         context.insert(goalA)
         context.insert(goalB)
+        context.insert(quarantinedLegacy)
         try context.save()
 
         let network = CapturingSyncNetworkService()

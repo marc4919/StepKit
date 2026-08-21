@@ -65,6 +65,7 @@ struct KitsListBodyView: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color.accentColor)
                         }
+                        .accessibilityIdentifier("kit.create")
                         .accessibilityLabel("Crear kit")
                         .accessibilityHint("Abre el creador de kits")
                     }
@@ -89,6 +90,7 @@ struct KitsListBodyView: View {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }
             .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("kit.row")
             .accessibilityLabel("Kit: \(kitEntity.title)")
             .accessibilityValue("Progreso: \(Int(kitEntity.progress * 100))%, KPI: \(kitEntity.kpi)")
             .accessibilityHint(isCompact ? "Toca dos veces para ver los detalles del kit" : "Toca dos veces para seleccionar este kit")

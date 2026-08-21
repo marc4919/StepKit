@@ -14,18 +14,16 @@ protocol SyncNetworkServicing {
 /// Servicio encargado de la comunicación de red para la sincronización
 struct SyncNetworkService: SyncNetworkServicing {
     private let client: HTTPClient
-    private let baseURL: String
+    private let baseURL: URL
     
-    init(client: HTTPClient, baseURL: String) {
+    init(client: HTTPClient, baseURL: URL) {
         self.client = client
         self.baseURL = baseURL
     }
     
     /// Sincroniza datos locales con el servidor
     func syncBatch(_ request: SyncBatchRequest, token: String) async throws -> SyncBatchResponse {
-        guard let url = URL(string: "\(baseURL)/sync/batch") else {
-            throw APIError.invalidResponse
-        }
+        let url = baseURL.appending(path: "sync/batch")
         
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"

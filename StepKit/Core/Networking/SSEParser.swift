@@ -44,7 +44,10 @@ enum SSEParser {
                                 let jsonString = String(eventString.dropFirst(6))
 
                                 #if DEBUG
-                                print("📥 SSE Raw: \(jsonString.prefix(500))")
+                                NetworkDiagnostics.logRequest(
+                                    operation: "SSE frame received",
+                                    byteCount: jsonString.utf8.count
+                                )
                                 #endif
 
                                 if let jsonData = jsonString.data(using: .utf8) {
@@ -69,22 +72,8 @@ enum SSEParser {
     }
 
     #if DEBUG
-    private static func logDecodingError(_ error: Error) {
-        print("❌ SSE Decode error: \(error)")
-        if let decodingError = error as? DecodingError {
-            switch decodingError {
-            case .keyNotFound(let key, let context):
-                print("   Key not found: \(key.stringValue) at \(context.codingPath)")
-            case .typeMismatch(let type, let context):
-                print("   Type mismatch: expected \(type) at \(context.codingPath)")
-            case .valueNotFound(let type, let context):
-                print("   Value not found: \(type) at \(context.codingPath)")
-            case .dataCorrupted(let context):
-                print("   Data corrupted: \(context)")
-            @unknown default:
-                print("   Unknown decoding error")
-            }
-        }
+    private nonisolated static func logDecodingError(_ error: Error) {
+        NetworkDiagnostics.logDecodingError(error, operation: "SSE frame")
     }
     #endif
 }

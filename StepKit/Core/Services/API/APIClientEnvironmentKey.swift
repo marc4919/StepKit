@@ -7,17 +7,11 @@
 
 import SwiftUI
 
-/// Environment key para inyectar el cliente API
-private struct APIClientKey: EnvironmentKey {
-    static let defaultValue: APIClientProtocol = APIClient()
+private enum APIClientEnvironmentDefault {
+    static let client: any APIClientProtocol = APIClient()
 }
 
 extension EnvironmentValues {
     /// Cliente API inyectado en el environment
-    var apiClient: APIClientProtocol {
-        get { self[APIClientKey.self] }
-        set { self[APIClientKey.self] = newValue }
-    }
+    @Entry var apiClient: any APIClientProtocol = APIClientEnvironmentDefault.client
 }
-
-

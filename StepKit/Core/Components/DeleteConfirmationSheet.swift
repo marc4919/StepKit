@@ -71,6 +71,7 @@ struct DeleteConfirmationSheet: View {
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
+                .accessibilityIdentifier("delete.confirm")
 
                 Button(action: onCancel) {
                     Text("Cancelar")
@@ -81,6 +82,7 @@ struct DeleteConfirmationSheet: View {
                         .foregroundColor(.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
+                .accessibilityIdentifier("delete.cancel")
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
