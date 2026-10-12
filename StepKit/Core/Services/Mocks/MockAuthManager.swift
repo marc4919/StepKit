@@ -14,9 +14,12 @@ import Observation
 @MainActor
 @Observable
 final class MockAuthManager: AuthManaging {
+    private(set) var sessionID = UUID()
     var isAuthenticated: Bool
     var currentUser: UserInfo?
-    var token: String?
+    var token: String? {
+        didSet { sessionID = UUID() }
+    }
     
     /// Inicializa el mock con un estado específico
     /// - Parameters:

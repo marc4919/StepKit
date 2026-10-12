@@ -10,6 +10,9 @@ import Foundation
 /// Protocolo para gestionar autenticación, permite mocking en tests y previews
 @MainActor
 protocol AuthManaging {
+    /// Identifies this login, including repeated logins with identical credentials.
+    var sessionID: UUID { get }
+
     /// Indica si el usuario está autenticado
     var isAuthenticated: Bool { get }
     

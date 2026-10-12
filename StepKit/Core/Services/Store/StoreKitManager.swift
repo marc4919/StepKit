@@ -205,6 +205,7 @@ struct SubscriptionStatus {
 }
 
 enum StoreKitError: LocalizedError {
+    case productUnavailable
     case userCancelled
     case pending
     case verificationFailed
@@ -212,6 +213,8 @@ enum StoreKitError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
+        case .productUnavailable:
+            return "Producto no disponible"
         case .userCancelled:
             return "La compra fue cancelada"
         case .pending:

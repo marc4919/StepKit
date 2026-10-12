@@ -12,6 +12,7 @@ import Observation
 @MainActor
 @Observable
 final class AuthManager: AuthManaging {
+    private(set) var sessionID = UUID()
     var isAuthenticated = false
     var isRestoringSession = false
     var currentUser: UserInfo?
@@ -57,6 +58,7 @@ final class AuthManager: AuthManaging {
                 do {
                     try keychain.saveString(token, forKey: tokenKey)
                     preferences.removeObject(forKey: forcedSignOutKey)
+                    sessionID = UUID()
                 } catch {
                     #if DEBUG
                     print("Could not update stored authentication token")
@@ -78,6 +80,7 @@ final class AuthManager: AuthManaging {
     ///   - token: El token JWT recibido del backend
     ///   - user: La información del usuario
     func saveAuth(token: String, user: UserInfo) {
+        sessionID = UUID()
         prepareLegacyRecoveryForStoredSessionIfNeeded()
 
         do {
@@ -157,6 +160,7 @@ final class AuthManager: AuthManaging {
 
     /// Activa una sesión previamente validada por el servidor.
     func completeStoredSessionRestore(with user: UserInfo) {
+        sessionID = UUID()
         recoverLegacyDataIfAuthorized(for: user.id)
         updateUser(user)
         isRestoringSession = false
@@ -181,6 +185,7 @@ final class AuthManager: AuthManaging {
     /// Elimina solo credenciales y marcadores propios de StepKit. Se usa junto
     /// al reset de SwiftData/UserDefaults para preparar lanzamientos UI E2E.
     func resetAuthenticationForE2E() throws {
+        sessionID = UUID()
         try keychain.delete(forKey: tokenKey)
         try keychain.delete(forKey: userKey)
         try keychain.delete(forKey: profileNameKey)
@@ -197,6 +202,7 @@ final class AuthManager: AuthManaging {
     /// JWT caducado. La restauración ordinaria deberá validarlo con GET /me y
     /// cerrar la sesión al recibir el rechazo del servidor.
     func seedInvalidStoredSessionForE2E() throws {
+        sessionID = UUID()
         let invalidUser = UserInfo(
             id: "invalid-stored-session-owner",
             tier: "free",
@@ -239,6 +245,7 @@ final class AuthManager: AuthManaging {
     }
 
     private func invalidateStoredSession() {
+        sessionID = UUID()
         let tokenWasInvalidated: Bool
         do {
             try keychain.delete(forKey: tokenKey)
