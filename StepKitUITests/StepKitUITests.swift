@@ -573,8 +573,22 @@ final class StepKitUITests: XCTestCase {
 
     @MainActor
     private func replaceText(in element: XCUIElement, with replacement: String) {
-        element.tap()
-        element.typeKey("a", modifierFlags: .command)
+        // The lower trailing edge places the caret after the last character,
+        // including fields that wrap onto more than one line.
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.95)).tap()
+        let existingText = element.value as? String ?? ""
+        if !existingText.isEmpty {
+            // Explicit delete events do not depend on the Mac's Command-A shortcut.
+            element.typeText(String(
+                repeating: XCUIKeyboardKey.delete.rawValue,
+                count: existingText.count
+            ))
+            let clearedValue = element.value as? String ?? ""
+            XCTAssertTrue(
+                clearedValue.isEmpty || clearedValue == element.placeholderValue,
+                "El campo debe vaciarse antes de reemplazarlo: \(clearedValue)"
+            )
+        }
         element.typeText(replacement)
         XCTAssertEqual(element.value as? String, replacement)
     }
