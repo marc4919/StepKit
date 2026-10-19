@@ -65,10 +65,25 @@ final class TrainerViewModel {
     
     // MARK: - Public Methods
     
-    func onAppear(goals: [GoalEntity]) {
-        if messages.isEmpty && !goals.isEmpty && isModelAvailable && !isLoadingWelcome {
-            startWelcomeSequence()
-        }
+    /// v4.4: la pantalla de inicio con intenciones sustituye al mensaje de bienvenida.
+    func onAppear(goals: [GoalEntity]) {}
+
+    /// Último mensaje enviado al modelo, para reintentar tras un error.
+    private var lastPrompt: String?
+
+    func retryLast(goals: [GoalEntity]) {
+        guard !isResponding, let prompt = lastPrompt else { return }
+        if messages.last?.isError == true { messages.removeLast() }
+        streamAssistantResponse(message: prompt, quickAction: nil, goals: goals)
+    }
+
+    /// Envía una intención: el usuario ve el título; el modelo recibe el contexto del paso.
+    func sendIntent(title: String, prompt: String, goals: [GoalEntity]) {
+        guard !isResponding else { return }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        messages.append(ChatMessage(sender: .user, text: title))
+        showQuickActions = false
+        streamAssistantResponse(message: prompt, quickAction: nil, goals: goals)
     }
     
     func onDisappear() {
@@ -135,11 +150,6 @@ final class TrainerViewModel {
             await assistantService.resetConversation(with: AssistantContextBuilder.build(from: goals))
         }
 
-        // Reiniciar secuencia de bienvenida
-        Task {
-            try? await Task.sleep(nanoseconds: 400_000_000) // 0.4s
-            startWelcomeSequence()
-        }
     }
     
     func sendDraft(goals: [GoalEntity]) {
@@ -261,6 +271,7 @@ final class TrainerViewModel {
     }
     
     private func streamAssistantResponse(message: String, quickAction: QuickActionType?, goals: [GoalEntity]) {
+        lastPrompt = message
         // Cancelar cualquier streaming anterior
         currentStreamingTask?.cancel()
         currentStreamingText = ""
@@ -350,7 +361,8 @@ final class TrainerViewModel {
         // Mostrar mensaje de error como respuesta del asistente
         let errorMessage = ChatMessage(
             sender: .assistant,
-            text: error.localizedDescription
+            text: error.localizedDescription,
+            isError: true
         )
         messages.append(errorMessage)
 

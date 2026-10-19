@@ -19,6 +19,7 @@ enum DesignFixtureScenario: String {
     case blocked       // paso 2 del portfolio, bloqueado
     case confirmed     // un Kit terminado con el resultado confirmado y otro pendiente
     case calendar      // pestaña Calendario con sesiones reservadas
+    case assistant     // pestaña Asistente
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -45,7 +46,7 @@ struct DesignFixtureRoot: View {
                       user: UserInfo(id: DesignFixtureData.owner, tier: "premium",
                                      monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
         _authManager = State(initialValue: auth)
-        _tab = State(initialValue: scenario == .calendar ? 1 : 0)
+        _tab = State(initialValue: scenario == .calendar ? 1 : scenario == .assistant ? 2 : 0)
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
         DesignFixtureData.seed(scenario, into: container.mainContext)
@@ -62,7 +63,7 @@ struct DesignFixtureRoot: View {
                 }
             }
             Tab("Calendario", systemImage: Symbols.calendar, value: 1) { CalendarPlusView() }
-            Tab("Asistente", systemImage: Symbols.assistant, value: 2) { Text("Asistente") }
+            Tab("Asistente", systemImage: Symbols.assistant, value: 2) { TrainerView() }
             Tab("Perfil", systemImage: Symbols.profile, value: 3) { Text("Perfil") }
             Tab(value: 4, role: .search) { Text("Buscar") }
         }
@@ -99,7 +100,7 @@ enum DesignFixtureData {
             insertPortfolio(into: context, blocked: false)
         case .blocked:
             insertPortfolio(into: context, blocked: true)
-        case .calendar:
+        case .calendar, .assistant:
             insertPortfolio(into: context, blocked: false)
             insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
             insertSessions(into: context)

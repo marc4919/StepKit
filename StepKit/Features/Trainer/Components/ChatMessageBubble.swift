@@ -15,11 +15,14 @@ struct ChatMessage: Identifiable, Equatable {
     let sender: Sender
     let text: String
     let timestamp: Date
+    /// La respuesta no se pudo generar; `text` es el detalle técnico.
+    var isError = false
     
-    init(sender: Sender, text: String, timestamp: Date = Date()) {
+    init(sender: Sender, text: String, timestamp: Date = Date(), isError: Bool = false) {
         self.sender = sender
         self.text = text
         self.timestamp = timestamp
+        self.isError = isError
     }
 }
 

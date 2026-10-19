@@ -29,25 +29,42 @@ struct TrainerView: View {
 
     // MARK: - View State
     @FocusState private var isInputFocused: Bool
+    @State private var selectedKitID: UUID?
+
+    /// Kits en curso, el último que avanzaste primero.
+    private var activeKits: [GoalEntity] {
+        visibleGoalEntities.filter { !$0.isCompleted }.sorted { $0.lastActivity > $1.lastActivity }
+    }
+
+    private var selectedKit: GoalEntity? {
+        activeKits.first { $0.id == selectedKitID } ?? activeKits.first
+    }
+
+    /// El asistente trabaja sobre el Kit elegido; sin Kits en curso, sobre todos.
+    private var contextGoals: [GoalEntity] {
+        selectedKit.map { [$0] } ?? visibleGoalEntities
+    }
 
     var body: some View {
         @Bindable var vm = viewModel
         
+        NavigationStack {
         Group {
             switch viewModel.modelAvailability {
             case .available:
                 if hasKits {
-                    AssistantConversationView(
-                        messages: $vm.messages,
+                    AssistantHomeView(
+                        messages: viewModel.messages,
                         draft: $vm.draft,
-                        showQuickActions: $vm.showQuickActions,
-                        isTyping: $vm.isTyping,
-                        isResponding: $vm.isResponding,
+                        isTyping: viewModel.isTyping,
+                        isResponding: viewModel.isResponding,
                         isInputFocused: $isInputFocused,
-                        quickActions: viewModel.quickActions,
-                        onSendMessage: { viewModel.sendDraft(goals: visibleGoalEntities) },
-                        onQuickAction: { viewModel.sendQuickAction($0, goals: visibleGoalEntities) },
-                        onResetConversation: { viewModel.showingResetAlert = true }
+                        onSend: { viewModel.sendDraft(goals: contextGoals) },
+                        onIntent: { intent in
+                            viewModel.sendIntent(title: intent.title, prompt: intent.prompt(kit: selectedKit),
+                                                 goals: contextGoals)
+                        },
+                        onRetry: { viewModel.retryLast(goals: contextGoals) }
                     )
                 } else {
                     NoKitsEmptyState(onCreateKit: { viewModel.showingKitCreator = true })
@@ -87,16 +104,43 @@ struct TrainerView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Asistente")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if hasKits, let kit = selectedKit {
+                ToolbarItem(placement: .principal) {
+                    Menu {
+                        Picker("Kit", selection: Binding(get: { kit.id }, set: { selectKit($0) })) {
+                            ForEach(activeKits) { Text($0.title).tag($0.id) }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(kit.title).font(.headline).lineLimit(1)
+                            Image(systemName: "chevron.down").font(.caption.bold())
+                        }
+                        .foregroundStyle(.primary)
+                    }
+                    .accessibilityLabel("Kit: \(kit.title). Cambiar")
+                    .accessibilityIdentifier("assistant.kitPicker")
+                }
+            }
+            if hasKits {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Nueva conversación", systemImage: "square.and.pencil") {
+                        viewModel.showingResetAlert = true
+                    }
+                    .disabled(viewModel.messages.isEmpty)
+                }
+            }
+        }
         .fullScreenCover(isPresented: $vm.showingKitCreator) {
             KitCreatorView()
         }
         .alert("Nueva conversación", isPresented: $vm.showingResetAlert) {
             Button("Cancelar", role: .cancel) { }
             Button("Reiniciar", role: .destructive) {
-                viewModel.resetConversation(goals: visibleGoalEntities)
+                viewModel.resetConversation(goals: contextGoals)
             }
         } message: {
-            Text("¿Quieres empezar una nueva conversación? Se borrarán los mensajes actuales.")
+            Text("Se borrarán los mensajes de esta conversación. Tu plan y tus registros se conservan.")
         }
         .onAppear {
             viewModel.onAppear(goals: visibleGoalEntities)
@@ -110,6 +154,16 @@ struct TrainerView: View {
             if isResponding {
                 isInputFocused = false
             }
+        }
+        }
+    }
+
+    /// Cambiar de Kit empieza una conversación nueva con ese contexto.
+    private func selectKit(_ id: UUID) {
+        guard id != selectedKit?.id else { return }
+        selectedKitID = id
+        if !viewModel.messages.isEmpty {
+            viewModel.resetConversation(goals: contextGoals)
         }
     }
 }
