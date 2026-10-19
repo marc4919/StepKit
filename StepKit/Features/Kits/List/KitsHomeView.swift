@@ -15,6 +15,7 @@ struct KitsHomeView: View {
     @Bindable var viewModel: KitsViewModel
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var reviewingKit: GoalEntity?
+    @State private var continuingStep: StepEntity?
 
     /// Todos los pasos terminados pero el resultado aún sin confirmar.
     private var pendingResultKits: [GoalEntity] {
@@ -59,7 +60,15 @@ struct KitsHomeView: View {
                             }
                         }
                         if let kit = continueKit {
-                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit)) { open(kit) }
+                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit)) {
+                                if let step = kit.nextStep {
+                                    continuingStep = step
+                                } else {
+                                    open(kit)
+                                }
+                            } onOpenKit: {
+                                open(kit)
+                            }
                         }
                         if !otherKits.isEmpty {
                             section(title: activeKits.count > 1 && continueKit != nil ? "Otros Kits en curso" : "En curso",
@@ -77,6 +86,9 @@ struct KitsHomeView: View {
             }
         }
         .navigationTitle("Mis Kits")
+        .navigationDestination(item: $continuingStep) { step in
+            StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? 1)
+        }
         .navigationDestination(item: $reviewingKit) { kit in
             ResultReviewView(kit: kit) {
                 reviewingKit = nil
@@ -132,11 +144,15 @@ private struct ContinueCard: View {
     let kit: GoalEntity
     let lastProgress: ProgressEntryEntity?
     let onContinue: () -> Void
+    let onOpenKit: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            header
+            Button(action: onOpenKit) { header.contentShape(.rect) }
+                .buttonStyle(.plain)
+                .accessibilityHint("Abre el plan del Kit")
+                .accessibilityIdentifier("kit.row")
             if lastProgress != nil || kit.nextStep != nil {
                 Divider().padding(.top, 6)
             }
@@ -157,7 +173,7 @@ private struct ContinueCard: View {
             if let step = kit.nextStep {
                 nextStep(step)
             } else {
-                Button(action: onContinue) {
+                Button(action: onOpenKit) {
                     Label("Abrir Kit", systemImage: "chevron.right")
                         .labelStyle(TrailingIconLabelStyle())
                         .frame(maxWidth: .infinity)
@@ -235,7 +251,7 @@ private struct ContinueCard: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .accessibilityIdentifier("kit.continue")
-            .accessibilityHint("Abre el Kit \(kit.title)")
+            .accessibilityHint("Abre el siguiente paso de \(kit.title)")
         }
     }
 }
