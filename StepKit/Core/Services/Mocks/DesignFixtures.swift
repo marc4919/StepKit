@@ -20,6 +20,7 @@ enum DesignFixtureScenario: String {
     case confirmed     // un Kit terminado con el resultado confirmado y otro pendiente
     case calendar      // pestaña Calendario con sesiones reservadas
     case assistant     // pestaña Asistente
+    case kit           // plan del portfolio
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -58,6 +59,8 @@ struct DesignFixtureRoot: View {
             Tab("Kits", systemImage: Symbols.kits, value: 0) {
                 if scenario == .step || scenario == .blocked, let step = portfolioStep {
                     NavigationStack { StepDetailView(stepEntity: step, stepNumber: 2) }
+                } else if scenario == .kit, let kit = portfolioStep?.goal {
+                    NavigationStack { KitDetailView(kitEntity: kit) }
                 } else {
                     kits
                 }
@@ -96,7 +99,7 @@ enum DesignFixtureData {
         switch scenario {
         case .empty:
             break
-        case .one, .step:
+        case .one, .step, .kit:
             insertPortfolio(into: context, blocked: false)
         case .blocked:
             insertPortfolio(into: context, blocked: true)

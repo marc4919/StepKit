@@ -21,53 +21,46 @@ struct KitDetailView: View {
 
     @Bindable var kitEntity: GoalEntity
     @State private var presentedSheet: PresentedSheet?
+    @State private var segment = 0
+    @State private var editingEntry: ProgressEntryEntity?
+    @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
+
+    private var kitEntries: [ProgressEntryEntity] {
+        allEntries.filter { $0.kitID == kitEntity.id && $0.ownerID == kitEntity.ownerID && $0.deletedAt == nil }
+    }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                // Header con icono y título
-                KitDetailHeaderView(kitEntity: kitEntity)
-
-                // Sección de pasos
-                stepsSection
+            VStack(alignment: .leading, spacing: 20) {
+                header
+                Picker("Vista", selection: $segment) {
+                    Text("Plan").tag(0)
+                    Text("Registro").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("kit.segment")
+                if segment == 0 {
+                    stepsSection
+                } else {
+                    KitLogView(kit: kitEntity, entries: kitEntries,
+                               onEdit: { editingEntry = $0 },
+                               onAddNote: { presentedSheet = .annotations })
+                }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            .padding(.horizontal)
+            .padding(.bottom, 30)
         }
+        .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Kit")
+        .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button {
-                    presentedSheet = .edit
-                } label: {
-                    Image(systemName: "pencil")
-                        .foregroundStyle(Color.accentColor)
-                }
-                .accessibilityIdentifier("kit.edit")
-                .accessibilityLabel("Editar Kit")
-                .accessibilityHint("Permite cambiar el título y el indicador de éxito del Kit")
-
-                Button {
-                    presentedSheet = .annotations
-                } label: {
-                    Image(systemName: "note.text.badge.plus")
-                        .foregroundStyle(Color.accentColor)
-                }
-                .accessibilityAddTraits(.isButton)
-                .accessibilityLabel("Añadir anotación")
-                .accessibilityHint("Abre la vista para añadir anotaciones al kit")
-
-                Button {
-                    presentedSheet = .information
-                } label: {
-                    Image(systemName: "info.circle")
-                        .foregroundStyle(Color.accentColor)
-                }
-                .accessibilityAddTraits(.isButton)
-                .accessibilityLabel("Información del kit")
-                .accessibilityHint("Muestra información detallada del kit")
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button("Editar Kit", systemImage: "pencil") { presentedSheet = .edit }
+                    .accessibilityIdentifier("kit.edit")
+                    .accessibilityHint("Permite cambiar el título y el indicador de éxito del Kit")
+                Button("Información", systemImage: "info.circle") { presentedSheet = .information }
+                    .accessibilityHint("Muestra información detallada del kit")
             }
         }
         .sheet(item: $presentedSheet) { sheet in
@@ -80,64 +73,68 @@ struct KitDetailView: View {
                 KitAnnotationsView(goal: kitEntity.toGoal())
             }
         }
+        .sheet(item: $editingEntry) { entry in
+            let step = kitEntity.orderedActiveSteps.first { $0.id == entry.stepID }
+            EditProgressEntrySheet(entry: entry,
+                                   stepLabel: step.map { "\(kitEntity.position(of: $0)) · \($0.stepTitle)" })
+        }
     }
-    
-    // Steps ordenados por order
-    private var sortedSteps: [StepEntity] {
-        kitEntity.steps.sorted { $0.order < $1.order }
-    }
 
-    // MARK: - Steps Section
-    private var stepsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Header de sección
-            HStack(spacing: 8) {
-                Image(systemName: "list.bullet")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Color.accentColor)
-                    .accessibilityHidden(true)
-
-                Text("Pasos")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-
-                Spacer()
-
-                Text("\(kitEntity.steps.count)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color(.tertiarySystemFill))
-                    .clipShape(Capsule())
+    private var header: some View {
+        HStack(spacing: 18) {
+            ProgressRing(done: kitEntity.completedStepCount, total: kitEntity.activeStepCount, size: 92)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(kitEntity.title)
+                    .font(.title2.bold())
+                    .fixedSize(horizontal: false, vertical: true)
+                if !kitEntity.kpi.isEmpty {
+                    Text(kitEntity.kpi).foregroundStyle(.secondary)
+                }
+                HStack(spacing: 6) { headerChips }
             }
+        }
+        .padding(.top, 4)
+    }
 
-            if kitEntity.steps.isEmpty {
-                // Estado vacío
+    @ViewBuilder private var headerChips: some View {
+        MetaChip(symbol: "checkmark.circle",
+                 text: "\(kitEntity.completedStepCount) de \(kitEntity.activeStepCount)",
+                 color: MetaTint.done)
+        if let date = kitEntity.dueDate {
+            MetaChip(symbol: Symbols.wantedDate, text: date.formatted(.dateTime.day().month(.abbreviated)),
+                     color: MetaTint.date)
+        }
+    }
+
+    // MARK: - Plan
+
+    private var stepsSection: some View {
+        Group {
+            if kitEntity.orderedActiveSteps.isEmpty {
                 emptyStepsView
             } else {
-                // Lista de pasos
                 VStack(spacing: 0) {
-                    ForEach(sortedSteps.enumerated(), id: \.element.id) { index, stepEntity in
+                    let steps = kitEntity.orderedActiveSteps
+                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
                         NavigationLink {
-                            StepDetailView(stepEntity: stepEntity, stepNumber: index + 1)
+                            StepDetailView(stepEntity: step, stepNumber: index + 1)
                         } label: {
-                            StepRowView(stepEntity: stepEntity, index: index + 1, isLast: index == sortedSteps.count - 1)
+                            PlanStepRow(step: step, number: index + 1,
+                                        state: step.progressState(hasEntries: kitEntries.contains { $0.stepID == step.id }))
                         }
                         .buttonStyle(.plain)
-                        .accessibilityAddTraits(.isButton)
                         .accessibilityIdentifier("step.row")
-                        .accessibilityLabel("Paso \(index + 1) de \(sortedSteps.count): \(stepEntity.stepTitle)")
                         .accessibilityHint("Toca dos veces para abrir los detalles del paso")
+                        if index < steps.count - 1 {
+                            Divider().padding(.leading, 52)
+                        }
                     }
                 }
-                .background(Color(.systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
             }
         }
     }
-    
+
     // MARK: - Empty Steps View
     private var emptyStepsView: some View {
         VStack(spacing: 12) {
@@ -152,8 +149,57 @@ struct KitDetailView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
+    }
+}
+
+// MARK: - Fila del plan
+
+private struct PlanStepRow: View {
+    let step: StepEntity
+    let number: Int
+    let state: StepProgressState
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: state.symbol)
+                .font(.title3)
+                .foregroundStyle(state.tint)
+                .frame(width: 28)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(step.stepTitle)
+                    .foregroundStyle(state == .done ? .secondary : .primary)
+                    .multilineTextAlignment(.leading)
+                HStack(spacing: 10) {
+                    Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
+                        .foregroundStyle(MetaTint.time)
+                    if let date = step.suggestedDeadline {
+                        Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
+                            .foregroundStyle(MetaTint.date)
+                    }
+                    if state == .inProgress || state == .blocked {
+                        Text(state.label)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(state == .blocked ? .red : .orange)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background((state == .blocked ? Color.red : .orange).opacity(0.14), in: .capsule)
+                    }
+                }
+                .font(.caption.weight(.medium))
+                .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+        }
+        .padding(12)
+        .contentShape(.rect)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Paso \(number): \(step.stepTitle). \(state.label)")
     }
 }
 
