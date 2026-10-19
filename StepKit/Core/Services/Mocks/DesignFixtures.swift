@@ -36,7 +36,7 @@ struct DesignFixtureRoot: View {
     init(scenario: DesignFixtureScenario) {
         self.scenario = scenario
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, configurations: config)
+        let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
         DesignFixtureData.seed(scenario, into: container.mainContext)
         _container = State(initialValue: container)
     }

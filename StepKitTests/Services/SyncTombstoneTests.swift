@@ -34,6 +34,7 @@ struct SyncTombstoneTests {
             kits: [kitTombstone(for: deletedKit, at: tombstoneDate)],
             steps: [stepTombstone(for: directlyDeletedStep, at: tombstoneDate)],
             progressEntries: nil,
+            sessions: nil,
             conflicts: []
         )
         let network = RepeatingTombstoneNetworkService(response: snapshot)

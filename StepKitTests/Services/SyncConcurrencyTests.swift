@@ -102,6 +102,7 @@ struct SyncConcurrencyTests {
                 kits: [kitDTO(from: goal, updatedAt: initialDate, progress: 0)],
                 steps: [stepDTO(from: step, updatedAt: initialDate, completed: false)],
                 progressEntries: nil,
+                sessions: nil,
                 conflicts: []
             )
         )
@@ -127,7 +128,7 @@ struct SyncConcurrencyTests {
 
         network.resumeRequest(
             at: 1,
-            with: SyncBatchResponse(kits: [], steps: [], progressEntries: nil, conflicts: [])
+            with: SyncBatchResponse(kits: [], steps: [], progressEntries: nil, sessions: nil, conflicts: [])
         )
         await firstForce.value
         await secondForce.value
@@ -201,6 +202,7 @@ struct SyncConcurrencyTests {
                 )],
                 steps: [],
                 progressEntries: nil,
+                sessions: nil,
                 conflicts: []
             )
         )
@@ -217,7 +219,7 @@ struct SyncConcurrencyTests {
         #expect(!network.requests[1].kits.compactMap(\.id).contains(goalA.id))
         network.resumeRequest(
             at: 1,
-            with: SyncBatchResponse(kits: [], steps: [], progressEntries: nil, conflicts: [])
+            with: SyncBatchResponse(kits: [], steps: [], progressEntries: nil, sessions: nil, conflicts: [])
         )
         await accountBSync.value
 

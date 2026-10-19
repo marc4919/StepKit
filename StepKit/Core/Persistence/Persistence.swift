@@ -18,6 +18,7 @@ struct PersistenceController {
             GoalEntity.self,
             StepEntity.self,
             ProgressEntryEntity.self,
+            WorkSessionEntity.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
 
@@ -99,6 +100,9 @@ struct PersistenceController {
 
         for entry in entries {
             context.delete(entry)
+        }
+        for session in try context.fetch(FetchDescriptor<WorkSessionEntity>()) {
+            context.delete(session)
         }
 
         for step in steps {

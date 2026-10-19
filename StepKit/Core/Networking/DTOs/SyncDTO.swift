@@ -14,6 +14,7 @@ struct SyncBatchRequest: Codable {
     let kits: [KitSyncDTO]
     let steps: [StepSyncDTO]
     let progressEntries: [ProgressEntrySyncDTO]
+    let sessions: [WorkSessionSyncDTO]
 }
 
 /// Respuesta del servidor con el estado actual
@@ -22,6 +23,7 @@ struct SyncBatchResponse: Codable {
     let steps: [StepSyncDTO]
     /// Opcional para tolerar un servidor anterior al registro de avance.
     let progressEntries: [ProgressEntrySyncDTO]?
+    let sessions: [WorkSessionSyncDTO]?
     let conflicts: [ConflictDTO]
 }
 
@@ -103,6 +105,22 @@ struct ProgressEntrySyncDTO: Codable {
     let kind: String
     let note: String
     let notedAt: Date
+    let createdAt: Date?
+    let updatedAt: Date
+    let deletedAt: Date?
+
+    var deleted: Bool { deletedAt != nil }
+}
+
+// MARK: - Work Session Sync DTO
+
+struct WorkSessionSyncDTO: Codable {
+    let id: UUID
+    let kitId: UUID
+    let stepId: UUID?
+    let startsAt: Date
+    let durationMinutes: Int
+    let reminderEnabled: Bool
     let createdAt: Date?
     let updatedAt: Date
     let deletedAt: Date?

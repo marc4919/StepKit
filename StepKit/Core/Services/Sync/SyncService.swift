@@ -159,9 +159,15 @@ final class SyncService {
         )
         let allEntries = try context.fetch(entryDescriptor)
 
+        let sessionDescriptor = FetchDescriptor<WorkSessionEntity>(
+            predicate: #Predicate { $0.ownerID == ownerID }
+        )
+        let allSessions = try context.fetch(sessionDescriptor)
+
         let kitsDTOs: [KitSyncDTO]
         let stepsDTOs: [StepSyncDTO]
         let entryDTOs: [ProgressEntrySyncDTO]
+        let sessionDTOs: [WorkSessionSyncDTO]
         
         if let previousCursor {
             kitsDTOs = allGoals
@@ -175,13 +181,23 @@ final class SyncService {
             entryDTOs = allEntries
                 .filter { $0.updatedAt > previousCursor }
                 .map { $0.toSyncDTO() }
+
+            sessionDTOs = allSessions
+                .filter { $0.updatedAt > previousCursor }
+                .map { $0.toSyncDTO() }
         } else {
             kitsDTOs = allGoals.map { $0.toSyncDTO() }
             stepsDTOs = allSteps.map { $0.toSyncDTO() }
             entryDTOs = allEntries.map { $0.toSyncDTO() }
+            sessionDTOs = allSessions.map { $0.toSyncDTO() }
         }
         
-        return SyncBatchRequest(kits: kitsDTOs, steps: stepsDTOs, progressEntries: entryDTOs)
+        return SyncBatchRequest(
+            kits: kitsDTOs,
+            steps: stepsDTOs,
+            progressEntries: entryDTOs,
+            sessions: sessionDTOs
+        )
     }
     
     private func applyServerChanges(
@@ -277,6 +293,24 @@ final class SyncService {
             }
         }
 
+        // 4. Procesar sesiones reservadas.
+        for sessionDTO in response.sessions ?? [] {
+            let id = sessionDTO.id
+            let descriptor = FetchDescriptor<WorkSessionEntity>(
+                predicate: #Predicate { $0.id == id && $0.ownerID == ownerID }
+            )
+            if let existing = try context.fetch(descriptor).first {
+                guard existing.updatedAt <= cutoff else { continue }
+                if sessionDTO.deleted {
+                    context.delete(existing)
+                } else {
+                    existing.update(from: sessionDTO)
+                }
+            } else if !sessionDTO.deleted {
+                context.insert(WorkSessionEntity(fromSync: sessionDTO, ownerID: ownerID))
+            }
+        }
+
         try context.save()
     }
 
@@ -286,6 +320,12 @@ final class SyncService {
         )
         for entry in try context.fetch(descriptor) {
             context.delete(entry)
+        }
+        let sessions = FetchDescriptor<WorkSessionEntity>(
+            predicate: #Predicate { $0.kitID == kitID && $0.ownerID == ownerID }
+        )
+        for session in try context.fetch(sessions) {
+            context.delete(session)
         }
     }
 

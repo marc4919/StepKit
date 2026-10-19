@@ -34,6 +34,11 @@ struct ProgressContinuitySyncTests {
         try context.save()
 
         let remoteID = UUID()
+        let remoteSessionID = UUID()
+        let localSession = WorkSessionEntity(ownerID: "account-a", kitID: kit.id, stepID: step.id,
+                                             startsAt: base, durationMinutes: 30, updatedAt: base)
+        context.insert(localSession)
+        try context.save()
         let later = base.addingTimeInterval(30)
         let response = SyncBatchResponse(
             kits: [],
@@ -45,6 +50,11 @@ struct ProgressContinuitySyncTests {
                 ProgressEntrySyncDTO(id: removedOnServer.id, kitId: kit.id, stepId: nil, kind: "blocked",
                                      note: removedOnServer.note, notedAt: base, createdAt: base,
                                      updatedAt: later, deletedAt: later),
+            ],
+            sessions: [
+                WorkSessionSyncDTO(id: remoteSessionID, kitId: kit.id, stepId: step.id, startsAt: later,
+                                   durationMinutes: 45, reminderEnabled: false, createdAt: later,
+                                   updatedAt: later, deletedAt: nil),
             ],
             conflicts: []
         )
@@ -67,6 +77,12 @@ struct ProgressContinuitySyncTests {
         #expect(!request.progressEntries.map(\.id).contains(foreign.id))
         #expect(request.steps.first?.blockedReason == "Falta el permiso")
         #expect(request.kits.first?.resultConfirmedAt != nil)
+        #expect(request.sessions.map(\.id) == [localSession.id])
+
+        let sessions = try context.fetch(FetchDescriptor<WorkSessionEntity>())
+        let remoteSession = try #require(sessions.first { $0.id == remoteSessionID })
+        #expect(remoteSession.durationMinutes == 45)
+        #expect(remoteSession.ownerID == "account-a")
 
         let entries = try context.fetch(FetchDescriptor<ProgressEntryEntity>())
         let remote = try #require(entries.first { $0.id == remoteID })

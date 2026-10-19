@@ -93,7 +93,7 @@ private final class CapturingSyncNetworkService: SyncNetworkServicing {
 
     func syncBatch(_ request: SyncBatchRequest, token: String) async throws -> SyncBatchResponse {
         lastRequest = request
-        return SyncBatchResponse(kits: [], steps: [], progressEntries: nil, conflicts: [])
+        return SyncBatchResponse(kits: [], steps: [], progressEntries: nil, sessions: nil, conflicts: [])
     }
 }
 
