@@ -7,11 +7,21 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct KitsHomeView: View {
     let activeKits: [GoalEntity]
     let completedKits: [GoalEntity]
     @Bindable var viewModel: KitsViewModel
+    @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
+
+    /// Última nota de avance del Kit (no bloqueos, no vacías).
+    private func lastProgress(of kit: GoalEntity) -> ProgressEntryEntity? {
+        allEntries.first {
+            $0.kitID == kit.id && $0.ownerID == kit.ownerID && $0.deletedAt == nil
+                && $0.kind == .progress && !$0.note.isEmpty
+        }
+    }
 
     /// Kit que se avanzó por última vez: el cambio más reciente en el Kit o en sus pasos.
     private var continueKit: GoalEntity? {
@@ -32,7 +42,7 @@ struct KitsHomeView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
                         if let kit = continueKit {
-                            ContinueCard(kit: kit) { open(kit) }
+                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit)) { open(kit) }
                         }
                         if !otherKits.isEmpty {
                             section(title: activeKits.count > 1 && continueKit != nil ? "Otros Kits en curso" : "En curso",
@@ -67,7 +77,7 @@ struct KitsHomeView: View {
                 .accessibilityAddTraits(.isHeader)
             VStack(spacing: 0) {
                 ForEach(Array(kits.enumerated()), id: \.element.id) { index, kit in
-                    Button { open(kit) } label: { KitHomeRow(kit: kit) }
+                    Button { open(kit) } label: { KitHomeRow(kit: kit, lastProgress: lastProgress(of: kit)) }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("kit.row")
                         .contextMenu {
@@ -97,14 +107,31 @@ struct KitsHomeView: View {
 
 private struct ContinueCard: View {
     let kit: GoalEntity
+    let lastProgress: ProgressEntryEntity?
     let onContinue: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
-            if let step = kit.nextStep {
+            if lastProgress != nil || kit.nextStep != nil {
                 Divider().padding(.top, 6)
+            }
+            if let entry = lastProgress {
+                HStack(alignment: .top, spacing: 12) {
+                    IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Dónde lo dejaste").font(.headline)
+                        Text(entry.note).foregroundStyle(.secondary)
+                        Label("Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))",
+                              systemImage: Symbols.calendar)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            }
+            if let step = kit.nextStep {
                 nextStep(step)
             } else {
                 Button(action: onContinue) {
@@ -194,6 +221,7 @@ private struct ContinueCard: View {
 
 private struct KitHomeRow: View {
     let kit: GoalEntity
+    let lastProgress: ProgressEntryEntity?
 
     var body: some View {
         HStack(spacing: 14) {
@@ -213,10 +241,18 @@ private struct KitHomeRow: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
-                if let date = kit.dueDate, !kit.isCompleted {
-                    Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.wantedDate)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(MetaTint.date)
+                if !kit.isCompleted {
+                    HStack(spacing: 8) {
+                        if let date = kit.dueDate {
+                            Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.wantedDate)
+                                .foregroundStyle(MetaTint.date)
+                        }
+                        if let entry = lastProgress {
+                            Label(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.note)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .font(.caption.weight(.medium))
                 }
             }
             Spacer(minLength: 0)

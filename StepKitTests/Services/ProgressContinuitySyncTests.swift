@@ -77,6 +77,49 @@ struct ProgressContinuitySyncTests {
         #expect(entries.contains { $0.id == local.id })
     }
 
+    @Test("Saving progress records entries, blocks, resolves and edits without moving the note date")
+    func progressLogOperations() throws {
+        let persistence = PersistenceController(inMemory: true)
+        let context = persistence.container.mainContext
+        let kit = GoalEntity(ownerID: "account-a", planTitle: "Kit", horizonDays: 30, kpi: "KPI", updatedAt: base)
+        let step = StepEntity(ownerID: "account-a", stepTitle: "Paso", descriptionShort: "", descriptionLong: "",
+                              estimateMinutes: 20, updatedAt: base)
+        step.goal = kit
+        context.insert(kit)
+        context.insert(step)
+        try context.save()
+        #expect(step.progressState(hasEntries: false) == .pending)
+
+        let first = base.addingTimeInterval(10)
+        try ProgressLog.saveProgress(for: step, note: "  Dos imágenes  ", blockedReason: "Falta permiso",
+                                     context: context, now: first)
+        var entries = try context.fetch(FetchDescriptor<ProgressEntryEntity>())
+        #expect(entries.count == 2)
+        #expect(entries.allSatisfy { $0.ownerID == "account-a" && $0.kitID == kit.id && $0.stepID == step.id })
+        #expect(entries.contains { $0.kind == .progress && $0.note == "Dos imágenes" })
+        #expect(step.blockedReason == "Falta permiso")
+        #expect(step.progressState(hasEntries: true) == .blocked)
+        #expect(step.updatedAt >= first)
+        #expect(kit.updatedAt >= step.updatedAt)
+
+        try ProgressLog.resolveBlock(for: step, context: context, now: first.addingTimeInterval(5))
+        #expect(step.blockedReason == nil && step.blockedAt == nil)
+        #expect(step.progressState(hasEntries: true) == .inProgress)
+
+        let note = try #require(entries.first { $0.kind == .progress })
+        try ProgressLog.edit(note, note: "Tres imágenes", context: context, now: first.addingTimeInterval(20))
+        #expect(note.note == "Tres imágenes")
+        #expect(note.notedAt == first)
+        #expect(note.updatedAt >= first.addingTimeInterval(20))
+
+        try ProgressLog.delete(note, context: context, now: first.addingTimeInterval(30))
+        entries = try context.fetch(FetchDescriptor<ProgressEntryEntity>())
+        #expect(entries.visibleNewestFirst.count == 1)
+
+        try ProgressLog.setResultConfirmed(true, kit: kit, context: context, now: first.addingTimeInterval(40))
+        #expect(kit.resultConfirmedAt != nil)
+    }
+
     private func makeAuthenticatedManager() -> AuthManager {
         let manager = AuthManager(keychain: ContinuityKeychainStore())
         manager.saveAuth(

@@ -15,7 +15,8 @@ enum DesignFixtureScenario: String {
     case one           // un solo Kit
     case empty         // sin Kits
     case completed     // un Kit con todos los pasos terminados
-    case step          // paso 2 del portfolio
+    case step          // paso 2 del portfolio, en curso
+    case blocked       // paso 2 del portfolio, bloqueado
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -42,7 +43,7 @@ struct DesignFixtureRoot: View {
     var body: some View {
         TabView {
             Tab("Kits", systemImage: Symbols.kits) {
-                if scenario == .step, let step = portfolioStep {
+                if scenario == .step || scenario == .blocked, let step = portfolioStep {
                     NavigationStack { StepDetailView(stepEntity: step, stepNumber: 2) }
                 } else {
                     kits
@@ -79,14 +80,32 @@ enum DesignFixtureData {
         case .empty:
             break
         case .one, .step:
-            insert(portfolio(), into: context)
+            insertPortfolio(into: context, blocked: false)
+        case .blocked:
+            insertPortfolio(into: context, blocked: true)
         case .kits:
-            insert(portfolio(), into: context)
+            insertPortfolio(into: context, blocked: false)
             insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
             insert(kit("Huerto en el balcón", done: 1, of: 5, next: "Elegir semillas de temporada", inDays: 55, ago: 8), into: context)
             insert(kit("Preparar la media maratón", done: 4, of: 9, next: "Rodaje largo de 14 km", inDays: 70, ago: 12), into: context)
         case .completed:
             insert(kit("Mi portfolio", done: 7, of: 7, next: "", inDays: 20, ago: 1), into: context)
+        }
+    }
+
+    private static func insertPortfolio(into context: ModelContext, blocked: Bool) {
+        let item = portfolio()
+        insert(item, into: context)
+        let step = item.1[1]
+        let noted = Date.now.addingTimeInterval(-86_400 * 2)
+        context.insert(ProgressEntryEntity(
+            ownerID: step.ownerID, kitID: item.0.id, stepID: step.id, kind: .progress,
+            note: "Dos imágenes listas. Faltan material y permisos.", notedAt: noted,
+            createdAt: noted, updatedAt: noted
+        ))
+        if blocked {
+            step.blockedReason = "Me falta permiso para usar una captura del segundo caso."
+            step.blockedAt = .now.addingTimeInterval(-3_600)
         }
     }
 

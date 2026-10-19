@@ -17,19 +17,28 @@ struct StepDetailView: View {
     @Environment(\.syncManager) private var syncManager
 
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
+    @State private var showingSaveProgress = false
+    @State private var editingEntry: ProgressEntryEntity?
 
-    private var stateLabel: String {
-        if stepEntity.isCompleted { return "Completado" }
-        if stepEntity.goal?.nextStep?.id == stepEntity.id { return "Siguiente" }
-        return "Pendiente"
+    private var stepEntries: [ProgressEntryEntity] {
+        allEntries.filter { $0.stepID == stepEntity.id && $0.ownerID == stepEntity.ownerID && $0.deletedAt == nil }
+    }
+
+    private var lastProgress: ProgressEntryEntity? {
+        stepEntries.first { $0.kind == .progress && !$0.note.isEmpty }
+    }
+
+    private var state: StepProgressState {
+        stepEntity.progressState(hasEntries: !stepEntries.isEmpty)
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Eyebrow(text: "Paso \(stepNumber) · \(stateLabel)",
-                            color: stepEntity.isCompleted ? MetaTint.done : .accentColor)
+                    Eyebrow(text: "Paso \(stepNumber) · \(state.label)",
+                            color: state == .pending ? .accentColor : state.tint)
                     Text(stepEntity.stepTitle)
                         .font(.largeTitle.bold())
                         .fixedSize(horizontal: false, vertical: true)
@@ -44,6 +53,11 @@ struct StepDetailView: View {
                 ViewThatFits {
                     HStack(spacing: 8) { chips }
                     VStack(alignment: .leading, spacing: 8) { chips }
+                }
+                if let reason = stepEntity.blockedReason {
+                    blockedCards(reason: reason)
+                } else if let entry = lastProgress {
+                    lastProgressCard(entry)
                 }
                 if !stepEntity.descriptionLong.isEmpty, stepEntity.descriptionLong != stepEntity.descriptionShort {
                     PlainCard {
@@ -97,6 +111,66 @@ struct StepDetailView: View {
         .sheet(isPresented: $showingEditor) {
             StepEditSheetView(stepEntity: stepEntity)
         }
+        .sheet(isPresented: $showingSaveProgress) {
+            SaveProgressSheet(step: stepEntity, stepNumber: stepNumber)
+        }
+        .sheet(item: $editingEntry) { entry in
+            EditProgressEntrySheet(entry: entry, stepLabel: "\(stepNumber) · \(stepEntity.stepTitle)")
+        }
+    }
+
+    private func lastProgressCard(_ entry: ProgressEntryEntity) -> some View {
+        PlainCard {
+            HStack(alignment: .top, spacing: 12) {
+                Rectangle().fill(Color.accentColor).frame(width: 3).clipShape(.capsule)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Tu último avance").font(.headline)
+                    Text(entry.note).foregroundStyle(.secondary)
+                    HStack {
+                        Label(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Editar nota", systemImage: "pencil") { editingEntry = entry }
+                            .font(.subheadline)
+                            .accessibilityIdentifier("progress.editNote")
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func blockedCards(reason: String) -> some View {
+        TintCard(tint: .red, strength: 0.10) {
+            HStack(alignment: .top, spacing: 12) {
+                IconChip(symbol: Symbols.blocked, color: .red)
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack {
+                        Text("Qué te frena").font(.headline)
+                        Spacer()
+                        if let date = stepEntity.blockedAt {
+                            Text(date, format: .relative(presentation: .named))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Text(reason).foregroundStyle(.secondary)
+                }
+            }
+        }
+        if let entry = lastProgress {
+            PlainCard {
+                HStack(alignment: .top, spacing: 12) {
+                    IconChip(symbol: "checkmark", color: .green)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Ya tienes").font(.headline)
+                        Text(entry.note).foregroundStyle(.secondary)
+                        Text("Tu avance sigue guardado.").font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
     }
 
     @ViewBuilder private var chips: some View {
@@ -125,13 +199,46 @@ struct StepDetailView: View {
         .accessibilityIdentifier("step.toggleCompletion")
     }
 
+    private var saveProgressButton: some View {
+        Button {
+            showingSaveProgress = true
+        } label: {
+            Text("Guardar avance").frame(maxWidth: .infinity)
+        }
+        .accessibilityIdentifier("step.saveProgress")
+    }
+
+    private var resolveBlockMenu: some View {
+        Menu {
+            Button("Ya está resuelto", systemImage: "checkmark") {
+                try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
+                syncManager?.handleDataChange()
+            }
+            Button("Guardar avance", systemImage: Symbols.note) { showingSaveProgress = true }
+        } label: {
+            Text("Resolver bloqueo").frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .accessibilityIdentifier("step.resolveBlock")
+    }
+
     @ViewBuilder private var bottomActions: some View {
         let compactHeight = verticalSizeClass == .compact
-        Group {
-            if stepEntity.isCompleted {
+        let layout = compactHeight ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 8))
+        layout {
+            switch state {
+            case .done:
                 completionButton.buttonStyle(.bordered)
-            } else {
-                completionButton.buttonStyle(.borderedProminent)
+            case .blocked:
+                resolveBlockMenu
+                if !compactHeight {
+                    Text("Al resolverlo, el paso vuelve a «En curso». Tu avance se conserva.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            case .pending, .inProgress:
+                saveProgressButton.buttonStyle(.borderedProminent)
+                completionButton.buttonStyle(.bordered)
             }
         }
         .controlSize(compactHeight ? .regular : .large)
