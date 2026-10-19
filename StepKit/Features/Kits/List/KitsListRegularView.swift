@@ -14,16 +14,17 @@ struct KitsListRegularView: View {
     @Bindable var viewModel: KitsViewModel
     
     @Environment(\.syncManager) private var syncManager
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
     
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             KitsHomeView(
                 activeKits: activeKits,
                 completedKits: completedKits,
                 viewModel: viewModel,
                 isCompact: false
             )
-            .navigationSplitViewColumnWidth(min: 360, ideal: 400)
+            .navigationSplitViewColumnWidth(min: 360, ideal: 400, max: 440)
         } detail: {
             NavigationStack {
                 if let kitEntity = viewModel.selectedKitEntity {
@@ -36,6 +37,18 @@ struct KitsListRegularView: View {
                         description: Text("Elige un Kit para ver su plan y su registro")
                     )
                 }
+            }
+        }
+        .navigationSplitViewStyle(.balanced)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
+            // En vertical (iPad o interior del iPhone Duo) el detalle ocupa toda la pantalla
+            // y Mis Kits queda a un toque con el botón de barra lateral.
+            let target: NavigationSplitViewVisibility = width < 900 ? .detailOnly : .all
+            // Diferido: durante su primera presentación el split vuelve a mostrar la barra
+            // lateral y descarta un cambio inmediato (observado en iOS 27.1, iPhone Duo).
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(300))
+                columnVisibility = target
             }
         }
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {

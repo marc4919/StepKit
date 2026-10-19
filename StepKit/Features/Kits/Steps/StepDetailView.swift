@@ -20,6 +20,7 @@ struct StepDetailView: View {
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var showingSaveProgress = false
     @State private var editingEntry: ProgressEntryEntity?
+    @State private var hingePartiallyOpen = false
 
     private var stepEntries: [ProgressEntryEntity] {
         allEntries.filter { $0.stepID == stepEntity.id && $0.ownerID == stepEntity.ownerID && $0.deletedAt == nil }
@@ -34,6 +35,47 @@ struct StepDetailView: View {
     }
 
     var body: some View {
+        Group {
+            if hingePartiallyOpen, #available(iOS 27.1, *) {
+                // iPhone Duo entreabierto: el paso a un lado del pliegue, su recorrido y Guardar avance al otro.
+                ArrangementView {
+                    stepScroll
+                } secondary: {
+                    foldedProgressSide
+                }
+                .arrangementViewStyle(.split)
+            } else {
+                stepScroll
+            }
+        }
+        .modifier(HingeObserver(isPartiallyOpen: $hingePartiallyOpen))
+        .background(alignment: .top) { BrandGlow() }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle(stepEntity.goal?.title ?? "")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Editar paso", systemImage: "pencil") {
+                    showingEditor = true
+                }
+                .accessibilityIdentifier("step.edit")
+                .accessibilityHint("Permite cambiar el título y las descripciones del paso")
+            }
+        }
+        .safeAreaInset(edge: .bottom) { bottomActions }
+        .sheet(isPresented: $showingEditor) {
+            StepEditSheetView(stepEntity: stepEntity)
+        }
+        .sheet(isPresented: $showingSaveProgress) {
+            SaveProgressSheet(step: stepEntity, stepNumber: stepNumber)
+        }
+        .sheet(item: $editingEntry) { entry in
+            EditProgressEntrySheet(entry: entry, stepLabel: "\(stepNumber) · \(stepEntity.stepTitle)")
+        }
+    }
+
+    private var stepScroll: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -93,30 +135,41 @@ struct StepDetailView: View {
             .padding(.horizontal)
             .padding(.bottom, 20)
         }
-        .background(alignment: .top) { BrandGlow() }
-        .background(Color(.systemGroupedBackground))
-        .navigationTitle(stepEntity.goal?.title ?? "")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Editar paso", systemImage: "pencil") {
-                    showingEditor = true
+    }
+
+    /// Lado secundario en el Duo entreabierto. Plegar no abre ningún formulario.
+    private var foldedProgressSide: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Tu recorrido en este paso").font(.headline)
+                if stepEntries.isEmpty {
+                    Text("Aún no has guardado avances en este paso.").foregroundStyle(.secondary)
                 }
-                .accessibilityIdentifier("step.edit")
-                .accessibilityHint("Permite cambiar el título y las descripciones del paso")
+                ForEach(stepEntries.prefix(4)) { entry in
+                    HStack(alignment: .top, spacing: 12) {
+                        IconChip(symbol: entry.kind == .blocked ? Symbols.blocked : "circle.lefthalf.filled",
+                                 color: entry.kind == .blocked ? .red : .accentColor, size: 30)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))
+                                .font(.caption).foregroundStyle(.secondary)
+                            Text(entry.note.isEmpty ? "Avance guardado" : entry.note)
+                        }
+                    }
+                }
+                if !stepEntity.isCompleted {
+                    Button { showingSaveProgress = true } label: {
+                        Text("Guardar avance").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                }
+                Text("Plegar el teléfono no abre ningún formulario: guardas cuando quieras.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
+            .padding()
         }
-        .safeAreaInset(edge: .bottom) { bottomActions }
-        .sheet(isPresented: $showingEditor) {
-            StepEditSheetView(stepEntity: stepEntity)
-        }
-        .sheet(isPresented: $showingSaveProgress) {
-            SaveProgressSheet(step: stepEntity, stepNumber: stepNumber)
-        }
-        .sheet(item: $editingEntry) { entry in
-            EditProgressEntrySheet(entry: entry, stepLabel: "\(stepNumber) · \(stepEntity.stepTitle)")
-        }
+        .background(Color(.systemGroupedBackground))
     }
 
     private func lastProgressCard(_ entry: ProgressEntryEntity) -> some View {
@@ -337,4 +390,19 @@ struct StepDetailView: View {
         StepDetailView(stepEntity: stepEntity, stepNumber: 3)
     }
     .modelContainer(container)
+}
+
+/// Observa la bisagra del iPhone Duo (iOS 27.1+). En otros dispositivos no hace nada.
+struct HingeObserver: ViewModifier {
+    @Binding var isPartiallyOpen: Bool
+
+    func body(content: Content) -> some View {
+        if #available(iOS 27.1, *) {
+            content.onHingeChange { _, context in
+                isPartiallyOpen = context.hinge?.status == .partiallyOpen
+            }
+        } else {
+            content
+        }
+    }
 }
