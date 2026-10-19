@@ -17,11 +17,10 @@ struct KitsListCompactView: View {
     
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
-            KitsListBodyView(
+            KitsHomeView(
                 activeKits: activeKits,
                 completedKits: completedKits,
-                viewModel: viewModel,
-                isCompact: true
+                viewModel: viewModel
             )
             .navigationDestination(for: GoalEntity.ID.self) { kitId in
                 if let kitEntity = kitEntities.first(where: { $0.id == kitId }) {

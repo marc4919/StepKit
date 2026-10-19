@@ -52,60 +52,20 @@ struct StepKitApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if authManager.isRestoringSession {
-                    ProgressView("Validando sesión…")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if authManager.isAuthenticated {
-                    ContentView()
-                        .fullScreenCover(isPresented: $showOnboarding) {
-                            OnboardingView {
-                                showOnboarding = false
-                                hasCompletedOnboarding = true
-                            }
-                            .interactiveDismissDisabled()
-                        }
-                        .fullScreenCover(isPresented: $showAIConsent) {
-                            AIConsentView {
-                                showAIConsent = false
-                            }
-                            .interactiveDismissDisabled()
-                        }
-                        .onAppear {
-                            if !hasCompletedOnboarding {
-                                showOnboarding = true
-                            } else if !aiConsentManager.hasConsent {
-                                // Si completó onboarding pero no tiene consentimiento, mostrarlo
-                                showAIConsent = true
-                            }
-                        }
-                        .task {
-                            // Solicitar permisos de notificación y verificar estado
-                            if shouldRequestNotifications {
-                                await NotificationService.shared.checkAuthorizationStatus()
-                                if !NotificationService.shared.isAuthorized {
-                                    await NotificationService.shared.requestAuthorization()
-                                }
-                            }
-
-                            // Inicializar sync si no existe
-                            if syncService == nil {
-                                let service = SyncService(
-                                    authManager: authManager,
-                                    environment: appEnvironment
-                                )
-                                service.configure(with: PersistenceController.shared.container.mainContext)
-                                syncService = service
-
-                                let manager = SyncManager(syncService: service)
-                                syncManager = manager
-                                manager.startAutoSync()
-                            }
-                        }
+                #if DEBUG
+                if let fixture = DesignFixtureScenario.current {
+                    DesignFixtureRoot(scenario: fixture)
                 } else {
-                    SignInView()
+                    appContent
                 }
+                #else
+                appContent
+                #endif
             }
             .task {
+                #if DEBUG
+                guard DesignFixtureScenario.current == nil else { return }
+                #endif
                 await bootstrapAuthenticationIfNeeded()
             }
             .onChange(of: scenePhase) { _, newPhase in
@@ -127,6 +87,62 @@ struct StepKitApp: App {
         .environment(\.apiClient, apiClient)
         .environment(\.syncManager, syncManager)
         .modelContainer(PersistenceController.shared.container)
+    }
+
+    @ViewBuilder
+    private var appContent: some View {
+        if authManager.isRestoringSession {
+            ProgressView("Validando sesión…")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if authManager.isAuthenticated {
+            ContentView()
+                .fullScreenCover(isPresented: $showOnboarding) {
+                    OnboardingView {
+                        showOnboarding = false
+                        hasCompletedOnboarding = true
+                    }
+                    .interactiveDismissDisabled()
+                }
+                .fullScreenCover(isPresented: $showAIConsent) {
+                    AIConsentView {
+                        showAIConsent = false
+                    }
+                    .interactiveDismissDisabled()
+                }
+                .onAppear {
+                    if !hasCompletedOnboarding {
+                        showOnboarding = true
+                    } else if !aiConsentManager.hasConsent {
+                        // Si completó onboarding pero no tiene consentimiento, mostrarlo
+                        showAIConsent = true
+                    }
+                }
+                .task {
+                    // Solicitar permisos de notificación y verificar estado
+                    if shouldRequestNotifications {
+                        await NotificationService.shared.checkAuthorizationStatus()
+                        if !NotificationService.shared.isAuthorized {
+                            await NotificationService.shared.requestAuthorization()
+                        }
+                    }
+
+                    // Inicializar sync si no existe
+                    if syncService == nil {
+                        let service = SyncService(
+                            authManager: authManager,
+                            environment: appEnvironment
+                        )
+                        service.configure(with: PersistenceController.shared.container.mainContext)
+                        syncService = service
+
+                        let manager = SyncManager(syncService: service)
+                        syncManager = manager
+                        manager.startAutoSync()
+                    }
+                }
+        } else {
+            SignInView()
+        }
     }
 
     @MainActor
