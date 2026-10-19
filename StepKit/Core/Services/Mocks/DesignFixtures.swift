@@ -17,6 +17,7 @@ enum DesignFixtureScenario: String {
     case completed     // un Kit con todos los pasos terminados
     case step          // paso 2 del portfolio, en curso
     case blocked       // paso 2 del portfolio, bloqueado
+    case confirmed     // un Kit terminado con el resultado confirmado y otro pendiente
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -90,6 +91,11 @@ enum DesignFixtureData {
             insert(kit("Preparar la media maratón", done: 4, of: 9, next: "Rodaje largo de 14 km", inDays: 70, ago: 12), into: context)
         case .completed:
             insert(kit("Mi portfolio", done: 7, of: 7, next: "", inDays: 20, ago: 1), into: context)
+        case .confirmed:
+            insert(kit("Mi portfolio", done: 7, of: 7, next: "", inDays: 20, ago: 1), into: context)
+            let done = kit("Huerto en el balcón", done: 5, of: 5, next: "", inDays: 10, ago: 9)
+            done.0.resultConfirmedAt = .now.addingTimeInterval(-86_400 * 9)
+            insert(done, into: context)
         }
     }
 

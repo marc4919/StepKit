@@ -14,6 +14,16 @@ struct KitsHomeView: View {
     let completedKits: [GoalEntity]
     @Bindable var viewModel: KitsViewModel
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
+    @State private var reviewingKit: GoalEntity?
+
+    /// Todos los pasos terminados pero el resultado aún sin confirmar.
+    private var pendingResultKits: [GoalEntity] {
+        completedKits.filter { $0.resultConfirmedAt == nil }.sorted { $0.lastActivity > $1.lastActivity }
+    }
+
+    private var confirmedKits: [GoalEntity] {
+        completedKits.filter { $0.resultConfirmedAt != nil }
+    }
 
     /// Última nota de avance del Kit (no bloqueos, no vacías).
     private func lastProgress(of kit: GoalEntity) -> ProgressEntryEntity? {
@@ -41,6 +51,13 @@ struct KitsHomeView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
+                        ForEach(pendingResultKits) { kit in
+                            PendingResultCard(kit: kit) {
+                                reviewingKit = kit
+                            } onBackToPlan: {
+                                open(kit)
+                            }
+                        }
                         if let kit = continueKit {
                             ContinueCard(kit: kit, lastProgress: lastProgress(of: kit)) { open(kit) }
                         }
@@ -48,8 +65,8 @@ struct KitsHomeView: View {
                             section(title: activeKits.count > 1 && continueKit != nil ? "Otros Kits en curso" : "En curso",
                                     kits: otherKits)
                         }
-                        if !completedKits.isEmpty {
-                            section(title: "Terminados", kits: completedKits)
+                        if !confirmedKits.isEmpty {
+                            section(title: "Terminados", kits: confirmedKits)
                         }
                     }
                     .padding(.horizontal)
@@ -60,6 +77,12 @@ struct KitsHomeView: View {
             }
         }
         .navigationTitle("Mis Kits")
+        .navigationDestination(item: $reviewingKit) { kit in
+            ResultReviewView(kit: kit) {
+                reviewingKit = nil
+                open(kit)
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Crear Kit", systemImage: "plus") { openCreator() }
@@ -214,6 +237,57 @@ private struct ContinueCard: View {
             .accessibilityIdentifier("kit.continue")
             .accessibilityHint("Abre el Kit \(kit.title)")
         }
+    }
+}
+
+// MARK: - Pasos terminados, resultado por confirmar
+
+private struct PendingResultCard: View {
+    let kit: GoalEntity
+    let onReview: () -> Void
+    let onBackToPlan: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Eyebrow(text: "Pasos terminados · falta revisar el resultado", color: .orange)
+            HStack(spacing: 14) {
+                ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 70)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(kit.title).font(.title2.bold())
+                    Text("\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados")
+                        .foregroundStyle(.secondary)
+                    Text("Resultado sin confirmar")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.orange)
+                }
+            }
+            TintCard(tint: .orange, strength: 0.12) {
+                HStack(alignment: .top, spacing: 12) {
+                    IconChip(symbol: "clock.badge.questionmark", color: .orange)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Resultado por confirmar").font(.headline)
+                        Text("Has completado los pasos. Comprueba que tienes lo que buscabas antes de confirmar el resultado.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Button(action: onReview) {
+                    Label("Revisar resultado", systemImage: "chevron.right")
+                        .labelStyle(TrailingIconLabelStyle())
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .accessibilityIdentifier("result.review")
+                Button(action: onBackToPlan) {
+                    Text("Volver al plan").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+            }
+        }
+        .padding(18)
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 26))
     }
 }
 
