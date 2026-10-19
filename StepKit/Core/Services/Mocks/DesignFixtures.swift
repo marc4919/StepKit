@@ -70,6 +70,7 @@ struct DesignFixtureRoot: View {
             Tab("Perfil", systemImage: Symbols.profile, value: 3) { Text("Perfil") }
             Tab(value: 4, role: .search) { Text("Buscar") }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .modelContainer(container)
         .environment(authManager)
     }
@@ -79,14 +80,25 @@ struct DesignFixtureRoot: View {
         return kits.first?.orderedActiveSteps.dropFirst().first
     }
 
-    private var kits: some View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    @ViewBuilder private var kits: some View {
         let all = (try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []
-        return KitsListCompactView(
-            activeKits: all.filter { !$0.isCompleted },
-            completedKits: all.filter(\.isCompleted),
-            kitEntities: all,
-            viewModel: viewModel
-        )
+        if sizeClass == .regular {
+            KitsListRegularView(
+                activeKits: all.filter { !$0.isCompleted },
+                completedKits: all.filter(\.isCompleted),
+                kitEntities: all,
+                viewModel: viewModel
+            )
+        } else {
+            KitsListCompactView(
+                activeKits: all.filter { !$0.isCompleted },
+                completedKits: all.filter(\.isCompleted),
+                kitEntities: all,
+                viewModel: viewModel
+            )
+        }
     }
 }
 

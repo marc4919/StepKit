@@ -13,6 +13,8 @@ struct KitsHomeView: View {
     let activeKits: [GoalEntity]
     let completedKits: [GoalEntity]
     @Bindable var viewModel: KitsViewModel
+    /// iPhone: abre el Kit en la pila. iPad: lo selecciona en la columna de detalle.
+    var isCompact = true
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var reviewingKit: GoalEntity?
     @State private var continuingStep: StepEntity?
@@ -86,6 +88,12 @@ struct KitsHomeView: View {
             }
         }
         .navigationTitle("Mis Kits")
+        .onAppear {
+            // iPad: el detalle empieza mostrando el Kit que avanzaste por última vez.
+            if !isCompact, viewModel.selectedKitEntity == nil, let kit = continueKit {
+                viewModel.selectKit(kit)
+            }
+        }
         .navigationDestination(item: $continuingStep) { step in
             StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? 1)
         }
@@ -130,7 +138,11 @@ struct KitsHomeView: View {
     }
 
     private func open(_ kit: GoalEntity) {
-        viewModel.navigationPath.append(kit.id)
+        if isCompact {
+            viewModel.navigationPath.append(kit.id)
+        } else {
+            viewModel.selectKit(kit)
+        }
     }
 
     private func openCreator() {

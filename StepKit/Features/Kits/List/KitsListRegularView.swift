@@ -17,38 +17,25 @@ struct KitsListRegularView: View {
     
     var body: some View {
         NavigationSplitView {
-            KitsListBodyView(
+            KitsHomeView(
                 activeKits: activeKits,
                 completedKits: completedKits,
                 viewModel: viewModel,
                 isCompact: false
             )
-        } content: {
-            if let kitEntity = viewModel.selectedKitEntity {
-                KitDetailView(kitEntity: kitEntity)
-                    .onChange(of: viewModel.selectedKitEntity) { _, _ in
-                        viewModel.selectedStepEntity = nil
-                    }
-            } else {
-                ContentUnavailableView(
-                    "Selecciona un Kit",
-                    systemImage: "list.bullet",
-                    description: Text("Elige un kit para ver sus pasos")
-                )
-            }
+            .navigationSplitViewColumnWidth(min: 360, ideal: 400)
         } detail: {
-            if let stepEntity = viewModel.selectedStepEntity {
-                NavigationStack {
-                    StepDetailView(stepEntity: stepEntity)
-                        .navigationTitle(stepEntity.title)
-                        .navigationBarTitleDisplayMode(.inline)
+            NavigationStack {
+                if let kitEntity = viewModel.selectedKitEntity {
+                    KitDetailView(kitEntity: kitEntity)
+                        .id(kitEntity.id)
+                } else {
+                    ContentUnavailableView(
+                        "Selecciona un Kit",
+                        systemImage: Symbols.kits,
+                        description: Text("Elige un Kit para ver su plan y su registro")
+                    )
                 }
-            } else {
-                ContentUnavailableView(
-                    "Selecciona un Paso",
-                    systemImage: "doc.text",
-                    description: Text("Elige un paso para ver sus detalles")
-                )
             }
         }
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {

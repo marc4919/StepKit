@@ -30,6 +30,7 @@ struct ContentView: View {
                 SearchView()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
         #if DEBUG
         .overlay(alignment: .topLeading) {
             Text("Estado E2E")
