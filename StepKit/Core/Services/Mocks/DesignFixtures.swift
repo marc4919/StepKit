@@ -15,6 +15,7 @@ enum DesignFixtureScenario: String {
     case one           // un solo Kit
     case empty         // sin Kits
     case completed     // un Kit con todos los pasos terminados
+    case step          // paso 2 del portfolio
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -40,13 +41,24 @@ struct DesignFixtureRoot: View {
 
     var body: some View {
         TabView {
-            Tab("Kits", systemImage: Symbols.kits) { kits }
+            Tab("Kits", systemImage: Symbols.kits) {
+                if scenario == .step, let step = portfolioStep {
+                    NavigationStack { StepDetailView(stepEntity: step, stepNumber: 2) }
+                } else {
+                    kits
+                }
+            }
             Tab("Calendario", systemImage: Symbols.calendar) { Text("Calendario") }
             Tab("Asistente", systemImage: Symbols.assistant) { Text("Asistente") }
             Tab("Perfil", systemImage: Symbols.profile) { Text("Perfil") }
             Tab(role: .search) { Text("Buscar") }
         }
         .modelContainer(container)
+    }
+
+    private var portfolioStep: StepEntity? {
+        let kits = (try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []
+        return kits.first?.orderedActiveSteps.dropFirst().first
     }
 
     private var kits: some View {
@@ -66,7 +78,7 @@ enum DesignFixtureData {
         switch scenario {
         case .empty:
             break
-        case .one:
+        case .one, .step:
             insert(portfolio(), into: context)
         case .kits:
             insert(portfolio(), into: context)
