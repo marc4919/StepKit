@@ -146,6 +146,43 @@ final class NotificationService {
         #endif
     }
 
+    // MARK: - Sesiones reservadas
+
+    /// Recordatorio 10 minutos antes de una sesión futura. Reprogramar con el mismo
+    /// identificador sustituye el anterior, así que es idempotente.
+    func scheduleReminder(for session: WorkSessionEntity, kitTitle: String, stepTitle: String?) async {
+        let identifier = sessionIdentifier(for: session.id)
+        guard session.reminderEnabled, session.deletedAt == nil else {
+            center.removePendingNotificationRequests(withIdentifiers: [identifier])
+            return
+        }
+        let fireDate = session.startsAt.addingTimeInterval(-10 * 60)
+        guard fireDate > Date() else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = kitTitle
+        content.body = "En 10 min: \(stepTitle ?? "tu sesión") · \(session.durationMinutes) min"
+        content.sound = .default
+
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        do {
+            try await center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger))
+        } catch {
+            #if DEBUG
+            print("❌ NotificationService: session reminder failed, errorType=\(String(describing: type(of: error)))")
+            #endif
+        }
+    }
+
+    func cancelReminder(forSession id: UUID) {
+        center.removePendingNotificationRequests(withIdentifiers: [sessionIdentifier(for: id)])
+    }
+
+    private func sessionIdentifier(for sessionId: UUID) -> String {
+        "session-\(sessionId.uuidString)"
+    }
+
     // MARK: - Helpers
 
     /// Genera un identificador único para la notificación de un paso

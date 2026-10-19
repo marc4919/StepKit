@@ -18,6 +18,7 @@ enum DesignFixtureScenario: String {
     case step          // paso 2 del portfolio, en curso
     case blocked       // paso 2 del portfolio, bloqueado
     case confirmed     // un Kit terminado con el resultado confirmado y otro pendiente
+    case calendar      // pestaña Calendario con sesiones reservadas
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -32,9 +33,19 @@ struct DesignFixtureRoot: View {
     let scenario: DesignFixtureScenario
     @State private var container: ModelContainer
     @State private var viewModel = KitsViewModel()
+    @State private var authManager: AuthManager
+    @State private var tab: Int
 
     init(scenario: DesignFixtureScenario) {
         self.scenario = scenario
+        let suite = "StepKit.DesignFixtures"
+        UserDefaults().removePersistentDomain(forName: suite)
+        let auth = AuthManager(keychain: DesignFixtureKeychain(), preferences: UserDefaults(suiteName: suite) ?? .standard)
+        auth.saveAuth(token: "design-fixtures",
+                      user: UserInfo(id: DesignFixtureData.owner, tier: "premium",
+                                     monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
+        _authManager = State(initialValue: auth)
+        _tab = State(initialValue: scenario == .calendar ? 1 : 0)
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
         DesignFixtureData.seed(scenario, into: container.mainContext)
@@ -42,20 +53,21 @@ struct DesignFixtureRoot: View {
     }
 
     var body: some View {
-        TabView {
-            Tab("Kits", systemImage: Symbols.kits) {
+        TabView(selection: $tab) {
+            Tab("Kits", systemImage: Symbols.kits, value: 0) {
                 if scenario == .step || scenario == .blocked, let step = portfolioStep {
                     NavigationStack { StepDetailView(stepEntity: step, stepNumber: 2) }
                 } else {
                     kits
                 }
             }
-            Tab("Calendario", systemImage: Symbols.calendar) { Text("Calendario") }
-            Tab("Asistente", systemImage: Symbols.assistant) { Text("Asistente") }
-            Tab("Perfil", systemImage: Symbols.profile) { Text("Perfil") }
-            Tab(role: .search) { Text("Buscar") }
+            Tab("Calendario", systemImage: Symbols.calendar, value: 1) { CalendarPlusView() }
+            Tab("Asistente", systemImage: Symbols.assistant, value: 2) { Text("Asistente") }
+            Tab("Perfil", systemImage: Symbols.profile, value: 3) { Text("Perfil") }
+            Tab(value: 4, role: .search) { Text("Buscar") }
         }
         .modelContainer(container)
+        .environment(authManager)
     }
 
     private var portfolioStep: StepEntity? {
@@ -76,7 +88,10 @@ struct DesignFixtureRoot: View {
 
 @MainActor
 enum DesignFixtureData {
+    static let owner = "design-fixtures"
+
     static func seed(_ scenario: DesignFixtureScenario, into context: ModelContext) {
+        defer { claimAll(in: context) }
         switch scenario {
         case .empty:
             break
@@ -84,6 +99,10 @@ enum DesignFixtureData {
             insertPortfolio(into: context, blocked: false)
         case .blocked:
             insertPortfolio(into: context, blocked: true)
+        case .calendar:
+            insertPortfolio(into: context, blocked: false)
+            insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
+            insertSessions(into: context)
         case .kits:
             insertPortfolio(into: context, blocked: false)
             insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
@@ -97,6 +116,27 @@ enum DesignFixtureData {
             done.0.resultConfirmedAt = .now.addingTimeInterval(-86_400 * 9)
             insert(done, into: context)
         }
+    }
+
+    /// Todo pertenece a la cuenta ficticia para que las vistas filtradas por propietario lo muestren.
+    private static func claimAll(in context: ModelContext) {
+        try? context.fetch(FetchDescriptor<GoalEntity>()).forEach { $0.ownerID = owner }
+        try? context.fetch(FetchDescriptor<StepEntity>()).forEach { $0.ownerID = owner }
+        try? context.fetch(FetchDescriptor<ProgressEntryEntity>()).forEach { $0.ownerID = owner }
+        try? context.fetch(FetchDescriptor<WorkSessionEntity>()).forEach { $0.ownerID = owner }
+    }
+
+    private static func insertSessions(into context: ModelContext) {
+        let kits = (try? context.fetch(FetchDescriptor<GoalEntity>())) ?? []
+        guard let portfolio = kits.first(where: { $0.title == "Publicar mi portfolio" }),
+              let step = portfolio.nextStep else { return }
+        let calendar = Calendar.current
+        let today18 = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: .now) ?? .now
+        let saturday = calendar.date(byAdding: .day, value: 4, to: calendar.date(bySettingHour: 10, minute: 0, second: 0, of: .now) ?? .now) ?? .now
+        context.insert(WorkSessionEntity(ownerID: owner, kitID: portfolio.id, stepID: step.id,
+                                         startsAt: today18, durationMinutes: 15))
+        context.insert(WorkSessionEntity(ownerID: owner, kitID: portfolio.id, stepID: step.id,
+                                         startsAt: saturday, durationMinutes: 30))
     }
 
     private static func insertPortfolio(into context: ModelContext, blocked: Bool) {
@@ -158,6 +198,31 @@ enum DesignFixtureData {
             step.goal = item.0
         }
         item.0.progress = item.0.computedProgress
+    }
+}
+
+private final class DesignFixtureKeychain: KeychainStoring {
+    private var values: [String: Data] = [:]
+
+    func save<T: Codable>(_ value: T, forKey key: String) throws {
+        values[key] = try JSONEncoder().encode(value)
+    }
+
+    func get<T: Codable>(forKey key: String) throws -> T? {
+        guard let data = values[key] else { return nil }
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    func saveString(_ value: String, forKey key: String) throws {
+        values[key] = Data(value.utf8)
+    }
+
+    func getString(forKey key: String) throws -> String? {
+        values[key].flatMap { String(data: $0, encoding: .utf8) }
+    }
+
+    func delete(forKey key: String) throws {
+        values.removeValue(forKey: key)
     }
 }
 #endif
