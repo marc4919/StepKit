@@ -13,18 +13,21 @@ import Foundation
 struct SyncBatchRequest: Codable {
     let kits: [KitSyncDTO]
     let steps: [StepSyncDTO]
+    let progressEntries: [ProgressEntrySyncDTO]
 }
 
 /// Respuesta del servidor con el estado actual
 struct SyncBatchResponse: Codable {
     let kits: [KitSyncDTO]
     let steps: [StepSyncDTO]
+    /// Opcional para tolerar un servidor anterior al registro de avance.
+    let progressEntries: [ProgressEntrySyncDTO]?
     let conflicts: [ConflictDTO]
 }
 
 /// Información sobre conflictos detectados durante sync
 struct ConflictDTO: Codable {
-    let entityType: String  // "kit" | "step"
+    let entityType: String  // "kit" | "step" | "progressEntry"
     let entityId: UUID
     let reason: String
 }
@@ -49,6 +52,7 @@ struct KitSyncDTO: Codable {
     let updatedAt: Date
     let deletedAt: Date?
     let deleted: Bool
+    let resultConfirmedAt: Date?
     let steps: [StepSyncDTO]?
 
     // No necesita CodingKeys - Vapor usa camelCase por defecto
@@ -71,6 +75,8 @@ struct StepSyncDTO: Codable {
     let blockedByPremium: Bool
     let order: Int
     let completed: Bool
+    let blockedReason: String?
+    let blockedAt: Date?
     let createdAt: Date?
     let updatedAt: Date?
     let deletedAt: Date?
@@ -82,6 +88,24 @@ struct StepSyncDTO: Codable {
     private enum CodingKeys: String, CodingKey {
         case id, kitId, title, descriptionShort, descriptionLong
         case estimateMinutes, suggestedDeadline, effortLevel, adaptsTo
-        case blockedByPremium, order, completed, createdAt, updatedAt, deletedAt
+        case blockedByPremium, order, completed, blockedReason, blockedAt
+        case createdAt, updatedAt, deletedAt
     }
+}
+
+// MARK: - Progress Entry Sync DTO
+
+/// Entrada del registro de avance ("progress" | "blocked").
+struct ProgressEntrySyncDTO: Codable {
+    let id: UUID
+    let kitId: UUID
+    let stepId: UUID?
+    let kind: String
+    let note: String
+    let notedAt: Date
+    let createdAt: Date?
+    let updatedAt: Date
+    let deletedAt: Date?
+
+    var deleted: Bool { deletedAt != nil }
 }

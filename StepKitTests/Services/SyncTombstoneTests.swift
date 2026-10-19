@@ -33,6 +33,7 @@ struct SyncTombstoneTests {
         let snapshot = SyncBatchResponse(
             kits: [kitTombstone(for: deletedKit, at: tombstoneDate)],
             steps: [stepTombstone(for: directlyDeletedStep, at: tombstoneDate)],
+            progressEntries: nil,
             conflicts: []
         )
         let network = RepeatingTombstoneNetworkService(response: snapshot)
@@ -130,6 +131,7 @@ struct SyncTombstoneTests {
             updatedAt: date,
             deletedAt: date,
             deleted: true,
+            resultConfirmedAt: nil,
             steps: nil
         )
     }
@@ -148,6 +150,8 @@ struct SyncTombstoneTests {
             blockedByPremium: step.blockedByPremium,
             order: step.order,
             completed: step.isCompleted,
+            blockedReason: nil,
+            blockedAt: nil,
             createdAt: step.createdAt,
             updatedAt: date,
             deletedAt: date

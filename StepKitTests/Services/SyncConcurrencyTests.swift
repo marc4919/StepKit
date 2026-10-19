@@ -101,6 +101,7 @@ struct SyncConcurrencyTests {
             with: SyncBatchResponse(
                 kits: [kitDTO(from: goal, updatedAt: initialDate, progress: 0)],
                 steps: [stepDTO(from: step, updatedAt: initialDate, completed: false)],
+                progressEntries: nil,
                 conflicts: []
             )
         )
@@ -126,7 +127,7 @@ struct SyncConcurrencyTests {
 
         network.resumeRequest(
             at: 1,
-            with: SyncBatchResponse(kits: [], steps: [], conflicts: [])
+            with: SyncBatchResponse(kits: [], steps: [], progressEntries: nil, conflicts: [])
         )
         await firstForce.value
         await secondForce.value
@@ -199,6 +200,7 @@ struct SyncConcurrencyTests {
                     title: "Stale remote A value"
                 )],
                 steps: [],
+                progressEntries: nil,
                 conflicts: []
             )
         )
@@ -215,7 +217,7 @@ struct SyncConcurrencyTests {
         #expect(!network.requests[1].kits.compactMap(\.id).contains(goalA.id))
         network.resumeRequest(
             at: 1,
-            with: SyncBatchResponse(kits: [], steps: [], conflicts: [])
+            with: SyncBatchResponse(kits: [], steps: [], progressEntries: nil, conflicts: [])
         )
         await accountBSync.value
 
@@ -269,6 +271,7 @@ struct SyncConcurrencyTests {
             updatedAt: updatedAt,
             deletedAt: nil,
             deleted: false,
+            resultConfirmedAt: nil,
             steps: nil
         )
     }
@@ -291,6 +294,8 @@ struct SyncConcurrencyTests {
             blockedByPremium: step.blockedByPremium,
             order: step.order,
             completed: completed,
+            blockedReason: nil,
+            blockedAt: nil,
             createdAt: step.createdAt,
             updatedAt: updatedAt,
             deletedAt: nil

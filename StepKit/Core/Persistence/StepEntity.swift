@@ -26,6 +26,9 @@ final class StepEntity {
     var updatedAt: Date
     var deletedAt: Date?
     var notificationEnabled: Bool
+    /// Motivo del bloqueo actual; `nil` si el paso no está bloqueado.
+    var blockedReason: String?
+    var blockedAt: Date?
 
     var goal: GoalEntity?
     
@@ -136,6 +139,8 @@ final class StepEntity {
             blockedByPremium: blockedByPremium,
             order: order,
             completed: isCompleted,
+            blockedReason: blockedReason,
+            blockedAt: blockedAt,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt
@@ -154,6 +159,8 @@ final class StepEntity {
         blockedByPremium = dto.blockedByPremium
         order = dto.order
         isCompleted = dto.completed
+        blockedReason = dto.blockedReason
+        blockedAt = dto.blockedAt
         createdAt = dto.createdAt ?? createdAt
         updatedAt = dto.updatedAt ?? updatedAt
         deletedAt = dto.deletedAt
@@ -179,5 +186,7 @@ final class StepEntity {
             deletedAt: dto.deletedAt
         )
         self.goal = goal
+        self.blockedReason = dto.blockedReason
+        self.blockedAt = dto.blockedAt
     }
 }

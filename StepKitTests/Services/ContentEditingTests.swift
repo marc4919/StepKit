@@ -351,7 +351,7 @@ private final class ContentEditingSyncNetworkService: SyncNetworkServicing {
 
     func syncBatch(_ request: SyncBatchRequest, token: String) async throws -> SyncBatchResponse {
         lastRequest = request
-        return SyncBatchResponse(kits: [], steps: [], conflicts: [])
+        return SyncBatchResponse(kits: [], steps: [], progressEntries: nil, conflicts: [])
     }
 }
 

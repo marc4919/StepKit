@@ -26,6 +26,8 @@ final class GoalEntity {
     var deletedAt: Date?
     var isDeleted: Bool
     var notificationsEnabled: Bool
+    /// El usuario confirmó el resultado; independiente de completar todos los pasos.
+    var resultConfirmedAt: Date?
 
     @Relationship(deleteRule: .cascade, inverse: \StepEntity.goal)
     var steps: [StepEntity] = []
@@ -160,6 +162,7 @@ final class GoalEntity {
             updatedAt: updatedAt,
             deletedAt: deletedAt,
             deleted: isDeleted,
+            resultConfirmedAt: resultConfirmedAt,
             steps: nil  // Steps se envían por separado
         )
     }
@@ -179,6 +182,7 @@ final class GoalEntity {
         updatedAt = dto.updatedAt
         deletedAt = dto.deletedAt
         isDeleted = dto.deleted
+        resultConfirmedAt = dto.resultConfirmedAt
     }
 
     /// Crea una entidad desde un DTO de sync
@@ -200,5 +204,6 @@ final class GoalEntity {
             deletedAt: dto.deletedAt,
             isDeleted: dto.deleted
         )
+        self.resultConfirmedAt = dto.resultConfirmedAt
     }
 }

@@ -154,8 +154,14 @@ final class SyncService {
         // Si lastSyncDate es nil, enviamos todo (primera sync)
         // O si updatedAt > lastSyncDate
         
+        let entryDescriptor = FetchDescriptor<ProgressEntryEntity>(
+            predicate: #Predicate { $0.ownerID == ownerID }
+        )
+        let allEntries = try context.fetch(entryDescriptor)
+
         let kitsDTOs: [KitSyncDTO]
         let stepsDTOs: [StepSyncDTO]
+        let entryDTOs: [ProgressEntrySyncDTO]
         
         if let previousCursor {
             kitsDTOs = allGoals
@@ -165,12 +171,17 @@ final class SyncService {
             stepsDTOs = allSteps
                 .filter { $0.updatedAt > previousCursor }
                 .map { $0.toSyncDTO() }
+
+            entryDTOs = allEntries
+                .filter { $0.updatedAt > previousCursor }
+                .map { $0.toSyncDTO() }
         } else {
             kitsDTOs = allGoals.map { $0.toSyncDTO() }
             stepsDTOs = allSteps.map { $0.toSyncDTO() }
+            entryDTOs = allEntries.map { $0.toSyncDTO() }
         }
         
-        return SyncBatchRequest(kits: kitsDTOs, steps: stepsDTOs)
+        return SyncBatchRequest(kits: kitsDTOs, steps: stepsDTOs, progressEntries: entryDTOs)
     }
     
     private func applyServerChanges(
@@ -194,6 +205,7 @@ final class SyncService {
                     guard existing.updatedAt <= cutoff else { continue }
 
                     if kitDTO.deleted {
+                        try deleteLocalEntries(kitID: id, ownerID: ownerID, context: context)
                         context.delete(existing)
                     } else {
                         existing.update(from: kitDTO)
@@ -246,7 +258,35 @@ final class SyncService {
             }
         }
         
+        // 3. Procesar el registro de avance. Las entradas guardan ids, no
+        // relaciones, así que no dependen del orden de llegada de sus padres.
+        for entryDTO in response.progressEntries ?? [] {
+            let id = entryDTO.id
+            let descriptor = FetchDescriptor<ProgressEntryEntity>(
+                predicate: #Predicate { $0.id == id && $0.ownerID == ownerID }
+            )
+            if let existing = try context.fetch(descriptor).first {
+                guard existing.updatedAt <= cutoff else { continue }
+                if entryDTO.deleted {
+                    context.delete(existing)
+                } else {
+                    existing.update(from: entryDTO)
+                }
+            } else if !entryDTO.deleted {
+                context.insert(ProgressEntryEntity(fromSync: entryDTO, ownerID: ownerID))
+            }
+        }
+
         try context.save()
+    }
+
+    private func deleteLocalEntries(kitID: UUID, ownerID: String, context: ModelContext) throws {
+        let descriptor = FetchDescriptor<ProgressEntryEntity>(
+            predicate: #Predicate { $0.kitID == kitID && $0.ownerID == ownerID }
+        )
+        for entry in try context.fetch(descriptor) {
+            context.delete(entry)
+        }
     }
 
     private func syncCursor(for ownerID: String) -> Date? {

@@ -17,6 +17,7 @@ struct PersistenceController {
         let schema = Schema([
             GoalEntity.self,
             StepEntity.self,
+            ProgressEntryEntity.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
 
@@ -94,6 +95,11 @@ struct PersistenceController {
         let context = container.mainContext
         let steps = try context.fetch(FetchDescriptor<StepEntity>())
         let goals = try context.fetch(FetchDescriptor<GoalEntity>())
+        let entries = try context.fetch(FetchDescriptor<ProgressEntryEntity>())
+
+        for entry in entries {
+            context.delete(entry)
+        }
 
         for step in steps {
             context.delete(step)
