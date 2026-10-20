@@ -11,23 +11,28 @@ import SwiftData
 struct ContentView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.syncManager) private var syncManager
+    @State private var selection = 0
+    @State private var lastContentTab = 0
 
     var body: some View {
-        TabView {
-            Tab("Kits", systemImage: Symbols.kits){
+        TabView(selection: $selection) {
+            Tab("Kits", systemImage: Symbols.kits, value: 0){
                 KitsListView()
             }
-            Tab("Calendario", systemImage: Symbols.calendar){
+            Tab("Calendario", systemImage: Symbols.calendar, value: 1){
                 CalendarPlusView()
             }
-            Tab("Perfil", systemImage: Symbols.profile){
+            Tab("Perfil", systemImage: Symbols.profile, value: 2){
                 ProfileView()
             }
-            Tab(role: .search){
-                SearchView()
+            Tab(value: 3, role: .search){
+                SearchView { selection = lastContentTab }
             }
         }
         .tabViewStyle(.sidebarAdaptable)
+        .onChange(of: selection) { _, tab in
+            if tab != 3 { lastContentTab = tab }
+        }
         #if DEBUG
         .overlay(alignment: .topLeading) {
             Text("Estado E2E")

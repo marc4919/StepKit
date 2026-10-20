@@ -111,7 +111,7 @@ struct DesignFixtureRoot: View {
             }
             Tab("Calendario", systemImage: Symbols.calendar, value: 1) { CalendarPlusView() }
             Tab("Perfil", systemImage: Symbols.profile, value: 3) { ProfileView() }
-            Tab(value: 4, role: .search) { SearchView() }
+            Tab(value: 4, role: .search) { SearchView { tab = 0 } }
         }
         .tabViewStyle(.sidebarAdaptable)
         .modelContainer(container)

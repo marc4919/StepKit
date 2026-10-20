@@ -17,6 +17,11 @@ struct SearchView: View {
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var entries: [ProgressEntryEntity]
 
     @State private var searchText = ""
+    /// Lupa como botón (HIG): al tocarla, el campo recibe el foco y sale el teclado.
+    @FocusState private var isSearchFocused: Bool
+    @State private var isSearching = false
+    /// Al cerrar la búsqueda sin texto se vuelve a la pestaña anterior.
+    var onDismiss: () -> Void = {}
     @State private var navigationPath = NavigationPath()
 
     private var ownerID: String? { authManager.currentUser?.id }
@@ -74,7 +79,12 @@ struct SearchView: View {
                 }
             }
             .navigationTitle("Buscar")
-            .searchable(text: $searchText, prompt: "Kits, pasos y notas")
+            .searchable(text: $searchText, isPresented: $isSearching, prompt: "Kits, pasos y notas")
+            .searchFocused($isSearchFocused)
+            .task { isSearchFocused = true }
+            .onChange(of: isSearching) { _, searching in
+                if !searching && query.isEmpty && navigationPath.isEmpty { onDismiss() }
+            }
             .navigationDestination(for: GoalNavigation.self) { nav in
                 if let kit = kits.first(where: { $0.id == nav.id }) {
                     KitDetailView(kitEntity: kit)
