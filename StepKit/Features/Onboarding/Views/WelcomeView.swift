@@ -31,11 +31,7 @@ struct WelcomeView: View {
                 .accessibilityAddTraits(.isHeader)
             TabView(selection: $page) {
                 ForEach(0..<3, id: \.self) { index in
-                    ScrollView {
-                        pageContent(index)
-                    }
-                    .scrollBounceBehavior(.basedOnSize)
-                    .tag(index)
+                    pageContent(index).tag(index)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -45,7 +41,7 @@ struct WelcomeView: View {
                 if page < 2 {
                     withAnimation { page += 1 }
                 } else {
-                    onFinish()
+                    withAnimation(.easeInOut(duration: 0.45)) { onFinish() }
                 }
             } label: {
                 Group {
@@ -71,73 +67,67 @@ struct WelcomeView: View {
         }
     }
 
-    @ViewBuilder
+    /// Las tres páginas comparten la misma estructura y alturas: ilustración arriba,
+    /// título y texto alineados a la izquierda y tres filas de detalle.
     private func pageContent(_ index: Int) -> some View {
-        VStack(alignment: index == 0 ? .leading : .center, spacing: 0) {
-            Group {
-                switch index {
-                case 0: OrbitMark(height: 250 * artScale)
-                case 1: planArt
-                default: resumeArt
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                Group {
+                    switch index {
+                    case 0: OrbitMark(height: artHeight)
+                    // Con hitos la esfera sube: se dibuja algo más baja para que no se corte.
+                    case 1: OrbitMark(height: artHeight * 0.78, milestones: [0.2, 0.42, 0.66])
+                            .padding(.top, artHeight * 0.18)
+                    default: resumeArt
+                    }
                 }
-            }
-            .padding(.vertical, 8)
-            VStack(alignment: index == 0 ? .leading : .center, spacing: 10) {
-                Text(titles[index])
-                    .font(.largeTitle.bold())
-                    .multilineTextAlignment(index == 0 ? .leading : .center)
-                    .fixedSize(horizontal: false, vertical: true)
-                Text(subtitles[index])
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(index == 0 ? .leading : .center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: index == 0 ? .leading : .center)
-            .padding(.horizontal, 24)
-            if index == 0 {
+                .frame(height: artHeight)
+                .frame(maxWidth: .infinity)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(titles[index])
+                        .font(.largeTitle.bold())
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(subtitles[index])
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
                 VStack(spacing: 14) {
-                    WelcomeFeatureRow(symbol: Symbols.kits, color: .accentColor, text: "Un plan que puedes ajustar")
-                    WelcomeFeatureRow(symbol: "checkmark", color: .green, text: "Avances que quedan guardados")
-                    WelcomeFeatureRow(symbol: Symbols.calendar, color: .purple, text: "Tiempo que encaja contigo")
+                    ForEach(rows[index], id: \.text) { row in
+                        WelcomeFeatureRow(symbol: row.symbol, color: row.color, text: row.text)
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 22)
             }
+            .padding(.bottom, 12)
         }
-        .padding(.bottom, 12)
+        .scrollBounceBehavior(.basedOnSize)
     }
 
-    private var planArt: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            OrbitMark(height: 230 * artScale, milestones: [0.2, 0.42, 0.66])
-            VStack(alignment: .leading, spacing: 14) {
-                planStep(1, "Definir contenido", "Elige lo que quieres conseguir.")
-                planStep(2, "Avanzar por pasos", "Cada paso con su tiempo y su fecha.")
-                planStep(3, "Comprobar el resultado", "Confirma que tienes lo que buscabas.")
-            }
-            .padding(.horizontal, 40)
-        }
-        .accessibilityElement(children: .combine)
-    }
+    private var artHeight: CGFloat { 240 * artScale }
 
-    private func planStep(_ number: Int, _ title: String, _ detail: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Text("\(number)")
-                .font(.subheadline.bold())
-                .foregroundStyle(.tint)
-                .frame(width: 28, height: 28)
-                .background(Color(.systemBackground), in: .circle)
-                .overlay(Circle().stroke(Color.accentColor.opacity(0.3)))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.subheadline.weight(.semibold))
-                Text(detail).font(.caption).foregroundStyle(.secondary)
-            }
-        }
+    private struct Row { let symbol: String; let color: Color; let text: String }
+
+    private var rows: [[Row]] {
+        [
+            [Row(symbol: Symbols.kits, color: .accentColor, text: "Un plan que puedes ajustar"),
+             Row(symbol: "checkmark", color: .green, text: "Avances que quedan guardados"),
+             Row(symbol: Symbols.calendar, color: .purple, text: "Tiempo que encaja contigo")],
+            [Row(symbol: "1.circle.fill", color: .accentColor, text: "Define lo que quieres conseguir"),
+             Row(symbol: "2.circle.fill", color: .accentColor, text: "Avanza por pasos con su tiempo y su fecha"),
+             Row(symbol: "3.circle.fill", color: .accentColor, text: "Confirma que tienes lo que buscabas")],
+            [Row(symbol: Symbols.note, color: .orange, text: "Anota lo que has hecho y lo que falta"),
+             Row(symbol: Symbols.blocked, color: .red, text: "Marca un bloqueo sin perder lo hecho"),
+             Row(symbol: "arrow.uturn.forward", color: .green, text: "Retoma con un paso concreto")],
+        ]
     }
 
     private var resumeArt: some View {
         ZStack {
-            OrbitMark(height: 260 * artScale)
+            OrbitMark(height: artHeight)
             HStack(spacing: 10) {
                 IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
                 Text("Dos imágenes listas.\nFaltan material y permisos.").font(.footnote)
@@ -145,10 +135,9 @@ struct WelcomeView: View {
             .padding(12)
             .background(.regularMaterial, in: .rect(cornerRadius: 16))
             .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
-            .offset(x: 30, y: 105 * artScale)
+            .offset(x: 30, y: artHeight * 0.38)
             .accessibilityHidden(true)
         }
-        .frame(height: 260 * artScale)
     }
 }
 

@@ -87,14 +87,35 @@ struct StepKitApp: App {
         .modelContainer(PersistenceController.shared.container)
     }
 
-    @ViewBuilder
+    /// Fase visible de la raíz; anima el paso entre bienvenida, acceso y app.
+    private var rootPhase: Int {
+        if !hasCompletedOnboarding { return 0 }
+        if authManager.isRestoringSession { return 1 }
+        return authManager.isAuthenticated ? 3 : 2
+    }
+
     private var appContent: some View {
+        ZStack {
+            rootContent
+                .transition(.asymmetric(
+                    insertion: .opacity.combined(with: .scale(scale: 0.98)),
+                    removal: .opacity
+                ))
+                .id(rootPhase)
+        }
+        .animation(.easeInOut(duration: 0.45), value: rootPhase)
+        .background { EntryBackground() }
+    }
+
+    @ViewBuilder
+    private var rootContent: some View {
         if !hasCompletedOnboarding {
             // La bienvenida va antes del acceso y no pide ningún permiso.
             WelcomeView { hasCompletedOnboarding = true }
         } else if authManager.isRestoringSession {
             ProgressView("Validando sesión…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background { EntryBackground() }
         } else if authManager.isAuthenticated {
             ContentView()
                 .task {

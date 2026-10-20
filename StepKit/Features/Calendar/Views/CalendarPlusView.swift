@@ -103,6 +103,7 @@ struct CalendarPlusView: View {
                     calendarList
                 }
             }
+            .navigationTitle("Calendario")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -171,33 +172,54 @@ struct CalendarPlusView: View {
         .background(Color(.systemGroupedBackground))
     }
 
-    /// Sin Kits todavía: no hay sesiones, sugerencias ni fechas que mostrar.
+    /// Sin Kits todavía: el calendario del sistema sigue visible y una tarjeta breve
+    /// explica qué aparecerá en él (no repite la ilustración de Mis Kits).
     private var emptyCalendar: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                OrbitMark(height: 170)
-                Text("Tu calendario empieza\ncon tu primer Kit")
-                    .font(.title.bold())
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                Text("Aquí verás las sesiones que reserves, los pasos sugeridos y la fecha que quieres conseguir.")
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button {
-                    showingKitCreator = true
-                } label: {
-                    Text("Crear un Kit").frame(maxWidth: .infinity)
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 12) {
+                        IconChip(symbol: Symbols.session, color: .accentColor, size: 40)
+                        Text("Aún no hay nada planificado")
+                            .font(.headline)
+                    }
+                    Text("Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha deseada. También podrás reservar sesiones para avanzar.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Crear un Kit", systemImage: "plus") { showingKitCreator = true }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("calendar.createKit")
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .padding(.horizontal, 30)
-                .padding(.top, 8)
+                .padding(.vertical, 6)
             }
-            .padding(.horizontal)
-            .padding(.top, 24)
+            Section("Qué verás aquí") {
+                legendRow(symbol: "circle.fill", title: "Sesiones reservadas",
+                          detail: "El tiempo que apartas para avanzar. Son tu compromiso.")
+                legendRow(symbol: "circle", title: "Pasos sugeridos",
+                          detail: "La fecha orientativa de cada paso.")
+                legendRow(symbol: "flag.fill", title: "Fecha deseada", tint: .purple,
+                          detail: "Cuándo te gustaría tener el resultado. Sin límite firme.")
+            }
         }
-        .background { EntryBackground() }
+        .scrollContentBackground(.hidden)
+        .background(alignment: .top) { BrandGlow() }
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private func legendRow(symbol: String, title: String, tint: Color = .blue, detail: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: symbol)
+                .foregroundStyle(tint)
+                .frame(width: 24)
+                .padding(.top, 2)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.body)
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Secciones

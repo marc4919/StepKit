@@ -51,6 +51,7 @@ struct DesignFixtureRoot: View {
         auth.saveAuth(token: "design-fixtures",
                       user: UserInfo(id: DesignFixtureData.owner, tier: "premium",
                                      monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
+        auth.updateDisplayName("Alex Martín")
         _authManager = State(initialValue: auth)
         _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .assistant ? 2 : scenario == .profile ? 3 : 0)
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -141,10 +142,28 @@ enum DesignFixtureData {
             insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
             insertSessions(into: context)
         case .kits:
+            // Escenario completo: varios Kits, registro, un bloqueo, sesiones y un Kit terminado.
             insertPortfolio(into: context, blocked: false)
-            insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
+            let photo = kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3)
+            insert(photo, into: context)
             insert(kit("Huerto en el balcón", done: 1, of: 5, next: "Elegir semillas de temporada", inDays: 55, ago: 8), into: context)
             insert(kit("Preparar la media maratón", done: 4, of: 9, next: "Rodaje largo de 14 km", inDays: 70, ago: 12), into: context)
+            let english = kit("Repasar inglés para entrevistas", done: 6, of: 6, next: "", inDays: 10, ago: 20)
+            english.0.resultConfirmedAt = .now.addingTimeInterval(-86_400 * 18)
+            insert(english, into: context)
+            let blockedStep = photo.1[2]
+            blockedStep.blockedReason = "Espero respuesta del centro cívico sobre la sala."
+            blockedStep.blockedAt = .now.addingTimeInterval(-86_400)
+            let noted = Date.now.addingTimeInterval(-86_400 * 3)
+            context.insert(ProgressEntryEntity(
+                ownerID: owner, kitID: photo.0.id, stepID: photo.1[1].id, kind: .progress,
+                note: "Lista de material terminada: cámaras, trípodes y fondos.", notedAt: noted,
+                createdAt: noted, updatedAt: noted))
+            context.insert(ProgressEntryEntity(
+                ownerID: owner, kitID: photo.0.id, stepID: blockedStep.id, kind: .blocked,
+                note: blockedStep.blockedReason ?? "", notedAt: .now.addingTimeInterval(-86_400),
+                createdAt: .now, updatedAt: .now))
+            insertSessions(into: context)
         case .completed:
             insert(kit("Mi portfolio", done: 7, of: 7, next: "", inDays: 20, ago: 1), into: context)
         case .confirmed:
