@@ -232,6 +232,8 @@ struct OrbitMark: View {
     /// Si se indica (0…1), la ilustración sigue un progreso externo: la esfera se forma
     /// durante la mayor parte y el recorrido se traza al final.
     var buildProgress: Double? = nil
+    /// Con `buildProgress`: la esfera despega hacia arriba (fin de la preparación).
+    var liftOff = false
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var drawn: CGFloat = 1
@@ -240,19 +242,19 @@ struct OrbitMark: View {
 
     private var isAnimated: Bool { animated && !reduceMotion }
 
+    /// En modo preparación no hay recorrido: solo la esfera que se forma y despega.
     private var pathFraction: CGFloat {
-        guard let p = buildProgress else { return drawn }
-        return CGFloat(max(0, min(1, (p - 0.72) / 0.28)))
+        buildProgress == nil ? drawn : 0
     }
 
     private var sphereScale: CGFloat {
         guard let p = buildProgress else { return appeared ? 1 : 0.4 }
-        return CGFloat(0.15 + 0.85 * min(1, p / 0.75))
+        return CGFloat(0.15 + 0.85 * min(1, p)) * (liftOff ? 0.55 : 1)
     }
 
     private var sphereOpacity: Double {
         guard let p = buildProgress else { return appeared ? 1 : 0 }
-        return min(1, 0.25 + p * 1.5)
+        return liftOff ? 0 : min(1, 0.25 + p * 1.5)
     }
 
     /// Línea central trazada sobre el icono de la app (normalizada 0–1).
@@ -305,11 +307,10 @@ struct OrbitMark: View {
             let sphereSize = h * 0.31
             let junction = Self.map(w, h)(Self.iconSphere)
             let restingPoint = milestones.isEmpty ? junction : point(on: path, at: 0.84)
-            // Mientras se forma, la esfera crece centrada; al trazarse el recorrido se coloca en él.
-            let spherePoint = buildProgress == nil ? restingPoint : CGPoint(
-                x: w / 2 + (restingPoint.x - w / 2) * pathFraction,
-                y: h / 2 + (restingPoint.y - h / 2) * pathFraction
-            )
+            // En preparación la esfera crece centrada y, al terminar, despega hacia arriba.
+            let spherePoint = buildProgress == nil
+                ? restingPoint
+                : CGPoint(x: w / 2, y: liftOff ? -h * 0.9 : h / 2)
             ZStack {
                 if bloom {
                     RadialGradient(colors: [Color(red: 0.2, green: 0.6, blue: 1).opacity(scheme == .dark ? 0.35 : 0.20), .clear],

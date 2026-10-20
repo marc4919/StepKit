@@ -15,6 +15,7 @@ struct KitCreationStreamingProgress: View {
     @State private var shownProgress: Double = 0
     /// Se pasa a «Tu plan» cuando la barra y el recorrido han terminado de verse.
     @State private var showReview = false
+    @State private var liftOff = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
@@ -50,8 +51,9 @@ struct KitCreationStreamingProgress: View {
     private var preparingView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                // La esfera se forma mientras avanza la barra y el recorrido se traza al final.
-                OrbitMark(height: 190, buildProgress: shownProgress).padding(.horizontal, 20)
+                // La esfera se forma mientras avanza la barra y, al terminar, despega.
+                OrbitMark(height: 190, buildProgress: shownProgress, liftOff: liftOff)
+                    .padding(.horizontal, 20)
                 Text("Dando forma a tu proyecto")
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
@@ -96,8 +98,14 @@ struct KitCreationStreamingProgress: View {
 
     private func scheduleReview() {
         Task {
-            // Deja ver cómo se completa la barra y se traza el recorrido.
-            try? await Task.sleep(for: .milliseconds(reduceMotion ? 200 : 1400))
+            guard !reduceMotion else {
+                showReview = true
+                return
+            }
+            // La barra llega al final, la esfera despega y aparece «Tu plan».
+            try? await Task.sleep(for: .milliseconds(900))
+            withAnimation(.easeIn(duration: 0.75)) { liftOff = true }
+            try? await Task.sleep(for: .milliseconds(800))
             showReview = true
         }
     }
