@@ -17,6 +17,10 @@ struct ProfileView: View {
     @State private var showingTermsOfService = false
     @State private var showingPrivacyPolicy = false
     @State private var showingSignOutAlert = false
+    @State private var showingDemoReset = false
+    @State private var resettingDemo = false
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.syncManager) private var syncManager
 
     private var visibleKits: [GoalEntity] {
         guard let ownerID = authManager.currentUser?.id else { return [] }
@@ -54,6 +58,23 @@ struct ProfileView: View {
                         ProfileRow(title: "Acerca de StepKit", symbol: "info", color: .accentColor)
                     }
                 }
+                #if DEBUG
+                Section {
+                    Button {
+                        showingDemoReset = true
+                    } label: {
+                        if resettingDemo {
+                            HStack { ProgressView(); Text("Restaurando…") }
+                        } else {
+                            Label("Restaurar demo", systemImage: "arrow.counterclockwise")
+                        }
+                    }
+                    .disabled(resettingDemo)
+                    .accessibilityIdentifier("profile.resetDemo")
+                } footer: {
+                    Text("Solo en versiones de prueba. Borra tus Kits de esta cuenta, cierra la sesión y vuelve a la bienvenida para enseñar la app desde cero.")
+                }
+                #endif
                 Section {
                     Button("Cerrar sesión", role: .destructive) { showingSignOutAlert = true }
                         .accessibilityIdentifier("profile.signOut")
@@ -72,6 +93,15 @@ struct ProfileView: View {
             } message: {
                 Text("Podrás volver a entrar con tu Apple Account. Tus Kits se conservan.")
             }
+            #if DEBUG
+            .confirmationDialog("¿Restaurar la demo?", isPresented: $showingDemoReset, titleVisibility: .visible) {
+                Button("Borrar todo y empezar de cero", role: .destructive) {
+                    Task { await resetDemo() }
+                }
+            } message: {
+                Text("Se borrarán tus Kits, avances y sesiones de esta cuenta, aquí y en el servidor de pruebas. Después se cerrará la sesión y verás la bienvenida.")
+            }
+            #endif
         }
     }
 
@@ -108,6 +138,29 @@ struct ProfileView: View {
                      color: MetaTint.done)
         }
     }
+
+    #if DEBUG
+    /// Deja la app como recién instalada para enseñarla: borra los Kits de la cuenta en el
+    /// servidor (tombstones por sync), limpia todo lo local y vuelve a la bienvenida.
+    @MainActor
+    private func resetDemo() async {
+        resettingDemo = true
+        defer { resettingDemo = false }
+        for kit in visibleKits {
+            kit.markAsDeleted()
+        }
+        try? modelContext.save()
+        if let syncManager {
+            await syncManager.cancelAndWaitForSync()
+            await syncManager.forceSync()
+            syncManager.stopAutoSync()
+        }
+        NotificationService.shared.cancelAllNotifications()
+        try? E2ELocalStateResetter().reset(authentication: authManager)
+        // La bienvenida se observa con @AppStorage: se fija explícitamente tras limpiar el dominio.
+        UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+    }
+    #endif
 
     // MARK: - Derived Properties
 
