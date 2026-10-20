@@ -29,6 +29,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>En las versiones de prueba, StepKit se conecta a un servidor de desarrollo en tu red local.</string>
 	<key>StepKitAPIBaseURL</key>
 	<string>http://localhost:8080</string>
 	<key>UIApplicationSceneManifest</key>
