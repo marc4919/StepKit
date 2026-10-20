@@ -4,71 +4,201 @@
 //
 //  Created by Marc Garcia Teodoro on 14/10/25.
 //
+//  Perfil v4.4: lista del sistema con cabecera de identidad, suscripción,
+//  recordatorios, IA y privacidad, información y cierre de sesión.
+//
 
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
+    @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }) private var goalEntities: [GoalEntity]
     @State private var showingTermsOfService = false
     @State private var showingPrivacyPolicy = false
     @State private var showingSignOutAlert = false
-    @AppStorage("globalNotificationsEnabled") private var globalNotificationsEnabled = true
-    @Environment(AIConsentManager.self) private var consentManager
-    @State private var aiConsentGiven = false
-    
-    
+
+    private var visibleKits: [GoalEntity] {
+        guard let ownerID = authManager.currentUser?.id else { return [] }
+        return goalEntities.filter { $0.ownerID == ownerID }
+    }
+
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Header del perfil
-                    ProfileHeaderSection(displayName: displayName, displayTier: displayTier)
-
-                    // Banner de suscripción
-                    SubscriptionBanner()
-
-                    // Sección de configuración
-                    settingsSection
-                    
-                    // Sección de cuenta
-                    accountSection
-                    
-                    Spacer(minLength: 50)
+            List {
+                Section {
+                    header.listRowBackground(Color.clear)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
+                Section {
+                    NavigationLink { SubscriptionView() } label: {
+                        ProfileRow(title: "Suscripción", detail: displayTier, symbol: "crown.fill", color: .orange)
+                    }
+                    NavigationLink { RemindersSettingsView() } label: {
+                        ProfileRow(title: "Recordatorios", symbol: "bell.fill", color: .red)
+                    }
+                    NavigationLink { AIPrivacyView() } label: {
+                        ProfileRow(title: "IA y privacidad", symbol: "hand.raised.fill", color: .blue)
+                    }
+                    .accessibilityIdentifier("profile.aiPrivacy")
+                }
+                Section("Información") {
+                    Button { showingTermsOfService = true } label: {
+                        ProfileRow(title: "Términos de uso", symbol: "doc.text.fill", color: .gray)
+                    }
+                    .buttonStyle(.plain)
+                    Button { showingPrivacyPolicy = true } label: {
+                        ProfileRow(title: "Política de privacidad", symbol: "lock.fill", color: .green)
+                    }
+                    .buttonStyle(.plain)
+                    NavigationLink { AboutView() } label: {
+                        ProfileRow(title: "Acerca de StepKit", symbol: "info", color: .accentColor)
+                    }
+                }
+                Section {
+                    Button("Cerrar sesión", role: .destructive) { showingSignOutAlert = true }
+                        .accessibilityIdentifier("profile.signOut")
+                        .accessibilityHint("Cierra la sesión actual y regresa a la pantalla de inicio de sesión")
+                }
             }
+            .scrollContentBackground(.hidden)
+            .background(alignment: .top) { BrandGlow() }
             .background(Color(.systemGroupedBackground))
-            .sheet(isPresented: $showingTermsOfService) {
-                TermsOfServiceView()
-            }
-            .sheet(isPresented: $showingPrivacyPolicy) {
-                PrivacyPolicyView()
-            }
+            .navigationTitle("Perfil")
+            .sheet(isPresented: $showingTermsOfService) { TermsOfServiceView() }
+            .sheet(isPresented: $showingPrivacyPolicy) { PrivacyPolicyView() }
             .alert("Cerrar sesión", isPresented: $showingSignOutAlert) {
                 Button("Cancelar", role: .cancel) { }
-                Button("Cerrar sesión", role: .destructive) {
-                    signOut()
-                }
+                Button("Cerrar sesión", role: .destructive) { authManager.signOut() }
             } message: {
-                Text("¿Estás seguro de que quieres cerrar sesión?")
+                Text("Podrás volver a entrar con tu Apple Account. Tus Kits se conservan.")
             }
         }
     }
-    
-    // MARK: - Settings Section
-    private var settingsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "gearshape", title: "Configuración")
 
-            VStack(spacing: 0) {
-                // Toggle de notificaciones
-                notificationsToggle
+    private var header: some View {
+        HStack(spacing: 16) {
+            Text(initials)
+                .font(.title2.bold())
+                .foregroundStyle(.white)
+                .frame(width: 72, height: 72)
+                .background(RadialGradient(colors: [Color(red: 0.55, green: 0.82, blue: 1.0), .accentColor,
+                                                    Color(red: 0.0, green: 0.36, blue: 0.85)],
+                                           center: UnitPoint(x: 0.35, y: 0.3), startRadius: 4, endRadius: 60),
+                            in: .circle)
+                .shadow(color: Color.accentColor.opacity(0.35), radius: 10, y: 4)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(displayName).font(.title.bold())
+                Text("Sesión iniciada con Apple").foregroundStyle(.secondary)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 6) { chips }
+                    VStack(alignment: .leading, spacing: 6) { chips }
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
 
-                Divider()
-                    .padding(.leading, 56)
+    @ViewBuilder private var chips: some View {
+        MetaChip(symbol: Symbols.kits, text: visibleKits.count == 1 ? "1 Kit" : "\(visibleKits.count) Kits",
+                 color: .accentColor)
+        let done = visibleKits.filter { $0.resultConfirmedAt != nil }.count
+        if done > 0 {
+            MetaChip(symbol: "checkmark.circle", text: done == 1 ? "1 terminado" : "\(done) terminados",
+                     color: MetaTint.done)
+        }
+    }
 
-                // Permiso para IA de terceros (5.1.2(i)): se puede retirar en cualquier momento.
+    // MARK: - Derived Properties
+
+    private var displayName: String {
+        if let name = authManager.displayName,
+           !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return name
+        }
+        return "Tu perfil"
+    }
+
+    private var initials: String {
+        let letters = displayName.split(separator: " ").prefix(2).compactMap(\.first)
+        let value = String(letters).uppercased()
+        return value.isEmpty || displayName == "Tu perfil" ? "SK" : value
+    }
+
+    private var displayTier: String {
+        authManager.currentUser?.tier == "premium" ? "Premium" : "Gratuita"
+    }
+}
+
+/// Fila de ajustes: icono en círculo de color, título y detalle opcional.
+struct ProfileRow: View {
+    var title: String
+    var detail: String?
+    var symbol: String
+    var color: Color
+
+    var body: some View {
+        LabeledContent {
+            if let detail { Text(detail) }
+        } label: {
+            Label { Text(title).foregroundStyle(.primary) } icon: { IconChip(symbol: symbol, color: color, size: 28) }
+        }
+        .contentShape(.rect)
+    }
+}
+
+// MARK: - Recordatorios
+
+struct RemindersSettingsView: View {
+    @AppStorage("globalNotificationsEnabled") private var globalNotificationsEnabled = true
+
+    var body: some View {
+        Form {
+            Section {
+                VStack(alignment: .leading, spacing: 6) {
+                    IconChip(symbol: "bell.fill", color: .red, size: 44)
+                    Text("Recordatorios").font(.largeTitle.bold())
+                    Text("Avisos para volver a tus pasos y a tus sesiones reservadas.").foregroundStyle(.secondary)
+                }
+                .listRowBackground(Color.clear)
+            }
+            Section {
+                Toggle(isOn: $globalNotificationsEnabled) {
+                    Label { Text("Recordatorios de StepKit") } icon: { IconChip(symbol: "bell", color: .red, size: 28) }
+                }
+                .onChange(of: globalNotificationsEnabled) { _, enabled in
+                    if enabled {
+                        Task { await NotificationService.shared.requestAuthorizationIfNeeded() }
+                    } else {
+                        NotificationService.shared.cancelAllNotifications()
+                    }
+                }
+            } footer: {
+                Text("Cada paso puede desactivar su recordatorio. StepKit pide permiso de notificaciones la primera vez que hace falta.")
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - IA y privacidad
+
+struct AIPrivacyView: View {
+    @Environment(AIConsentManager.self) private var consentManager
+    @State private var aiConsentGiven = false
+    @State private var showingPrivacyPolicy = false
+
+    var body: some View {
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: 10) {
+                    OrbitMark(height: 90).frame(maxWidth: 200)
+                    Text("Tú decides cómo\nrecibir ayuda").font(.largeTitle.bold())
+                    Text("Revisas cualquier plan o propuesta antes de aplicarlo.").foregroundStyle(.secondary)
+                }
+                .listRowBackground(Color.clear)
+            }
+            Section {
                 Toggle(isOn: Binding(
                     get: { aiConsentGiven },
                     set: { granted in
@@ -78,215 +208,84 @@ struct ProfileView: View {
                 )) {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("IA para crear planes")
+                            Text("IA externa para crear planes")
                             Text(aiConsentGiven ? "Permitido" : "Se pedirá al crear un Kit")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                     } icon: {
-                        IconChip(symbol: "sparkles", color: .accentColor, size: 28)
+                        IconChip(symbol: "sparkles", color: .orange, size: 28)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .onAppear { aiConsentGiven = consentManager.hasConsent }
                 .accessibilityIdentifier("profile.aiConsent")
-
-                Divider()
-                    .padding(.leading, 56)
-
-                // Términos de uso
-                SettingsRow(
-                    icon: "doc.text",
-                    iconColor: .accentColor,
-                    title: "Términos de uso",
-                    showDivider: true
-                ) {
-                    showingTermsOfService = true
-                }
-
-                // Políticas de privacidad
-                SettingsRow(
-                    icon: "shield.checkered",
-                    iconColor: .green,
-                    title: "Políticas de privacidad",
-                    showDivider: false
-                ) {
-                    showingPrivacyPolicy = true
+            } footer: {
+                Text("Al crear un Kit, tu objetivo, tu tiempo y los obstáculos que menciones se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.")
+            }
+            Section {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Asistente en tu dispositivo")
+                        Text("Usa Apple Intelligence. Las conversaciones no salen del iPhone.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    IconChip(symbol: Symbols.assistant, color: .accentColor, size: 28)
                 }
             }
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            Section("Tu control") {
+                Label { Text("Revisas cada plan antes de aceptarlo") } icon: { IconChip(symbol: "doc.text.magnifyingglass", color: .accentColor, size: 28) }
+                Label { Text("Puedes descartar cualquier propuesta") } icon: { IconChip(symbol: "trash", color: .red, size: 28) }
+                Label { Text("Puedes seguir tu plan sin ayuda") } icon: { IconChip(symbol: "figure.walk", color: .green, size: 28) }
+            }
+            Section { Button("Leer la Política de privacidad") { showingPrivacyPolicy = true } }
         }
-        .padding(20)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .scrollContentBackground(.hidden)
+        .background(alignment: .top) { BrandGlow() }
+        .background(Color(.systemGroupedBackground))
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { aiConsentGiven = consentManager.hasConsent }
+        .sheet(isPresented: $showingPrivacyPolicy) { PrivacyPolicyView() }
+    }
+}
+
+// MARK: - Acerca de
+
+struct AboutView: View {
+    private var version: String {
+        let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
+        return "\(short) (\(build))"
     }
 
-    // MARK: - Notifications Toggle
-    private var notificationsToggle: some View {
-        Toggle(isOn: $globalNotificationsEnabled) {
-            HStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.orange.opacity(0.1))
-                        .frame(width: 32, height: 32)
-
-                    Image(systemName: "bell.fill")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.orange)
-                }
-                .accessibilityHidden(true)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Notificaciones")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-
-                    Text("Recordatorios de pasos pendientes")
-                        .font(.caption)
+    var body: some View {
+        List {
+            Section {
+                VStack(spacing: 12) {
+                    OrbitMark(height: 170)
+                    (Text("Step").foregroundStyle(.primary) + Text("Kit").foregroundStyle(.tint))
+                        .font(.largeTitle.bold())
+                    Text("Un paso claro para volver").font(.title3.bold())
+                    Text("Da forma a un objetivo, guarda lo que avanzas y retoma con una acción concreta.")
+                        .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)
                 }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Notificaciones. Recordatorios de pasos pendientes")
+                .frame(maxWidth: .infinity)
+                .listRowBackground(Color.clear)
+            }
+            Section {
+                LabeledContent("Versión", value: version)
             }
         }
-        .tint(.accentColor)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 12)
-        .accessibilityHint("Cuando está activado, recibirás recordatorios de pasos pendientes. Al desactivarlo, se cancelan todas las notificaciones programadas")
-        .onChange(of: globalNotificationsEnabled) { _, newValue in
-            if !newValue {
-                // Cancelar todas las notificaciones si se desactiva
-                NotificationService.shared.cancelAllNotifications()
-            }
-        }
-    }
-    
-    // MARK: - Account Section
-    private var accountSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "person.circle", title: "Cuenta")
-            
-            VStack(spacing: 0) {
-                // Cerrar sesión
-                Button {
-                    showingSignOutAlert = true
-                } label: {
-                    HStack(spacing: 12) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.red.opacity(0.1))
-                                .frame(width: 32, height: 32)
-                            
-                            Image(systemName: "rectangle.portrait.and.arrow.right")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(.red)
-                        }
-                        .accessibilityHidden(true)
-                        
-                        Text("Cerrar sesión")
-                            .font(.body)
-                            .foregroundStyle(.red)
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(.isButton)
-                .accessibilityIdentifier("profile.signOut")
-                .accessibilityLabel("Cerrar sesión")
-                .accessibilityHint("Cierra la sesión actual y regresa a la pantalla de inicio de sesión")
-            }
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
-        .padding(20)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
-    
-    // MARK: - Helpers
-    private func sectionHeader(icon: String, title: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.accentColor)
-                .accessibilityHidden(true)
-
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.primary)
-        }
-    }
-
-    // MARK: - Derived Properties
-    
-    /// Nombre a mostrar en el perfil. Si no hay nombre guardado, muestra un fallback genérico.
-    private var displayName: String {
-        if let name = authManager.displayName,
-           !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return name
-        }
-        return "Usuario"
-    }
-    
-    /// Texto descriptivo del plan según el tier del usuario.
-    private var displayTier: String {
-        switch authManager.currentUser?.tier {
-        case "premium":
-            return "Versión Premium"
-        case "free":
-            return "Versión gratuita"
-        default:
-            return "Versión gratuita"
-        }
-    }
-    
-    private func signOut() {
-        authManager.signOut()
-        print("Cerrando sesión...")
+        .scrollContentBackground(.hidden)
+        .background(alignment: .top) { BrandGlow() }
+        .background(Color(.systemGroupedBackground))
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     ProfileView()
         .environment(AuthManager())
+        .environment(AIConsentManager())
 }
-
-#if DEBUG
-#Preview("Authenticated User") {
-    let mockAuth = MockAuthManager(
-        isAuthenticated: true,
-        user: UserInfo(
-            id: UUID().uuidString,
-            tier: "premium",
-            monthlyTokensUsed: 2500,
-            monthlyTokenQuota: 10000
-        ),
-        token: "mock-token"
-    )
-    
-    return ProfileView()
-        .environment(mockAuth)
-}
-
-#Preview("Free Tier User") {
-    let mockAuth = MockAuthManager(
-        isAuthenticated: true,
-        user: UserInfo(
-            id: UUID().uuidString,
-            tier: "free",
-            monthlyTokensUsed: 500,
-            monthlyTokenQuota: 1000
-        ),
-        token: "mock-token"
-    )
-    
-    return ProfileView()
-        .environment(mockAuth)
-}
-#endif
-

@@ -4,6 +4,8 @@
 //
 //  Created by StepKit Refactor.
 //
+//  Buscar v4.4: Kits, pasos y notas del registro en una lista del sistema.
+//
 
 import SwiftUI
 import SwiftData
@@ -12,130 +14,142 @@ struct SearchView: View {
     @Environment(AuthManager.self) private var authManager
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse)
     private var goalEntities: [GoalEntity]
+    @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var entries: [ProgressEntryEntity]
 
-    @Query(filter: #Predicate<StepEntity> { $0.goal?.isDeleted == false || $0.goal == nil }, sort: \StepEntity.order)
-    private var stepEntities: [StepEntity]
-
-    @State private var searchText: String = ""
+    @State private var searchText = ""
     @State private var navigationPath = NavigationPath()
-    
-    // MARK: - Computed Properties
 
-    private var currentOwnerID: String? { authManager.currentUser?.id }
+    private var ownerID: String? { authManager.currentUser?.id }
 
-    private var visibleGoalEntities: [GoalEntity] {
-        guard let currentOwnerID else { return [] }
-        return goalEntities.filter { $0.ownerID == currentOwnerID }
+    private var kits: [GoalEntity] {
+        guard let ownerID else { return [] }
+        return goalEntities.filter { $0.ownerID == ownerID }
     }
 
-    private var visibleStepEntities: [StepEntity] {
-        guard let currentOwnerID else { return [] }
-        return stepEntities.filter { $0.ownerID == currentOwnerID }
+    private var query: String { searchText.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    private func matches(_ text: String) -> Bool {
+        text.localizedStandardContains(query)
     }
-    
-    private var goals: [Goal] {
-        visibleGoalEntities.map { $0.toGoal() }
+
+    private var matchingKits: [GoalEntity] {
+        kits.filter { matches($0.title) || matches($0.kpi) }
     }
-    
-    private var steps: [Step] {
-        visibleStepEntities
-            .filter { step in
-                guard let goal = step.goal else { return false }
-                return !goal.isDeleted
-            }
-            .map { $0.toStep() }
+
+    private var matchingSteps: [StepEntity] {
+        kits.flatMap(\.orderedActiveSteps).filter { matches($0.stepTitle) || matches($0.descriptionShort) }
     }
-    
-    private var filteredGoals: [Goal] {
-        guard !searchText.isEmpty else { return [] }
-        let query = searchText.lowercased()
-        return goals.filter { goal in
-            goal.planTitle.lowercased().contains(query)
+
+    private var matchingEntries: [ProgressEntryEntity] {
+        let kitIDs = Set(kits.map(\.id))
+        return entries.filter {
+            $0.deletedAt == nil && $0.ownerID == ownerID && kitIDs.contains($0.kitID) && matches($0.note)
         }
     }
 
-    private var filteredSteps: [Step] {
-        guard !searchText.isEmpty else { return [] }
-        let query = searchText.lowercased()
-        return steps.filter { step in
-            step.stepTitle.lowercased().contains(query)
-        }
-    }
-    
-    private var hasResults: Bool {
-        !filteredGoals.isEmpty || !filteredSteps.isEmpty
-    }
-    
-    // MARK: - Body
-    
     var body: some View {
         NavigationStack(path: $navigationPath) {
             Group {
-                if searchText.isEmpty {
-                    SearchEmptyStateView()
-                } else if !hasResults {
-                    SearchNoResultsView(searchText: searchText)
+                if query.isEmpty {
+                    ContentUnavailableView {
+                        Label { Text("Encuentra tus Kits y pasos") } icon: {
+                            IconChip(symbol: "magnifyingglass", color: .accentColor, size: 90)
+                        }
+                    } description: {
+                        Text("Busca por nombre de Kit, paso o nota.")
+                    }
+                    .background(alignment: .top) { BrandGlow() }
+                } else if matchingKits.isEmpty && matchingSteps.isEmpty && matchingEntries.isEmpty {
+                    ContentUnavailableView {
+                        Label { Text("No encontramos coincidencias") } icon: {
+                            IconChip(symbol: "magnifyingglass", color: .accentColor, size: 90)
+                        }
+                    } description: {
+                        Text("Prueba con otro nombre de Kit, paso o nota.")
+                    } actions: {
+                        Button("Limpiar búsqueda") { searchText = "" }
+                    }
                 } else {
-                    resultsList
+                    results
                 }
             }
-            .navigationTitle("Búsqueda")
-            .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Buscar kits y pasos...")
-            .navigationDestination(for: GoalEntity.ID.self) { kitId in
-                if let kitEntity = visibleGoalEntities.first(where: { $0.id == kitId }) {
-                    KitDetailView(kitEntity: kitEntity)
+            .navigationTitle("Buscar")
+            .searchable(text: $searchText, prompt: "Kits, pasos y notas")
+            .navigationDestination(for: GoalNavigation.self) { nav in
+                if let kit = kits.first(where: { $0.id == nav.id }) {
+                    KitDetailView(kitEntity: kit)
                 }
             }
-            .navigationDestination(for: StepEntity.ID.self) { stepId in
-                if let stepEntity = visibleStepEntities.first(where: { $0.id == stepId }) {
-                    let sortedSteps = stepEntity.goal?.steps.sorted { $0.order < $1.order } ?? []
-                    let stepIndex = sortedSteps.firstIndex(where: { $0.id == stepId }) ?? 0
-                    StepDetailView(stepEntity: stepEntity, stepNumber: stepIndex + 1)
+            .navigationDestination(for: StepNavigation.self) { nav in
+                if let step = kits.flatMap(\.steps).first(where: { $0.id == nav.id }) {
+                    StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? 1)
                 }
             }
         }
     }
-    
-    // MARK: - Results List
-    private var resultsList: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Sección de Kits
-                if !filteredGoals.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeaderView(title: "Kits", icon: "target", count: filteredGoals.count)
 
-                        VStack(spacing: 10) {
-                            ForEach(filteredGoals) { goal in
-                                SearchKitRow(kit: goal) {
-                                    navigationPath.append(goal.id)
-                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    private var results: some View {
+        List {
+            if !matchingKits.isEmpty {
+                Section("Kits") {
+                    ForEach(matchingKits) { kit in
+                        NavigationLink(value: GoalNavigation(id: kit.id)) {
+                            Label {
+                                VStack(alignment: .leading) {
+                                    Text(kit.title).font(.headline)
+                                    if !kit.kpi.isEmpty {
+                                        Text(kit.kpi).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                                    }
                                 }
-                            }
-                        }
-                    }
-                }
-
-                // Sección de Pasos
-                if !filteredSteps.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeaderView(title: "Pasos", icon: "list.bullet", count: filteredSteps.count)
-
-                        VStack(spacing: 10) {
-                            ForEach(filteredSteps) { step in
-                                SearchStepRow(step: step) {
-                                    navigationPath.append(step.id)
-                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                }
+                            } icon: {
+                                ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount,
+                                             size: 34, showsLabel: false)
                             }
                         }
                     }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
+            if !matchingSteps.isEmpty {
+                Section("Pasos") {
+                    ForEach(matchingSteps) { step in
+                        NavigationLink(value: StepNavigation(id: step.id)) {
+                            Label {
+                                VStack(alignment: .leading) {
+                                    Text(step.stepTitle).font(.headline)
+                                    Text("\(step.goal?.title ?? "") · \(step.estimateMinutes) min")
+                                        .font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                                }
+                            } icon: {
+                                IconChip(symbol: step.isCompleted ? "checkmark.circle.fill" : "circle",
+                                         color: step.isCompleted ? MetaTint.done : .accentColor, size: 32)
+                            }
+                        }
+                    }
+                }
+            }
+            if !matchingEntries.isEmpty {
+                Section("Registro") {
+                    ForEach(matchingEntries) { entry in
+                        let kit = kits.first { $0.id == entry.kitID }
+                        let step = kit?.orderedActiveSteps.first { $0.id == entry.stepID }
+                        NavigationLink(value: step.map { AnyHashable(StepNavigation(id: $0.id)) }
+                                        ?? AnyHashable(GoalNavigation(id: entry.kitID))) {
+                            Label {
+                                VStack(alignment: .leading) {
+                                    Text(entry.note).font(.headline).lineLimit(2)
+                                    Text([kit?.title, step.map { "Paso \(kit?.position(of: $0) ?? 1)" },
+                                          entry.notedAt.formatted(.dateTime.day().month(.abbreviated))]
+                                            .compactMap { $0 }.joined(separator: " · "))
+                                        .font(.subheadline).foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                IconChip(symbol: entry.kind == .blocked ? Symbols.blocked : Symbols.note,
+                                         color: entry.kind == .blocked ? .red : .orange, size: 32)
+                            }
+                        }
+                    }
+                }
+            }
         }
-        .background(Color.appBackground)
     }
 }

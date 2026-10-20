@@ -25,6 +25,7 @@ enum DesignFixtureScenario: String {
     case calendarEmpty // Calendario sin Kits
     case create        // formulario Crear Kit
     case signIn        // acceso
+    case profile       // pestaña Perfil
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -51,7 +52,7 @@ struct DesignFixtureRoot: View {
                       user: UserInfo(id: DesignFixtureData.owner, tier: "premium",
                                      monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
         _authManager = State(initialValue: auth)
-        _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .assistant ? 2 : 0)
+        _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .assistant ? 2 : scenario == .profile ? 3 : 0)
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
         DesignFixtureData.seed(scenario, into: container.mainContext)
@@ -86,8 +87,8 @@ struct DesignFixtureRoot: View {
             }
             Tab("Calendario", systemImage: Symbols.calendar, value: 1) { CalendarPlusView() }
             Tab("Asistente", systemImage: Symbols.assistant, value: 2) { TrainerView() }
-            Tab("Perfil", systemImage: Symbols.profile, value: 3) { Text("Perfil") }
-            Tab(value: 4, role: .search) { Text("Buscar") }
+            Tab("Perfil", systemImage: Symbols.profile, value: 3) { ProfileView() }
+            Tab(value: 4, role: .search) { SearchView() }
         }
         .tabViewStyle(.sidebarAdaptable)
         .modelContainer(container)
@@ -135,7 +136,7 @@ enum DesignFixtureData {
             insertPortfolio(into: context, blocked: false)
         case .blocked:
             insertPortfolio(into: context, blocked: true)
-        case .calendar, .assistant:
+        case .calendar, .assistant, .profile:
             insertPortfolio(into: context, blocked: false)
             insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
             insertSessions(into: context)
