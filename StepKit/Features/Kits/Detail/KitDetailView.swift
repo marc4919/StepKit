@@ -22,6 +22,7 @@ struct KitDetailView: View {
     @Bindable var kitEntity: GoalEntity
     @State private var presentedSheet: PresentedSheet?
     @State private var segment = 0
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var editingEntry: ProgressEntryEntity?
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
 
@@ -81,7 +82,10 @@ struct KitDetailView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 18) {
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 14))
+            : AnyLayout(HStackLayout(spacing: 18))
+        return layout {
             ProgressRing(done: kitEntity.completedStepCount, total: kitEntity.activeStepCount, size: 92)
             VStack(alignment: .leading, spacing: 6) {
                 Text(kitEntity.title)
@@ -90,7 +94,10 @@ struct KitDetailView: View {
                 if !kitEntity.kpi.isEmpty {
                     Text(kitEntity.kpi).foregroundStyle(.secondary)
                 }
-                HStack(spacing: 6) { headerChips }
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 6) { headerChips }
+                    VStack(alignment: .leading, spacing: 6) { headerChips }
+                }
             }
         }
         .padding(.top, 4)
@@ -160,6 +167,23 @@ private struct PlanStepRow: View {
     let number: Int
     let state: StepProgressState
 
+    @ViewBuilder private var meta: some View {
+        Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
+            .foregroundStyle(MetaTint.time)
+        if let date = step.suggestedDeadline {
+            Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
+                .foregroundStyle(MetaTint.date)
+        }
+        if state == .inProgress || state == .blocked {
+            Text(state.label)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(state == .blocked ? .red : .orange)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background((state == .blocked ? Color.red : .orange).opacity(0.14), in: .capsule)
+        }
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: state.symbol)
@@ -171,24 +195,11 @@ private struct PlanStepRow: View {
                 Text(step.stepTitle)
                     .foregroundStyle(state == .done ? .secondary : .primary)
                     .multilineTextAlignment(.leading)
-                HStack(spacing: 10) {
-                    Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
-                        .foregroundStyle(MetaTint.time)
-                    if let date = step.suggestedDeadline {
-                        Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
-                            .foregroundStyle(MetaTint.date)
-                    }
-                    if state == .inProgress || state == .blocked {
-                        Text(state.label)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(state == .blocked ? .red : .orange)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background((state == .blocked ? Color.red : .orange).opacity(0.14), in: .capsule)
-                    }
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 10) { meta }
+                    VStack(alignment: .leading, spacing: 4) { meta }
                 }
                 .font(.caption.weight(.medium))
-                .lineLimit(1)
             }
             Spacer(minLength: 0)
             Image(systemName: "chevron.right")

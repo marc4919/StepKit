@@ -272,13 +272,17 @@ private struct ContinueCard: View {
 
 private struct PendingResultCard: View {
     let kit: GoalEntity
+    @Environment(\.dynamicTypeSize) private var typeSize
     let onReview: () -> Void
     let onBackToPlan: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Eyebrow(text: "Pasos terminados · falta revisar el resultado", color: .orange)
-            HStack(spacing: 14) {
+            let layout = typeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                : AnyLayout(HStackLayout(spacing: 14))
+            layout {
                 ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 70)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(kit.title).font(.title2.bold())
@@ -373,6 +377,7 @@ private struct KitHomeRow: View {
 
 struct KitsEmptyView: View {
     let onCreate: () -> Void
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var size = CGSize(width: 400, height: 800)
     private var wide: Bool { size.width > size.height }
 
@@ -385,11 +390,13 @@ struct KitsEmptyView: View {
                 }
                 .padding(.horizontal)
             } else {
-                VStack(spacing: 18) {
-                    Spacer()
-                    OrbitMark(height: 230)
-                    copy
-                    Spacer()
+                ScrollView {
+                    VStack(spacing: 18) {
+                        OrbitMark(height: typeSize.isAccessibilitySize ? 160 : 230)
+                        copy
+                    }
+                    .padding(.horizontal)
+                    .frame(maxWidth: .infinity, minHeight: size.height)
                 }
             }
         }
@@ -402,11 +409,15 @@ struct KitsEmptyView: View {
         Text("Haz espacio a tu\npróximo proyecto")
             .font(.largeTitle.bold())
             .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
         Text("Un plan claro. Un paso posible.\nY un lugar al que volver.")
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
         Button(action: onCreate) {
-            Text("Crear mi primer Kit").frame(maxWidth: .infinity)
+            Text("Crear mi primer Kit")
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
@@ -416,6 +427,8 @@ struct KitsEmptyView: View {
         Text("Empieza por lo que quieres conseguir.")
             .font(.footnote)
             .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 

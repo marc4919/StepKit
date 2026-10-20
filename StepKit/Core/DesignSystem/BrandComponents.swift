@@ -118,8 +118,9 @@ struct MetaChip: View {
     var body: some View {
         HStack(spacing: 5) {
             Image(systemName: symbol).foregroundStyle(color)
-            Text(text).foregroundStyle(.primary)
+            Text(text).foregroundStyle(.primary).lineLimit(1)
         }
+        .fixedSize(horizontal: true, vertical: false)
         .font(.subheadline.weight(.medium))
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
