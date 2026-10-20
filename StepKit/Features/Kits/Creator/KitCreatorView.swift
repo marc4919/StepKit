@@ -14,7 +14,7 @@ import UIKit
 // Moved to KitCreatorViewModel.swift or kept here if needed for FocusState
 // Defining here to ensure availability if not strictly imported
 enum KitCreatorField: Hashable {
-    case description, obstacles, time
+    case description, obstacles, time, doneWhen, startingPoint
 }
 
 // MARK: - Main View
@@ -74,8 +74,10 @@ struct KitCreatorView: View {
                     description: $vm.description,
                     dueDate: $vm.dueDate,
                     inconveniences: $vm.inconveniences,
-                    dailyAvailableTime: $vm.dailyAvailableTime,
-                    showingDateSheet: $vm.showingDateSheet,
+                    doneWhen: $vm.doneWhen,
+                    startingPoint: $vm.startingPoint,
+                    sessionsPerWeek: $vm.sessionsPerWeek,
+                    sessionMinutes: $vm.sessionMinutes,
                     focusedField: $focusedField,
                     todayStart: vm.todayStart,
                     isDateInPast: vm.isDateInPast,

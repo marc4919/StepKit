@@ -40,6 +40,26 @@ final class KitCreatorViewModel {
     var dueDate: Date = Date()
     var inconveniences: String = ""
     var dailyAvailableTime: String = ""
+    /// v4.4: cómo sabrá el usuario que lo ha conseguido y desde dónde parte.
+    var doneWhen: String = ""
+    var startingPoint: String = ""
+    var sessionsPerWeek: Int = 3
+    var sessionMinutes: Int = 30
+
+    /// Texto que recibe la IA: el resultado más el contexto opcional del formulario.
+    var composedDescription: String {
+        var parts = [description.trimmingCharacters(in: .whitespacesAndNewlines)]
+        let done = doneWhen.trimmingCharacters(in: .whitespacesAndNewlines)
+        let start = startingPoint.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !done.isEmpty { parts.append("Sabré que está listo cuando: \(done)") }
+        if !start.isEmpty { parts.append("Punto de partida: \(start)") }
+        return parts.joined(separator: "\n")
+    }
+
+    /// Minutos diarios equivalentes a las sesiones semanales elegidas.
+    var dailyMinutesFromSessions: Int {
+        max(10, sessionsPerWeek * sessionMinutes / 7)
+    }
     
     // Streaming State
     var streamingState = KitStreamingState()
@@ -106,7 +126,10 @@ final class KitCreatorViewModel {
         }
         errorMessage = nil
         
-        let dailyMinutes = parseMinutes(from: dailyAvailableTime)
+        let dailyMinutes = dailyAvailableTime.isEmpty
+            ? dailyMinutesFromSessions
+            : parseMinutes(from: dailyAvailableTime)
+        let description = composedDescription
         let obstacles = inconveniences
             .components(separatedBy: CharacterSet(charactersIn: ",\n"))
             .map { $0.trimmingCharacters(in: .whitespaces) }

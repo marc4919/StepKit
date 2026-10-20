@@ -2,7 +2,8 @@
 //  KitCreationFormContent.swift
 //  StepKit
 //
-//  Extracted from KitCreatorView.swift
+//  Crear Kit v4.4: formulario del sistema con iconos de color y el recorrido pequeño.
+//  El plan se revisa antes de aceptarlo.
 //
 
 import SwiftUI
@@ -11,142 +12,102 @@ struct KitCreationFormContent: View {
     @Binding var description: String
     @Binding var dueDate: Date
     @Binding var inconveniences: String
-    @Binding var dailyAvailableTime: String
-    @Binding var showingDateSheet: Bool
-    
+    @Binding var doneWhen: String
+    @Binding var startingPoint: String
+    @Binding var sessionsPerWeek: Int
+    @Binding var sessionMinutes: Int
+
     var focusedField: FocusState<KitCreatorField?>.Binding
     let todayStart: Date
     let isDateInPast: Bool
     let isFormValid: Bool
     let onCreate: () -> Void
-    
+
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(spacing: 16) {
-                    headerSection
-                    
-                    // Main Info Section
-                    KitCreatorSection(icon: "doc.text", title: "Información Principal") {
-                        KitCreatorTextField(
-                            title: "¿Qué quieres conseguir?",
-                            placeholder: "Ej: Aprender a tocar guitarra, correr una maratón...",
-                            text: $description,
-                            focusBinding: focusedField,
-                            fieldType: .description
-                        )
-                        
-                        KitCreatorDateRow(
-                            date: $dueDate,
-                            isDateInPast: isDateInPast,
-                            onTap: {
-                                focusedField.wrappedValue = nil
-                                showingDateSheet = true
-                            }
-                        )
-                    }
-                    
-                    // Additional Info Section
-                    KitCreatorSection(icon: "lightbulb", title: "Información Adicional") {
-                        Text("Opcional pero nos ayuda a personalizar tu plan")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(.top, -8)
-                        
-                        KitCreatorTextField(
-                            title: "Tiempo disponible",
-                            placeholder: "Ej: 2 horas / semana, 30 min al día, solo fines de semana…",
-                            text: $dailyAvailableTime,
-                            focusBinding: focusedField,
-                            fieldType: .time
-                        )
-                        
-                        KitCreatorTextField(
-                            title: "¿Qué obstáculos anticipas?",
-                            placeholder: "Ej: Poco tiempo, falta de experiencia...",
-                            text: $inconveniences,
-                            focusBinding: focusedField,
-                            fieldType: .obstacles
-                        )
-                    }
-                    
-                    saveButton
+        Form {
+            Section {
+                VStack(spacing: 8) {
+                    OrbitMark(height: 86).frame(maxWidth: 240)
+                    Text("¿Qué quieres conseguir?")
+                        .font(.title2.bold())
+                        .multilineTextAlignment(.center)
+                    Text("Revisarás el plan antes de aceptarlo.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.horizontal, 20)
-                .padding(.top, 4)
-                .padding(.bottom, 24)
+                .listRowBackground(Color.clear)
             }
-            .onChange(of: focusedField.wrappedValue) { _, field in
-                guard let field = field else { return }
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    switch field {
-                    case .description:
-                        proxy.scrollTo("descriptionField", anchor: .center)
-                    case .obstacles:
-                        proxy.scrollTo("obstaclesField", anchor: .center)
-                    case .time:
-                        proxy.scrollTo("timeField", anchor: .center)
+            Section {
+                field("target", .accentColor, "Resultado", placeholder: "Ej: Publicar mi portfolio en seis semanas",
+                      text: $description, focus: .description, identifier: "kitCreator.description")
+                field("checklist", .green, "Cómo sabré que está listo (opcional)",
+                      placeholder: "Ej: Tres casos y un contacto comprobado", text: $doneWhen, focus: .doneWhen)
+                field("flag.fill", .pink, "Punto de partida (opcional)",
+                      placeholder: "Ej: Tengo tres proyectos y algunas imágenes", text: $startingPoint, focus: .startingPoint)
+                field(Symbols.risk, .orange, "Qué te puede frenar (opcional)",
+                      placeholder: "Ej: Poco tiempo, permisos de imágenes", text: $inconveniences, focus: .obstacles)
+            }
+            Section {
+                Stepper(value: $sessionsPerWeek, in: 1...14) {
+                    Label {
+                        Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
+                    } icon: {
+                        IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28)
                     }
                 }
+                Picker(selection: $sessionMinutes) {
+                    ForEach([15, 30, 45, 60], id: \.self) { Text("\($0) min").tag($0) }
+                } label: {
+                    Label { Text("Duración") } icon: { IconChip(symbol: "timer", color: MetaTint.time, size: 28) }
+                }
+                DatePicker(selection: $dueDate, in: todayStart..., displayedComponents: .date) {
+                    Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+                }
+                .accessibilityIdentifier("kitCreator.dueDate")
+            } header: {
+                Text("Tu tiempo")
+            } footer: {
+                Text("La fecha es orientativa. Podrás ajustar el plan y tu tiempo después.")
+            }
+            Section {
+                Button {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    onCreate()
+                } label: {
+                    Text("Preparar plan").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(!isFormValid)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                .accessibilityIdentifier("kitCreator.create")
             }
         }
-        .background(Color(.systemGroupedBackground))
         .scrollDismissesKeyboard(.interactively)
     }
-    
-    // MARK: - Header Section
-    private var headerSection: some View {
-        VStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .fill(LinearGradient.accentWithOpacity( 0.3))
-                    .frame(width: 56, height: 56)
 
-                Image(systemName: "target")
-                    .font(.system(size: 26, weight: .medium))
-                    .foregroundStyle(LinearGradient.accentGradient)
-                    .symbolEffect(.variableColor.cumulative.dimInactiveLayers.nonReversing, options: .nonRepeating)
+    private func field(
+        _ symbol: String,
+        _ color: Color,
+        _ title: String,
+        placeholder: String,
+        text: Binding<String>,
+        focus: KitCreatorField,
+        identifier: String? = nil
+    ) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            IconChip(symbol: symbol, color: color, size: 28).padding(.top, 2)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.caption).foregroundStyle(.secondary)
+                TextField(placeholder, text: text, axis: .vertical)
+                    .lineLimit(1...4)
+                    .focused(focusedField, equals: focus)
+                    .accessibilityIdentifier(identifier ?? "")
+                    .accessibilityLabel(title)
             }
-
-            Text("Define tu objetivo")
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-
-            Text("Solo necesitamos algunos detalles")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
         }
-    }
-    
-    // MARK: - Save Button
-    private var saveButton: some View {
-        Button {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            onCreate()
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                    .font(.body.weight(.semibold))
-                Text("Crear Kit")
-                    .font(.body.weight(.semibold))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                isFormValid
-                    ? LinearGradient.accentGradient
-                    : LinearGradient.disabledGradient
-            )
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .shadow(color: isFormValid ? Color.accentColor.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
-        }
-        .disabled(!isFormValid)
-        .accessibilityIdentifier("kitCreator.create")
-        .padding(.top, 8)
     }
 }

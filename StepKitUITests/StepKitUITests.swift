@@ -359,7 +359,13 @@ final class StepKitUITests: XCTestCase {
         description.tap()
         description.typeText("Recorrido funcional determinista GOAL-003")
 
+        // v4.4: el botón está al final del Form, que carga sus filas al desplazarse.
         let submit = element(Identifier.submitKit)
+        var remainingSwipes = 5
+        while !submit.exists, remainingSwipes > 0 {
+            app.swipeUp()
+            remainingSwipes -= 1
+        }
         XCTAssertTrue(submit.waitForExistence(timeout: defaultTimeout))
         scrollUpUntilHittable(submit)
         submit.tap()

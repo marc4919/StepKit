@@ -23,6 +23,7 @@ enum DesignFixtureScenario: String {
     case kit           // plan del portfolio
     case welcome       // bienvenida
     case calendarEmpty // Calendario sin Kits
+    case create        // formulario Crear Kit
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -59,6 +60,11 @@ struct DesignFixtureRoot: View {
     var body: some View {
         if scenario == .welcome {
             WelcomeView {}
+        } else if scenario == .create {
+            KitCreatorView()
+                .environment(authManager)
+                .environment(AIConsentManager())
+                .modelContainer(container)
         } else {
             tabs
         }
@@ -83,6 +89,7 @@ struct DesignFixtureRoot: View {
         .tabViewStyle(.sidebarAdaptable)
         .modelContainer(container)
         .environment(authManager)
+        .environment(AIConsentManager())
     }
 
     private var portfolioStep: StepEntity? {
@@ -119,7 +126,7 @@ enum DesignFixtureData {
     static func seed(_ scenario: DesignFixtureScenario, into context: ModelContext) {
         defer { claimAll(in: context) }
         switch scenario {
-        case .empty, .welcome, .calendarEmpty:
+        case .empty, .welcome, .calendarEmpty, .create:
             break
         case .one, .step, .kit:
             insertPortfolio(into: context, blocked: false)
