@@ -18,40 +18,42 @@ struct SignInView: View {
     @State private var showingPrivacyPolicy = false
     
     
+    @State private var size = CGSize(width: 400, height: 800)
+    /// Apaisado o pantalla exterior del iPhone Duo: marca a un lado y acceso al otro.
+    private var wide: Bool { size.width > size.height }
+
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                Spacer()
-                
-                // Logo y branding
-                brandingSection
-                
-                Spacer()
-                
-                // Beneficios
-                benefitsSection
-                
-                Spacer()
-                
-                // Sign in section
-                signInSection
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? 16 : 32)
+        Group {
+            if wide {
+                HStack(spacing: 24) {
+                    brandingSection.frame(maxWidth: .infinity)
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            benefitsSection
+                            signInSection
+                        }
+                        .padding(.vertical)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal)
+            } else {
+                ScrollView {
+                    VStack(spacing: 18) {
+                        brandingSection
+                        benefitsSection.padding(.horizontal, 28)
+                        Spacer(minLength: 12)
+                        signInSection.padding(.horizontal, 24)
+                    }
+                    .padding(.vertical, 12)
+                    .frame(minHeight: size.height)
+                }
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(
-            // Fondo con gradiente sutil
-            LinearGradient(
-                colors: [
-                    Color(.systemBackground),
-                    Color.accentColor.opacity(0.05)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .background { EntryBackground() }
         .sheet(isPresented: $showingTermsOfService) {
             TermsOfServiceView()
         }
@@ -59,98 +61,29 @@ struct SignInView: View {
             PrivacyPolicyView()
         }
     }
-    
+
     // MARK: - Branding Section
     private var brandingSection: some View {
-        VStack(spacing: 20) {
-            // Logo animado
-            ZStack {
-                // Glow exterior
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.accentHighlight.opacity(0.3), Color.accentColor.opacity(0.1), .clear],
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 80
-                        )
-                    )
-                    .frame(width: 140, height: 140)
-
-                // Círculo de fondo
-                Circle()
-                    .fill(LinearGradient.accentWithOpacity( 0.2))
-                    .frame(width: 100, height: 100)
-
-                // Icono
-                Image(systemName: "target")
-                    .font(.system(size: 44, weight: .medium))
-                    .foregroundStyle(LinearGradient.accentGradient)
-            }
-            
-            // Título
-            VStack(spacing: 8) {
-                Text("StepKit")
-                    .font(.largeTitle)
-                    .bold()
-                    .foregroundStyle(.primary)
-                
-                Text("Alcanza tus objetivos, paso a paso")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+        VStack(spacing: 8) {
+            OrbitMark(height: wide ? min(size.height * 0.5, 220) : 190)
+                .padding(.horizontal, 40)
+            Text("StepKit")
+                .font(.largeTitle.bold())
+                .accessibilityAddTraits(.isHeader)
+            Text("Un paso claro para volver")
+                .foregroundStyle(.secondary)
         }
     }
-    
+
     // MARK: - Benefits Section
     private var benefitsSection: some View {
-        VStack(spacing: 16) {
-            benefitRow(
-                icon: "sparkles",
-                title: "Planes personalizados con IA",
-                color: .purple
-            )
-            
-            benefitRow(
-                icon: "chart.line.uptrend.xyaxis",
-                title: "Seguimiento de tu progreso",
-                color: .green
-            )
-            
-            benefitRow(
-                icon: "bell.badge",
-                title: "Recordatorios inteligentes",
-                color: .orange
-            )
+        VStack(spacing: 14) {
+            WelcomeFeatureRow(symbol: Symbols.kits, color: .accentColor, text: "Organiza tus objetivos")
+            WelcomeFeatureRow(symbol: "chart.line.uptrend.xyaxis", color: .green, text: "Avanza paso a paso")
+            WelcomeFeatureRow(symbol: "bell.fill", color: .purple, text: "Recupera el hilo cuando vuelvas")
         }
-        .frame(maxWidth: .infinity)
     }
-    
-    private func benefitRow(icon: String, title: String, color: Color) -> some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.1))
-                    .frame(width: 36, height: 36)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(color)
-            }
-            .frame(width: 36)
-            
-            Text(title)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(.primary)
-                .multilineTextAlignment(.leading)
-            
-            Spacer()
-        }
-        .frame(maxWidth: 280)
-    }
-    
+
     // MARK: - Sign In Section
     private var signInSection: some View {
         VStack(spacing: 20) {
@@ -175,7 +108,7 @@ struct SignInView: View {
             }
             
             // Botón de Apple
-            SignInWithAppleButton(.signIn) { request in
+            SignInWithAppleButton(.continue) { request in
                 request.requestedScopes = [.fullName, .email]
             } onCompletion: { result in
                 switch result {

@@ -24,6 +24,7 @@ enum DesignFixtureScenario: String {
     case welcome       // bienvenida
     case calendarEmpty // Calendario sin Kits
     case create        // formulario Crear Kit
+    case signIn        // acceso
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -60,6 +61,8 @@ struct DesignFixtureRoot: View {
     var body: some View {
         if scenario == .welcome {
             WelcomeView {}
+        } else if scenario == .signIn {
+            SignInView().environment(authManager)
         } else if scenario == .create {
             KitCreatorView()
                 .environment(authManager)
@@ -126,7 +129,7 @@ enum DesignFixtureData {
     static func seed(_ scenario: DesignFixtureScenario, into context: ModelContext) {
         defer { claimAll(in: context) }
         switch scenario {
-        case .empty, .welcome, .calendarEmpty, .create:
+        case .empty, .welcome, .calendarEmpty, .create, .signIn:
             break
         case .one, .step, .kit:
             insertPortfolio(into: context, blocked: false)
