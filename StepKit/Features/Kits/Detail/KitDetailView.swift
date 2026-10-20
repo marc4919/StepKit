@@ -55,11 +55,8 @@ struct KitDetailView: View {
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Detalles (con «Editar» dentro) y asistente: lo mismo que en el paso, arriba a la derecha.
+            // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
-                    .accessibilityIdentifier("kit.info")
-                    .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
                 NavigationLink {
                     KitAssistantHubView(kit: kitEntity)
                 } label: {
@@ -68,6 +65,9 @@ struct KitDetailView: View {
                 .badge(hasPendingProposal ? 1 : 0)
                 .accessibilityIdentifier("kit.assistant")
                 .accessibilityValue(hasPendingProposal ? "Propuesta pendiente" : "")
+                Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
+                    .accessibilityIdentifier("kit.info")
+                    .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
             }
         }
         .sheet(item: $presentedSheet) { sheet in
