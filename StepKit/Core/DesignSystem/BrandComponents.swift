@@ -304,7 +304,12 @@ struct OrbitMark: View {
             let lw = max(3.5, h * 0.036)
             let sphereSize = h * 0.31
             let junction = Self.map(w, h)(Self.iconSphere)
-            let spherePoint = milestones.isEmpty ? junction : point(on: path, at: 0.84)
+            let restingPoint = milestones.isEmpty ? junction : point(on: path, at: 0.84)
+            // Mientras se forma, la esfera crece centrada; al trazarse el recorrido se coloca en él.
+            let spherePoint = buildProgress == nil ? restingPoint : CGPoint(
+                x: w / 2 + (restingPoint.x - w / 2) * pathFraction,
+                y: h / 2 + (restingPoint.y - h / 2) * pathFraction
+            )
             ZStack {
                 if bloom {
                     RadialGradient(colors: [Color(red: 0.2, green: 0.6, blue: 1).opacity(scheme == .dark ? 0.35 : 0.20), .clear],
