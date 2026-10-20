@@ -18,11 +18,12 @@ struct KitCreationStreamingProgress: View {
     @State private var liftOff = false
     @State private var stepsChecked = false
     @State private var reviewChecked = false
+    @State private var finalFill = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
     private var targetProgress: Double {
-        if reviewChecked { return 1 }
+        if finalFill { return 1 }
         if streamingState.isComplete { return 0.95 }
         guard streamingState.kitTitle != nil else { return 0.12 }
         guard let total = streamingState.totalSteps, total > 0 else { return 0.25 }
@@ -87,11 +88,16 @@ struct KitCreationStreamingProgress: View {
             .padding(.vertical)
         }
         .background { EntryBackground() }
+        // Hápticos sutiles: un toque ligero por cada check y éxito al despegar.
+        .sensoryFeedback(.impact(weight: .light), trigger: streamingState.kitTitle != nil)
+        .sensoryFeedback(.impact(weight: .light), trigger: stepsChecked)
+        .sensoryFeedback(.impact(weight: .light), trigger: reviewChecked)
+        .sensoryFeedback(.success, trigger: liftOff)
         .onAppear { advance(to: targetProgress) }
         .onChange(of: targetProgress) { _, value in advance(to: value) }
         .task {
             // Avance lento mientras se espera el siguiente evento, sin pasar del siguiente tramo.
-            while !Task.isCancelled && !reviewChecked {
+            while !Task.isCancelled && !finalFill {
                 try? await Task.sleep(for: .milliseconds(450))
                 let ceiling = min(0.97, targetProgress + 0.1)
                 if shownProgress < ceiling {
@@ -105,6 +111,8 @@ struct KitCreationStreamingProgress: View {
         Task {
             guard !reduceMotion else {
                 stepsChecked = true
+                finalFill = true
+                shownProgress = 1
                 reviewChecked = true
                 showReview = true
                 return
@@ -112,8 +120,12 @@ struct KitCreationStreamingProgress: View {
             // Primero se completan los checks, luego la barra, la esfera despega y aparece «Tu plan».
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { stepsChecked = true }
             try? await Task.sleep(for: .milliseconds(500))
+            // La barra arranca su último tramo y el último check llega justo antes del 100 %.
+            finalFill = true
+            advance(to: 1, duration: 1.0)
+            try? await Task.sleep(for: .milliseconds(750))
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { reviewChecked = true }
-            try? await Task.sleep(for: .milliseconds(900))
+            try? await Task.sleep(for: .milliseconds(650))
             withAnimation(.easeIn(duration: 0.75)) { liftOff = true }
             try? await Task.sleep(for: .milliseconds(800))
             showReview = true
