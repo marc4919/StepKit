@@ -163,10 +163,11 @@ struct KitCreatorView: View {
 
     private func cancelAndDismiss(vm: KitCreatorViewModel) {
         guard let ownerID = authManager.currentUser?.id else { return }
+        // Desde el formulario se cierra; desde la preparación o «Tu plan» se vuelve
+        // al formulario con lo escrito (cancelGeneration ya pone el estado en .form).
+        let wasEditing = vm.viewState == .form
         vm.cancelGeneration(modelContext: modelContext, ownerID: ownerID)
-        
-        // Si estamos en form, cerrar. Si no, volver al form.
-        if vm.viewState == .form {
+        if wasEditing {
             dismiss()
         }
     }

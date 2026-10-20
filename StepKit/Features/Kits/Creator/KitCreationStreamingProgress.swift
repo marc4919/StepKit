@@ -16,11 +16,14 @@ struct KitCreationStreamingProgress: View {
     /// Se pasa a «Tu plan» cuando la barra y el recorrido han terminado de verse.
     @State private var showReview = false
     @State private var liftOff = false
+    @State private var stepsChecked = false
+    @State private var reviewChecked = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
     private var targetProgress: Double {
-        if streamingState.isComplete { return 1 }
+        if reviewChecked { return 1 }
+        if streamingState.isComplete { return 0.95 }
         guard streamingState.kitTitle != nil else { return 0.12 }
         guard let total = streamingState.totalSteps, total > 0 else { return 0.25 }
         return 0.25 + 0.75 * Double(streamingState.steps.count) / Double(total)
@@ -62,10 +65,12 @@ struct KitCreationStreamingProgress: View {
                     phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
                           title: "Resultado y supuestos",
                           detail: streamingState.kitTitle == nil ? "Preparando" : "Recibido")
-                    phase(done: streamingState.isComplete,
-                          active: streamingState.kitTitle != nil && !streamingState.isComplete,
+                    phase(done: stepsChecked,
+                          active: streamingState.kitTitle != nil && !stepsChecked,
                           title: "Pasos del plan", detail: stepsDetail)
-                    phase(done: false, active: false, title: "Revisión", detail: "La harás tú antes de empezar")
+                    phase(done: reviewChecked, active: stepsChecked && !reviewChecked,
+                          title: "Plan listo para revisar",
+                          detail: reviewChecked ? "Listo" : "Lo revisarás tú antes de empezar")
                 }
                 .padding(.horizontal, 30)
                 SmoothProgressBar(value: shownProgress)
@@ -86,7 +91,7 @@ struct KitCreationStreamingProgress: View {
         .onChange(of: targetProgress) { _, value in advance(to: value) }
         .task {
             // Avance lento mientras se espera el siguiente evento, sin pasar del siguiente tramo.
-            while !Task.isCancelled && !streamingState.isComplete {
+            while !Task.isCancelled && !reviewChecked {
                 try? await Task.sleep(for: .milliseconds(450))
                 let ceiling = min(0.97, targetProgress + 0.1)
                 if shownProgress < ceiling {
@@ -99,10 +104,15 @@ struct KitCreationStreamingProgress: View {
     private func scheduleReview() {
         Task {
             guard !reduceMotion else {
+                stepsChecked = true
+                reviewChecked = true
                 showReview = true
                 return
             }
-            // La barra llega al final, la esfera despega y aparece «Tu plan».
+            // Primero se completan los checks, luego la barra, la esfera despega y aparece «Tu plan».
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { stepsChecked = true }
+            try? await Task.sleep(for: .milliseconds(500))
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { reviewChecked = true }
             try? await Task.sleep(for: .milliseconds(900))
             withAnimation(.easeIn(duration: 0.75)) { liftOff = true }
             try? await Task.sleep(for: .milliseconds(800))
@@ -132,6 +142,7 @@ struct KitCreationStreamingProgress: View {
                 .font(.title2)
                 .foregroundStyle(done ? Color.green : active ? Color.accentColor : Color.secondary)
                 .symbolEffect(.pulse, isActive: active)
+                .contentTransition(.symbolEffect(.replace))
             VStack(alignment: .leading) {
                 Text(title).font(.headline)
                 Text(detail).font(.subheadline).foregroundStyle(.secondary)
