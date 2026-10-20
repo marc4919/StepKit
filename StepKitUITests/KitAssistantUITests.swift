@@ -10,7 +10,8 @@ final class KitAssistantUITests: XCTestCase {
 
         let accept = app.buttons["proposal.accept"]
         XCTAssertTrue(accept.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Mover el paso 3 al 6 de noviembre"].exists)
+        // Las fechas de los datos de diseño son relativas a hoy.
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Mover el paso 3 al")).firstMatch.exists)
         accept.tap()
         XCTAssertTrue(app.staticTexts["Aplicada"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["proposal.discard"].exists)

@@ -13,6 +13,7 @@ struct KitInfoSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.syncManager) private var syncManager
     @State private var showingDeleteConfirmation = false
+    @State private var showingEdit = false
     @State private var kitNotificationsEnabled: Bool = true
     @AppStorage("globalNotificationsEnabled") private var globalNotificationsEnabled = true
 
@@ -53,6 +54,20 @@ struct KitInfoSheetView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Detalles del Kit")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { dismiss() }
+                        .accessibilityIdentifier("kitInfo.close")
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Editar") { showingEdit = true }
+                        .accessibilityIdentifier("kit.edit")
+                        .accessibilityHint("Permite cambiar el título y el indicador de éxito del Kit")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEdit) {
+            KitEditSheetView(kitEntity: goalEntity)
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)

@@ -12,7 +12,6 @@ import SwiftData
 
 struct KitDetailView: View {
     private enum PresentedSheet: String, Identifiable {
-        case edit
         case information
         case annotations
 
@@ -34,7 +33,6 @@ struct KitDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
-                assistantAccess
                 Picker("Vista", selection: $segment) {
                     Text("Plan").tag(0)
                     Text("Registro").tag(1)
@@ -57,18 +55,23 @@ struct KitDetailView: View {
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // Detalles (con «Editar» dentro) y asistente: lo mismo que en el paso, arriba a la derecha.
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button("Editar Kit", systemImage: "pencil") { presentedSheet = .edit }
-                    .accessibilityIdentifier("kit.edit")
-                    .accessibilityHint("Permite cambiar el título y el indicador de éxito del Kit")
-                Button("Información", systemImage: "info.circle") { presentedSheet = .information }
-                    .accessibilityHint("Muestra información detallada del kit")
+                Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
+                    .accessibilityIdentifier("kit.info")
+                    .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
+                NavigationLink {
+                    KitAssistantHubView(kit: kitEntity)
+                } label: {
+                    Label("Asistente", systemImage: Symbols.assistant)
+                }
+                .badge(hasPendingProposal ? 1 : 0)
+                .accessibilityIdentifier("kit.assistant")
+                .accessibilityValue(hasPendingProposal ? "Propuesta pendiente" : "")
             }
         }
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
-            case .edit:
-                KitEditSheetView(kitEntity: kitEntity)
             case .information:
                 KitInfoSheetView(goalEntity: kitEntity)
             case .annotations:
@@ -114,33 +117,9 @@ struct KitDetailView: View {
         }
     }
 
-    /// Acceso al asistente del Kit con sus conversaciones (también las abiertas desde un paso).
-    private var assistantAccess: some View {
-        let conversations = KitAssistantStore.shared.conversations(for: kitEntity.id)
-        return NavigationLink {
-            KitAssistantHubView(kit: kitEntity)
-        } label: {
-            HStack(spacing: 12) {
-                IconChip(symbol: Symbols.assistant, color: .accentColor, size: 36)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Asistente").font(.headline).foregroundStyle(.primary)
-                    Text(conversations.isEmpty
-                         ? "Ayuda para replantear el plan o un paso"
-                         : conversations.count == 1 ? "1 conversación" : "\(conversations.count) conversaciones")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(14)
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
-            .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("kit.assistant")
+    private var hasPendingProposal: Bool {
+        KitAssistantStore.shared.conversations(for: kitEntity.id)
+            .contains { $0.proposals.contains { $0.state == .pending } }
     }
 
     // MARK: - Plan

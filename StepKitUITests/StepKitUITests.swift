@@ -30,6 +30,8 @@ final class StepKitUITests: XCTestCase {
         static let submitKit = "kitCreator.create"
         static let saveKit = "kitCreator.save"
         static let stepRow = "step.row"
+        static let kitInfo = "kit.info"
+        static let kitInfoClose = "kitInfo.close"
         static let editKit = "kit.edit"
         static let kitEditTitle = "kitEdit.title"
         static let kitEditKPI = "kitEdit.kpi"
@@ -386,6 +388,9 @@ final class StepKitUITests: XCTestCase {
     @MainActor
     private func editFixtureKit() -> SyncCheckpoint {
         let checkpoint = currentSyncCheckpoint()
+        let info = element(Identifier.kitInfo)
+        XCTAssertTrue(info.waitForExistence(timeout: defaultTimeout))
+        info.tap()
         let edit = element(Identifier.editKit)
         XCTAssertTrue(edit.waitForExistence(timeout: defaultTimeout))
         edit.tap()
@@ -400,6 +405,9 @@ final class StepKitUITests: XCTestCase {
         let save = element(Identifier.kitEditSave)
         XCTAssertTrue(save.isEnabled)
         save.tap()
+        let close = element(Identifier.kitInfoClose)
+        XCTAssertTrue(close.waitForExistence(timeout: defaultTimeout))
+        close.tap()
         XCTAssertTrue(app.staticTexts[editedFixtureTitle].waitForExistence(timeout: defaultTimeout))
         XCTAssertTrue(app.staticTexts[editedFixtureKPI].waitForExistence(timeout: defaultTimeout))
         return checkpoint

@@ -62,7 +62,7 @@ struct StepDetailView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Ayuda del paso", systemImage: Symbols.assistant) {
+                Button("Ayúdame con este paso", systemImage: Symbols.assistant) {
                     assistantLaunch = AssistantLaunch(intent: nil)
                 }
                 .accessibilityIdentifier("step.assistant")
@@ -121,17 +121,6 @@ struct StepDetailView: View {
                 ViewThatFits {
                     HStack(spacing: 8) { chips }
                     VStack(alignment: .leading, spacing: 8) { chips }
-                }
-                if !stepEntity.isCompleted, stepEntity.goal != nil {
-                    Button {
-                        assistantLaunch = AssistantLaunch(intent: nil)
-                    } label: {
-                        Label("Ayúdame con este paso", systemImage: Symbols.assistant)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .accessibilityIdentifier("step.help")
                 }
                 if let reason = stepEntity.blockedReason {
                     blockedCards(reason: reason)
