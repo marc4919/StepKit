@@ -185,6 +185,7 @@ final class StepKitUITests: XCTestCase {
 
         // Sesión persistida inválida: pasa por restauración normal y falla cerrada.
         launchInvalidStoredSession(resetLocalState: true)
+        completeOnboardingAndConsentIfNeeded()
         let appleSignIn = element(Identifier.signInWithApple)
         XCTAssertTrue(appleSignIn.waitForExistence(timeout: defaultTimeout))
         XCTAssertFalse(element(Identifier.appState).exists, "Una sesión inválida no debe mostrar contenido privado")
@@ -239,33 +240,41 @@ final class StepKitUITests: XCTestCase {
 
     @MainActor
     private func completeOnboardingAndConsentIfNeeded() {
+        // v4.4: la bienvenida no pide permisos; el de IA se pide al crear el primer Kit.
         let action = element(Identifier.onboardingAction)
         guard action.waitForExistence(timeout: 3) else { return }
 
-        XCTAssertTrue(app.staticTexts["El primer paso importa"].exists)
-        XCTAssertEqual(action.label, "Siguiente")
+        XCTAssertTrue(app.staticTexts["Un objetivo grande.\nUn primer paso claro."].exists)
         action.tap()
-        XCTAssertTrue(app.staticTexts["Un plan para ti"].waitForExistence(timeout: defaultTimeout))
+        XCTAssertTrue(app.staticTexts["Un plan que puedes ajustar"].firstMatch.waitForExistence(timeout: defaultTimeout))
         action.tap()
-        XCTAssertTrue(app.staticTexts["Construimos StepKit juntos"].waitForExistence(timeout: defaultTimeout))
+        XCTAssertTrue(app.staticTexts["Vuelve con un paso claro"].waitForExistence(timeout: defaultTimeout))
         XCTAssertEqual(action.label, "Empezar")
         action.tap()
+    }
 
-        XCTAssertTrue(app.staticTexts["Uso de Inteligencia Artificial"].waitForExistence(timeout: defaultTimeout))
+    /// Permiso explícito de IA (5.1.2(i)) justo antes del primer envío.
+    @MainActor
+    private func acceptAIConsentIfPresented() {
+        let header = app.staticTexts["Antes de preparar tu plan"]
+        guard header.waitForExistence(timeout: 5) else { return }
+        // El Form carga el interruptor al desplazarse.
         let accept = element(Identifier.consentAccept)
-        let continueButton = element(Identifier.consentContinue)
+        var remainingSwipes = 4
+        while !accept.exists, remainingSwipes > 0 {
+            app.swipeUp()
+            remainingSwipes -= 1
+        }
         XCTAssertTrue(accept.waitForExistence(timeout: defaultTimeout))
+        let continueButton = element(Identifier.consentContinue)
         XCTAssertTrue(continueButton.waitForExistence(timeout: defaultTimeout))
         XCTAssertFalse(continueButton.isEnabled)
         scrollUpUntilHittable(accept)
-        accept.tap()
+        accept.switches.firstMatch.exists ? accept.switches.firstMatch.tap() : accept.tap()
         XCTAssertTrue(waitUntil(timeout: defaultTimeout) {
-            element(Identifier.consentAccept).value as? String == "Aceptado"
-                && element(Identifier.consentContinue).isEnabled
+            self.element(Identifier.consentContinue).isEnabled
         })
-        let enabledContinueButton = element(Identifier.consentContinue)
-        scrollUpUntilHittable(enabledContinueButton)
-        enabledContinueButton.tap()
+        element(Identifier.consentContinue).tap()
     }
 
     @MainActor
@@ -354,6 +363,7 @@ final class StepKitUITests: XCTestCase {
         XCTAssertTrue(submit.waitForExistence(timeout: defaultTimeout))
         scrollUpUntilHittable(submit)
         submit.tap()
+        acceptAIConsentIfPresented()
 
         let save = element(Identifier.saveKit)
         XCTAssertTrue(save.waitForExistence(timeout: 30), "El fixture AI no terminó")

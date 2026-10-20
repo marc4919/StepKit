@@ -15,8 +15,6 @@ struct StepKitApp: App {
     @State private var authManager = AuthManager()
     @State private var aiConsentManager = AIConsentManager()
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @State private var showOnboarding = false
-    @State private var showAIConsent = false
     @State private var didBootstrapAuthentication = false
     @Environment(\.scenePhase) private var scenePhase
     private let appEnvironment: AppEnvironment
@@ -91,40 +89,19 @@ struct StepKitApp: App {
 
     @ViewBuilder
     private var appContent: some View {
-        if authManager.isRestoringSession {
+        if !hasCompletedOnboarding {
+            // La bienvenida va antes del acceso y no pide ningún permiso.
+            WelcomeView { hasCompletedOnboarding = true }
+        } else if authManager.isRestoringSession {
             ProgressView("Validando sesión…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if authManager.isAuthenticated {
             ContentView()
-                .fullScreenCover(isPresented: $showOnboarding) {
-                    OnboardingView {
-                        showOnboarding = false
-                        hasCompletedOnboarding = true
-                    }
-                    .interactiveDismissDisabled()
-                }
-                .fullScreenCover(isPresented: $showAIConsent) {
-                    AIConsentView {
-                        showAIConsent = false
-                    }
-                    .interactiveDismissDisabled()
-                }
-                .onAppear {
-                    if !hasCompletedOnboarding {
-                        showOnboarding = true
-                    } else if !aiConsentManager.hasConsent {
-                        // Si completó onboarding pero no tiene consentimiento, mostrarlo
-                        showAIConsent = true
-                    }
-                }
                 .task {
-                    // Solicitar permisos de notificación y verificar estado
-                    if shouldRequestNotifications {
-                        await NotificationService.shared.checkAuthorizationStatus()
-                        if !NotificationService.shared.isAuthorized {
-                            await NotificationService.shared.requestAuthorization()
-                        }
-                    }
+                    // Los permisos se piden en contexto: el aviso de IA al crear el primer
+                    // Kit (5.1.2(i)) y las notificaciones al guardarlo o al reservar una sesión.
+                    NotificationService.shared.promptsSuppressed = !shouldRequestNotifications
+                    await NotificationService.shared.checkAuthorizationStatus()
 
                     // Inicializar sync si no existe
                     if syncService == nil {

@@ -14,16 +14,16 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
-            Tab("Kits", systemImage: "target"){
+            Tab("Kits", systemImage: Symbols.kits){
                 KitsListView()
             }
-            Tab("Calendario", systemImage: "calendar.badge.clock"){
+            Tab("Calendario", systemImage: Symbols.calendar){
                 CalendarPlusView()
             }
-            Tab("Asistente", systemImage: "sparkles"){
+            Tab("Asistente", systemImage: Symbols.assistant){
                 TrainerView()
             }
-            Tab("Perfil", systemImage: "person.circle"){
+            Tab("Perfil", systemImage: Symbols.profile){
                 ProfileView()
             }
             Tab(role: .search){

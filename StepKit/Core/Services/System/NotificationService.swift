@@ -24,6 +24,21 @@ final class NotificationService {
     /// Estado de autorización de notificaciones
     private(set) var isAuthorized: Bool = false
 
+    /// Los recorridos E2E no deben mostrar el diálogo del sistema.
+    var promptsSuppressed = false
+
+    /// Pide permiso solo si aún no se ha preguntado; para usar en el momento en que
+    /// el usuario espera un aviso (guardar su primer Kit, reservar una sesión).
+    func requestAuthorizationIfNeeded() async {
+        guard !promptsSuppressed else { return }
+        let settings = await center.notificationSettings()
+        if settings.authorizationStatus == .notDetermined {
+            await requestAuthorization()
+        } else {
+            isAuthorized = settings.authorizationStatus == .authorized
+        }
+    }
+
     // MARK: - Authorization
 
     /// Solicita permisos de notificación al usuario

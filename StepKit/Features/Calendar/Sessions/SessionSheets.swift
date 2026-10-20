@@ -141,7 +141,7 @@ struct BookSessionSheet: View {
                                               remind: remind, context: modelContext)
             syncManager?.handleDataChange()
             Task {
-                if remind { _ = await NotificationService.shared.requestAuthorization() }
+                if remind { await NotificationService.shared.requestAuthorizationIfNeeded() }
                 await NotificationService.shared.scheduleReminder(for: session, kitTitle: kit.title,
                                                                   stepTitle: step?.stepTitle)
             }

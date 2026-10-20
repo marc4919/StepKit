@@ -96,25 +96,13 @@ struct CalendarPlusView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            List {
-                upcomingSection
-                if let wanted = nextWanted {
-                    wantedSection(kit: wanted.kit, date: wanted.date)
-                }
-                monthSection
-                daySection
-                if !stepsForSelectedDate.isEmpty || !goalsForSelectedDate.isEmpty {
-                    Section {
-                        DayInsightView(selectedDate: selectedDate, steps: stepsForSelectedDate, goals: goalsForSelectedDate)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                    }
+            Group {
+                if visibleGoalEntities.isEmpty {
+                    emptyCalendar
+                } else {
+                    calendarList
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(alignment: .top) { BrandGlow() }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle("Calendario")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -160,6 +148,56 @@ struct CalendarPlusView: View {
                 }
             }
         }
+    }
+
+    private var calendarList: some View {
+        List {
+            upcomingSection
+            if let wanted = nextWanted {
+                wantedSection(kit: wanted.kit, date: wanted.date)
+            }
+            monthSection
+            daySection
+            if !stepsForSelectedDate.isEmpty || !goalsForSelectedDate.isEmpty {
+                Section {
+                    DayInsightView(selectedDate: selectedDate, steps: stepsForSelectedDate, goals: goalsForSelectedDate)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                }
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(alignment: .top) { BrandGlow() }
+        .background(Color(.systemGroupedBackground))
+    }
+
+    /// Sin Kits todavía: no hay sesiones, sugerencias ni fechas que mostrar.
+    private var emptyCalendar: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                OrbitMark(height: 170)
+                Text("Tu calendario empieza\ncon tu primer Kit")
+                    .font(.title.bold())
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Aquí verás las sesiones que reserves, los pasos sugeridos y la fecha que quieres conseguir.")
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    showingKitCreator = true
+                } label: {
+                    Text("Crear un Kit").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .padding(.horizontal, 30)
+                .padding(.top, 8)
+            }
+            .padding(.horizontal)
+            .padding(.top, 24)
+        }
+        .background { EntryBackground() }
     }
 
     // MARK: - Secciones

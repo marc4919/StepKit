@@ -120,10 +120,26 @@ struct KitCreatorView: View {
                 }
             }
         }
-        .sheet(isPresented: $vm.showingDateSheet) {
-            DateSelectionSheet(selectedDate: $vm.dueDate, todayStart: vm.todayStart)
-                .presentationDetents(Set([.fraction(0.7), .large]), selection: $vm.sheetDetent)
-                .presentationDragIndicator(.visible)
+        // Una sola hoja para el formulario: dos .sheet en la misma jerarquía no conviven.
+        .sheet(item: Binding(
+            get: { vm.showingDateSheet ? CreatorSheet.date : (showAIConsent ? CreatorSheet.aiConsent : nil) },
+            set: { if $0 == nil { vm.showingDateSheet = false; showAIConsent = false } }
+        )) { sheet in
+            switch sheet {
+            case .date:
+                DateSelectionSheet(selectedDate: $vm.dueDate, todayStart: vm.todayStart)
+                    .presentationDetents(Set([.fraction(0.7), .large]), selection: $vm.sheetDetent)
+                    .presentationDragIndicator(.visible)
+            case .aiConsent:
+                AIConsentView { granted in
+                    showAIConsent = false
+                    // Con permiso, se sigue con lo que el usuario había pedido: crear el plan.
+                    if granted, let token = authManager.token {
+                        vm.createKit(token: token)
+                    }
+                }
+                .interactiveDismissDisabled()
+            }
         }
         .alert("Error", isPresented: $vm.showingError) {
             Button("Reintentar") {
@@ -136,12 +152,7 @@ struct KitCreatorView: View {
             Text(vm.errorMessage ?? "Ha ocurrido un error inesperado")
         }
         .interactiveDismissDisabled(vm.viewState != .form)
-        .fullScreenCover(isPresented: $showAIConsent) {
-            AIConsentView {
-                showAIConsent = false
-            }
-            .interactiveDismissDisabled()
-        }
+
         .onAppear {
              // Dependencies are injected via .task
         }
@@ -164,6 +175,16 @@ struct KitCreatorView: View {
         if let goal = vm.saveKit(in: modelContext, ownerID: ownerID) {
             // Trigger sync
             syncManager?.handleDataChange()
+            let goalID = goal.id
+            let context = modelContext
+            Task {
+                // Primer momento en que un recordatorio tiene sentido: hay pasos con fecha.
+                await NotificationService.shared.requestAuthorizationIfNeeded()
+                let descriptor = FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.id == goalID })
+                if let entity = try? context.fetch(descriptor).first {
+                    await NotificationService.shared.scheduleNotifications(for: entity)
+                }
+            }
             
             onKitCreated?(goal)
             dismiss()
@@ -180,3 +201,8 @@ struct KitCreatorView: View {
         .modelContainer(for: [GoalEntity.self, StepEntity.self], inMemory: true)
 }
 #endif
+
+private enum CreatorSheet: String, Identifiable {
+    case date, aiConsent
+    var id: String { rawValue }
+}

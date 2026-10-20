@@ -21,6 +21,8 @@ enum DesignFixtureScenario: String {
     case calendar      // pestaña Calendario con sesiones reservadas
     case assistant     // pestaña Asistente
     case kit           // plan del portfolio
+    case welcome       // bienvenida
+    case calendarEmpty // Calendario sin Kits
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -47,7 +49,7 @@ struct DesignFixtureRoot: View {
                       user: UserInfo(id: DesignFixtureData.owner, tier: "premium",
                                      monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
         _authManager = State(initialValue: auth)
-        _tab = State(initialValue: scenario == .calendar ? 1 : scenario == .assistant ? 2 : 0)
+        _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .assistant ? 2 : 0)
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
         DesignFixtureData.seed(scenario, into: container.mainContext)
@@ -55,6 +57,14 @@ struct DesignFixtureRoot: View {
     }
 
     var body: some View {
+        if scenario == .welcome {
+            WelcomeView {}
+        } else {
+            tabs
+        }
+    }
+
+    private var tabs: some View {
         TabView(selection: $tab) {
             Tab("Kits", systemImage: Symbols.kits, value: 0) {
                 if scenario == .step || scenario == .blocked, let step = portfolioStep {
@@ -109,7 +119,7 @@ enum DesignFixtureData {
     static func seed(_ scenario: DesignFixtureScenario, into context: ModelContext) {
         defer { claimAll(in: context) }
         switch scenario {
-        case .empty:
+        case .empty, .welcome, .calendarEmpty:
             break
         case .one, .step, .kit:
             insertPortfolio(into: context, blocked: false)

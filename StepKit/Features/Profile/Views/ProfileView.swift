@@ -13,6 +13,8 @@ struct ProfileView: View {
     @State private var showingPrivacyPolicy = false
     @State private var showingSignOutAlert = false
     @AppStorage("globalNotificationsEnabled") private var globalNotificationsEnabled = true
+    @Environment(AIConsentManager.self) private var consentManager
+    @State private var aiConsentGiven = false
     
     
     var body: some View {
@@ -62,6 +64,33 @@ struct ProfileView: View {
             VStack(spacing: 0) {
                 // Toggle de notificaciones
                 notificationsToggle
+
+                Divider()
+                    .padding(.leading, 56)
+
+                // Permiso para IA de terceros (5.1.2(i)): se puede retirar en cualquier momento.
+                Toggle(isOn: Binding(
+                    get: { aiConsentGiven },
+                    set: { granted in
+                        if granted { consentManager.giveConsent() } else { consentManager.revokeConsent() }
+                        aiConsentGiven = granted
+                    }
+                )) {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("IA para crear planes")
+                            Text(aiConsentGiven ? "Permitido" : "Se pedirá al crear un Kit")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        IconChip(symbol: "sparkles", color: .accentColor, size: 28)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .onAppear { aiConsentGiven = consentManager.hasConsent }
+                .accessibilityIdentifier("profile.aiConsent")
 
                 Divider()
                     .padding(.leading, 56)
