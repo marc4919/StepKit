@@ -42,7 +42,7 @@ struct SignInView: View {
                     VStack(spacing: 18) {
                         Spacer(minLength: 12)
                         brandingSection
-                        benefitsSection.padding(.horizontal, 28)
+                        benefitsSection.padding(.horizontal, 24)
                         Spacer(minLength: 12)
                         signInSection.padding(.horizontal, 24)
                     }
@@ -77,12 +77,16 @@ struct SignInView: View {
     }
 
     // MARK: - Benefits Section
+    /// Bloque de ventajas con su ancho natural, centrado y algo separado del lema.
     private var benefitsSection: some View {
-        VStack(spacing: 14) {
+        VStack(alignment: .leading, spacing: 14) {
             WelcomeFeatureRow(symbol: Symbols.kits, color: .accentColor, text: "Organiza tus objetivos")
             WelcomeFeatureRow(symbol: "chart.line.uptrend.xyaxis", color: .green, text: "Avanza paso a paso")
             WelcomeFeatureRow(symbol: "bell.fill", color: .purple, text: "Recupera el hilo cuando vuelvas")
         }
+        .fixedSize(horizontal: true, vertical: false)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
     }
 
     // MARK: - Sign In Section
