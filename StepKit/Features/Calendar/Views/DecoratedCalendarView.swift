@@ -46,6 +46,17 @@ struct DecoratedCalendarView: UIViewRepresentable {
         return view
     }
 
+    /// El calendario mide lo que necesita el mes visible (5 o 6 semanas): sin huecos ni cortes.
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UICalendarView, context: Context) -> CGSize? {
+        let width = proposal.width ?? 360
+        let fitted = uiView.systemLayoutSizeFitting(
+            CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+        return CGSize(width: width, height: fitted.height)
+    }
+
     func updateUIView(_ view: UICalendarView, context: Context) {
         context.coordinator.parent = self
         if let selection = view.selectionBehavior as? UICalendarSelectionSingleDate {

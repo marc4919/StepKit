@@ -97,9 +97,8 @@ struct KitCreatorView: View {
                         }
                     }
                 )
-            case .loading:
-                KitCreationLoadingView()
-            case .streaming:
+            case .loading, .streaming:
+                // Una sola pantalla de preparación: arranca en «Preparando» y sigue con los pasos.
                 KitCreationStreamingProgress(
                     streamingState: $vm.streamingState,
                     onSave: { saveAndNavigate(vm: vm) },

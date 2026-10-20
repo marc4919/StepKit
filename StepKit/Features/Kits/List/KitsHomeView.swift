@@ -227,7 +227,7 @@ private struct ContinueCard: View {
                     stepCount.font(.body)
                 }
             } else {
-                VStack(spacing: 4) {
+                VStack(spacing: 10) {
                     ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 78)
                     stepCount.font(.caption2)
                 }

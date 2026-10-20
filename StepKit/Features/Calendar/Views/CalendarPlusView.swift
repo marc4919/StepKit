@@ -278,17 +278,23 @@ struct CalendarPlusView: View {
     private var monthSection: some View {
         Section {
             DecoratedCalendarView(selectedDate: $selectedDate, marks: marks)
-                .frame(minHeight: 380)
                 .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-            ViewThatFits {
-                HStack(spacing: 16) { legend }
-                VStack(alignment: .leading, spacing: 6) { legend }
-            }
-            .font(.caption)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha deseada")
         } header: {
-            Text("Mes").textCase(nil)
+            // Leyenda en la cabecera: siempre legible, sin ocupar una fila propia.
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text("Mes")
+                    Spacer()
+                    HStack(spacing: 10) { legend }.font(.caption)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Mes")
+                    HStack(spacing: 10) { legend }.font(.caption)
+                }
+            }
+            .textCase(nil)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Mes. Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha deseada")
         } footer: {
             Text("Solo las sesiones reservadas son compromisos. Las sugerencias y la fecha deseada son orientativas.")
         }

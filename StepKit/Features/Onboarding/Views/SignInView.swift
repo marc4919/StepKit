@@ -40,6 +40,7 @@ struct SignInView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 18) {
+                        Spacer(minLength: 12)
                         brandingSection
                         benefitsSection.padding(.horizontal, 28)
                         Spacer(minLength: 12)

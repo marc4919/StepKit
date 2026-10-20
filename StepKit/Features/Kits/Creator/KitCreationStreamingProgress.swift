@@ -31,7 +31,7 @@ struct KitCreationStreamingProgress: View {
     private var preparingView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                OrbitMark(height: 190).padding(.horizontal, 20)
+                OrbitMark(height: 190, animated: true).padding(.horizontal, 20)
                 Text("Dando forma a tu proyecto")
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
