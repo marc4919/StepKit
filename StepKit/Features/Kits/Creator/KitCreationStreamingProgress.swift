@@ -12,18 +12,37 @@ struct KitCreationStreamingProgress: View {
     @Binding var streamingState: KitStreamingState
     let onSave: () -> Void
     let onDiscard: () -> Void
+    @State private var shownProgress: Double = 0
+    /// Se pasa a «Tu plan» cuando la barra y el recorrido han terminado de verse.
+    @State private var showReview = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
+    private var targetProgress: Double {
+        if streamingState.isComplete { return 1 }
+        guard streamingState.kitTitle != nil else { return 0.12 }
+        guard let total = streamingState.totalSteps, total > 0 else { return 0.25 }
+        return 0.25 + 0.75 * Double(streamingState.steps.count) / Double(total)
+    }
 
     var body: some View {
         Group {
             if streamingState.hasError {
                 errorView
-            } else if streamingState.isComplete {
+            } else if showReview {
                 reviewView
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
             } else {
                 preparingView
             }
         }
-        .animation(.easeInOut, value: streamingState.isComplete)
+        .animation(.easeInOut(duration: 0.5), value: showReview)
+        .onChange(of: streamingState.isComplete) { _, complete in
+            if complete { scheduleReview() }
+        }
+        .onAppear {
+            if streamingState.isComplete { scheduleReview() }
+        }
     }
 
     // MARK: - Preparando
@@ -31,7 +50,8 @@ struct KitCreationStreamingProgress: View {
     private var preparingView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                OrbitMark(height: 190, animated: true).padding(.horizontal, 20)
+                // La esfera se forma mientras avanza la barra y el recorrido se traza al final.
+                OrbitMark(height: 190, buildProgress: shownProgress).padding(.horizontal, 20)
                 Text("Dando forma a tu proyecto")
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
@@ -46,9 +66,11 @@ struct KitCreationStreamingProgress: View {
                     phase(done: false, active: false, title: "Revisión", detail: "La harás tú antes de empezar")
                 }
                 .padding(.horizontal, 30)
-                ProgressView(value: streamingState.progress)
+                SmoothProgressBar(value: shownProgress)
                     .padding(.horizontal, 30)
+                    .accessibilityElement()
                     .accessibilityLabel("Progreso del plan")
+                    .accessibilityValue(Text(shownProgress, format: .percent.precision(.fractionLength(0))))
                 Text("Puedes cancelar: tu idea se conserva en el formulario.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -58,6 +80,35 @@ struct KitCreationStreamingProgress: View {
             .padding(.vertical)
         }
         .background { EntryBackground() }
+        .onAppear { advance(to: targetProgress) }
+        .onChange(of: targetProgress) { _, value in advance(to: value) }
+        .task {
+            // Avance lento mientras se espera el siguiente evento, sin pasar del siguiente tramo.
+            while !Task.isCancelled && !streamingState.isComplete {
+                try? await Task.sleep(for: .milliseconds(450))
+                let ceiling = min(0.97, targetProgress + 0.1)
+                if shownProgress < ceiling {
+                    advance(to: min(ceiling, shownProgress + 0.012), duration: 0.45)
+                }
+            }
+        }
+    }
+
+    private func scheduleReview() {
+        Task {
+            // Deja ver cómo se completa la barra y se traza el recorrido.
+            try? await Task.sleep(for: .milliseconds(reduceMotion ? 200 : 1400))
+            showReview = true
+        }
+    }
+
+    private func advance(to value: Double, duration: Double = 0.9) {
+        guard value > shownProgress else { return }
+        if reduceMotion {
+            shownProgress = value
+        } else {
+            withAnimation(.smooth(duration: duration)) { shownProgress = value }
+        }
     }
 
     private var stepsDetail: String {
@@ -219,5 +270,42 @@ struct KitCreationStreamingProgress: View {
             .padding(.vertical)
         }
         .background(Color(.systemGroupedBackground))
+    }
+}
+
+/// Barra de progreso suave con degradado de la marca y brillo que recorre la parte completada.
+private struct SmoothProgressBar: View {
+    var value: Double
+    @State private var shimmer = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width * max(0.02, min(1, value))
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.accentColor.opacity(0.14))
+                Capsule()
+                    .fill(LinearGradient(colors: [Color(red: 0.05, green: 0.50, blue: 1.0),
+                                                  Color(red: 0.45, green: 0.80, blue: 1.0)],
+                                         startPoint: .leading, endPoint: .trailing))
+                    .frame(width: width)
+                    .overlay(alignment: .leading) {
+                        if !reduceMotion {
+                            LinearGradient(colors: [.clear, .white.opacity(0.45), .clear],
+                                           startPoint: .leading, endPoint: .trailing)
+                                .frame(width: 60)
+                                .offset(x: shimmer ? width : -60)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .clipShape(Capsule())
+                    .shadow(color: Color.accentColor.opacity(0.35), radius: 6, y: 2)
+            }
+        }
+        .frame(height: 10)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.linear(duration: 1.6).repeatForever(autoreverses: false)) { shimmer = true }
+        }
     }
 }

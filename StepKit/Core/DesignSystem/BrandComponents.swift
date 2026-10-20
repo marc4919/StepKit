@@ -229,6 +229,9 @@ struct OrbitMark: View {
     var bloom = false
     /// Dibuja el recorrido al aparecer y deja la esfera flotando. Respeta «Reducir movimiento».
     var animated = false
+    /// Si se indica (0…1), la ilustración sigue un progreso externo: la esfera se forma
+    /// durante la mayor parte y el recorrido se traza al final.
+    var buildProgress: Double? = nil
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var drawn: CGFloat = 1
@@ -236,6 +239,21 @@ struct OrbitMark: View {
     @State private var appeared = true
 
     private var isAnimated: Bool { animated && !reduceMotion }
+
+    private var pathFraction: CGFloat {
+        guard let p = buildProgress else { return drawn }
+        return CGFloat(max(0, min(1, (p - 0.72) / 0.28)))
+    }
+
+    private var sphereScale: CGFloat {
+        guard let p = buildProgress else { return appeared ? 1 : 0.4 }
+        return CGFloat(0.15 + 0.85 * min(1, p / 0.75))
+    }
+
+    private var sphereOpacity: Double {
+        guard let p = buildProgress else { return appeared ? 1 : 0 }
+        return min(1, 0.25 + p * 1.5)
+    }
 
     /// Línea central trazada sobre el icono de la app (normalizada 0–1).
     private static let iconPoints: [CGPoint] = [
@@ -298,7 +316,7 @@ struct OrbitMark: View {
                                          center: .center, startRadius: 0, endRadius: h * 0.6))
                     .frame(width: h * 1.2, height: h * 1.2)
                     .position(spherePoint)
-                OrbitPathShape().trim(from: 0, to: drawn).stroke(LinearGradient(stops: [.init(color: Color(red: 0.05, green: 0.50, blue: 1.0).opacity(0), location: 0),
+                OrbitPathShape().trim(from: 0, to: pathFraction).stroke(LinearGradient(stops: [.init(color: Color(red: 0.05, green: 0.50, blue: 1.0).opacity(0), location: 0),
                                                    .init(color: Color(red: 0.05, green: 0.50, blue: 1.0), location: 0.2),
                                                    .init(color: Color(red: 0.32, green: 0.70, blue: 1.0), location: 0.55),
                                                    .init(color: Color(red: 0.62, green: 0.85, blue: 1.0).opacity(0.8), location: 0.82),
@@ -315,8 +333,8 @@ struct OrbitMark: View {
                         .position(point(on: path, at: t))
                 }
                 BrandSphere(size: sphereSize)
-                    .scaleEffect(appeared ? 1 : 0.4)
-                    .opacity(appeared ? 1 : 0)
+                    .scaleEffect(sphereScale)
+                    .opacity(sphereOpacity)
                     .offset(y: floating ? -sphereSize * 0.08 : sphereSize * 0.04)
                     .position(x: spherePoint.x, y: spherePoint.y - (milestones.isEmpty ? 0 : sphereSize * 0.32))
             }
@@ -324,7 +342,7 @@ struct OrbitMark: View {
         .frame(height: height)
         .accessibilityHidden(true)
         .onAppear {
-            guard isAnimated else { return }
+            guard isAnimated, buildProgress == nil else { return }
             drawn = 0
             appeared = false
             withAnimation(.easeInOut(duration: 1.1)) { drawn = 1 }
