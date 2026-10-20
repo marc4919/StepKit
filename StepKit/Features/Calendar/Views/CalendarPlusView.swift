@@ -185,7 +185,7 @@ struct CalendarPlusView: View {
         } header: {
             Text("Próximas sesiones")
                 .font(.title3.bold())
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color(.label))
                 .textCase(nil)
         }
     }

@@ -52,16 +52,21 @@ struct KitsHomeView: View {
             if activeKits.isEmpty && completedKits.isEmpty {
                 KitsEmptyView { openCreator() }
             } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 22) {
-                        ForEach(pendingResultKits) { kit in
+                // List para conservar el gesto clásico de deslizar para eliminar.
+                List {
+                    ForEach(pendingResultKits) { kit in
+                        Section {
                             PendingResultCard(kit: kit) {
                                 reviewingKit = kit
                             } onBackToPlan: {
                                 open(kit)
                             }
+                            .cardRow()
+                            .deletable { viewModel.prepareForDeletion(kit) }
                         }
-                        if let kit = continueKit {
+                    }
+                    if let kit = continueKit {
+                        Section {
                             ContinueCard(kit: kit, lastProgress: lastProgress(of: kit)) {
                                 if let step = kit.nextStep {
                                     continuingStep = step
@@ -71,18 +76,20 @@ struct KitsHomeView: View {
                             } onOpenKit: {
                                 open(kit)
                             }
-                        }
-                        if !otherKits.isEmpty {
-                            section(title: activeKits.count > 1 && continueKit != nil ? "Otros Kits en curso" : "En curso",
-                                    kits: otherKits)
-                        }
-                        if !confirmedKits.isEmpty {
-                            section(title: "Terminados", kits: confirmedKits)
+                            .cardRow()
+                            .deletable { viewModel.prepareForDeletion(kit) }
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.bottom, 30)
+                    if !otherKits.isEmpty {
+                        section(title: continueKit != nil ? "Otros Kits en curso" : "En curso", kits: otherKits)
+                    }
+                    if !confirmedKits.isEmpty {
+                        section(title: "Terminados", kits: confirmedKits)
+                    }
                 }
+                .listStyle(.insetGrouped)
+                .listSectionSpacing(22)
+                .scrollContentBackground(.hidden)
                 .background(alignment: .top) { BrandGlow() }
                 .background(Color(.systemGroupedBackground))
             }
@@ -113,27 +120,22 @@ struct KitsHomeView: View {
     }
 
     private func section(title: String, kits: [GoalEntity]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        Section {
+            ForEach(kits) { kit in
+                Button { open(kit) } label: { KitHomeRow(kit: kit, lastProgress: lastProgress(of: kit)) }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("kit.row")
+                    .accessibilityLabel("Kit: \(kit.title)")
+                    .accessibilityValue("\(kit.completedStepCount) de \(kit.activeStepCount) pasos")
+                    .listRowInsets(EdgeInsets())
+                    .alignmentGuide(.listRowSeparatorLeading) { _ in 72 }
+                    .deletable { viewModel.prepareForDeletion(kit) }
+            }
+        } header: {
             Text(title)
                 .font(.title3.bold())
-                .padding(.horizontal, 4)
-                .accessibilityAddTraits(.isHeader)
-            VStack(spacing: 0) {
-                ForEach(Array(kits.enumerated()), id: \.element.id) { index, kit in
-                    Button { open(kit) } label: { KitHomeRow(kit: kit, lastProgress: lastProgress(of: kit)) }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("kit.row")
-                        .contextMenu {
-                            Button("Eliminar Kit", systemImage: "trash", role: .destructive) {
-                                viewModel.prepareForDeletion(kit)
-                            }
-                        }
-                    if index < kits.count - 1 {
-                        Divider().padding(.leading, 72)
-                    }
-                }
-            }
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
+                .foregroundStyle(Color(.label))
+                .textCase(nil)
         }
     }
 
@@ -163,6 +165,8 @@ private struct ContinueCard: View {
         VStack(alignment: .leading, spacing: 16) {
             Button(action: onOpenKit) { header.contentShape(.rect) }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Kit: \(kit.title)")
+                .accessibilityValue("\(kit.completedStepCount) de \(kit.activeStepCount) pasos")
                 .accessibilityHint("Abre el plan del Kit")
                 .accessibilityIdentifier("kit.row")
             if lastProgress != nil || kit.nextStep != nil {
@@ -196,8 +200,6 @@ private struct ContinueCard: View {
         }
         .padding(18)
         .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 26))
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("kit.continueCard")
     }
 
     private var header: some View {
@@ -286,6 +288,8 @@ private struct PendingResultCard: View {
                 ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 70)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(kit.title).font(.title2.bold())
+                        .accessibilityIdentifier("kit.row")
+                        .accessibilityLabel("Kit: \(kit.title)")
                     Text("\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados")
                         .foregroundStyle(.secondary)
                     Text("Resultado sin confirmar")
@@ -455,5 +459,24 @@ extension GoalEntity {
     /// Último cambio en el Kit o en cualquiera de sus pasos.
     var lastActivity: Date {
         max(updatedAt, steps.map(\.updatedAt).max() ?? .distantPast)
+    }
+}
+
+private extension View {
+    /// Fila de List que muestra una tarjeta propia sin fondo ni separadores del sistema.
+    func cardRow() -> some View {
+        listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+    }
+
+    /// Deslizar para eliminar y menú contextual, como en la lista clásica.
+    func deletable(_ action: @escaping () -> Void) -> some View {
+        swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button("Eliminar", systemImage: "trash", action: action).tint(.red)
+        }
+        .contextMenu {
+            Button("Eliminar Kit", systemImage: "trash", role: .destructive, action: action)
+        }
     }
 }

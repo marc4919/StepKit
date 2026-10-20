@@ -250,6 +250,7 @@ struct StepDetailView: View {
                 .frame(maxWidth: .infinity)
         }
         .accessibilityIdentifier("step.toggleCompletion")
+        .accessibilityValue(stepEntity.isCompleted ? "Completado" : "Pendiente")
     }
 
     private var saveProgressButton: some View {

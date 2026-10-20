@@ -292,6 +292,7 @@ final class StepKitUITests: XCTestCase {
 
     @MainActor
     private func signOutFromProfile() {
+        revealTabBar()
         app.tabBars.buttons["Perfil"].tap()
         let signOut = element(Identifier.signOut)
         XCTAssertTrue(signOut.waitForExistence(timeout: defaultTimeout))
@@ -302,8 +303,21 @@ final class StepKitUITests: XCTestCase {
         confirmation.tap()
     }
 
+    /// v4.4 oculta la barra de pestañas dentro de un paso: se vuelve atrás hasta verla.
+    @MainActor
+    private func revealTabBar() {
+        var remainingBackNavigation = 3
+        while !app.tabBars.firstMatch.exists, remainingBackNavigation > 0 {
+            let back = app.navigationBars.buttons.firstMatch
+            guard back.exists else { break }
+            back.tap()
+            remainingBackNavigation -= 1
+        }
+    }
+
     @MainActor
     private func returnToKitsRoot() {
+        revealTabBar()
         app.tabBars.buttons["Kits"].tap()
         var remainingBackNavigation = 3
         while kitRows.count == 0, remainingBackNavigation > 0 {
