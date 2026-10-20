@@ -12,6 +12,7 @@ struct WelcomeView: View {
     var onFinish: () -> Void
     @State private var page = 0
     @State private var artScale: CGFloat = 1
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let titles = ["Un objetivo grande.\nUn primer paso claro.",
                           "Un plan que puedes ajustar",
@@ -25,8 +26,7 @@ struct WelcomeView: View {
             Text("StepKit")
                 .font(.title.bold())
                 .foregroundStyle(.tint)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity)
                 .padding(.top, 8)
                 .accessibilityAddTraits(.isHeader)
             TabView(selection: $page) {
@@ -67,38 +67,50 @@ struct WelcomeView: View {
         }
     }
 
-    /// Las tres páginas comparten la misma estructura y alturas: ilustración arriba,
-    /// título y texto alineados a la izquierda y tres filas de detalle.
+    /// Las tres páginas comparten estructura y alturas: ilustración animada arriba,
+    /// título y texto centrados y tres filas que entran escalonadas.
     private func pageContent(_ index: Int) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+        let current = page == index
+        return ScrollView {
+            VStack(spacing: 0) {
                 Group {
                     switch index {
-                    case 0: OrbitMark(height: artHeight)
+                    case 0: OrbitMark(height: artHeight, animated: true)
                     // Con hitos la esfera sube: se dibuja algo más baja para que no se corte.
-                    case 1: OrbitMark(height: artHeight * 0.78, milestones: [0.2, 0.42, 0.66])
+                    case 1: OrbitMark(height: artHeight * 0.78, milestones: [0.2, 0.42, 0.66], animated: true)
                             .padding(.top, artHeight * 0.18)
-                    default: resumeArt
+                    default: resumeArt(current: current)
                     }
                 }
                 .frame(height: artHeight)
                 .frame(maxWidth: .infinity)
-                VStack(alignment: .leading, spacing: 10) {
+                .id("art-\(index)-\(current)") // vuelve a animar cada vez que la página se muestra
+                VStack(spacing: 10) {
                     Text(titles[index])
                         .font(.largeTitle.bold())
+                        .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(subtitles[index])
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
+                .frame(maxWidth: 480)
+                .padding(.horizontal, 28)
                 .padding(.top, 12)
-                VStack(spacing: 14) {
-                    ForEach(rows[index], id: \.text) { row in
-                        WelcomeFeatureRow(symbol: row.symbol, color: row.color, text: row.text)
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(rows[index].enumerated()), id: \.element.text) { offset, row in
+                        WelcomeFeatureRow(symbol: row.symbol, color: row.color, text: row.text,
+                                          bounce: current)
+                            .opacity(current || reduceMotion ? 1 : 0)
+                            .offset(y: current || reduceMotion ? 0 : 14)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.8)
+                                .delay(current ? 0.35 + 0.12 * Double(offset) : 0), value: current)
                     }
                 }
+                .padding(18)
+                .frame(maxWidth: 480)
+                .background(Color(.secondarySystemGroupedBackground).opacity(0.7), in: .rect(cornerRadius: 22))
                 .padding(.horizontal, 24)
                 .padding(.top, 22)
             }
@@ -125,9 +137,9 @@ struct WelcomeView: View {
         ]
     }
 
-    private var resumeArt: some View {
+    private func resumeArt(current: Bool) -> some View {
         ZStack {
-            OrbitMark(height: artHeight)
+            OrbitMark(height: artHeight, animated: true)
             HStack(spacing: 10) {
                 IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
                 Text("Dos imágenes listas.\nFaltan material y permisos.").font(.footnote)
@@ -136,6 +148,9 @@ struct WelcomeView: View {
             .background(.regularMaterial, in: .rect(cornerRadius: 16))
             .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
             .offset(x: 30, y: artHeight * 0.38)
+            .scaleEffect(current || reduceMotion ? 1 : 0.85)
+            .opacity(current || reduceMotion ? 1 : 0)
+            .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(current ? 1.0 : 0), value: current)
             .accessibilityHidden(true)
         }
     }
@@ -145,10 +160,18 @@ struct WelcomeFeatureRow: View {
     var symbol: String
     var color: Color
     var text: String
+    /// Cambiarlo hace rebotar el símbolo (efecto nativo de SF Symbols).
+    var bounce = false
 
     var body: some View {
         HStack(spacing: 14) {
-            IconChip(symbol: symbol, color: color, size: 40)
+            Image(systemName: symbol)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(color)
+                .symbolEffect(.bounce, value: bounce)
+                .frame(width: 40, height: 40)
+                .background(color.opacity(0.14), in: .circle)
+                .accessibilityHidden(true)
             Text(text).font(.body).fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }

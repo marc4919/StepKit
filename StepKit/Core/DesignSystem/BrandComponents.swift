@@ -227,7 +227,15 @@ struct OrbitMark: View {
     var height: CGFloat = 160
     var milestones: [CGFloat] = []
     var bloom = false
+    /// Dibuja el recorrido al aparecer y deja la esfera flotando. Respeta «Reducir movimiento».
+    var animated = false
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var drawn: CGFloat = 1
+    @State private var floating = false
+    @State private var appeared = true
+
+    private var isAnimated: Bool { animated && !reduceMotion }
 
     /// Línea central trazada sobre el icono de la app (normalizada 0–1).
     private static let iconPoints: [CGPoint] = [
@@ -248,7 +256,7 @@ struct OrbitMark: View {
     }
 
     /// Prolonga los extremos hasta los bordes y suaviza con Catmull-Rom → Bézier.
-    private static func logoPath(_ w: CGFloat, _ h: CGFloat) -> Path {
+    fileprivate static func logoPath(_ w: CGFloat, _ h: CGFloat) -> Path {
         let m = map(w, h)
         var pts = iconPoints.map(m)
         let a0 = pts[1], a1 = pts[0]
@@ -290,7 +298,7 @@ struct OrbitMark: View {
                                          center: .center, startRadius: 0, endRadius: h * 0.6))
                     .frame(width: h * 1.2, height: h * 1.2)
                     .position(spherePoint)
-                path.stroke(LinearGradient(stops: [.init(color: Color(red: 0.05, green: 0.50, blue: 1.0).opacity(0), location: 0),
+                OrbitPathShape().trim(from: 0, to: drawn).stroke(LinearGradient(stops: [.init(color: Color(red: 0.05, green: 0.50, blue: 1.0).opacity(0), location: 0),
                                                    .init(color: Color(red: 0.05, green: 0.50, blue: 1.0), location: 0.2),
                                                    .init(color: Color(red: 0.32, green: 0.70, blue: 1.0), location: 0.55),
                                                    .init(color: Color(red: 0.62, green: 0.85, blue: 1.0).opacity(0.8), location: 0.82),
@@ -302,17 +310,37 @@ struct OrbitMark: View {
                     Circle().fill(.white).frame(width: lw * 2.2, height: lw * 2.2)
                         .overlay(Circle().fill(Color.accentColor).padding(lw * 0.5))
                         .shadow(color: Color.accentColor.opacity(0.4), radius: 4)
+                        .scaleEffect(appeared ? 1 : 0.01)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.75 * Double(t)), value: appeared)
                         .position(point(on: path, at: t))
                 }
                 BrandSphere(size: sphereSize)
+                    .scaleEffect(appeared ? 1 : 0.4)
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: floating ? -sphereSize * 0.08 : sphereSize * 0.04)
                     .position(x: spherePoint.x, y: spherePoint.y - (milestones.isEmpty ? 0 : sphereSize * 0.32))
             }
         }
         .frame(height: height)
         .accessibilityHidden(true)
+        .onAppear {
+            guard isAnimated else { return }
+            drawn = 0
+            appeared = false
+            withAnimation(.easeInOut(duration: 1.1)) { drawn = 1 }
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.75)) { appeared = true }
+            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true).delay(1.2)) { floating = true }
+        }
     }
 
     private func point(on path: Path, at t: CGFloat) -> CGPoint {
         path.trimmedPath(from: 0, to: max(0.001, t)).currentPoint ?? .zero
+    }
+}
+
+/// Recorrido del logo como `Shape`, para poder animar su trazo con `trim`.
+private struct OrbitPathShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        OrbitMark.logoPath(rect.width, rect.height)
     }
 }

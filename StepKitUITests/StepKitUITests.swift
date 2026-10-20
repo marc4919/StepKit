@@ -245,10 +245,13 @@ final class StepKitUITests: XCTestCase {
         guard action.waitForExistence(timeout: 3) else { return }
 
         XCTAssertTrue(app.staticTexts["Un objetivo grande.\nUn primer paso claro."].exists)
-        action.tap()
-        XCTAssertTrue(app.staticTexts["Un plan que puedes ajustar"].firstMatch.waitForExistence(timeout: defaultTimeout))
-        action.tap()
-        XCTAssertTrue(app.staticTexts["Vuelve con un paso claro"].waitForExistence(timeout: defaultTimeout))
+        // Las páginas vecinas ya están en la jerarquía: se avanza hasta ver «Empezar».
+        var remainingTaps = 6
+        while action.label != "Empezar", remainingTaps > 0 {
+            action.tap()
+            _ = waitUntil(timeout: 2) { action.label == "Empezar" }
+            remainingTaps -= 1
+        }
         XCTAssertEqual(action.label, "Empezar")
         action.tap()
     }

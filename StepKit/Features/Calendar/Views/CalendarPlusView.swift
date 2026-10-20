@@ -187,8 +187,11 @@ struct CalendarPlusView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    Button("Crear un Kit", systemImage: "plus") { showingKitCreator = true }
-                        .buttonStyle(.borderedProminent)
+                    Button { showingKitCreator = true } label: {
+                        Text("Crear un Kit").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                         .accessibilityIdentifier("calendar.createKit")
                 }
                 .padding(.vertical, 6)

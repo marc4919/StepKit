@@ -382,6 +382,8 @@ private struct KitHomeRow: View {
 struct KitsEmptyView: View {
     let onCreate: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var copyVisible = false
     @State private var size = CGSize(width: 400, height: 800)
     private var wide: Bool { size.width > size.height }
 
@@ -389,14 +391,14 @@ struct KitsEmptyView: View {
         Group {
             if wide {
                 HStack(spacing: 20) {
-                    OrbitMark(height: min(size.height * 0.62, 260)).frame(maxWidth: .infinity)
+                    OrbitMark(height: min(size.height * 0.62, 260), animated: true).frame(maxWidth: .infinity)
                     VStack(spacing: 12) { copy }.frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal)
             } else {
                 ScrollView {
                     VStack(spacing: 18) {
-                        OrbitMark(height: typeSize.isAccessibilitySize ? 160 : 230)
+                        OrbitMark(height: typeSize.isAccessibilitySize ? 160 : 230, animated: true)
                         copy
                     }
                     .padding(.horizontal)
@@ -407,9 +409,19 @@ struct KitsEmptyView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background { EntryBackground() }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .onAppear {
+            if reduceMotion { copyVisible = true; return }
+            withAnimation(.easeOut(duration: 0.6).delay(0.9)) { copyVisible = true }
+        }
     }
 
     @ViewBuilder private var copy: some View {
+        copyContent
+            .opacity(copyVisible ? 1 : 0)
+            .offset(y: copyVisible ? 0 : 12)
+    }
+
+    @ViewBuilder private var copyContent: some View {
         Text("Haz espacio a tu\npróximo proyecto")
             .font(.largeTitle.bold())
             .multilineTextAlignment(.center)

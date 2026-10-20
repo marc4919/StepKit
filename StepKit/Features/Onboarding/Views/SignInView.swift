@@ -65,7 +65,7 @@ struct SignInView: View {
     // MARK: - Branding Section
     private var brandingSection: some View {
         VStack(spacing: 8) {
-            OrbitMark(height: wide ? min(size.height * 0.5, 220) : 190)
+            OrbitMark(height: wide ? min(size.height * 0.5, 220) : 190, animated: true)
                 .padding(.horizontal, 40)
             Text("StepKit")
                 .font(.largeTitle.bold())
