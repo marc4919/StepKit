@@ -34,6 +34,7 @@ struct KitDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
+                assistantAccess
                 Picker("Vista", selection: $segment) {
                     Text("Plan").tag(0)
                     Text("Registro").tag(1)
@@ -111,6 +112,35 @@ struct KitDetailView: View {
             MetaChip(symbol: Symbols.wantedDate, text: date.formatted(.dateTime.day().month(.abbreviated)),
                      color: MetaTint.date)
         }
+    }
+
+    /// Acceso al asistente del Kit con sus conversaciones (también las abiertas desde un paso).
+    private var assistantAccess: some View {
+        let conversations = KitAssistantStore.shared.conversations(for: kitEntity.id)
+        return NavigationLink {
+            KitAssistantHubView(kit: kitEntity)
+        } label: {
+            HStack(spacing: 12) {
+                IconChip(symbol: Symbols.assistant, color: .accentColor, size: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Asistente").font(.headline).foregroundStyle(.primary)
+                    Text(conversations.isEmpty
+                         ? "Ayuda para replantear el plan o un paso"
+                         : conversations.count == 1 ? "1 conversación" : "\(conversations.count) conversaciones")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("kit.assistant")
     }
 
     // MARK: - Plan

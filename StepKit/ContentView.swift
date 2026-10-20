@@ -20,9 +20,6 @@ struct ContentView: View {
             Tab("Calendario", systemImage: Symbols.calendar){
                 CalendarPlusView()
             }
-            Tab("Asistente", systemImage: Symbols.assistant){
-                TrainerView()
-            }
             Tab("Perfil", systemImage: Symbols.profile){
                 ProfileView()
             }

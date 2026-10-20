@@ -19,7 +19,11 @@ enum DesignFixtureScenario: String {
     case blocked       // paso 2 del portfolio, bloqueado
     case confirmed     // un Kit terminado con el resultado confirmado y otro pendiente
     case calendar      // pestaña Calendario con sesiones reservadas
-    case assistant     // pestaña Asistente
+    case assistant     // asistente del Kit: lista de conversaciones
+    case assistantKit  // Kit con el acceso al asistente
+    case assistantStep // paso 3 con «Ayúdame con este paso»
+    case assistantChat // asistente abierto desde el paso 3
+    case assistantProposal // propuesta: mover el paso 3 obliga a mover el 4
     case kit           // plan del portfolio
     case welcome       // bienvenida
     case calendarEmpty // Calendario sin Kits
@@ -28,6 +32,10 @@ enum DesignFixtureScenario: String {
     case profile       // pestaña Perfil
 
     static let argument = "-StepKitDesignFixtures"
+
+    var isAssistant: Bool {
+        [.assistant, .assistantKit, .assistantStep, .assistantChat, .assistantProposal].contains(self)
+    }
 
     static var current: DesignFixtureScenario? {
         let args = ProcessInfo.processInfo.arguments
@@ -53,10 +61,13 @@ struct DesignFixtureRoot: View {
                                      monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
         auth.updateDisplayName("Alex Martín")
         _authManager = State(initialValue: auth)
-        _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .assistant ? 2 : scenario == .profile ? 3 : 0)
+        _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .profile ? 3 : 0)
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
         DesignFixtureData.seed(scenario, into: container.mainContext)
+        if scenario.isAssistant {
+            DesignFixtureData.seedConversations(in: container.mainContext)
+        }
         _container = State(initialValue: container)
     }
 
@@ -80,14 +91,25 @@ struct DesignFixtureRoot: View {
             Tab("Kits", systemImage: Symbols.kits, value: 0) {
                 if scenario == .step || scenario == .blocked, let step = portfolioStep {
                     NavigationStack { StepDetailView(stepEntity: step, stepNumber: 2) }
-                } else if scenario == .kit, let kit = portfolioStep?.goal {
+                } else if scenario == .kit || scenario == .assistantKit, let kit = portfolioStep?.goal {
                     NavigationStack { KitDetailView(kitEntity: kit) }
+                } else if scenario == .assistant, let kit = portfolioStep?.goal {
+                    NavigationStack { KitAssistantHubView(kit: kit) }
+                } else if scenario == .assistantStep, let step = portfolioStep3 {
+                    NavigationStack { StepDetailView(stepEntity: step, stepNumber: 3) }
+                } else if scenario == .assistantChat, let step = portfolioStep3, let kit = step.goal {
+                    NavigationStack {
+                        KitAssistantChatView(kit: kit, conversation: DesignFixtureData.freshStepConversation(kit: kit, step: step))
+                    }
+                } else if scenario == .assistantProposal, let step = portfolioStep3, let kit = step.goal {
+                    NavigationStack {
+                        KitAssistantChatView(kit: kit, conversation: KitAssistantStore.shared.conversation(kit: kit, step: step))
+                    }
                 } else {
                     kits
                 }
             }
             Tab("Calendario", systemImage: Symbols.calendar, value: 1) { CalendarPlusView() }
-            Tab("Asistente", systemImage: Symbols.assistant, value: 2) { TrainerView() }
             Tab("Perfil", systemImage: Symbols.profile, value: 3) { ProfileView() }
             Tab(value: 4, role: .search) { SearchView() }
         }
@@ -95,6 +117,11 @@ struct DesignFixtureRoot: View {
         .modelContainer(container)
         .environment(authManager)
         .environment(AIConsentManager())
+    }
+
+    private var portfolioStep3: StepEntity? {
+        let kits = (try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []
+        return kits.first { $0.title == "Publicar mi portfolio" }?.orderedActiveSteps.dropFirst(2).first
     }
 
     private var portfolioStep: StepEntity? {
@@ -137,7 +164,17 @@ enum DesignFixtureData {
             insertPortfolio(into: context, blocked: false)
         case .blocked:
             insertPortfolio(into: context, blocked: true)
-        case .calendar, .assistant, .profile:
+        case .assistant, .assistantKit, .assistantStep, .assistantChat, .assistantProposal:
+            insertPortfolio(into: context, blocked: true)
+            if let kit = try? context.fetch(FetchDescriptor<GoalEntity>()).first,
+               let step3 = kit.orderedActiveSteps.dropFirst(2).first {
+                let noted = Date.now.addingTimeInterval(-86_400)
+                context.insert(ProgressEntryEntity(
+                    ownerID: owner, kitID: kit.id, stepID: step3.id, kind: .progress,
+                    note: "Borrador del contexto escrito; falta el resultado.", notedAt: noted,
+                    createdAt: noted, updatedAt: noted))
+            }
+        case .calendar, .profile:
             insertPortfolio(into: context, blocked: false)
             insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
             insertSessions(into: context)
@@ -195,6 +232,43 @@ enum DesignFixtureData {
                                          startsAt: saturday, durationMinutes: 30))
     }
 
+    /// Conversaciones de ejemplo del asistente del Kit «Publicar mi portfolio».
+    /// El init de la raíz se repite en cada evaluación de la escena: se siembra una sola vez
+    /// para no provocar un bucle de actualizaciones del store observado.
+    private static var didSeedConversations = false
+
+    static func seedConversations(in context: ModelContext) {
+        guard !didSeedConversations else { return }
+        didSeedConversations = true
+        let store = KitAssistantStore.shared
+        store.removeAll()
+        guard let kit = try? context.fetch(FetchDescriptor<GoalEntity>()).first(where: { $0.title == "Publicar mi portfolio" }),
+              let step3 = kit.orderedActiveSteps.dropFirst(2).first else { return }
+        let general = store.newConversation(kit: kit, title: "¿Dónde lo dejamos?")
+        general.viewModel.messages = [
+            ChatMessage(sender: .user, text: "¿Dónde lo dejamos?", timestamp: .now.addingTimeInterval(-86_400 * 2)),
+            ChatMessage(sender: .assistant, text: "Tienes elegidos los tres proyectos. En el inventario te falta el permiso de una captura del segundo caso; mientras llega, puedes avanzar el caso principal.", timestamp: .now.addingTimeInterval(-86_400 * 2)),
+        ]
+        let stepConversation = store.conversation(kit: kit, step: step3)
+        stepConversation.viewModel.messages = [
+            ChatMessage(sender: .user, text: "Este paso ya no encaja", timestamp: .now.addingTimeInterval(-600)),
+            ChatMessage(sender: .assistant, text: "Esta semana tienes menos tiempo del previsto. Te propongo mover el caso principal unos días; para mantener el orden, el siguiente caso también se mueve. Revisa la propuesta antes de aplicarla.", timestamp: .now.addingTimeInterval(-590)),
+        ]
+        if let proposal = PlanProposalBuilder.moveStep(step3, in: kit) {
+            stepConversation.proposals = [proposal]
+        }
+    }
+
+    /// Conversación nueva (sin mensajes) del paso, para enseñar el inicio del asistente.
+    private static var freshConversation: KitConversation?
+
+    static func freshStepConversation(kit: GoalEntity, step: StepEntity) -> KitConversation {
+        if let freshConversation { return freshConversation }
+        let created = KitConversation(kitID: kit.id, stepID: step.id, title: "Paso \(kit.position(of: step)) · \(step.stepTitle)")
+        freshConversation = created
+        return created
+    }
+
     private static func insertPortfolio(into context: ModelContext, blocked: Bool) {
         let item = portfolio()
         insert(item, into: context)
@@ -227,7 +301,7 @@ enum DesignFixtureData {
         let steps = titles.enumerated().map { index, item in
             StepEntity(stepTitle: item.0, descriptionShort: item.1, descriptionLong: item.1,
                        estimateMinutes: item.2,
-                       suggestedDeadline: Calendar.current.date(byAdding: .day, value: 4 + index * 5, to: .now),
+                       suggestedDeadline: Calendar.current.date(byAdding: .day, value: [4, 9, 12, 15, 23, 29, 34][index], to: .now),
                        effortLevel: item.3, order: index, isCompleted: index == 0,
                        updatedAt: .now.addingTimeInterval(-86_400))
         }

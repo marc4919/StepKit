@@ -16,6 +16,26 @@ struct AssistantIntent: Identifiable {
     let symbol: String
     let color: Color
 
+    /// Intenciones sobre un paso.
+    static let step: [AssistantIntent] = all + [
+        AssistantIntent(id: "split", title: "Ayúdame a dividir esta tarea",
+                        detail: "Partirla en tramos más pequeños", symbol: "square.split.2x1", color: .teal),
+        AssistantIntent(id: "fifteen", title: "¿Qué puedo avanzar en 15 minutos?",
+                        detail: "Un avance concreto para ahora", symbol: "timer", color: .orange),
+    ]
+
+    /// Intenciones sobre el Kit completo.
+    static let kit: [AssistantIntent] = [
+        AssistantIntent(id: "reduce-scope", title: "Necesito reducir el alcance",
+                        detail: "Quitar o juntar pasos sin perder el resultado", symbol: "scissors", color: .orange),
+        AssistantIntent(id: "where-left", title: "¿Dónde lo dejamos?",
+                        detail: "Recuperar el hilo con tu último avance", symbol: Symbols.note, color: .accentColor),
+        AssistantIntent(id: "change-date", title: "Quiero cambiar la fecha objetivo",
+                        detail: "Ver qué pasos se mueven y por qué", symbol: Symbols.wantedDate, color: .purple),
+        AssistantIntent(id: "still-sense", title: "¿Sigue teniendo sentido este plan?",
+                        detail: "Revisar el plan con lo que ya sabes", symbol: "questionmark.circle", color: .green),
+    ]
+
     static let all: [AssistantIntent] = [
         AssistantIntent(id: "less-time", title: "Tengo menos tiempo",
                         detail: "Buscar un tramo más pequeño para ahora", symbol: Symbols.time, color: .blue),
@@ -28,9 +48,9 @@ struct AssistantIntent: Identifiable {
     ]
 
     /// Mensaje que se envía al modelo; menciona el Kit y el paso para no depender de la memoria.
-    func prompt(kit: GoalEntity?) -> String {
+    func prompt(kit: GoalEntity?, step explicitStep: StepEntity? = nil) -> String {
         let kitName = kit?.title ?? "mi Kit"
-        let step = kit?.nextStep
+        let step = explicitStep ?? kit?.nextStep
         let stepText = step.map { "«\($0.stepTitle)» (\($0.estimateMinutes) min)" } ?? "el siguiente paso"
         switch id {
         case "less-time":
@@ -40,6 +60,18 @@ struct AssistantIntent: Identifiable {
         case "missing":
             let reason = step?.blockedReason.map { " Me frena: \($0)." } ?? ""
             return "Me falta algo para avanzar en \(stepText) de \(kitName).\(reason) ¿Cómo puedo seguir sin perder lo hecho?"
+        case "split":
+            return "Ayúdame a dividir \(stepText) de \(kitName) en tres o cuatro tramos pequeños y concretos."
+        case "fifteen":
+            return "Tengo 15 minutos. ¿Qué avance concreto puedo hacer ahora en \(stepText) de \(kitName)?"
+        case "reduce-scope":
+            return "Necesito reducir el alcance de \(kitName). ¿Qué pasos podría quitar o juntar sin perder el resultado?"
+        case "where-left":
+            return "¿Dónde lo dejé en \(kitName)? Resume mi último avance y dime el siguiente paso concreto."
+        case "change-date":
+            return "Quiero cambiar la fecha objetivo de \(kitName). ¿Qué pasos tendría que mover?"
+        case "still-sense":
+            return "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve."
         default:
             return "Creo que \(stepText) ya no encaja en \(kitName). ¿Qué cambio me propondrías? Lo decidiré yo."
         }
@@ -55,6 +87,13 @@ struct AssistantHomeView: View {
     let onSend: () -> Void
     let onIntent: (AssistantIntent) -> Void
     var onRetry: (() -> Void)?
+    var intents: [AssistantIntent] = AssistantIntent.all
+    var startTitle = "¿Por dónde seguimos?"
+    var startSubtitle = "Elige qué necesitas y revisamos tu siguiente paso."
+    /// Contexto visible (Kit o paso) sobre la conversación.
+    var context: String?
+    /// Contenido propio tras los mensajes: propuestas, acciones del paso…
+    var accessory: AnyView?
 
     private var lastIntentRetry: (() -> Void)? { isResponding ? nil : onRetry }
 
@@ -82,13 +121,14 @@ struct AssistantHomeView: View {
 
     private var start: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("¿Por dónde seguimos?")
+            contextChip
+            Text(startTitle)
                 .font(.largeTitle.bold())
                 .accessibilityAddTraits(.isHeader)
-            Text("Elige qué necesitas y revisamos tu siguiente paso.")
+            Text(startSubtitle)
                 .foregroundStyle(.secondary)
                 .padding(.bottom, 6)
-            ForEach(AssistantIntent.all) { intent in
+            ForEach(intents) { intent in
                 Button { onIntent(intent) } label: { IntentCard(intent: intent) }
                     .buttonStyle(.plain)
                     .disabled(isResponding)
@@ -104,6 +144,7 @@ struct AssistantHomeView: View {
 
     private var conversation: some View {
         LazyVStack(alignment: .leading, spacing: 18) {
+            contextChip
             ForEach(messages) { message in
                 switch message.sender {
                 case .user:
@@ -128,15 +169,28 @@ struct AssistantHomeView: View {
                 }
                 .font(.subheadline)
             }
+            if let accessory { accessory }
             Color.clear.frame(height: 1).id("bottom")
         }
         .padding()
     }
 
+    @ViewBuilder private var contextChip: some View {
+        if let context {
+            Label(context, systemImage: Symbols.kits)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.tint)
+                .lineLimit(1)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.accentColor.opacity(0.12), in: .capsule)
+        }
+    }
+
     private var composer: some View {
         HStack(spacing: 8) {
             Menu {
-                ForEach(AssistantIntent.all) { intent in
+                ForEach(intents) { intent in
                     Button(intent.title, systemImage: intent.symbol) { onIntent(intent) }
                 }
             } label: {

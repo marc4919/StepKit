@@ -21,6 +21,12 @@ struct StepDetailView: View {
     @State private var showingSaveProgress = false
     @State private var editingEntry: ProgressEntryEntity?
     @State private var hingePartiallyOpen = false
+    @State private var assistantLaunch: AssistantLaunch?
+
+    private struct AssistantLaunch: Identifiable {
+        let id = UUID()
+        let intent: AssistantIntent.ID?
+    }
 
     private var stepEntries: [ProgressEntryEntity] {
         allEntries.filter { $0.stepID == stepEntity.id && $0.ownerID == stepEntity.ownerID && $0.deletedAt == nil }
@@ -56,6 +62,12 @@ struct StepDetailView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                Button("Ayuda del paso", systemImage: Symbols.assistant) {
+                    assistantLaunch = AssistantLaunch(intent: nil)
+                }
+                .accessibilityIdentifier("step.assistant")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Editar paso", systemImage: "pencil") {
                     showingEditor = true
                 }
@@ -69,6 +81,20 @@ struct StepDetailView: View {
         }
         .sheet(isPresented: $showingSaveProgress) {
             SaveProgressSheet(step: stepEntity, stepNumber: stepNumber)
+        }
+        .sheet(item: $assistantLaunch) { launch in
+            if let kit = stepEntity.goal {
+                NavigationStack {
+                    KitAssistantChatView(kit: kit,
+                                         conversation: KitAssistantStore.shared.conversation(kit: kit, step: stepEntity),
+                                         initialIntent: launch.intent)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Cerrar") { assistantLaunch = nil }
+                            }
+                        }
+                }
+            }
         }
         .sheet(item: $editingEntry) { entry in
             EditProgressEntrySheet(entry: entry, stepLabel: "\(stepNumber) · \(stepEntity.stepTitle)")
@@ -95,6 +121,17 @@ struct StepDetailView: View {
                 ViewThatFits {
                     HStack(spacing: 8) { chips }
                     VStack(alignment: .leading, spacing: 8) { chips }
+                }
+                if !stepEntity.isCompleted, stepEntity.goal != nil {
+                    Button {
+                        assistantLaunch = AssistantLaunch(intent: nil)
+                    } label: {
+                        Label("Ayúdame con este paso", systemImage: Symbols.assistant)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("step.help")
                 }
                 if let reason = stepEntity.blockedReason {
                     blockedCards(reason: reason)
@@ -211,6 +248,11 @@ struct StepDetailView: View {
                     Text(reason).foregroundStyle(.secondary)
                 }
             }
+            Button("Me falta algo: pedir ayuda", systemImage: Symbols.assistant) {
+                assistantLaunch = AssistantLaunch(intent: "missing")
+            }
+            .font(.subheadline)
+            .accessibilityIdentifier("step.blockedHelp")
         }
         if let entry = lastProgress {
             PlainCard {
