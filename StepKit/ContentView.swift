@@ -30,6 +30,7 @@ struct ContentView: View {
             }
         }
         .tabViewStyle(.sidebarAdaptable)
+        .tabViewSearchActivation(.searchTabSelection)
         .onChange(of: selection) { _, tab in
             if tab != 3 { lastContentTab = tab }
         }

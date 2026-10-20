@@ -114,6 +114,7 @@ struct DesignFixtureRoot: View {
             Tab(value: 4, role: .search) { SearchView { tab = 0 } }
         }
         .tabViewStyle(.sidebarAdaptable)
+        .tabViewSearchActivation(.searchTabSelection)
         .modelContainer(container)
         .environment(authManager)
         .environment(AIConsentManager())
