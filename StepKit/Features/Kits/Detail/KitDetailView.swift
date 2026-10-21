@@ -183,6 +183,10 @@ private struct PlanStepRow: View {
             Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
                 .foregroundStyle(MetaTint.date)
         }
+        if let repetition = step.repetition {
+            Label(repetition.label, systemImage: "repeat")
+                .foregroundStyle(MetaTint.repeatTint)
+        }
         if state == .inProgress || state == .blocked {
             Text(state.label)
                 .font(.caption.weight(.semibold))

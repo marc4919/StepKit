@@ -29,6 +29,7 @@ enum Symbols {
 enum MetaTint {
     static let time = Color.blue
     static let effort = Color.orange
+    static let repeatTint = Color.teal
     static let date = Color.purple
     static let done = Color.green
 }

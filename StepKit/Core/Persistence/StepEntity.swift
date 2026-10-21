@@ -29,6 +29,10 @@ final class StepEntity {
     /// Motivo del bloqueo actual; `nil` si el paso no está bloqueado.
     var blockedReason: String?
     var blockedAt: Date?
+    /// Paso que se repite: "day" o "week", y cuántas sesiones. `nil` si es puntual.
+    /// `suggestedDeadline` es la primera sesión y `estimateMinutes`, lo que dura cada una.
+    var repeatEvery: String?
+    var repeatTimes: Int?
 
     var goal: GoalEntity?
     
@@ -89,6 +93,8 @@ final class StepEntity {
             deletedAt: dto.deletedAt
         )
         self.goal = goal
+        self.repeatEvery = dto.repeatEvery
+        self.repeatTimes = dto.repeatTimes
     }
     
     // MARK: - Conversion to Step (view model)
@@ -141,6 +147,8 @@ final class StepEntity {
             completed: isCompleted,
             blockedReason: blockedReason,
             blockedAt: blockedAt,
+            repeatEvery: repeatEvery,
+            repeatTimes: repeatTimes,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt
@@ -161,6 +169,8 @@ final class StepEntity {
         isCompleted = dto.completed
         blockedReason = dto.blockedReason
         blockedAt = dto.blockedAt
+        repeatEvery = dto.repeatEvery
+        repeatTimes = dto.repeatTimes
         createdAt = dto.createdAt ?? createdAt
         updatedAt = dto.updatedAt ?? updatedAt
         deletedAt = dto.deletedAt
@@ -188,5 +198,52 @@ final class StepEntity {
         self.goal = goal
         self.blockedReason = dto.blockedReason
         self.blockedAt = dto.blockedAt
+        self.repeatEvery = dto.repeatEvery
+        self.repeatTimes = dto.repeatTimes
     }
+}
+
+// MARK: - Repetición
+
+extension StepEntity {
+    var repetition: StepRepetition? {
+        StepRepetition(every: repeatEvery, times: repeatTimes)
+    }
+
+    /// Fechas de cada sesión (la primera es `suggestedDeadline`).
+    var sessionDates: [Date] {
+        guard let first = suggestedDeadline else { return [] }
+        return repetition?.dates(from: first) ?? [first]
+    }
+}
+
+/// Un paso que se repite: «Cada día · 7 veces», «Cada semana · 4 veces».
+struct StepRepetition: Hashable {
+    enum Every: String { case day, week }
+
+    let every: Every
+    let times: Int
+
+    init?(every: String?, times: Int?) {
+        guard let every = every.flatMap(Every.init(rawValue:)), let times, times > 1 else { return nil }
+        self.every = every
+        self.times = times
+    }
+
+    var label: String {
+        "\(every == .day ? "Cada día" : "Cada semana") · \(times) veces"
+    }
+
+    var shortLabel: String {
+        "\(times)× \(every == .day ? "días" : "semanas")"
+    }
+
+    func dates(from first: Date, calendar: Calendar = .current) -> [Date] {
+        (0..<times).compactMap {
+            calendar.date(byAdding: every == .day ? .day : .weekOfYear, value: $0, to: first)
+        }
+    }
+
+    /// Última sesión: hasta cuándo dura el hábito.
+    func lastDate(from first: Date) -> Date? { dates(from: first).last }
 }

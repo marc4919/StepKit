@@ -396,9 +396,15 @@ struct KitCreationStreamingProgress: View {
                                 .background(Color.accentColor.opacity(0.12), in: .circle)
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(step.stepTitle)
-                                Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
-                                    .font(.caption.weight(.medium))
-                                    .foregroundStyle(MetaTint.time)
+                                HStack(spacing: 10) {
+                                    Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
+                                        .foregroundStyle(MetaTint.time)
+                                    if let repetition = step.repetition?.repetition {
+                                        Label(repetition.label, systemImage: "repeat")
+                                            .foregroundStyle(MetaTint.repeatTint)
+                                    }
+                                }
+                                .font(.caption.weight(.medium))
                             }
                             Spacer(minLength: 0)
                         }

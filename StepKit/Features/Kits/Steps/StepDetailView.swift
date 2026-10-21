@@ -296,9 +296,17 @@ struct StepDetailView: View {
                  color: MetaTint.effort,
                  level: EffortLevel.fill(stepEntity.effortLevel))
         if let deadline = stepEntity.suggestedDeadline {
-            MetaChip(symbol: Symbols.calendar,
-                     text: deadline.formatted(.dateTime.day().month(.abbreviated)),
-                     color: MetaTint.date)
+            if let repetition = stepEntity.repetition, let last = repetition.lastDate(from: deadline) {
+                // Hábito: del primer al último día, y cuántas veces.
+                MetaChip(symbol: Symbols.calendar,
+                         text: "\(deadline.formatted(.dateTime.day().month(.abbreviated))) – \(last.formatted(.dateTime.day().month(.abbreviated)))",
+                         color: MetaTint.date)
+                MetaChip(symbol: "repeat", text: repetition.label, color: MetaTint.repeatTint)
+            } else {
+                MetaChip(symbol: Symbols.calendar,
+                         text: deadline.formatted(.dateTime.day().month(.abbreviated)),
+                         color: MetaTint.date)
+            }
         }
     }
 

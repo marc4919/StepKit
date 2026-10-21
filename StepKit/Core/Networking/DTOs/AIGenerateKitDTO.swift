@@ -138,6 +138,9 @@ struct StepDTO: Codable {
     let createdAt: Date?
     let updatedAt: Date?
     let deletedAt: Date?
+    /// Paso que se repite ("day" | "week") y cuántas sesiones; nil si es puntual.
+    var repeatEvery: String? = nil
+    var repeatTimes: Int? = nil
     
     /// Convierte el DTO a un modelo Step local
     func toStep() -> Step {

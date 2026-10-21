@@ -360,7 +360,7 @@ enum DesignFixtureData {
             ("Escribir el caso principal", "Contexto, tu aportación y el resultado del primer caso.", 60, "high"),
             ("Escribir los otros dos casos", "Mismo formato, más breves.", 90, "medium"),
             ("Montar la web", "Plantilla sencilla con los tres casos y contacto.", 120, "high"),
-            ("Pedir una revisión", "Una persona de confianza revisa textos y enlaces.", 20, "low"),
+            ("Repasar los textos en voz alta", "Lee un caso en voz alta y corrige lo que suene raro.", 15, "low"),
             ("Publicar y compartir", "Publica y envía el enlace a tres contactos.", 15, "low"),
         ]
         let kit = GoalEntity(planTitle: "Publicar mi portfolio", horizonDays: 40,
@@ -373,6 +373,9 @@ enum DesignFixtureData {
                        effortLevel: item.3, order: index, isCompleted: index == 0,
                        updatedAt: .now.addingTimeInterval(-86_400))
         }
+        // Un hábito: el repaso se repite cada día, cinco veces.
+        steps[5].repeatEvery = "day"
+        steps[5].repeatTimes = 5
         return (kit, steps)
     }
 

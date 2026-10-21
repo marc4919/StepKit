@@ -68,7 +68,8 @@ struct CalendarPlusView: View {
         }
         for kit in activeKits {
             for step in kit.orderedActiveSteps where !step.isCompleted {
-                if let date = step.suggestedDeadline { add(date, .suggestion) }
+                // Un paso que se repite marca cada una de sus sesiones.
+                for date in step.sessionDates { add(date, .suggestion) }
             }
             if let date = kit.dueDate { add(date, .wantedDate) }
         }
@@ -83,8 +84,7 @@ struct CalendarPlusView: View {
     private var stepsForSelectedDate: [StepEntity] {
         visibleGoalEntities.flatMap(\.orderedActiveSteps)
             .filter { step in
-                guard let deadline = step.suggestedDeadline else { return false }
-                return Calendar.current.isDate(deadline, inSameDayAs: selectedDate)
+                step.sessionDates.contains { Calendar.current.isDate($0, inSameDayAs: selectedDate) }
             }
     }
 
@@ -293,7 +293,7 @@ struct CalendarPlusView: View {
                     dayRow(symbol: step.isCompleted ? "checkmark.circle.fill" : "circle",
                            tint: step.isCompleted ? .green : .blue,
                            title: step.stepTitle,
-                           detail: "\(step.goal?.title ?? "") · Paso sugerido")
+                           detail: stepDayDetail(step))
                 }
             }
             ForEach(goalsForSelectedDate) { kit in
@@ -352,6 +352,15 @@ struct CalendarPlusView: View {
             return step.stepTitle
         }
         return kit?.title ?? "Sesión"
+    }
+
+    /// «Kit · Paso sugerido», o «Kit · Sesión 3 de 7» si el paso se repite.
+    private func stepDayDetail(_ step: StepEntity) -> String {
+        let kit = step.goal?.title ?? ""
+        guard let repetition = step.repetition,
+              let index = step.sessionDates.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: selectedDate) })
+        else { return "\(kit) · Paso sugerido" }
+        return "\(kit) · Sesión \(index + 1) de \(repetition.times)"
     }
 
     private func dayRow(symbol: String, tint: Color, title: String, detail: String) -> some View {

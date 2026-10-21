@@ -91,6 +91,8 @@ struct StreamStepOutput: Codable {
     let effortLevel: String
     let adaptsTo: String
     let blockedByPremium: Bool
+    /// Paso que se repite: {"every": "day"|"week", "times": N}; nil si es puntual.
+    var repetition: StreamRepeatOutput? = nil
     
     // El backend envía snake_case
     enum CodingKeys: String, CodingKey {
@@ -101,6 +103,7 @@ struct StreamStepOutput: Codable {
         case effortLevel = "effort_level"
         case adaptsTo = "adapts_to"
         case blockedByPremium = "blocked_by_premium"
+        case repetition = "repeat"
     }
     
     /// Convierte a Step local
@@ -122,6 +125,13 @@ struct StreamStepOutput: Codable {
             goalId: nil
         )
     }
+}
+
+struct StreamRepeatOutput: Codable, Hashable {
+    let every: String
+    let times: Int
+
+    var repetition: StepRepetition? { StepRepetition(every: every, times: times) }
 }
 
 struct StreamDescriptionOutput: Codable {
