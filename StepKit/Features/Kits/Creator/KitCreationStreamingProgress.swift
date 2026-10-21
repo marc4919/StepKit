@@ -31,6 +31,8 @@ struct KitCreationStreamingProgress: View {
     @State private var ringDrawn: CGFloat = 0
     @State private var contentRevealed = false
     @State private var carefulShownAt: Date?
+    /// Las preguntas entran después de que el aviso de cuidado se haya visto con calma.
+    @State private var questionsVisible = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
@@ -85,7 +87,7 @@ struct KitCreationStreamingProgress: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 // La esfera se forma mientras avanza la barra y, al terminar, despega.
-                OrbitMark(height: 190, buildProgress: shownProgress, liftOff: liftOff, hidesSphere: sphereInFlight)
+                OrbitMark(height: questionsVisible ? 120 : 190, buildProgress: shownProgress, liftOff: liftOff, hidesSphere: sphereInFlight)
                     .background {
                         if showCareful && !sphereInFlight {
                             CarefulHalo(diameter: 59 * (0.15 + 0.85 * shownProgress))
@@ -117,13 +119,24 @@ struct KitCreationStreamingProgress: View {
                         .padding(.horizontal, 30)
                         .transition(Self.swap)
                 }
-                if !streamingState.pendingQuestions.isEmpty {
+                if questionsVisible {
+                    // Los motivos quedan como recordatorio compacto encima de las preguntas.
+                    CarefulReasonChips(reasons: streamingState.carefulReasons)
+                        .padding(.horizontal, 24)
+                        .transition(.asymmetric(
+                            insertion: .opacity.animation(.easeOut(duration: 0.35).delay(0.3)),
+                            removal: .opacity))
                     KitQuestionsCard(questions: streamingState.pendingQuestions,
                                      onSubmit: onAnswer, onSkip: onSkipQuestions)
                         .padding(.horizontal, 24)
-                        .transition(Self.swap)
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .offset(y: 40)),
+                            removal: .opacity))
                 } else {
-                preparingDetails
+                    preparingDetails
+                        .transition(.asymmetric(
+                            insertion: .opacity.animation(.easeOut(duration: 0.4).delay(0.2)),
+                            removal: .opacity.combined(with: .scale(scale: 0.97, anchor: .top))))
                 }
                 Text("Puedes cancelar: tu idea se conserva en el formulario.")
                     .font(.footnote)
@@ -146,6 +159,15 @@ struct KitCreationStreamingProgress: View {
         .onChange(of: targetProgress) { _, value in advance(to: value) }
         .onChange(of: streamingState.isCareful) { _, careful in
             if careful { presentCareful() }
+        }
+        .onChange(of: streamingState.pendingQuestions.isEmpty) { _, empty in
+            if empty {
+                withAnimation(reduceMotion ? nil : .spring(response: 0.6, dampingFraction: 0.88)) {
+                    questionsVisible = false
+                }
+            } else {
+                Task { await revealQuestions() }
+            }
         }
         .onChange(of: streamingState.isRestarting) { _, restarting in
             guard restarting else { return }
@@ -244,9 +266,22 @@ struct KitCreationStreamingProgress: View {
 
     private var headline: String {
         if streamingState.isRestarting { return "Ajustando tu plan…" }
-        if !streamingState.pendingQuestions.isEmpty { return "Antes de prepararlo, cuéntame un poco más" }
+        if questionsVisible { return "Antes de prepararlo, cuéntame un poco más" }
         if showCareful { return "Preparando tu plan con más cuidado" }
         return "Dando forma a tu proyecto"
+    }
+
+    /// El aviso de cuidado se ve al menos ~2,5 s (los motivos entran y se leen) y luego
+    /// se recoge hacia arriba para dar paso a las preguntas.
+    private func revealQuestions() async {
+        if !reduceMotion {
+            let shown = carefulShownAt.map { Date.now.timeIntervalSince($0) } ?? 0
+            if shown < 2.5 { try? await Task.sleep(for: .seconds(2.5 - shown)) }
+        }
+        guard !streamingState.pendingQuestions.isEmpty else { return }
+        withAnimation(reduceMotion ? nil : .spring(response: 0.7, dampingFraction: 0.86)) {
+            questionsVisible = true
+        }
     }
 
     private func presentCareful() {
@@ -476,7 +511,7 @@ private struct CarefulReasonsList: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
 
-    private static let texts: [String: (text: String, symbol: String)] = [
+    static let texts: [String: (text: String, symbol: String)] = [
         "health": ("Afecta a tu salud", "heart"),
         "mental_health": ("Cuida tu bienestar emocional", "leaf"),
         "substances": ("Implica dejar o reducir una sustancia", "hand.raised"),
@@ -529,6 +564,27 @@ private struct CarefulReasonsList: View {
     }
 }
 
+/// Motivos del cuidado en una fila compacta mientras se responden las preguntas.
+private struct CarefulReasonChips: View {
+    let reasons: [String]
+
+    var body: some View {
+        let items = reasons.compactMap { CarefulReasonsList.texts[$0] }
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 8) { chips(items) }
+            VStack(alignment: .leading, spacing: 8) { chips(items) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder private func chips(_ items: [(text: String, symbol: String)]) -> some View {
+        ForEach(items, id: \.text) { item in
+            MetaChip(symbol: item.symbol, text: item.text, color: .accentColor)
+        }
+    }
+}
+
 /// Hasta 3 preguntas para afinar un Kit delicado: elegir una, varias o escribir.
 private struct KitQuestionsCard: View {
     let questions: [KitQuestion]
@@ -538,6 +594,8 @@ private struct KitQuestionsCard: View {
     @State private var multi: [String: Set<String>] = [:]
     @State private var text: [String: String] = [:]
     @FocusState private var focused: String?
+    @State private var appeared = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private func value(for question: KitQuestion) -> String {
         switch question.kind {
@@ -559,7 +617,7 @@ private struct KitQuestionsCard: View {
             Text("Con tus respuestas el plan se adapta mejor a ti. Puedes saltarlas.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            ForEach(questions) { question in
+            ForEach(Array(questions.enumerated()), id: \.element.id) { index, question in
                 VStack(alignment: .leading, spacing: 10) {
                     Text(question.text).font(.headline)
                     switch question.kind {
@@ -581,6 +639,10 @@ private struct KitQuestionsCard: View {
                         .accessibilityIdentifier("kitQuestion.\(question.id)")
                     }
                 }
+                .opacity(appeared ? 1 : 0)
+                .offset(y: appeared ? 0 : 16)
+                .animation(reduceMotion ? nil : .spring(response: 0.55, dampingFraction: 0.85)
+                    .delay(0.25 + 0.15 * Double(index)), value: appeared)
             }
             VStack(spacing: 10) {
                 Button {
@@ -601,6 +663,7 @@ private struct KitQuestionsCard: View {
         .padding(16)
         .background(Color.accentColor.opacity(0.07), in: .rect(cornerRadius: 20))
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.accentColor.opacity(0.15)))
+        .onAppear { appeared = true }
     }
 
     private func optionButton(_ option: String, in question: KitQuestion) -> some View {
