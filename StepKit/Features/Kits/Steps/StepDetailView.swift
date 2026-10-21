@@ -293,7 +293,8 @@ struct StepDetailView: View {
                  color: MetaTint.time)
         MetaChip(symbol: Symbols.effort,
                  text: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: stepEntity.effortLevel).lowercased())",
-                 color: MetaTint.effort)
+                 color: MetaTint.effort,
+                 level: EffortLevel.fill(stepEntity.effortLevel))
         if let deadline = stepEntity.suggestedDeadline {
             MetaChip(symbol: Symbols.calendar,
                      text: deadline.formatted(.dateTime.day().month(.abbreviated)),

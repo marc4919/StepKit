@@ -20,7 +20,7 @@ enum Symbols {
     static let profile = "person.crop.circle"
     static let wantedDate = "flag"
     static let time = "clock"
-    static let effort = "chart.bar"
+    static let effort = "cellularbars"
     static let note = "note.text"
     static let session = "calendar.badge.clock"
 }
@@ -115,9 +115,11 @@ struct MetaChip: View {
     var symbol: String
     var text: String
     var color: Color
+    /// Para símbolos con valor variable (barras de esfuerzo): 0…1.
+    var level: Double? = nil
     var body: some View {
         HStack(spacing: 5) {
-            Image(systemName: symbol).foregroundStyle(color)
+            Image(systemName: symbol, variableValue: level).foregroundStyle(color)
             Text(text).foregroundStyle(.primary).lineLimit(1)
         }
         .fixedSize(horizontal: true, vertical: false)
@@ -410,4 +412,15 @@ enum RiskTopic {
     }
 
     var tint: Color { self == .safety ? .orange : .accentColor }
+}
+
+/// Nivel de esfuerzo de un paso para rellenar las barras: bajo, medio o alto.
+enum EffortLevel {
+    static func fill(_ raw: String) -> Double {
+        switch raw.lowercased() {
+        case "low", "bajo": 0.2
+        case "high", "alto": 1
+        default: 0.5
+        }
+    }
 }
