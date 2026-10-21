@@ -159,3 +159,49 @@ struct EditProgressEntrySheet: View {
         .onAppear { note = entry.note }
     }
 }
+
+/// Nueva nota general del Kit. Aparece en el Registro y se sincroniza.
+struct KitNoteSheet: View {
+    let kit: GoalEntity
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.syncManager) private var syncManager
+    @State private var note = ""
+    @FocusState private var focused: Bool
+
+    private var trimmed: String { note.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Escribe una nota…", text: $note, axis: .vertical)
+                        .lineLimit(3...8)
+                        .focused($focused)
+                        .accessibilityIdentifier("kitNote.text")
+                } footer: {
+                    Text("Para apuntes que no son de un paso concreto. La verás en el Registro del Kit.")
+                }
+            }
+            .navigationTitle("Nota del Kit")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Guardar") {
+                        try? ProgressLog.addKitNote(trimmed, kit: kit, context: modelContext)
+                        syncManager?.handleDataChange()
+                        dismiss()
+                    }
+                    .disabled(trimmed.isEmpty)
+                    .accessibilityIdentifier("kitNote.save")
+                }
+            }
+            .onAppear { focused = true }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}

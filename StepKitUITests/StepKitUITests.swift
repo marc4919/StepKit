@@ -405,11 +405,12 @@ final class StepKitUITests: XCTestCase {
         let save = element(Identifier.kitEditSave)
         XCTAssertTrue(save.isEnabled)
         save.tap()
+        // El KPI se ve en los detalles del Kit, no en la pantalla del plan.
+        XCTAssertTrue(app.staticTexts[editedFixtureKPI].waitForExistence(timeout: defaultTimeout))
         let close = element(Identifier.kitInfoClose)
         XCTAssertTrue(close.waitForExistence(timeout: defaultTimeout))
         close.tap()
         XCTAssertTrue(app.staticTexts[editedFixtureTitle].waitForExistence(timeout: defaultTimeout))
-        XCTAssertTrue(app.staticTexts[editedFixtureKPI].waitForExistence(timeout: defaultTimeout))
         return checkpoint
     }
 
@@ -443,7 +444,7 @@ final class StepKitUITests: XCTestCase {
             .firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: defaultTimeout))
         row.tap()
-        XCTAssertTrue(app.staticTexts[editedFixtureKPI].waitForExistence(timeout: defaultTimeout))
+        XCTAssertTrue(app.staticTexts[editedFixtureTitle].waitForExistence(timeout: defaultTimeout))
 
         let firstStep = stepRows
             .matching(NSPredicate(format: "label CONTAINS %@", editedFirstStep))

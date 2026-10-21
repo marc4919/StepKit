@@ -19,6 +19,8 @@ struct KitDetailView: View {
     }
 
     @Bindable var kitEntity: GoalEntity
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.syncManager) private var syncManager
     @State private var presentedSheet: PresentedSheet?
     @State private var segment = 0
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -70,12 +72,15 @@ struct KitDetailView: View {
                     .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
             }
         }
+        .onAppear {
+            ProgressLog.importLegacyKitNotes(for: kitEntity, context: modelContext)
+        }
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
             case .information:
                 KitInfoSheetView(goalEntity: kitEntity)
             case .annotations:
-                KitAnnotationsView(goal: kitEntity.toGoal())
+                KitNoteSheet(kit: kitEntity)
             }
         }
         .sheet(item: $editingEntry) { entry in
@@ -95,9 +100,6 @@ struct KitDetailView: View {
                 Text(kitEntity.title)
                     .font(.title2.bold())
                     .fixedSize(horizontal: false, vertical: true)
-                if !kitEntity.kpi.isEmpty {
-                    Text(kitEntity.kpi).foregroundStyle(.secondary)
-                }
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 6) { headerChips }
                     VStack(alignment: .leading, spacing: 6) { headerChips }
@@ -132,15 +134,13 @@ struct KitDetailView: View {
                 VStack(spacing: 0) {
                     let steps = kitEntity.orderedActiveSteps
                     ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                        NavigationLink {
-                            StepDetailView(stepEntity: step, stepNumber: index + 1)
-                        } label: {
-                            PlanStepRow(step: step, number: index + 1,
-                                        state: step.progressState(hasEntries: kitEntries.contains { $0.stepID == step.id }))
+                        PlanStepRow(step: step, number: index + 1,
+                                    state: step.progressState(hasEntries: kitEntries.contains { $0.stepID == step.id })) {
+                            withAnimation(.snappy) {
+                                try? ProgressLog.toggleCompletion(of: step, context: modelContext)
+                            }
+                            syncManager?.handleDataChange()
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("step.row")
-                        .accessibilityHint("Toca dos veces para abrir los detalles del paso")
                         if index < steps.count - 1 {
                             Divider().padding(.leading, 52)
                         }
@@ -193,33 +193,57 @@ private struct PlanStepRow: View {
         }
     }
 
+    let onToggle: () -> Void
+
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: state.symbol)
-                .font(.title3)
-                .foregroundStyle(state.tint)
-                .frame(width: 28)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 5) {
-                Text(step.stepTitle)
-                    .foregroundStyle(state == .done ? .secondary : .primary)
-                    .multilineTextAlignment(.leading)
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 10) { meta }
-                    VStack(alignment: .leading, spacing: 4) { meta }
-                }
-                .font(.caption.weight(.medium))
+        HStack(alignment: .top, spacing: 0) {
+            // Como en Recordatorios: el círculo completa el paso sin entrar en él.
+            Button(action: onToggle) {
+                Image(systemName: state.symbol)
+                    .font(.title3)
+                    .foregroundStyle(state.tint)
+                    .contentTransition(.symbolEffect(.replace))
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
             }
-            Spacer(minLength: 0)
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
-                .accessibilityHidden(true)
+            .buttonStyle(.plain)
+            .padding(.leading, 4)
+            .padding(.top, 2)
+            .sensoryFeedback(.success, trigger: step.isCompleted) { _, done in done }
+            .accessibilityLabel(step.isCompleted ? "Marcar como pendiente" : "Marcar como completado")
+            .accessibilityValue("Paso \(number): \(step.stepTitle)")
+            .accessibilityIdentifier("step.rowToggle")
+            NavigationLink {
+                StepDetailView(stepEntity: step, stepNumber: number)
+            } label: {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(step.stepTitle)
+                            .foregroundStyle(state == .done ? .secondary : .primary)
+                            .strikethrough(state == .done, color: .secondary)
+                            .multilineTextAlignment(.leading)
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 10) { meta }
+                            VStack(alignment: .leading, spacing: 4) { meta }
+                        }
+                        .font(.caption.weight(.medium))
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
+                }
+                .padding(.vertical, 12)
+                .padding(.trailing, 12)
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Paso \(number): \(step.stepTitle). \(state.label)")
+            .accessibilityHint("Toca dos veces para abrir los detalles del paso")
+            .accessibilityIdentifier("step.row")
         }
-        .padding(12)
-        .contentShape(.rect)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Paso \(number): \(step.stepTitle). \(state.label)")
     }
 }
 

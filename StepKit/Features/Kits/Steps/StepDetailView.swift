@@ -22,6 +22,7 @@ struct StepDetailView: View {
     @State private var editingEntry: ProgressEntryEntity?
     @State private var hingePartiallyOpen = false
     @State private var assistantLaunch: AssistantLaunch?
+    @State private var showingAllProgress = false
 
     private struct AssistantLaunch: Identifiable {
         let id = UUID()
@@ -32,9 +33,12 @@ struct StepDetailView: View {
         allEntries.filter { $0.stepID == stepEntity.id && $0.ownerID == stepEntity.ownerID && $0.deletedAt == nil }
     }
 
-    private var lastProgress: ProgressEntryEntity? {
-        stepEntries.first { $0.kind == .progress && !$0.note.isEmpty }
+    /// Avances con nota, del más reciente al más antiguo. Guardar avance añade uno nuevo.
+    private var progressNotes: [ProgressEntryEntity] {
+        stepEntries.filter { $0.kind == .progress && !$0.note.isEmpty }
     }
+
+    private var lastProgress: ProgressEntryEntity? { progressNotes.first }
 
     private var state: StepProgressState {
         stepEntity.progressState(hasEntries: !stepEntries.isEmpty)
@@ -124,8 +128,8 @@ struct StepDetailView: View {
                 }
                 if let reason = stepEntity.blockedReason {
                     blockedCards(reason: reason)
-                } else if let entry = lastProgress {
-                    lastProgressCard(entry)
+                } else if !progressNotes.isEmpty {
+                    progressHistoryCard
                 }
                 if !stepEntity.descriptionLong.isEmpty, stepEntity.descriptionLong != stepEntity.descriptionShort {
                     PlainCard {
@@ -198,23 +202,48 @@ struct StepDetailView: View {
         .background(Color(.systemGroupedBackground))
     }
 
-    private func lastProgressCard(_ entry: ProgressEntryEntity) -> some View {
-        PlainCard {
-            HStack(alignment: .top, spacing: 12) {
-                Rectangle().fill(Color.accentColor).frame(width: 3).clipShape(.capsule)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Tu último avance").font(.headline)
-                    Text(entry.note).foregroundStyle(.secondary)
-                    HStack {
-                        Label(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Button("Editar nota", systemImage: "pencil") { editingEntry = entry }
-                            .font(.subheadline)
-                            .accessibilityIdentifier("progress.editNote")
+    /// Todos los avances del paso: el último destacado y los anteriores debajo.
+    private var progressHistoryCard: some View {
+        let notes = progressNotes
+        let visible = showingAllProgress ? notes : Array(notes.prefix(3))
+        return PlainCard {
+            HStack {
+                Text(notes.count == 1 ? "Tu avance" : "Tus avances").font(.headline)
+                Spacer()
+                if notes.count > 1 {
+                    Text("\(notes.count)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            ForEach(Array(visible.enumerated()), id: \.element.id) { index, entry in
+                HStack(alignment: .top, spacing: 12) {
+                    Rectangle()
+                        .fill(index == 0 ? Color.accentColor : Color.secondary.opacity(0.35))
+                        .frame(width: 3)
+                        .clipShape(.capsule)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(entry.note)
+                            .foregroundStyle(index == 0 ? .primary : .secondary)
+                        HStack {
+                            Label(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Button("Editar nota", systemImage: "pencil") { editingEntry = entry }
+                                .font(.subheadline)
+                                .labelStyle(.iconOnly)
+                                .accessibilityIdentifier("progress.editNote")
+                        }
                     }
                 }
+                .padding(.top, 4)
+            }
+            if notes.count > 3 {
+                Button(showingAllProgress ? "Ver menos" : "Ver todos (\(notes.count))") {
+                    withAnimation(.snappy) { showingAllProgress.toggle() }
+                }
+                .font(.subheadline)
             }
         }
     }
@@ -358,27 +387,8 @@ struct StepDetailView: View {
 
     // MARK: - Actions
     private func toggleStepCompletion() {
-        // Actualizar el StepEntity directamente
-        stepEntity.isCompleted.toggle()
-        stepEntity.markModified()  // También marca el goal parent
-
-        // Actualizar progreso del goal
-        if let goalEntity = stepEntity.goal {
-            goalEntity.progress = goalEntity.computedProgress
-            goalEntity.markModified()
-        }
-
-        // Guardar cambios
-        do {
-            try modelContext.save()
-
-            // Trigger sync después de cambio
-            syncManager?.handleDataChange()
-        } catch {
-            #if DEBUG
-            print("Step completion persistence failed")
-            #endif
-        }
+        try? ProgressLog.toggleCompletion(of: stepEntity, context: modelContext)
+        syncManager?.handleDataChange()
     }
 }
 

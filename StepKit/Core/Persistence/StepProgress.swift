@@ -94,6 +94,47 @@ enum ProgressLog {
         try context.save()
     }
 
+    /// Nota general del Kit: un registro sin paso, que se sincroniza como el resto del registro.
+    static func addKitNote(_ note: String, kit: GoalEntity, context: ModelContext, now: Date = Date()) throws {
+        let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        context.insert(ProgressEntryEntity(
+            ownerID: kit.ownerID, kitID: kit.id, stepID: nil, kind: .progress,
+            note: trimmed, notedAt: now, createdAt: now, updatedAt: now
+        ))
+        kit.markModified(at: now)
+        try context.save()
+    }
+
+    /// Las notas del Kit vivían solo en este iPhone (UserDefaults): pasan al registro para sincronizarse.
+    static func importLegacyKitNotes(for kit: GoalEntity, context: ModelContext, now: Date = Date()) {
+        let key = "kit_annotations_\(kit.id)"
+        guard let saved = UserDefaults.standard.stringArray(forKey: key), !saved.isEmpty else { return }
+        // Se guardaban de la más reciente a la más antigua; se conserva ese orden.
+        for (offset, note) in saved.enumerated() {
+            let date = now.addingTimeInterval(-Double(offset))
+            context.insert(ProgressEntryEntity(
+                ownerID: kit.ownerID, kitID: kit.id, stepID: nil, kind: .progress,
+                note: note, notedAt: date, createdAt: date, updatedAt: now
+            ))
+        }
+        kit.markModified(at: now)
+        if (try? context.save()) != nil {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+    }
+
+    /// Marca el paso como hecho o pendiente y actualiza el progreso del Kit.
+    static func toggleCompletion(of step: StepEntity, context: ModelContext) throws {
+        step.isCompleted.toggle()
+        step.markModified()
+        if let kit = step.goal {
+            kit.progress = kit.computedProgress
+            kit.markModified()
+        }
+        try context.save()
+    }
+
     /// Quita el bloqueo; el avance guardado se conserva.
     static func resolveBlock(for step: StepEntity, context: ModelContext, now: Date = Date()) throws {
         guard step.isBlocked else { return }

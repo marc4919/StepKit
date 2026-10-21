@@ -29,12 +29,13 @@ struct KitLogView: View {
         var result: [Item] = entries.map { entry in
             let step = kit.orderedActiveSteps.first { $0.id == entry.stepID }
             let blocked = entry.kind == .blocked
+            let kitNote = entry.stepID == nil
             return Item(
                 id: "entry-\(entry.id)",
                 date: entry.notedAt,
-                symbol: blocked ? Symbols.blocked : "circle.lefthalf.filled",
-                color: blocked ? .red : .accentColor,
-                title: blocked ? "Bloqueo anotado" : "Avance guardado",
+                symbol: blocked ? Symbols.blocked : kitNote ? Symbols.note : "circle.lefthalf.filled",
+                color: blocked ? .red : kitNote ? .orange : .accentColor,
+                title: blocked ? "Bloqueo anotado" : kitNote ? "Nota del Kit" : "Avance guardado",
                 text: entry.note.isEmpty ? "Sin nota." : entry.note,
                 stepNumber: step.map { kit.position(of: $0) },
                 entry: entry
@@ -81,9 +82,10 @@ struct KitLogView: View {
                 .padding(.top, 6)
             PlainCard {
                 Eyebrow(text: "Notas del Kit", color: .secondary)
-                Text("Apuntes generales que no pertenecen a un paso concreto.")
+                Text("Apuntes generales que no pertenecen a un paso concreto. Aparecen en tu recorrido.")
                     .foregroundStyle(.secondary)
                 Button("Añadir nota", systemImage: "plus", action: onAddNote)
+                    .accessibilityIdentifier("kit.addNote")
             }
             .padding(.top, 16)
         }
