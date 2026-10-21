@@ -14,6 +14,8 @@ final class ProgressEntryEntity {
     enum Kind: String, CaseIterable {
         case progress
         case blocked
+        /// Una sesión hecha de un paso que se repite (notedAt = día de la sesión).
+        case session
     }
 
     @Attribute(.unique) var id: UUID

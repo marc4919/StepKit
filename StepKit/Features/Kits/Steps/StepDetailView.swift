@@ -41,6 +41,11 @@ struct StepDetailView: View {
 
     private var lastProgress: ProgressEntryEntity? { progressNotes.first }
 
+    /// Días con la sesión del hábito hecha.
+    private var doneSessionDays: Set<DateComponents> {
+        Set(stepEntries.filter { $0.kind == .session }.map { DateComponents.day(of: $0.notedAt) })
+    }
+
     private var state: StepProgressState {
         stepEntity.progressState(hasEntries: !stepEntries.isEmpty)
     }
@@ -124,6 +129,16 @@ struct StepDetailView: View {
                     }
                 }
                 FlowLayout(spacing: 8) { chips }
+                if stepEntity.repetition != nil, !stepEntity.sessionDates.isEmpty {
+                    HabitSessionsCard(step: stepEntity, doneDays: doneSessionDays) { day in
+                        withAnimation(.snappy) {
+                            try? ProgressLog.toggleSession(of: stepEntity, on: day, context: modelContext)
+                        }
+                        syncManager?.handleDataChange()
+                    } onCompleteStep: {
+                        withAnimation { toggleStepCompletion() }
+                    }
+                }
                 if let reason = stepEntity.blockedReason {
                     blockedCards(reason: reason)
                 } else if !progressNotes.isEmpty {
@@ -487,5 +502,85 @@ struct ParagraphText: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Sesiones de un paso que se repite: cada círculo es un día (o una semana) y se marca al hacerlo.
+struct HabitSessionsCard: View {
+    let step: StepEntity
+    let doneDays: Set<DateComponents>
+    let onToggle: (Date) -> Void
+    let onCompleteStep: () -> Void
+
+    private var dates: [Date] { step.sessionDates }
+    private var doneCount: Int { dates.filter { doneDays.contains(DateComponents.day(of: $0)) }.count }
+
+    var body: some View {
+        PlainCard {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Tus sesiones").font(.headline)
+                Spacer()
+                Text("\(doneCount) de \(dates.count)")
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(doneCount == dates.count ? MetaTint.done : .secondary)
+                    .contentTransition(.numericText())
+            }
+            ProgressView(value: Double(doneCount), total: Double(max(dates.count, 1)))
+                .tint(MetaTint.repeatTint)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 7), spacing: 10) {
+                ForEach(dates, id: \.self) { date in
+                    sessionButton(date)
+                }
+            }
+            if doneCount == dates.count, !step.isCompleted {
+                Button(action: onCompleteStep) {
+                    Label("Has hecho todas las sesiones: completar paso", systemImage: "checkmark")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(MetaTint.done)
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+        }
+        .sensoryFeedback(.success, trigger: doneCount == dates.count)
+    }
+
+    private func sessionButton(_ date: Date) -> some View {
+        let done = doneDays.contains(DateComponents.day(of: date))
+        let isToday = Calendar.current.isDateInToday(date)
+        let weekly = step.repetition?.every == .week
+        return Button { onToggle(date) } label: {
+            VStack(spacing: 3) {
+                Text(weekly ? "S\((dates.firstIndex(of: date) ?? 0) + 1)"
+                            : date.formatted(.dateTime.weekday(.narrow)))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(isToday ? Color.accentColor : .secondary)
+                ZStack {
+                    Circle()
+                        .fill(done ? MetaTint.repeatTint : Color.clear)
+                    Circle()
+                        .strokeBorder(done ? MetaTint.repeatTint : (isToday ? Color.accentColor : Color.secondary.opacity(0.35)),
+                                      lineWidth: isToday && !done ? 2 : 1.5)
+                    if done {
+                        Image(systemName: "checkmark")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.white)
+                            .transition(.scale.combined(with: .opacity))
+                    } else {
+                        Text(date.formatted(.dateTime.day()))
+                            .font(.caption.weight(.medium).monospacedDigit())
+                            .foregroundStyle(.primary)
+                    }
+                }
+                .frame(width: 34, height: 34)
+            }
+            .frame(maxWidth: .infinity)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: done)
+        .accessibilityLabel("\(step.repetition?.sessionName(dates.firstIndex(of: date) ?? 0) ?? ""), \(date.formatted(.dateTime.weekday(.wide).day().month(.wide)))")
+        .accessibilityValue(done ? "Hecha" : "Pendiente")
+        .accessibilityAddTraits(done ? .isSelected : [])
     }
 }

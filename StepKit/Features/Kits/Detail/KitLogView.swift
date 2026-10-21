@@ -26,7 +26,7 @@ struct KitLogView: View {
     }
 
     private var items: [Item] {
-        var result: [Item] = entries.map { entry in
+        var result: [Item] = entries.filter { $0.kind != .session }.map { entry in
             let step = kit.orderedActiveSteps.first { $0.id == entry.stepID }
             let blocked = entry.kind == .blocked
             let kitNote = entry.stepID == nil

@@ -264,11 +264,8 @@ private struct PlanStepRow: View {
                             .foregroundStyle(state == .done ? .secondary : .primary)
                             .strikethrough(state == .done, color: .secondary)
                             .multilineTextAlignment(.leading)
-                        ViewThatFits(in: .horizontal) {
-                            HStack(spacing: 10) { meta }
-                            VStack(alignment: .leading, spacing: 4) { meta }
-                        }
-                        .font(.caption.weight(.medium))
+                        FlowLayout(spacing: 10) { meta }
+                            .font(.caption.weight(.medium))
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right")

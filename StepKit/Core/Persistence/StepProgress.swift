@@ -124,6 +124,31 @@ enum ProgressLog {
         }
     }
 
+    /// Marca o desmarca una sesión de un paso que se repite. Desmarcar deja la entrada borrada (sync).
+    static func toggleSession(of step: StepEntity, on day: Date, context: ModelContext, now: Date = Date()) throws {
+        guard let kit = step.goal else { return }
+        let calendar = Calendar.current
+        let kitID = kit.id
+        let existing = try context.fetch(FetchDescriptor<ProgressEntryEntity>(
+            predicate: #Predicate { $0.kitID == kitID }
+        )).first {
+            $0.stepID == step.id && $0.deletedAt == nil && $0.kind == .session
+                && calendar.isDate($0.notedAt, inSameDayAs: day)
+        }
+        if let existing {
+            existing.markModified(at: now)
+            existing.deletedAt = existing.updatedAt
+        } else {
+            context.insert(ProgressEntryEntity(
+                ownerID: step.ownerID, kitID: kit.id, stepID: step.id, kind: .session,
+                note: "", notedAt: calendar.startOfDay(for: day).addingTimeInterval(12 * 3600),
+                createdAt: now, updatedAt: now
+            ))
+        }
+        step.markModified(at: now)
+        try context.save()
+    }
+
     /// Marca el paso como hecho o pendiente y actualiza el progreso del Kit.
     static func toggleCompletion(of step: StepEntity, context: ModelContext) throws {
         step.isCompleted.toggle()
