@@ -233,7 +233,7 @@ struct KitCreationStreamingProgress: View {
     @ViewBuilder private var preparingDetails: some View {
                 if showCareful {
                     // En modo cuidado los motivos acompañan toda la preparación, encima de las fases.
-                    CarefulReasonsList(reasons: streamingState.carefulReasons, progress: shownProgress)
+                    CarefulReasonsList(reasons: streamingState.carefulReasons)
                         .padding(.horizontal, 24)
                         .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
                 }
@@ -506,8 +506,6 @@ private struct Reveal: ViewModifier {
 /// Motivos del modo cuidado. Sin colores de alarma: es acompañar, no juzgar.
 private struct CarefulReasonsList: View {
     let reasons: [String]
-    /// Progreso de la preparación: cada motivo se marca como atendido según avanza.
-    let progress: Double
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
 
@@ -526,9 +524,6 @@ private struct CarefulReasonsList: View {
         reasons.compactMap { Self.texts[$0] }
     }
 
-    private func attended(_ index: Int) -> Bool {
-        progress >= 0.2 + 0.18 * Double(index)
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -540,13 +535,6 @@ private struct CarefulReasonsList: View {
                     IconChip(symbol: item.symbol, color: .accentColor, size: 34)
                         .symbolEffect(.bounce, options: .nonRepeating, value: appeared)
                     Text(item.text).font(.headline)
-                    Spacer(minLength: 0)
-                    Image(systemName: attended(index) ? "checkmark.circle.fill" : "circle.dotted")
-                        .font(.title3)
-                        .foregroundStyle(attended(index) ? Color.accentColor : Color.secondary.opacity(0.6))
-                        .contentTransition(.symbolEffect(.replace))
-                        .symbolEffect(.pulse, isActive: !attended(index) && !reduceMotion)
-                        .accessibilityHidden(true)
                 }
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 10)
@@ -560,7 +548,6 @@ private struct CarefulReasonsList: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .onAppear { appeared = true }
-        .sensoryFeedback(.selection, trigger: items.indices.filter(attended).count)
     }
 }
 
