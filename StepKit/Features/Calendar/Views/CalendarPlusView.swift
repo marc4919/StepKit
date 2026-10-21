@@ -4,16 +4,23 @@
 //
 //  Created by Marc Garcia Teodoro on 7/12/25.
 //
-//  v4.4: próximas sesiones, fecha deseada, UICalendarView con leyenda y el día elegido.
-//  Solo las sesiones reservadas son compromisos; sugerencias y fecha deseada orientan.
+//  El mes arriba y la agenda del día elegido justo debajo. Al tocar un día la
+//  agenda se actualiza en el sitio y solo hace scroll si no se ve. Las próximas
+//  sesiones quedan como acceso al final. Solo las sesiones reservadas son
+//  compromisos; sugerencias y fecha prevista orientan.
 //
 
 import SwiftUI
 import SwiftData
 
+private enum CalendarRoute: Hashable {
+    case upcomingSessions
+}
+
 struct CalendarPlusView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(AuthManager.self) private var authManager
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted },
            sort: \GoalEntity.createdAt,
@@ -22,10 +29,14 @@ struct CalendarPlusView: View {
     @Query(sort: \WorkSessionEntity.startsAt) private var allSessions: [WorkSessionEntity]
 
     @State private var selectedDate: Date = Date()
+    @State private var revealToken = 0
+    @State private var dayVisible = true
     @State private var showingKitCreator = false
     @State private var showingBookSession = false
     @State private var reviewingSession: WorkSessionEntity?
     @State private var navigationPath = NavigationPath()
+
+    private static let dayAnchor = "calendar.day"
 
     private var ownerID: String? { authManager.currentUser?.id }
 
@@ -47,23 +58,13 @@ struct CalendarPlusView: View {
 
     private var upcomingSessions: [WorkSessionEntity] {
         let now = Date()
-        return Array(sessions.filter { $0.endsAt >= now }.prefix(5))
+        return sessions.filter { $0.endsAt >= now }
     }
 
-    /// Kit con la fecha deseada más próxima que aún no ha pasado.
-    private var nextWanted: (kit: GoalEntity, date: Date)? {
-        let today = Calendar.current.startOfDay(for: Date())
-        return activeKits
-            .compactMap { kit in kit.dueDate.map { (kit, $0) } }
-            .filter { $0.1 >= today }
-            .min { $0.1 < $1.1 }
-    }
-
-    private var marks: [DateComponents: CalendarMark] {
-        var result: [DateComponents: CalendarMark] = [:]
+    private var marks: [DateComponents: Set<CalendarMark>] {
+        var result: [DateComponents: Set<CalendarMark>] = [:]
         func add(_ date: Date, _ mark: CalendarMark) {
-            let key = DateComponents.day(of: date)
-            result[key] = max(result[key] ?? mark, mark)
+            result[DateComponents.day(of: date), default: []].insert(mark)
         }
         for kit in activeKits {
             for step in kit.orderedActiveSteps where !step.isCompleted {
@@ -94,6 +95,10 @@ struct CalendarPlusView: View {
         }
     }
 
+    private var selectedDayIsPast: Bool {
+        selectedDate < Calendar.current.startOfDay(for: Date())
+    }
+
     var body: some View {
         NavigationStack(path: $navigationPath) {
             Group {
@@ -105,6 +110,13 @@ struct CalendarPlusView: View {
             }
             .navigationTitle("Calendario")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Hoy") {
+                        selectedDate = Date()
+                        revealToken += 1
+                    }
+                    .accessibilityIdentifier("calendar.today")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button("Reservar sesión", systemImage: Symbols.session) { showingBookSession = true }
@@ -128,6 +140,9 @@ struct CalendarPlusView: View {
                     ContentUnavailableView("Paso no encontrado", systemImage: "exclamationmark.triangle")
                 }
             }
+            .navigationDestination(for: CalendarRoute.self) { _ in
+                UpcomingSessionsView(sessions: upcomingSessions, kits: visibleGoalEntities)
+            }
             .sheet(isPresented: $showingBookSession) {
                 BookSessionSheet(kits: activeKits, initialDate: selectedDate)
             }
@@ -139,9 +154,9 @@ struct CalendarPlusView: View {
             .fullScreenCover(isPresented: $showingKitCreator) {
                 KitCreatorView(onKitCreated: { _ in }, initialDate: selectedDate)
             }
-            .task(id: upcomingSessions.map(\.updatedAt)) {
+            .task(id: upcomingSessions.prefix(5).map(\.updatedAt)) {
                 // Las sesiones pueden llegar por sync desde otro dispositivo.
-                for session in upcomingSessions {
+                for session in upcomingSessions.prefix(5) {
                     guard let kit = visibleGoalEntities.first(where: { $0.id == session.kitID }) else { continue }
                     let step = kit.orderedActiveSteps.first { $0.id == session.stepID }
                     await NotificationService.shared.scheduleReminder(for: session, kitTitle: kit.title,
@@ -152,24 +167,34 @@ struct CalendarPlusView: View {
     }
 
     private var calendarList: some View {
-        List {
-            upcomingSection
-            if let wanted = nextWanted {
-                wantedSection(kit: wanted.kit, date: wanted.date)
+        ScrollViewReader { proxy in
+            List {
+                monthSection
+                daySection
+                if !upcomingSessions.isEmpty {
+                    Section {
+                        NavigationLink(value: CalendarRoute.upcomingSessions) {
+                            Label {
+                                Text("Próximas sesiones (\(upcomingSessions.count))")
+                            } icon: {
+                                Image(systemName: Symbols.session).foregroundStyle(.tint)
+                            }
+                        }
+                        .accessibilityIdentifier("calendar.upcomingSessions")
+                    }
+                }
             }
-            monthSection
-            daySection
-            if !stepsForSelectedDate.isEmpty || !goalsForSelectedDate.isEmpty {
-                Section {
-                    DayInsightView(selectedDate: selectedDate, steps: stepsForSelectedDate, goals: goalsForSelectedDate)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
+            .scrollContentBackground(.hidden)
+            .background(alignment: .top) { BrandGlow() }
+            .background(Color(.systemGroupedBackground))
+            .onChange(of: selectedDate) { _, _ in
+                // Solo se mueve si la agenda del día no se ve.
+                guard !dayVisible else { return }
+                withAnimation(reduceMotion ? nil : .smooth) {
+                    proxy.scrollTo(Self.dayAnchor, anchor: .center)
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(alignment: .top) { BrandGlow() }
-        .background(Color(.systemGroupedBackground))
     }
 
     /// Sin Kits todavía: el calendario del sistema sigue visible y una tarjeta breve
@@ -183,7 +208,7 @@ struct CalendarPlusView: View {
                         Text("Aún no hay nada planificado")
                             .font(.headline)
                     }
-                    Text("Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha deseada. También podrás reservar sesiones para avanzar.")
+                    Text("Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha prevista. También podrás reservar sesiones para avanzar.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -201,8 +226,8 @@ struct CalendarPlusView: View {
                           detail: "El tiempo que apartas para avanzar. Son tu compromiso.")
                 legendRow(symbol: "circle", title: "Pasos sugeridos",
                           detail: "La fecha orientativa de cada paso.")
-                legendRow(symbol: "flag.fill", title: "Fecha deseada", tint: .purple,
-                          detail: "Cuándo te gustaría tener el resultado. Sin límite firme.")
+                legendRow(symbol: "flag.fill", title: "Fecha prevista", tint: .purple,
+                          detail: "Cuándo terminaría el Kit según su plan.")
             }
         }
         .scrollContentBackground(.hidden)
@@ -227,76 +252,17 @@ struct CalendarPlusView: View {
 
     // MARK: - Secciones
 
-    private var upcomingSection: some View {
-        Section {
-            if upcomingSessions.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("No tienes sesiones reservadas").font(.headline)
-                    Text("Reserva un rato para avanzar en un paso. Es un compromiso contigo, no completa el paso.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Button("Reservar sesión", systemImage: Symbols.session) { showingBookSession = true }
-                        .disabled(activeKits.isEmpty)
-                        .padding(.top, 4)
-                }
-                .padding(.vertical, 4)
-            } else {
-                ForEach(Array(upcomingSessions.enumerated()), id: \.element.id) { index, session in
-                    sessionRow(session, last: index == upcomingSessions.count - 1)
-                }
-            }
-        } header: {
-            Text("Próximas sesiones")
-                .font(.title3.bold())
-                .foregroundStyle(Color(.label))
-                .textCase(nil)
-        }
-    }
-
-    private func wantedSection(kit: GoalEntity, date: Date) -> some View {
-        Section {
-            Button {
-                navigationPath.append(GoalNavigation(id: kit.id))
-            } label: {
-                HStack(spacing: 12) {
-                    IconChip(symbol: "flag.fill", color: .purple)
-                    VStack(alignment: .leading) {
-                        Text("Fecha deseada · \(date.formatted(.dateTime.day().month(.abbreviated)))")
-                            .font(.headline)
-                            .foregroundStyle(.purple)
-                        Text("\(kit.title) · orientativa, sin límite firme")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-            .listRowBackground(Color.purple.opacity(0.10))
-        }
-    }
-
     private var monthSection: some View {
         Section {
-            DecoratedCalendarView(selectedDate: $selectedDate, marks: marks)
+            DecoratedCalendarView(selectedDate: $selectedDate, marks: marks, revealToken: revealToken)
                 .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
         } header: {
             // Leyenda en la cabecera: siempre legible, sin ocupar una fila propia.
-            ViewThatFits(in: .horizontal) {
-                HStack {
-                    Text("Mes")
-                    Spacer()
-                    HStack(spacing: 10) { legend }.font(.caption)
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Mes")
-                    HStack(spacing: 10) { legend }.font(.caption)
-                }
-            }
-            .textCase(nil)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Mes. Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha deseada")
-        } footer: {
-            Text("Solo las sesiones reservadas son compromisos. Las sugerencias y la fecha deseada son orientativas.")
+            HStack(spacing: 10) { legend }
+                .font(.caption)
+                .textCase(nil)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha prevista")
         }
     }
 
@@ -304,9 +270,15 @@ struct CalendarPlusView: View {
     private var daySection: some View {
         let empty = sessionsForSelectedDate.isEmpty && stepsForSelectedDate.isEmpty && goalsForSelectedDate.isEmpty
         Section {
-            if empty {
-                Text("Nada previsto este día.")
-                    .foregroundStyle(.secondary)
+            Text(daySummary)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .id(Self.dayAnchor)
+                .onScrollVisibilityChange(threshold: 0.5) { dayVisible = $0 }
+                .accessibilityIdentifier("calendar.daySummary")
+            if empty, !selectedDayIsPast, !activeKits.isEmpty {
+                Button("Reservar sesión este día", systemImage: Symbols.session) { showingBookSession = true }
+                    .accessibilityIdentifier("calendar.bookDay")
             }
             ForEach(sessionsForSelectedDate) { session in
                 Button { reviewingSession = session } label: {
@@ -326,11 +298,13 @@ struct CalendarPlusView: View {
             }
             ForEach(goalsForSelectedDate) { kit in
                 NavigationLink(value: GoalNavigation(id: kit.id)) {
-                    dayRow(symbol: "flag.fill", tint: .purple, title: kit.title, detail: "Fecha deseada")
+                    dayRow(symbol: "flag.fill", tint: .purple, title: kit.title, detail: "Fecha prevista")
                 }
             }
         } header: {
             Text(selectedDate.formatted(.dateTime.weekday(.wide).day().month(.wide)))
+                .font(.headline)
+                .foregroundStyle(Color(.label))
                 .textCase(nil)
         }
     }
@@ -338,7 +312,36 @@ struct CalendarPlusView: View {
     @ViewBuilder private var legend: some View {
         Label("Sesión", systemImage: "circle.fill").foregroundStyle(.blue).fixedSize()
         Label("Sugerencia", systemImage: "circle").foregroundStyle(.blue).fixedSize()
-        Label("Fecha deseada", systemImage: "flag.fill").foregroundStyle(.purple).fixedSize()
+        Label("Fecha prevista", systemImage: "flag.fill").foregroundStyle(.purple).fixedSize()
+    }
+
+    // MARK: - Resumen del día
+
+    /// «2 sesiones · 45 min reservados · 1 paso sugerido», o «Nada previsto este día».
+    private var daySummary: String {
+        var parts: [String] = []
+        let daySessions = sessionsForSelectedDate
+        if !daySessions.isEmpty {
+            let count = daySessions.count
+            parts.append(count == 1 ? "1 sesión" : "\(count) sesiones")
+            parts.append("\(Self.duration(daySessions.reduce(0) { $0 + $1.durationMinutes })) reservados")
+        }
+        let steps = stepsForSelectedDate.count
+        if steps > 0 {
+            parts.append(steps == 1 ? "1 paso sugerido" : "\(steps) pasos sugeridos")
+        }
+        let kits = goalsForSelectedDate.count
+        if kits > 0 {
+            parts.append(kits == 1 ? "1 fecha prevista" : "\(kits) fechas previstas")
+        }
+        return parts.isEmpty ? "Nada previsto este día." : parts.joined(separator: " · ")
+    }
+
+    private static func duration(_ minutes: Int) -> String {
+        let hours = minutes / 60
+        let rest = minutes % 60
+        if hours == 0 { return "\(rest) min" }
+        return rest == 0 ? "\(hours) h" : "\(hours) h \(rest) min"
     }
 
     // MARK: - Filas
@@ -349,64 +352,6 @@ struct CalendarPlusView: View {
             return step.stepTitle
         }
         return kit?.title ?? "Sesión"
-    }
-
-    private func sessionRow(_ session: WorkSessionEntity, last: Bool) -> some View {
-        let kit = visibleGoalEntities.first { $0.id == session.kitID }
-        let step = kit?.orderedActiveSteps.first { $0.id == session.stepID }
-        return Button {
-            if let step {
-                navigationPath.append(StepNavigation(id: step.id))
-            } else {
-                reviewingSession = session
-            }
-        } label: {
-            HStack(alignment: .top, spacing: 14) {
-                VStack(spacing: 0) {
-                    Circle().fill(Color.accentColor).frame(width: 12, height: 12).padding(.top, 5)
-                    if !last {
-                        Rectangle().fill(Color.accentColor.opacity(0.3)).frame(width: 2).frame(maxHeight: .infinity)
-                    }
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(sessionWhen(session)).font(.subheadline.weight(.semibold)).foregroundStyle(.tint)
-                    Text(step?.stepTitle ?? kit?.title ?? "Sesión").font(.headline)
-                    Text(sessionDetail(session, kit: kit, step: step)).font(.subheadline).foregroundStyle(.secondary)
-                }
-                .padding(.bottom, last ? 0 : 12)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 20)
-                    .accessibilityHidden(true)
-            }
-            .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .listRowSeparator(.hidden)
-        .swipeActions {
-            Button("Revisar", systemImage: "calendar.badge.clock") { reviewingSession = session }
-                .tint(.blue)
-        }
-        .contextMenu {
-            Button("Revisar sesión", systemImage: "calendar.badge.clock") { reviewingSession = session }
-        }
-    }
-
-    private func sessionWhen(_ session: WorkSessionEntity) -> String {
-        let time = session.startsAt.formatted(date: .omitted, time: .shortened)
-        if Calendar.current.isDateInToday(session.startsAt) { return "Hoy · \(time)" }
-        if Calendar.current.isDateInTomorrow(session.startsAt) { return "Mañana · \(time)" }
-        return "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))) · \(time)"
-    }
-
-    private func sessionDetail(_ session: WorkSessionEntity, kit: GoalEntity?, step: StepEntity?) -> String {
-        var parts = ["\(session.durationMinutes) min"]
-        if let kit { parts.append(kit.title) }
-        if let kit, let step { parts.append("Paso \(kit.position(of: step))") }
-        return parts.joined(separator: " · ")
     }
 
     private func dayRow(symbol: String, tint: Color, title: String, detail: String) -> some View {

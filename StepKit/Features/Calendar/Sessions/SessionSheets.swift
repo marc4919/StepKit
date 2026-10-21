@@ -176,7 +176,7 @@ struct ReviewSessionSheet: View {
                     }
                     LabeledContent("Era", value: "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())) · \(session.durationMinutes) min")
                 } footer: {
-                    Text("Tu avance y la fecha deseada del Kit se conservan.")
+                    Text("Tu avance y la fecha prevista del Kit se conservan.")
                 }
                 Section("Qué quieres hacer") {
                     Picker("Opción", selection: $choice) {
