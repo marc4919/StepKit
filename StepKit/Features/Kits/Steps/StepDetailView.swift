@@ -41,6 +41,12 @@ struct StepDetailView: View {
 
     private var lastProgress: ProgressEntryEntity? { progressNotes.first }
 
+    /// El asistente ha dejado una propuesta para este paso (tras un bloqueo, un cambio…).
+    private var stepHasProposal: Bool {
+        KitAssistantStore.shared.conversations(for: stepEntity.goal?.id ?? UUID())
+            .contains { $0.stepID == stepEntity.id && $0.proposals.contains { $0.state == .pending } }
+    }
+
     /// Días con la sesión del hábito hecha.
     private var doneSessionDays: Set<DateComponents> {
         Set(stepEntries.filter { $0.kind == .session }.map { DateComponents.day(of: $0.notedAt) })
@@ -75,7 +81,9 @@ struct StepDetailView: View {
                 Button("Ayúdame con este paso", systemImage: Symbols.assistant) {
                     assistantLaunch = AssistantLaunch(intent: nil)
                 }
+                .badge(stepHasProposal ? 1 : 0)
                 .accessibilityIdentifier("step.assistant")
+                .accessibilityValue(stepHasProposal ? "Propuesta pendiente" : "")
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Editar paso", systemImage: "pencil") {

@@ -21,6 +21,8 @@ struct KitDetailView: View {
     @Bindable var kitEntity: GoalEntity
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
+    @Environment(\.apiClient) private var apiClient: any APIClientProtocol
+    @Environment(AuthManager.self) private var authManager
     @State private var presentedSheet: PresentedSheet?
     @State private var segment = 0
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -89,6 +91,7 @@ struct KitDetailView: View {
         }
         .onAppear {
             ProgressLog.importLegacyKitNotes(for: kitEntity, context: modelContext)
+            reactToOverdueSteps()
         }
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
@@ -132,6 +135,19 @@ struct KitDetailView: View {
             MetaChip(symbol: Symbols.wantedDate, text: date.formatted(.dateTime.day().month(.abbreviated)),
                      color: MetaTint.date)
         }
+    }
+
+    /// Si un paso se ha quedado atrás, el asistente lo mira una vez al día y propone cómo recolocarlo.
+    private func reactToOverdueSteps() {
+        let today = Calendar.current.startOfDay(for: .now)
+        guard let overdue = kitEntity.orderedActiveSteps.first(where: {
+            !$0.isCompleted && ($0.sessionDates.last ?? .distantFuture) < today
+        }) else { return }
+        let key = "assist.overdue.\(kitEntity.id).\(AssistRequestBuilder.dayFormatter.string(from: today))"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        KitAssistant.react(.overdue, kit: kitEntity, step: overdue, context: modelContext,
+                           apiClient: apiClient, token: authManager.token)
     }
 
     private var allStepsDone: Bool {

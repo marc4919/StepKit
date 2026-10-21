@@ -17,6 +17,8 @@ struct SaveProgressSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
+    @Environment(\.apiClient) private var apiClient: any APIClientProtocol
+    @Environment(AuthManager.self) private var authManager
     @State private var note = ""
     @State private var canContinue = true
     @State private var reason = ""
@@ -94,6 +96,11 @@ struct SaveProgressSheet: View {
             let blocked = canContinue ? nil : (reason.isEmpty ? "Sin detallar" : reason)
             try ProgressLog.saveProgress(for: step, note: note, blockedReason: blocked, context: modelContext)
             syncManager?.handleDataChange()
+            // El asistente reacciona: con un bloqueo puede proponer cómo seguir.
+            if let kit = step.goal {
+                KitAssistant.react(blocked == nil ? .progress : .blocked, kit: kit, step: step,
+                                   context: modelContext, apiClient: apiClient, token: authManager.token)
+            }
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             dismiss()
         } catch {

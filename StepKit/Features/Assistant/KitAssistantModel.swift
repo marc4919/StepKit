@@ -22,6 +22,8 @@ final class KitConversation: Identifiable {
     let createdAt = Date()
     let viewModel = TrainerViewModel()
     var proposals: [PlanProposal] = []
+    /// Resumen que devuelve el asistente del servidor; se manda en la siguiente llamada.
+    var serverSummary: String?
 
     init(kitID: UUID, stepID: UUID?, title: String) {
         self.kitID = kitID
@@ -68,13 +70,15 @@ final class KitAssistantStore {
 
 // MARK: - Propuestas
 
-/// Un cambio concreto sobre un paso.
+/// Un cambio concreto: de fecha (from → to) o de contenido (detail).
 struct ProposedStepChange: Identifiable, Hashable {
     let id = UUID()
-    let stepID: UUID
+    let stepID: UUID?
     let stepLabel: String
     let from: Date?
-    let to: Date
+    let to: Date?
+    var detail: String? = nil
+    var symbol: String = Symbols.calendar
 }
 
 /// Conjunto coherente de cambios: se acepta o se descarta entero, sin selección parcial.
@@ -83,25 +87,84 @@ struct ProposedStepChange: Identifiable, Hashable {
 final class PlanProposal: Identifiable {
     enum State { case pending, accepted, discarded }
 
+    enum Action {
+        case setDate(stepID: UUID, date: Date)
+        case edit(stepID: UUID, title: String?, minutes: Int?)
+        case split(stepID: UUID, titles: [String], minutes: Int?)
+        case add(afterStepID: UUID?, title: String, minutes: Int, date: Date?)
+        case remove(stepID: UUID)
+        case block(stepID: UUID, reason: String)
+    }
+
     let id = UUID()
     let title: String
     let changes: [ProposedStepChange]
     let impact: String
+    let actions: [Action]
     var state: State = .pending
 
-    init(title: String, changes: [ProposedStepChange], impact: String) {
+    init(title: String, changes: [ProposedStepChange], impact: String, actions: [Action]? = nil) {
         self.title = title
         self.changes = changes
         self.impact = impact
+        self.actions = actions ?? changes.compactMap { change in
+            guard let stepID = change.stepID, let to = change.to else { return nil }
+            return .setDate(stepID: stepID, date: to)
+        }
     }
 
     func accept(in kit: GoalEntity, context: ModelContext) {
         let now = Date()
-        for change in changes {
-            guard let step = kit.orderedActiveSteps.first(where: { $0.id == change.stepID }) else { continue }
-            step.suggestedDeadline = change.to
-            step.markModified(at: now)
+        func step(_ id: UUID) -> StepEntity? { kit.orderedActiveSteps.first { $0.id == id } }
+        func insert(_ title: String, minutes: Int, date: Date?, after anchor: StepEntity?) {
+            let new = StepEntity(ownerID: kit.ownerID, stepTitle: title, descriptionShort: "", descriptionLong: "",
+                                 estimateMinutes: minutes, suggestedDeadline: date ?? anchor?.suggestedDeadline,
+                                 effortLevel: anchor?.effortLevel ?? "medium",
+                                 order: (anchor?.order ?? (kit.orderedActiveSteps.last?.order ?? -1)) + 1,
+                                 createdAt: now, updatedAt: now)
+            // Hace hueco detrás del paso de referencia.
+            for later in kit.orderedActiveSteps where later.order >= new.order {
+                later.order += 1
+                later.markModified(at: now)
+            }
+            new.goal = kit
+            context.insert(new)
+            kit.steps.append(new)
         }
+        for action in actions {
+            switch action {
+            case .setDate(let id, let date):
+                step(id)?.suggestedDeadline = date
+                step(id)?.markModified(at: now)
+            case .edit(let id, let title, let minutes):
+                guard let target = step(id) else { continue }
+                if let title { target.stepTitle = title }
+                if let minutes { target.estimateMinutes = minutes }
+                target.markModified(at: now)
+            case .split(let id, let titles, let minutes):
+                guard let target = step(id), let first = titles.first else { continue }
+                target.stepTitle = first
+                if let minutes { target.estimateMinutes = minutes }
+                target.markModified(at: now)
+                var anchor = target
+                for title in titles.dropFirst() {
+                    insert(title, minutes: minutes ?? target.estimateMinutes, date: target.suggestedDeadline, after: anchor)
+                    if let added = kit.orderedActiveSteps.first(where: { $0.order == anchor.order + 1 }) { anchor = added }
+                }
+            case .add(let afterID, let title, let minutes, let date):
+                insert(title, minutes: minutes, date: date, after: afterID.flatMap(step))
+            case .remove(let id):
+                guard let target = step(id) else { continue }
+                target.deletedAt = now
+                target.markModified(at: now)
+            case .block(let id, let reason):
+                guard let target = step(id) else { continue }
+                target.blockedReason = reason
+                target.blockedAt = now
+                target.markModified(at: now)
+            }
+        }
+        kit.markModified(at: now)
         try? context.save()
         state = .accepted
     }
@@ -134,7 +197,7 @@ enum PlanProposalBuilder {
         }
         let impact: String
         if changes.count > 1, let last = changes.last {
-            impact = "Para mantener el orden, «\(last.stepLabel.components(separatedBy: " · ").last ?? "")» pasa al \(day(last.to)). El resto del plan no cambia."
+            impact = "Para mantener el orden, «\(last.stepLabel.components(separatedBy: " · ").last ?? "")» pasa al \(last.to.map(day) ?? ""). El resto del plan no cambia."
         } else {
             impact = "Solo cambia este paso. El resto del plan sigue igual."
         }
@@ -152,7 +215,7 @@ enum PlanProposalBuilder {
             return ProposedStepChange(stepID: step.id, stepLabel: "Paso \(kit.position(of: step)) · \(step.stepTitle)",
                                       from: date, to: shifted)
         }
-        let newTarget = changes.map(\.to).max().map(day) ?? ""
+        let newTarget = changes.compactMap(\.to).max().map(day) ?? ""
         return PlanProposal(title: "Retrasar la fecha deseada una semana", changes: changes,
                             impact: "La fecha deseada pasa al \(newTarget). Cada paso pendiente se mueve \(days) días.")
     }

@@ -8,6 +8,7 @@ import SwiftUI
 
 struct StepEditSheetView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.apiClient) private var apiClient: any APIClientProtocol
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
     @Environment(AuthManager.self) private var authManager
@@ -85,6 +86,10 @@ struct StepEditSheetView: View {
                 _ = try draft.apply(to: stepEntity, expectedOwnerID: ownerID)
             }
             syncManager?.handleDataChange()
+            if let kit = stepEntity.goal {
+                KitAssistant.react(.edited, kit: kit, step: stepEntity, context: modelContext,
+                                   apiClient: apiClient, token: authManager.token)
+            }
             dismiss()
         } catch {
             showingSaveError = true

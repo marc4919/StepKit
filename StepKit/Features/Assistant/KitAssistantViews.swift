@@ -136,6 +136,8 @@ struct KitAssistantChatView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
+    @Environment(\.apiClient) private var apiClient: any APIClientProtocol
+    @Environment(AuthManager.self) private var authManager
     @FocusState private var inputFocused: Bool
     @State private var didSendInitial = false
 
@@ -153,7 +155,7 @@ struct KitAssistantChatView: View {
             isTyping: vm.isTyping,
             isResponding: vm.isResponding,
             isInputFocused: $inputFocused,
-            onSend: { vm.sendDraft(goals: [kit]) },
+            onSend: { sendDraft() },
             onIntent: send,
             onRetry: { vm.retryLast(goals: [kit]) },
             intents: intents,
@@ -195,20 +197,49 @@ struct KitAssistantChatView: View {
         }
     }
 
+    /// Mensaje escrito: va al asistente del servidor; si no está disponible, al modelo local.
+    private func sendDraft() {
+        let vm = conversation.viewModel
+        let text = vm.draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, !vm.isResponding else { return }
+        vm.messages.append(ChatMessage(sender: .user, text: text))
+        vm.draft = ""
+        Task {
+            let handled = await KitAssistant.ask(.message, message: text, kit: kit, step: step,
+                                                 conversation: conversation, context: modelContext,
+                                                 apiClient: apiClient, token: authManager.token)
+            if !handled {
+                vm.messages.removeLast()
+                vm.draft = text
+                vm.sendDraft(goals: [kit])
+            }
+        }
+    }
+
     private func send(_ intent: AssistantIntent) {
-        conversation.viewModel.sendIntent(title: intent.title, prompt: intent.prompt(kit: kit, step: step), goals: [kit])
-        // Los cambios del plan nunca se aplican solos: llegan como propuesta.
-        switch intent.id {
-        case "not-fitting":
-            if let step, let proposal = PlanProposalBuilder.moveStep(step, in: kit) {
-                conversation.proposals.append(proposal)
+        let vm = conversation.viewModel
+        guard !vm.isResponding else { return }
+        vm.messages.append(ChatMessage(sender: .user, text: intent.title))
+        Task {
+            let handled = await KitAssistant.ask(.message, message: intent.title, kit: kit, step: step,
+                                                 conversation: conversation, context: modelContext,
+                                                 apiClient: apiClient, token: authManager.token)
+            guard !handled else { return }
+            // Sin asistente en el servidor: modelo del dispositivo y propuestas locales.
+            vm.messages.removeLast()
+            vm.sendIntent(title: intent.title, prompt: intent.prompt(kit: kit, step: step), goals: [kit])
+            switch intent.id {
+            case "not-fitting":
+                if let step, let proposal = PlanProposalBuilder.moveStep(step, in: kit) {
+                    conversation.proposals.append(proposal)
+                }
+            case "change-date":
+                if let proposal = PlanProposalBuilder.shiftTarget(of: kit) {
+                    conversation.proposals.append(proposal)
+                }
+            default:
+                break
             }
-        case "change-date":
-            if let proposal = PlanProposalBuilder.shiftTarget(of: kit) {
-                conversation.proposals.append(proposal)
-            }
-        default:
-            break
         }
     }
 }
@@ -238,21 +269,28 @@ struct ProposalCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(proposal.changes) { change in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Image(systemName: Symbols.calendar).foregroundStyle(MetaTint.date).accessibilityHidden(true)
+                        Image(systemName: change.symbol)
+                            .foregroundStyle(change.to != nil ? MetaTint.date : Color.accentColor)
+                            .accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(change.stepLabel).font(.subheadline.weight(.medium))
-                            HStack(spacing: 6) {
-                                if let from = change.from {
-                                    Text(from.formatted(.dateTime.day().month(.abbreviated)))
-                                        .strikethrough()
-                                        .foregroundStyle(.secondary)
+                            if let to = change.to {
+                                HStack(spacing: 6) {
+                                    if let from = change.from {
+                                        Text(from.formatted(.dateTime.day().month(.abbreviated)))
+                                            .strikethrough()
+                                            .foregroundStyle(.secondary)
+                                        Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.secondary)
+                                    }
+                                    Text(to.formatted(.dateTime.day().month(.abbreviated)))
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(MetaTint.date)
                                 }
-                                Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.secondary)
-                                Text(change.to.formatted(.dateTime.day().month(.abbreviated)))
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(MetaTint.date)
+                                .font(.caption)
                             }
-                            .font(.caption)
+                            if let detail = change.detail, !detail.isEmpty {
+                                Text(detail).font(.caption).foregroundStyle(.secondary)
+                            }
                         }
                     }
                     .accessibilityElement(children: .combine)
