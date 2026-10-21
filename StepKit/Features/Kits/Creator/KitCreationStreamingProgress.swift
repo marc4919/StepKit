@@ -29,8 +29,12 @@ struct KitCreationStreamingProgress: View {
         if finalFill { return 1 }
         if streamingState.isComplete { return 0.95 }
         guard streamingState.kitTitle != nil else { return 0.12 }
-        guard let total = streamingState.totalSteps, total > 0 else { return 0.25 }
-        return 0.25 + 0.75 * Double(streamingState.steps.count) / Double(total)
+        let received = Double(streamingState.steps.count)
+        if let total = streamingState.totalSteps, total > 0 {
+            return 0.25 + 0.7 * received / Double(total)
+        }
+        // Sin total (el servidor ya no lo anuncia): cada paso acerca la barra, sin llegar al final.
+        return 0.25 + 0.65 * (1 - pow(0.8, received))
     }
 
     var body: some View {
@@ -120,12 +124,14 @@ struct KitCreationStreamingProgress: View {
         }
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.4), value: streamingState.isRestarting)
         .task {
-            // Avance lento mientras se espera el siguiente evento, sin pasar del siguiente tramo.
+            // Avance continuo mientras se espera el siguiente evento: se frena al acercarse al
+            // siguiente tramo pero nunca se queda quieto (en el modo cuidado la espera es larga).
             while !Task.isCancelled && !finalFill {
                 try? await Task.sleep(for: .milliseconds(450))
-                let ceiling = min(0.97, targetProgress + 0.1)
+                let ceiling = min(0.9, targetProgress + 0.15)
                 if shownProgress < ceiling {
-                    advance(to: min(ceiling, shownProgress + 0.012), duration: 0.45)
+                    let step = max(0.002, (ceiling - shownProgress) * 0.05)
+                    advance(to: min(ceiling, shownProgress + step), duration: 0.45)
                 }
             }
         }
