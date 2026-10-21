@@ -102,7 +102,9 @@ struct KitCreatorView: View {
                 KitCreationStreamingProgress(
                     streamingState: $vm.streamingState,
                     onSave: { saveAndNavigate(vm: vm) },
-                    onDiscard: { cancelAndDismiss(vm: vm) }
+                    onDiscard: { cancelAndDismiss(vm: vm) },
+                    onAnswer: { vm.answerQuestions($0) },
+                    onSkipQuestions: { vm.skipQuestions() }
                 )
             }
         }

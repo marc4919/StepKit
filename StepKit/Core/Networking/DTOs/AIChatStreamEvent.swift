@@ -16,6 +16,9 @@ struct AIChatStreamEvent: Codable {
     var mode: String? = nil
     var reasons: [String]? = nil
 
+    // Para type = "questions": hasta 3 preguntas antes de generar un Kit delicado
+    var questions: [KitQuestion]? = nil
+
     // Para type = "kit_info"
     let kitTitle: String?
     let kpi: String?
@@ -45,9 +48,37 @@ struct AIChatStreamEvent: Codable {
         case kitInfo = "kit_info"
         case step = "step"
         case restart = "restart"
+        case questions = "questions"
         case done = "done"
         case error = "error"
         case unknown
+    }
+}
+
+/// Pregunta para afinar un Kit delicado.
+struct KitQuestion: Codable, Identifiable, Hashable {
+    enum Kind: String, Codable { case single, multi, text }
+
+    let id: String
+    let text: String
+    let kind: Kind
+    let options: [String]
+
+    enum CodingKeys: String, CodingKey { case id, text, kind, options }
+
+    init(id: String, text: String, kind: Kind, options: [String]) {
+        self.id = id
+        self.text = text
+        self.kind = kind
+        self.options = options
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        text = try c.decode(String.self, forKey: .text)
+        kind = (try? c.decode(Kind.self, forKey: .kind)) ?? .text
+        options = (try? c.decode([String].self, forKey: .options)) ?? []
     }
 }
 

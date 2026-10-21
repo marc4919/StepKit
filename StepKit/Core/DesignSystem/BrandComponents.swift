@@ -371,3 +371,43 @@ private struct OrbitPathShape: Shape {
         OrbitMark.logoPath(rect.width, rect.height)
     }
 }
+
+/// Icono para un «A tener en cuenta» según de qué trata. Pocas familias y sin alarmas:
+/// solo lo que toca a la seguridad conserva el tono de aviso.
+enum RiskTopic {
+    case time, health, money, safety, mind, material, general
+
+    init(_ text: String) {
+        let t = text.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+        func has(_ words: [String]) -> Bool { words.contains { t.contains($0) } }
+        if has(["seguridad", "peligro", "electric", "corriente", "gas", "fuga", "quemadura", "altura", "toxic", "quimic"]) {
+            self = .safety
+        } else if has(["salud", "medic", "lesion", "dolor", "cansancio", "agotamiento", "energia", "sueno", "dieta"]) {
+            self = .health
+        } else if has(["dinero", "coste", "costo", "presupuesto", "gasto", "precio", "deuda", "pago"]) {
+            self = .money
+        } else if has(["plazo", "tiempo", "minutos", "dias", "semana", "fecha", "ritmo", "horario", "retras"]) {
+            self = .time
+        } else if has(["motivacion", "perfeccion", "ansiedad", "estres", "constancia", "habito", "frustr", "animo", "olvid"]) {
+            self = .mind
+        } else if has(["pieza", "material", "herramienta", "ingrediente", "equipo", "manual", "plataforma", "plantilla"]) {
+            self = .material
+        } else {
+            self = .general
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .time: "clock"
+        case .health: "heart"
+        case .money: "eurosign.circle"
+        case .safety: "exclamationmark.triangle"
+        case .mind: "brain.head.profile"
+        case .material: "shippingbox"
+        case .general: "lightbulb"
+        }
+    }
+
+    var tint: Color { self == .safety ? .orange : .accentColor }
+}

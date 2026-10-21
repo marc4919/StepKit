@@ -37,6 +37,9 @@ final class KitStreamingState {
     /// El servidor ha empezado de nuevo con otro modelo: lo recibido se sustituye.
     var isRestarting = false
 
+    /// Preguntas del servidor antes de generar un Kit delicado; vacías cuando no hay.
+    var pendingQuestions: [KitQuestion] = []
+
     // MARK: - Estado de Steps
     
     /// Steps que se van añadiendo
@@ -104,6 +107,9 @@ final class KitStreamingState {
             isCareful = event.mode == "careful"
             carefulReasons = isCareful ? Array((event.reasons ?? []).prefix(3)) : []
 
+        case .questions:
+            pendingQuestions = Array((event.questions ?? []).prefix(3))
+
         case .restart:
             kitTitle = nil
             kpi = nil
@@ -144,6 +150,7 @@ final class KitStreamingState {
     
     /// Reinicia el estado para un nuevo intento
     func reset() {
+        pendingQuestions = []
         isCareful = false
         carefulReasons = []
         isRestarting = false

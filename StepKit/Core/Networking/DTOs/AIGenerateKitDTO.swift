@@ -25,6 +25,10 @@ struct AIGenerateKitRequest: Codable {
     let promptVersion: Int // 1 = heavyweight, 2 = lightweight
     /// La app sabe mostrar «Ajustando tu plan…» si el servidor reinicia con otro modelo.
     var supportsRestart = true
+    /// En Kits delicados el servidor puede preguntar antes de generar (evento `questions`).
+    var supportsQuestions = true
+    /// Respuestas a esas preguntas; el servidor no guarda estado, así que va también el texto.
+    var answers: [KitAnswer]? = nil
 
     /// Crea un request a partir de los datos del formulario
     /// - Parameters:
@@ -62,6 +66,13 @@ struct AIGenerateKitRequest: Codable {
         // 1 = heavyweight (modelo potente), 2 = lightweight (modelo ligero)
         self.promptVersion = useHeavyweight ? 1 : 2
     }
+}
+
+/// Respuesta a una pregunta del servidor. En opción múltiple, las opciones van separadas por ", ".
+struct KitAnswer: Codable, Hashable {
+    let id: String
+    let question: String
+    let value: String
 }
 
 // MARK: - Response

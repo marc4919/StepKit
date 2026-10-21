@@ -378,7 +378,8 @@ final class StepKitUITests: XCTestCase {
 
         let save = element(Identifier.saveKit)
         XCTAssertTrue(save.waitForExistence(timeout: 30), "El fixture AI no terminó")
-        XCTAssertTrue(app.staticTexts[originalFixtureTitle].exists)
+        // «Tu plan» aparece en cascada tras la transición de la esfera.
+        XCTAssertTrue(app.staticTexts[originalFixtureTitle].waitForExistence(timeout: defaultTimeout))
         scrollUpUntilHittable(save)
         save.tap()
         XCTAssertTrue(stepRows.firstMatch.waitForExistence(timeout: defaultTimeout))

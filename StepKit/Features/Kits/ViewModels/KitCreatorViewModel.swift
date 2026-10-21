@@ -164,80 +164,115 @@ final class KitCreatorViewModel {
             print("📤 Enviando request con promptVersion: \(request.promptVersion)")
             #endif
             
-            // 3. Consumir stream
-            let stream = apiClient.streamKitGeneration(from: request, token: token)
-            var hasReceivedFirstEvent = false
-            
-            do {
-                for try await event in stream {
-                    // Verificar si fue cancelado antes de procesar el evento
-                    if Task.isCancelled || isCancelled {
-                        return
-                    }
-                    
-                    await MainActor.run {
-                        // No actualizar el estado si fue cancelado
-                        if isCancelled {
-                            return
-                        }
-                        
-                        // Transicionar a streaming cuando llega el primer evento real
-                        if !hasReceivedFirstEvent && event.eventType == .kitInfo {
-                            hasReceivedFirstEvent = true
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                viewState = .streaming
-                            }
-                        }
-                        
-                        streamingState.handleEvent(event)
-                    }
-                    
-                    if event.eventType == .error {
-                        await MainActor.run {
-                            // No actualizar el estado si fue cancelado
-                            if isCancelled {
-                                return
-                            }
-                            
-                            if !hasReceivedFirstEvent {
-                                withAnimation {
-                                    viewState = .form
-                                }
-                                handleError(event.error ?? "Error al conectar con la IA")
-                            } else {
-                                // Si ya estamos en streaming, el error se muestra en el estado del streaming
-                                streamingState.setError(mapErrorMessage(event.error ?? "Error desconocido"))
-                            }
-                            UINotificationFeedbackGenerator().notificationOccurred(.error)
-                        }
-                    }
-                    
-                    if event.eventType == .done {
-                        await MainActor.run {
-                            UINotificationFeedbackGenerator().notificationOccurred(.success)
-                        }
-                    }
+            // 3. Consumir stream (puede terminar en preguntas si el Kit es delicado)
+            lastRequest = request
+            lastToken = token
+            await consumeStream(request: request, token: token)
+        }
+    }
+    
+
+    /// Consume el stream SSE de creación. Se reutiliza al responder las preguntas.
+    private func consumeStream(request: AIGenerateKitRequest, token: String) async {
+        // 3. Consumir stream
+        let stream = apiClient.streamKitGeneration(from: request, token: token)
+        var hasReceivedFirstEvent = false
+        
+        do {
+            for try await event in stream {
+                // Verificar si fue cancelado antes de procesar el evento
+                if Task.isCancelled || isCancelled {
+                    return
                 }
-            } catch {
+                
                 await MainActor.run {
                     // No actualizar el estado si fue cancelado
                     if isCancelled {
                         return
                     }
                     
-                    if !hasReceivedFirstEvent {
-                        withAnimation {
-                            viewState = .form
+                    // Transicionar a streaming cuando llega el primer evento real
+                    if !hasReceivedFirstEvent && event.eventType == .kitInfo {
+                        hasReceivedFirstEvent = true
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewState = .streaming
                         }
-                        handleError(error)
-                    } else {
-                        streamingState.setError(mapErrorMessage(error))
                     }
+                    
+                    streamingState.handleEvent(event)
+                }
+                
+                if event.eventType == .error {
+                    await MainActor.run {
+                        // No actualizar el estado si fue cancelado
+                        if isCancelled {
+                            return
+                        }
+                        
+                        if !hasReceivedFirstEvent {
+                            withAnimation {
+                                viewState = .form
+                            }
+                            handleError(event.error ?? "Error al conectar con la IA")
+                        } else {
+                            // Si ya estamos en streaming, el error se muestra en el estado del streaming
+                            streamingState.setError(mapErrorMessage(event.error ?? "Error desconocido"))
+                        }
+                        UINotificationFeedbackGenerator().notificationOccurred(.error)
+                    }
+                }
+                
+                if event.eventType == .done {
+                    await MainActor.run {
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    }
+                }
+            }
+        } catch {
+            await MainActor.run {
+                // No actualizar el estado si fue cancelado
+                if isCancelled {
+                    return
+                }
+                
+                if !hasReceivedFirstEvent {
+                    withAnimation {
+                        viewState = .form
+                    }
+                    handleError(error)
+                } else {
+                    streamingState.setError(mapErrorMessage(error))
                 }
             }
         }
     }
-    
+
+    // MARK: - Preguntas de un Kit delicado
+
+    private var lastRequest: AIGenerateKitRequest?
+    private var lastToken: String?
+
+    /// Responde las preguntas del servidor y genera el plan con ellas.
+    func answerQuestions(_ answers: [KitAnswer]) {
+        resumeAfterQuestions(answers: answers, supportsQuestions: true)
+    }
+
+    /// Sigue sin responder: el servidor genera el plan directamente.
+    func skipQuestions() {
+        resumeAfterQuestions(answers: [], supportsQuestions: false)
+    }
+
+    private func resumeAfterQuestions(answers: [KitAnswer], supportsQuestions: Bool) {
+        guard var request = lastRequest, let token = lastToken else { return }
+        request.answers = answers
+        request.supportsQuestions = supportsQuestions
+        lastRequest = request
+        withAnimation(.smooth) { streamingState.pendingQuestions = [] }
+        streamingTask = Task {
+            await consumeStream(request: request, token: token)
+        }
+    }
+
     func cancelGeneration(modelContext: ModelContext, ownerID: String) {
         // Marcar como cancelado
         isCancelled = true

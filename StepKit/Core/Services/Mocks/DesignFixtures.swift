@@ -28,6 +28,7 @@ enum DesignFixtureScenario: String {
     case welcome       // bienvenida
     case calendarEmpty // Calendario sin Kits
     case create        // formulario Crear Kit
+    case questions     // Kit delicado: preguntas antes de preparar el plan
     case careful       // preparando un Kit delicado: pantalla de cuidado y reinicio con «Ajustando tu plan…»
     case signIn        // acceso
     case profile       // pestaña Perfil
@@ -77,8 +78,8 @@ struct DesignFixtureRoot: View {
             WelcomeView {}
         } else if scenario == .signIn {
             SignInView().environment(authManager)
-        } else if scenario == .careful {
-            CarefulCreationPreview()
+        } else if scenario == .careful || scenario == .questions {
+            CarefulCreationPreview(asksQuestions: scenario == .questions)
         } else if scenario == .create {
             KitCreatorView()
                 .environment(authManager)
@@ -157,11 +158,30 @@ struct DesignFixtureRoot: View {
 
 /// Simula los eventos del servidor para un Kit delicado: plan_mode, título tardío, reinicio y pasos.
 private struct CarefulCreationPreview: View {
+    var asksQuestions = false
     @State private var state = KitStreamingState()
 
     var body: some View {
-        KitCreationStreamingProgress(streamingState: $state, onSave: {}, onDiscard: {})
-            .task { await play() }
+        KitCreationStreamingProgress(streamingState: $state, onSave: {}, onDiscard: {},
+                                     onAnswer: { _ in state.pendingQuestions = []; Task { await play(afterAnswers: true) } },
+                                     onSkipQuestions: { state.pendingQuestions = []; Task { await play(afterAnswers: true) } })
+            .task {
+                if asksQuestions {
+                    state.handleEvent(event("plan_mode", mode: "careful", reasons: ["substances", "health"]))
+                    try? await Task.sleep(for: .seconds(1))
+                    var questions = event("questions")
+                    questions.questions = [
+                        KitQuestion(id: "q1", text: "¿Cuánto fumas ahora al día?", kind: .single,
+                                    options: ["Menos de 5", "Entre 5 y 15", "Más de 15"]),
+                        KitQuestion(id: "q2", text: "¿Qué te ayudaría más?", kind: .multi,
+                                    options: ["Apoyo médico", "Una app de seguimiento", "Hacer deporte"]),
+                        KitQuestion(id: "q3", text: "¿Lo has intentado antes? Cuéntame qué pasó.", kind: .text, options: [])
+                    ]
+                    state.handleEvent(questions)
+                } else {
+                    await play()
+                }
+            }
     }
 
     private func event(_ type: String, title: String? = nil, step: Int? = nil,
@@ -178,8 +198,10 @@ private struct CarefulCreationPreview: View {
                           stepIndex: step, totalSteps: nil, kitId: nil, kit: nil, usage: nil, error: nil)
     }
 
-    private func play() async {
-        state.handleEvent(event("plan_mode", mode: "careful", reasons: ["health", "tight_deadline"]))
+    private func play(afterAnswers: Bool = false) async {
+        if !afterAnswers {
+            state.handleEvent(event("plan_mode", mode: "careful", reasons: ["health", "tight_deadline"]))
+        }
         try? await Task.sleep(for: .seconds(6))
         state.handleEvent(event("kit_info", title: "Volver a correr"))
         try? await Task.sleep(for: .seconds(2))
@@ -204,7 +226,7 @@ enum DesignFixtureData {
     static func seed(_ scenario: DesignFixtureScenario, into context: ModelContext) {
         defer { claimAll(in: context) }
         switch scenario {
-        case .empty, .welcome, .calendarEmpty, .create, .careful, .signIn:
+        case .empty, .welcome, .calendarEmpty, .create, .careful, .questions, .signIn:
             break
         case .one, .step, .kit:
             insertPortfolio(into: context, blocked: false)

@@ -12,21 +12,13 @@ struct KitRisksView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "exclamationmark.shield.fill", title: "Riesgos Identificados")
+            sectionHeader(icon: "lightbulb.fill", title: "A tener en cuenta")
 
             VStack(spacing: 10) {
-                ForEach(Array(risks.enumerated()), id: \.offset) { index, risk in
+                ForEach(Array(risks.enumerated()), id: \.offset) { _, risk in
                     HStack(spacing: 12) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.orange.opacity(0.1))
-                                .frame(width: 32, height: 32)
-
-                            Text("\(index + 1)")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundColor(.orange)
-                        }
+                        let topic = RiskTopic(risk)
+                        IconChip(symbol: topic.symbol, color: topic.tint, size: 32)
 
                         Text(risk)
                             .font(.subheadline)
@@ -37,7 +29,7 @@ struct KitRisksView: View {
                     .padding(12)
                     .background(
                         LinearGradient(
-                            colors: [Color.orange.opacity(0.08), Color.orange.opacity(0.04)],
+                            colors: [Color.accentColor.opacity(0.06), Color.accentColor.opacity(0.02)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
