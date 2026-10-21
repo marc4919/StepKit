@@ -21,6 +21,10 @@ final class WorkSessionEntity {
     var createdAt: Date
     var updatedAt: Date
     var deletedAt: Date?
+    /// Sesión libre, sin Kit: algo propio que la persona anota en el calendario.
+    /// (`kitID` guarda entonces el propio id; al sincronizar se envía `kitId: null`.)
+    var isFree: Bool = false
+    var title: String?
 
     var endsAt: Date { startsAt.addingTimeInterval(TimeInterval(durationMinutes * 60)) }
 
@@ -61,13 +65,15 @@ final class WorkSessionEntity {
 
     func toSyncDTO() -> WorkSessionSyncDTO {
         WorkSessionSyncDTO(
-            id: id, kitId: kitID, stepId: stepID, startsAt: startsAt, durationMinutes: durationMinutes,
+            id: id, kitId: isFree ? nil : kitID, stepId: isFree ? nil : stepID, title: title,
+            startsAt: startsAt, durationMinutes: durationMinutes,
             reminderEnabled: reminderEnabled, createdAt: createdAt, updatedAt: updatedAt, deletedAt: deletedAt
         )
     }
 
     func update(from dto: WorkSessionSyncDTO) {
         startsAt = dto.startsAt
+        title = dto.title
         durationMinutes = dto.durationMinutes
         reminderEnabled = dto.reminderEnabled
         createdAt = dto.createdAt ?? createdAt
@@ -77,9 +83,11 @@ final class WorkSessionEntity {
 
     convenience init(fromSync dto: WorkSessionSyncDTO, ownerID: String) {
         self.init(
-            id: dto.id, ownerID: ownerID, kitID: dto.kitId, stepID: dto.stepId, startsAt: dto.startsAt,
+            id: dto.id, ownerID: ownerID, kitID: dto.kitId ?? dto.id, stepID: dto.stepId, startsAt: dto.startsAt,
             durationMinutes: dto.durationMinutes, reminderEnabled: dto.reminderEnabled,
             createdAt: dto.createdAt ?? Date(), updatedAt: dto.updatedAt, deletedAt: dto.deletedAt
         )
+        isFree = dto.kitId == nil
+        title = dto.title
     }
 }

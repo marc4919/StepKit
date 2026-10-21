@@ -119,8 +119,10 @@ struct ProgressEntrySyncDTO: Codable {
 
 struct WorkSessionSyncDTO: Codable {
     let id: UUID
-    let kitId: UUID
+    /// nil = sesión libre, sin Kit (lleva `title`).
+    let kitId: UUID?
     let stepId: UUID?
+    var title: String? = nil
     let startsAt: Date
     let durationMinutes: Int
     let reminderEnabled: Bool

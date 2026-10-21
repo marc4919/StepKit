@@ -53,7 +53,9 @@ struct CalendarPlusView: View {
     private var sessions: [WorkSessionEntity] {
         guard let ownerID else { return [] }
         let kitIDs = Set(visibleGoalEntities.map(\.id))
-        return allSessions.filter { $0.ownerID == ownerID && $0.deletedAt == nil && kitIDs.contains($0.kitID) }
+        return allSessions.filter {
+            $0.ownerID == ownerID && $0.deletedAt == nil && ($0.isFree || kitIDs.contains($0.kitID))
+        }
     }
 
     private var upcomingSessions: [WorkSessionEntity] {
@@ -120,7 +122,6 @@ struct CalendarPlusView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button("Reservar sesión", systemImage: Symbols.session) { showingBookSession = true }
-                            .disabled(activeKits.isEmpty)
                         Button("Crear Kit para este día", systemImage: "plus.circle") { showingKitCreator = true }
                     } label: {
                         Label("Añadir", systemImage: "plus")
@@ -144,7 +145,7 @@ struct CalendarPlusView: View {
                 UpcomingSessionsView(sessions: upcomingSessions, kits: visibleGoalEntities)
             }
             .sheet(isPresented: $showingBookSession) {
-                BookSessionSheet(kits: activeKits, initialDate: selectedDate)
+                BookSessionSheet(kits: activeKits, ownerID: ownerID, initialDate: selectedDate)
             }
             .sheet(item: $reviewingSession) { session in
                 let kit = visibleGoalEntities.first { $0.id == session.kitID }
@@ -275,15 +276,15 @@ struct CalendarPlusView: View {
                 .id(Self.dayAnchor)
                 .onScrollVisibilityChange(threshold: 0.5) { dayVisible = $0 }
                 .accessibilityIdentifier("calendar.daySummary")
-            if empty, !selectedDayIsPast, !activeKits.isEmpty {
+            if empty, !selectedDayIsPast {
                 Button("Reservar sesión este día", systemImage: Symbols.session) { showingBookSession = true }
                     .accessibilityIdentifier("calendar.bookDay")
             }
             ForEach(sessionsForSelectedDate) { session in
                 Button { reviewingSession = session } label: {
-                    dayRow(symbol: "circle.fill", tint: .blue,
+                    dayRow(symbol: session.isFree ? "circle.fill" : "circle.fill", tint: session.isFree ? .teal : .blue,
                            title: sessionTitle(session),
-                           detail: "\(session.startsAt.formatted(date: .omitted, time: .shortened)) · \(session.durationMinutes) min · Sesión")
+                           detail: "\(session.startsAt.formatted(date: .omitted, time: .shortened)) · \(session.durationMinutes) min · \(session.isFree ? "Algo propio" : "Sesión")")
                 }
                 .buttonStyle(.plain)
             }
@@ -346,6 +347,7 @@ struct CalendarPlusView: View {
     // MARK: - Filas
 
     private func sessionTitle(_ session: WorkSessionEntity) -> String {
+        if session.isFree { return session.title ?? "Sesión propia" }
         let kit = visibleGoalEntities.first { $0.id == session.kitID }
         if let step = kit?.orderedActiveSteps.first(where: { $0.id == session.stepID }) {
             return step.stepTitle

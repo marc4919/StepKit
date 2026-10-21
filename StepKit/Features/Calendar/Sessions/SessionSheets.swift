@@ -28,6 +28,28 @@ enum SessionLog {
         return session
     }
 
+    /// Sesión propia, sin Kit: «Llamar al fontanero», «Gimnasio»…
+    static func bookFree(
+        title: String,
+        ownerID: String,
+        startsAt: Date,
+        minutes: Int,
+        remind: Bool,
+        context: ModelContext,
+        now: Date = Date()
+    ) throws -> WorkSessionEntity {
+        let id = UUID()
+        let session = WorkSessionEntity(
+            id: id, ownerID: ownerID, kitID: id, stepID: nil, startsAt: startsAt,
+            durationMinutes: minutes, reminderEnabled: remind, createdAt: now, updatedAt: now
+        )
+        session.isFree = true
+        session.title = String(title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200))
+        context.insert(session)
+        try context.save()
+        return session
+    }
+
     static func move(_ session: WorkSessionEntity, to date: Date, context: ModelContext, now: Date = Date()) throws {
         session.startsAt = date
         session.markModified(at: now)
@@ -43,6 +65,8 @@ enum SessionLog {
 
 struct BookSessionSheet: View {
     let kits: [GoalEntity]
+    /// Dueño para las sesiones libres (sin Kit).
+    var ownerID: String? = nil
     var initialKit: GoalEntity?
     var initialStep: StepEntity?
     var initialDate: Date = Date()
@@ -56,13 +80,34 @@ struct BookSessionSheet: View {
     @State private var minutes = 30
     @State private var remind = true
     @State private var saveFailed = false
+    @State private var isFree = false
+    @State private var freeTitle = ""
 
     private var kit: GoalEntity? { kits.first { $0.id == kitID } }
+    private var canSave: Bool {
+        isFree ? !freeTitle.trimmingCharacters(in: .whitespaces).isEmpty && ownerID != nil : kit != nil
+    }
     private var step: StepEntity? { kit?.orderedActiveSteps.first { $0.id == stepID } }
 
     var body: some View {
         NavigationStack {
             Form {
+                if ownerID != nil {
+                    Section {
+                        Picker("Tipo", selection: $isFree.animation(.smooth)) {
+                            Text("De un Kit").tag(false)
+                            Text("Algo propio").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .disabled(kits.isEmpty)
+                    }
+                }
+                if isFree {
+                    Section("Qué vas a hacer") {
+                        TextField("Ej.: Llamar al fontanero, gimnasio…", text: $freeTitle)
+                            .accessibilityIdentifier("session.freeTitle")
+                    }
+                } else {
                 Section("Qué vas a hacer") {
                     Picker("Kit", selection: $kitID) {
                         ForEach(kits) { kit in
@@ -77,6 +122,7 @@ struct BookSessionSheet: View {
                             }
                         }
                     }
+                }
                 }
                 Section {
                     DatePicker("Empieza", selection: $date)
@@ -102,7 +148,7 @@ struct BookSessionSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Guardar") { save() }
-                        .disabled(kit == nil)
+                        .disabled(!canSave)
                         .accessibilityIdentifier("session.save")
                 }
             }
@@ -114,6 +160,7 @@ struct BookSessionSheet: View {
             }
         }
         .onAppear {
+            isFree = kits.isEmpty && ownerID != nil
             kitID = (initialKit ?? kits.first)?.id
             stepID = (initialStep ?? (initialKit ?? kits.first)?.nextStep)?.id
             date = Self.defaultStart(on: initialDate)
@@ -135,6 +182,22 @@ struct BookSessionSheet: View {
     }
 
     private func save() {
+        if isFree, let ownerID {
+            do {
+                let session = try SessionLog.bookFree(title: freeTitle, ownerID: ownerID, startsAt: date,
+                                                      minutes: minutes, remind: remind, context: modelContext)
+                syncManager?.handleDataChange()
+                Task {
+                    if remind { await NotificationService.shared.requestAuthorizationIfNeeded() }
+                    await NotificationService.shared.scheduleReminder(for: session, kitTitle: session.title ?? "StepKit",
+                                                                      stepTitle: nil)
+                }
+                dismiss()
+            } catch {
+                saveFailed = true
+            }
+            return
+        }
         guard let kit else { return }
         do {
             let session = try SessionLog.book(kit: kit, step: step, startsAt: date, minutes: minutes,
@@ -169,7 +232,9 @@ struct ReviewSessionSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    if let step, let kit {
+                    if session.isFree {
+                        LabeledContent("Sesión", value: session.title ?? "Sesión propia")
+                    } else if let step, let kit {
                         LabeledContent("Paso \(kit.position(of: step))", value: step.stepTitle)
                     } else if let kit {
                         LabeledContent("Kit", value: kit.title)
@@ -212,7 +277,7 @@ struct ReviewSessionSheet: View {
         case .move:
             try? SessionLog.move(session, to: newDate, context: modelContext)
             Task {
-                await NotificationService.shared.scheduleReminder(for: session, kitTitle: kit?.title ?? "StepKit",
+                await NotificationService.shared.scheduleReminder(for: session, kitTitle: kit?.title ?? session.title ?? "StepKit",
                                                                   stepTitle: step?.stepTitle)
             }
         case .keep:
