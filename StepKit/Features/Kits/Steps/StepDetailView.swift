@@ -123,10 +123,7 @@ struct StepDetailView: View {
                         Text(stepEntity.descriptionShort).foregroundStyle(.secondary)
                     }
                 }
-                ViewThatFits {
-                    HStack(spacing: 8) { chips }
-                    VStack(alignment: .leading, spacing: 8) { chips }
-                }
+                FlowLayout(spacing: 8) { chips }
                 if let reason = stepEntity.blockedReason {
                     blockedCards(reason: reason)
                 } else if !progressNotes.isEmpty {

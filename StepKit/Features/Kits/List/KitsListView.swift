@@ -14,7 +14,9 @@ struct KitsListView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(AuthManager.self) private var authManager
     
-    @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse)
+    // Animado: al borrar un Kit, el resto de la lista se recoloca con suavidad.
+    @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }, sort: \GoalEntity.createdAt, order: .reverse,
+           animation: .smooth(duration: 0.45))
     private var kitEntities: [GoalEntity]
 
     // Query adicional de StepEntities para forzar observación de cambios en steps

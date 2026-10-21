@@ -354,13 +354,13 @@ struct CalendarPlusView: View {
         return kit?.title ?? "Sesión"
     }
 
-    /// «Kit · Paso sugerido», o «Kit · Sesión 3 de 7» si el paso se repite.
+    /// «Kit · Paso sugerido», o «Kit · Día 3 de 14» si el paso se repite.
     private func stepDayDetail(_ step: StepEntity) -> String {
         let kit = step.goal?.title ?? ""
         guard let repetition = step.repetition,
               let index = step.sessionDates.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: selectedDate) })
         else { return "\(kit) · Paso sugerido" }
-        return "\(kit) · Sesión \(index + 1) de \(repetition.times)"
+        return "\(kit) · \(repetition.sessionName(index))"
     }
 
     private func dayRow(symbol: String, tint: Color, title: String, detail: String) -> some View {

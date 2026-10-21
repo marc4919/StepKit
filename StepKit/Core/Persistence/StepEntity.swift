@@ -230,12 +230,22 @@ struct StepRepetition: Hashable {
         self.times = times
     }
 
+    /// «Cada día, durante 2 semanas», «Cada día, durante 5 días», «Una vez por semana, durante 4 semanas».
     var label: String {
-        "\(every == .day ? "Cada día" : "Cada semana") · \(times) veces"
+        switch every {
+        case .day where times % 7 == 0:
+            let weeks = times / 7
+            return "Cada día, durante \(weeks) \(weeks == 1 ? "semana" : "semanas")"
+        case .day:
+            return "Cada día, durante \(times) días"
+        case .week:
+            return "Una vez por semana, durante \(times) semanas"
+        }
     }
 
-    var shortLabel: String {
-        "\(times)× \(every == .day ? "días" : "semanas")"
+    /// «Día 3 de 14» o «Semana 2 de 4».
+    func sessionName(_ index: Int) -> String {
+        "\(every == .day ? "Día" : "Semana") \(index + 1) de \(times)"
     }
 
     func dates(from first: Date, calendar: Calendar = .current) -> [Date] {

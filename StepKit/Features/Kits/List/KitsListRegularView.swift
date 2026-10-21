@@ -63,12 +63,16 @@ struct KitsListRegularView: View {
             DeleteConfirmationSheet(
                 goal: viewModel.kitEntityToDelete,
                 onDelete: {
-                    if let kit = viewModel.kitEntityToDelete {
-                        withAnimation {
+                    // Primero se cierra la hoja y, ya con la lista a la vista, el Kit se va con suavidad.
+                    let kit = viewModel.kitEntityToDelete
+                    viewModel.showingDeleteConfirmation = false
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(350))
+                        guard let kit else { return }
+                        withAnimation(.smooth(duration: 0.45)) {
                             viewModel.deleteKit(kit, syncManager: syncManager)
                         }
                     }
-                    viewModel.showingDeleteConfirmation = false
                 },
                 onCancel: {
                     viewModel.cancelDeletion()

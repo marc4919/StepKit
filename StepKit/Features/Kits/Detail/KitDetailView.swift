@@ -35,6 +35,10 @@ struct KitDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
+                if allStepsDone {
+                    resultCard
+                        .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+                }
                 Picker("Vista", selection: $segment) {
                     Text("Plan").tag(0)
                     Text("Registro").tag(1)
@@ -117,6 +121,40 @@ struct KitDetailView: View {
             MetaChip(symbol: Symbols.wantedDate, text: date.formatted(.dateTime.day().month(.abbreviated)),
                      color: MetaTint.date)
         }
+    }
+
+    private var allStepsDone: Bool {
+        kitEntity.activeStepCount > 0 && kitEntity.completedStepCount == kitEntity.activeStepCount
+    }
+
+    /// Con todos los pasos hechos, el resultado se revisa aquí mismo, sin salir del Kit.
+    private var resultCard: some View {
+        let confirmed = kitEntity.resultConfirmedAt != nil
+        return NavigationLink {
+            ResultReviewView(kit: kitEntity)
+        } label: {
+            HStack(spacing: 12) {
+                IconChip(symbol: confirmed ? "checkmark.seal.fill" : "flag.checkered",
+                         color: confirmed ? MetaTint.done : .orange, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(confirmed ? "Resultado confirmado" : "Has completado todos los pasos")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text(confirmed ? "Ver el resumen de tu recorrido" : "Revisa si tienes lo que buscabas")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background((confirmed ? MetaTint.done : Color.orange).opacity(0.10), in: .rect(cornerRadius: 18))
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("kit.reviewResult")
     }
 
     private var hasPendingProposal: Bool {
