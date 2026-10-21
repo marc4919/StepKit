@@ -61,10 +61,10 @@ struct CalendarPlusView: View {
         return sessions.filter { $0.endsAt >= now }
     }
 
-    private var marks: [DateComponents: Set<CalendarMark>] {
-        var result: [DateComponents: Set<CalendarMark>] = [:]
+    private var marks: [DateComponents: [CalendarMark: Int]] {
+        var result: [DateComponents: [CalendarMark: Int]] = [:]
         func add(_ date: Date, _ mark: CalendarMark) {
-            result[DateComponents.day(of: date), default: []].insert(mark)
+            result[DateComponents.day(of: date), default: [:]][mark, default: 0] += 1
         }
         for kit in activeKits {
             for step in kit.orderedActiveSteps where !step.isCompleted {
@@ -188,10 +188,9 @@ struct CalendarPlusView: View {
             .background(alignment: .top) { BrandGlow() }
             .background(Color(.systemGroupedBackground))
             .onChange(of: selectedDate) { _, _ in
-                // Solo se mueve si la agenda del día no se ve.
-                guard !dayVisible else { return }
-                withAnimation(reduceMotion ? nil : .smooth) {
-                    proxy.scrollTo(Self.dayAnchor, anchor: .center)
+                // Al tocar un día, la lista baja hasta su agenda.
+                withAnimation(reduceMotion ? nil : .smooth(duration: 0.45)) {
+                    proxy.scrollTo(Self.dayAnchor, anchor: UnitPoint(x: 0.5, y: 0.12))
                 }
             }
         }

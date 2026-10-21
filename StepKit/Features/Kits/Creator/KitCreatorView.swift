@@ -78,6 +78,7 @@ struct KitCreatorView: View {
                     startingPoint: $vm.startingPoint,
                     sessionsPerWeek: $vm.sessionsPerWeek,
                     sessionMinutes: $vm.sessionMinutes,
+                    oneSitting: $vm.oneSitting,
                     focusedField: $focusedField,
                     todayStart: vm.todayStart,
                     isDateInPast: vm.isDateInPast,

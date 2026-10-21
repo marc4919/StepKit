@@ -239,7 +239,7 @@ struct StepDetailView: View {
                         Text(entry.note)
                             .foregroundStyle(index == 0 ? .primary : .secondary)
                         HStack {
-                            Label(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
+                            Label(entry.notedAt.formatted(.dateTime.day().month(.abbreviated).hour().minute()), systemImage: Symbols.calendar)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()

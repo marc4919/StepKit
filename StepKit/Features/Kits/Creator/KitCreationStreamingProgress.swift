@@ -239,7 +239,7 @@ struct KitCreationStreamingProgress: View {
                 }
                 VStack(alignment: .leading, spacing: 16) {
                     phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
-                          title: "Resultado y supuestos",
+                          title: "Qué vas a conseguir",
                           detail: streamingState.isRestarting ? "Ajustando"
                             : streamingState.kitTitle == nil ? "Preparando" : "Listo")
                     phase(done: stepsChecked,

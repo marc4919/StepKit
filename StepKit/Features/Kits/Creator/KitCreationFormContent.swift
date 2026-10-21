@@ -16,6 +16,7 @@ struct KitCreationFormContent: View {
     @Binding var startingPoint: String
     @Binding var sessionsPerWeek: Int
     @Binding var sessionMinutes: Int
+    @Binding var oneSitting: Bool
 
     var focusedField: FocusState<KitCreatorField?>.Binding
     let todayStart: Date
@@ -50,17 +51,34 @@ struct KitCreationFormContent: View {
                       placeholder: "Ej: Poco tiempo, permisos de imágenes", text: $inconveniences, focus: .obstacles)
             }
             Section {
-                Stepper(value: $sessionsPerWeek, in: 1...14) {
+                Toggle(isOn: $oneSitting.animation(.smooth)) {
                     Label {
-                        Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("En una sola sesión")
+                            Text("Para algo que harás de una vez, como una receta o un montaje.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     } icon: {
-                        IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28)
+                        IconChip(symbol: "bolt.fill", color: .orange, size: 28)
+                    }
+                }
+                .accessibilityIdentifier("kitCreator.oneSitting")
+                if !oneSitting {
+                    Stepper(value: $sessionsPerWeek, in: 1...14) {
+                        Label {
+                            Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
+                        } icon: {
+                            IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28)
+                        }
                     }
                 }
                 Picker(selection: $sessionMinutes) {
-                    ForEach([15, 30, 45, 60], id: \.self) { Text("\($0) min").tag($0) }
+                    ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
                 } label: {
-                    Label { Text("Duración") } icon: { IconChip(symbol: "timer", color: MetaTint.time, size: 28) }
+                    Label { Text(oneSitting ? "Tiempo disponible" : "Cada sesión") } icon: {
+                        IconChip(symbol: "timer", color: MetaTint.time, size: 28)
+                    }
                 }
                 DatePicker(selection: $dueDate, in: todayStart..., displayedComponents: .date) {
                     Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
@@ -87,6 +105,14 @@ struct KitCreationFormContent: View {
             }
         }
         .scrollDismissesKeyboard(.interactively)
+        .onChange(of: oneSitting) { _, _ in
+            if !durations.contains(sessionMinutes) { sessionMinutes = oneSitting ? 60 : 30 }
+        }
+    }
+
+    /// Desde ratos cortos hasta una mañana entera.
+    private var durations: [Int] {
+        oneSitting ? [15, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
     }
 
     private func field(

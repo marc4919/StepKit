@@ -39,26 +39,28 @@ struct SaveProgressSheet: View {
                     .accessibilityElement(children: .combine)
                 }
                 Section {
-                    TextField("Qué hiciste y qué falta", text: $note, axis: .vertical)
+                    TextField("Ej.: «Escribí la introducción. Me falta el resultado»", text: $note, axis: .vertical)
                         .lineLimit(3...8)
                         .accessibilityIdentifier("progress.note")
                 } header: {
-                    Text("Lo que has avanzado (opcional)")
+                    Text("¿Qué has hecho hoy?")
+                } footer: {
+                    Text("Apúntalo para retomarlo sin pensar la próxima vez. Se guarda con la fecha y la hora, y no completa el paso.")
                 }
                 Section {
                     Picker("¿Puedes seguir?", selection: $canContinue) {
-                        Text("Puedo seguir").tag(true)
-                        Text("Estoy bloqueado").tag(false)
+                        Text("Sigo sin problema").tag(true)
+                        Text("Me he atascado").tag(false)
                     }
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("progress.canContinue")
                     if !canContinue {
-                        TextField("Qué te frena (opcional)", text: $reason, axis: .vertical)
+                        TextField("¿Qué te frena? Ej.: «Me falta el permiso del cliente»", text: $reason, axis: .vertical)
                             .lineLimit(2...4)
                             .accessibilityIdentifier("progress.blockedReason")
                     }
                 } header: {
-                    Text("¿Puedes seguir con este paso?")
+                    Text("¿Cómo vas con este paso?")
                 } footer: {
                     Text(canContinue
                          ? "Tu avance se guarda y el paso seguirá en curso."

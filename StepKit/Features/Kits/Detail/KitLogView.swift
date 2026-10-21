@@ -100,7 +100,9 @@ struct KitLogView: View {
                 }
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text([item.date.formatted(.dateTime.day().month(.abbreviated)),
+                Text([item.entry == nil
+                        ? item.date.formatted(.dateTime.day().month(.abbreviated))
+                        : item.date.formatted(.dateTime.day().month(.abbreviated).hour().minute()),
                       item.stepNumber.map { "Paso \($0)" }].compactMap { $0 }.joined(separator: " · "))
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -280,7 +280,7 @@ private struct PendingResultCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Eyebrow(text: "Pasos terminados · falta revisar el resultado", color: .orange)
+            Eyebrow(text: "Pasos terminados · falta revisar el resultado", color: MetaTint.done)
             let layout = typeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
                 : AnyLayout(HStackLayout(spacing: 14))
@@ -294,12 +294,12 @@ private struct PendingResultCard: View {
                         .foregroundStyle(.secondary)
                     Text("Resultado sin confirmar")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(MetaTint.done)
                 }
             }
-            TintCard(tint: .orange, strength: 0.12) {
+            TintCard(tint: MetaTint.done, strength: 0.12) {
                 HStack(alignment: .top, spacing: 12) {
-                    IconChip(symbol: "clock.badge.questionmark", color: .orange)
+                    IconChip(symbol: "flag.checkered", color: MetaTint.done)
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Resultado por confirmar").font(.headline)
                         Text("Has completado los pasos. Comprueba que tienes lo que buscabas antes de confirmar el resultado.")

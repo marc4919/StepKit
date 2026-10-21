@@ -32,12 +32,17 @@ struct KitDetailView: View {
     }
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
+                    .id("kit.top")
                 if allStepsDone {
                     resultCard
-                        .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.9, anchor: .top))
+                                .animation(.spring(response: 0.55, dampingFraction: 0.75).delay(0.45)),
+                            removal: .opacity))
                 }
                 Picker("Vista", selection: $segment) {
                     Text("Plan").tag(0)
@@ -55,6 +60,12 @@ struct KitDetailView: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 30)
+        }
+        .onChange(of: allStepsDone) { _, done in
+            guard done else { return }
+            // Al completar el último paso: subir arriba y que aparezca el resultado.
+            withAnimation(.smooth(duration: 0.5)) { proxy.scrollTo("kit.top", anchor: .top) }
+        }
         }
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
@@ -135,7 +146,7 @@ struct KitDetailView: View {
         } label: {
             HStack(spacing: 12) {
                 IconChip(symbol: confirmed ? "checkmark.seal.fill" : "flag.checkered",
-                         color: confirmed ? MetaTint.done : .orange, size: 40)
+                         color: MetaTint.done, size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(confirmed ? "Resultado confirmado" : "Has completado todos los pasos")
                         .font(.headline)
@@ -150,7 +161,8 @@ struct KitDetailView: View {
                     .foregroundStyle(.tertiary)
             }
             .padding(14)
-            .background((confirmed ? MetaTint.done : Color.orange).opacity(0.10), in: .rect(cornerRadius: 18))
+            .background(MetaTint.done.opacity(0.12), in: .rect(cornerRadius: 18))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(MetaTint.done.opacity(0.25)))
             .contentShape(.rect)
         }
         .buttonStyle(.plain)

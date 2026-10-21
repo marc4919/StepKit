@@ -30,31 +30,38 @@ enum CalendarMark: Int, Comparable, CaseIterable {
         }
     }
 
-    /// Las marcas de un día en fila, en el orden de la leyenda.
-    static func decoration(for marks: Set<CalendarMark>) -> UICalendarView.Decoration? {
-        guard !marks.isEmpty else { return nil }
-        let sorted = marks.sorted()
-        return .customView {
-            let stack = UIStackView()
-            stack.axis = .horizontal
-            stack.spacing = 2
-            stack.alignment = .center
-            stack.isAccessibilityElement = false
-            for mark in sorted {
-                let config = UIImage.SymbolConfiguration(pointSize: mark == .wantedDate ? 9 : 7, weight: .bold)
-                let image = UIImageView(image: UIImage(systemName: mark.symbol, withConfiguration: config))
-                image.tintColor = mark.color
-                stack.addArrangedSubview(image)
-            }
-            return stack
+    /// Las marcas de un día en fila, en el orden de la leyenda: un punto por cada cosa
+    /// (hasta 3 por tipo), para ver de un vistazo cuánto tienes ese día.
+    static func decoration(for counts: [CalendarMark: Int]) -> UICalendarView.Decoration? {
+        var symbols: [(UIImage, UIColor)] = []
+        for mark in CalendarMark.allCases.sorted() {
+            let count = counts[mark] ?? 0
+            guard count > 0 else { continue }
+            let config = UIImage.SymbolConfiguration(pointSize: mark == .wantedDate ? 9 : 6, weight: .bold)
+            guard let image = UIImage(systemName: mark.symbol, withConfiguration: config) else { continue }
+            for _ in 0..<(mark == .wantedDate ? 1 : min(count, 3)) { symbols.append((image, mark.color)) }
         }
+        guard !symbols.isEmpty else { return nil }
+        // Se dibujan en una sola imagen: las vistas personalizadas sin tamaño propio no se ven.
+        let spacing: CGFloat = 1.5
+        let width = symbols.reduce(0) { $0 + $1.0.size.width } + spacing * CGFloat(symbols.count - 1)
+        let height = symbols.map(\.0.size.height).max() ?? 8
+        let rendered = UIGraphicsImageRenderer(size: CGSize(width: width, height: height)).image { _ in
+            var x: CGFloat = 0
+            for (image, color) in symbols {
+                let tinted = image.withTintColor(color, renderingMode: .alwaysOriginal)
+                tinted.draw(at: CGPoint(x: x, y: (height - image.size.height) / 2))
+                x += image.size.width + spacing
+            }
+        }
+        return .image(rendered.withRenderingMode(.alwaysOriginal), color: nil, size: .large)
     }
 }
 
 struct DecoratedCalendarView: UIViewRepresentable {
     @Binding var selectedDate: Date
     /// Marcas de cada día (año, mes, día).
-    var marks: [DateComponents: Set<CalendarMark>]
+    var marks: [DateComponents: [CalendarMark: Int]]
     /// Al cambiar, el calendario muestra el mes del día elegido (botón Hoy).
     var revealToken: Int = 0
 
@@ -108,14 +115,14 @@ struct DecoratedCalendarView: UIViewRepresentable {
 
     final class Coordinator: NSObject, UICalendarViewDelegate, UICalendarSelectionSingleDateDelegate {
         var parent: DecoratedCalendarView
-        var lastMarks: [DateComponents: Set<CalendarMark>] = [:]
+        var lastMarks: [DateComponents: [CalendarMark: Int]] = [:]
         var lastRevealToken = 0
 
         init(_ parent: DecoratedCalendarView) { self.parent = parent }
 
         func calendarView(_ calendarView: UICalendarView, decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
             let key = DateComponents(year: dateComponents.year, month: dateComponents.month, day: dateComponents.day)
-            return CalendarMark.decoration(for: parent.marks[key] ?? [])
+            return CalendarMark.decoration(for: parent.marks[key] ?? [:])
         }
 
         func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {

@@ -430,8 +430,10 @@ enum EffortLevel {
 struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? .infinity
+    /// Posición de cada vista con un ancho dado; se usa igual al medir y al colocar,
+    /// para que la altura calculada coincida siempre con lo que se dibuja.
+    private func layout(_ subviews: Subviews, width: CGFloat) -> (origins: [CGPoint], size: CGSize) {
+        var origins: [CGPoint] = []
         var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0, maxX: CGFloat = 0
         for subview in subviews {
             let size = subview.sizeThatFits(.unspecified)
@@ -440,25 +442,26 @@ struct FlowLayout: Layout {
                 y += rowHeight + spacing
                 rowHeight = 0
             }
+            origins.append(CGPoint(x: x, y: y))
             x += size.width + spacing
             maxX = max(maxX, x - spacing)
             rowHeight = max(rowHeight, size.height)
         }
-        return CGSize(width: min(maxX, width), height: y + rowHeight)
+        return (origins, CGSize(width: maxX, height: y + rowHeight))
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        let result = layout(subviews, width: width)
+        // Ocupa todo el ancho propuesto: así el padre lo coloca con ese mismo ancho.
+        return CGSize(width: proposal.width ?? result.size.width, height: result.size.height)
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX, y = bounds.minY, rowHeight: CGFloat = 0
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x > bounds.minX, x + size.width > bounds.maxX {
-                x = bounds.minX
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
+        let result = layout(subviews, width: bounds.width)
+        for (subview, origin) in zip(subviews, result.origins) {
+            subview.place(at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y),
+                          proposal: .unspecified)
         }
     }
 }

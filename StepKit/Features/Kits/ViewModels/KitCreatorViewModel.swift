@@ -45,6 +45,8 @@ final class KitCreatorViewModel {
     var startingPoint: String = ""
     var sessionsPerWeek: Int = 3
     var sessionMinutes: Int = 30
+    /// Todo en una sola sesión (algo para hoy, un montaje, una receta…).
+    var oneSitting = false
 
     /// Texto que recibe la IA: el resultado más el contexto opcional del formulario.
     var composedDescription: String {
@@ -53,12 +55,25 @@ final class KitCreatorViewModel {
         let start = startingPoint.trimmingCharacters(in: .whitespacesAndNewlines)
         if !done.isEmpty { parts.append("Sabré que está listo cuando: \(done)") }
         if !start.isEmpty { parts.append("Punto de partida: \(start)") }
+        parts.append(oneSitting
+            ? "Disponibilidad: lo haré en una sola sesión de \(Self.durationText(sessionMinutes))."
+            : "Disponibilidad: \(sessionsPerWeek) \(sessionsPerWeek == 1 ? "sesión" : "sesiones") por semana de \(Self.durationText(sessionMinutes)).")
         return parts.joined(separator: "\n")
     }
 
-    /// Minutos diarios equivalentes a las sesiones semanales elegidas.
+    /// Tiempo de una sesión de trabajo: cada paso debe caber en una.
+    /// (Antes se promediaba la semana entre 7 días y salían tiempos raros como 17 min.)
     var dailyMinutesFromSessions: Int {
-        max(10, sessionsPerWeek * sessionMinutes / 7)
+        max(10, sessionMinutes)
+    }
+
+    static func durationText(_ minutes: Int) -> String {
+        let hours = minutes / 60, rest = minutes % 60
+        switch (hours, rest) {
+        case (0, _): return "\(minutes) min"
+        case (_, 0): return "\(hours) h"
+        default: return "\(hours) h \(rest) min"
+        }
     }
     
     // Streaming State
