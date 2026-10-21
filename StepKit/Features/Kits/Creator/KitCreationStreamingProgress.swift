@@ -21,6 +21,12 @@ struct KitCreationStreamingProgress: View {
     @State private var finalFill = false
     /// Pantalla de cuidado: visible desde plan_mode «careful» hasta que llega el título (mínimo ~1 s).
     @State private var showCareful = false
+    /// Transición a «Tu plan»: la esfera viaja a su sitio, se dibuja el anillo y aparece el resto.
+    @Namespace private var sphereSpace
+    @State private var sphereInFlight = false
+    @State private var sphereLanded = false
+    @State private var ringDrawn: CGFloat = 0
+    @State private var contentRevealed = false
     @State private var carefulShownAt: Date?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -38,17 +44,29 @@ struct KitCreationStreamingProgress: View {
     }
 
     var body: some View {
-        Group {
-            if streamingState.hasError {
-                errorView
-            } else if showReview {
-                reviewView
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-            } else {
-                preparingView
+        ZStack {
+            Group {
+                if streamingState.hasError {
+                    errorView
+                } else if showReview {
+                    reviewView
+                        .transition(.opacity)
+                } else {
+                    preparingView
+                        .transition(.opacity)
+                }
+            }
+            if sphereInFlight && !sphereLanded {
+                // La misma esfera pasa del centro de la preparación al anillo de «Tu plan».
+                GeometryReader { geo in
+                    BrandSphere(size: min(geo.size.width, geo.size.height), glow: false)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                }
+                .matchedGeometryEffect(id: "sphere", in: sphereSpace, properties: .frame, isSource: false)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
             }
         }
-        .animation(.easeInOut(duration: 0.5), value: showReview)
         .onChange(of: streamingState.isComplete) { _, complete in
             if complete { scheduleReview() }
         }
@@ -63,7 +81,13 @@ struct KitCreationStreamingProgress: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 // La esfera se forma mientras avanza la barra y, al terminar, despega.
-                OrbitMark(height: 190, buildProgress: shownProgress, liftOff: liftOff)
+                OrbitMark(height: 190, buildProgress: shownProgress, liftOff: liftOff, hidesSphere: sphereInFlight)
+                    .overlay {
+                        // Hueco de la esfera (190 × 0,31): de aquí sale hacia «Tu plan».
+                        Color.clear
+                            .frame(width: 59, height: 59)
+                            .matchedGeometryEffect(id: "sphere", in: sphereSpace, isSource: !showReview)
+                    }
                     .padding(.horizontal, 20)
                 Text(headline)
                     .font(.title.bold())
@@ -145,20 +169,29 @@ struct KitCreationStreamingProgress: View {
                 shownProgress = 1
                 reviewChecked = true
                 showReview = true
+                sphereLanded = true
+                ringDrawn = 1
+                contentRevealed = true
                 return
             }
-            // Primero se completan los checks, luego la barra, la esfera despega y aparece «Tu plan».
+            // Primero se completan los checks y la barra; luego la esfera viaja al anillo de
+            // «Tu plan», el anillo se dibuja a su alrededor y el resto aparece en cascada.
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { stepsChecked = true }
             try? await Task.sleep(for: .milliseconds(500))
-            // La barra arranca su último tramo y el último check llega justo antes del 100 %.
             finalFill = true
             advance(to: 1, duration: 1.0)
             try? await Task.sleep(for: .milliseconds(750))
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { reviewChecked = true }
             try? await Task.sleep(for: .milliseconds(650))
-            withAnimation(.easeIn(duration: 0.75)) { liftOff = true }
-            try? await Task.sleep(for: .milliseconds(800))
-            showReview = true
+            // Relevo sin animación: la esfera de vuelo aparece justo donde estaba la otra.
+            sphereInFlight = true
+            try? await Task.sleep(for: .milliseconds(40))
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.86)) { showReview = true }
+            try? await Task.sleep(for: .milliseconds(820))
+            sphereLanded = true
+            withAnimation(.easeInOut(duration: 0.7)) { ringDrawn = 1 }
+            try? await Task.sleep(for: .milliseconds(300))
+            contentRevealed = true
         }
     }
 
@@ -233,9 +266,20 @@ struct KitCreationStreamingProgress: View {
             VStack(alignment: .leading, spacing: 18) {
                 HStack(spacing: 16) {
                     ZStack {
-                        ProgressRing(done: 0, total: max(streamingState.steps.count, 1), size: 70, showsLabel: false)
-                        BrandSphere(size: 34, glow: false)
+                        Circle()
+                            .trim(from: 0, to: ringDrawn)
+                            .stroke(Color.accentColor.opacity(0.25),
+                                    style: StrokeStyle(lineWidth: 70 * 0.11, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                        Color.clear
+                            .frame(width: 34, height: 34)
+                            .matchedGeometryEffect(id: "sphere", in: sphereSpace, isSource: showReview)
+                        if sphereLanded {
+                            BrandSphere(size: 34, glow: false)
+                        }
                     }
+                    .frame(width: 70, height: 70)
+                    .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 6) {
                         Text(streamingState.kitTitle ?? "Tu plan")
                             .font(.title2.bold())
@@ -247,15 +291,18 @@ struct KitCreationStreamingProgress: View {
                             }
                         }
                     }
+                    .modifier(Reveal(shown: contentRevealed, order: 0))
                 }
                 if let kpi = streamingState.kpi, !kpi.isEmpty {
                     PlainCard {
                         Eyebrow(text: "Sabrás que está listo cuando", color: .secondary)
                         Text(kpi)
                     }
+                    .modifier(Reveal(shown: contentRevealed, order: 1))
                 }
                 Text("Revisa el plan antes de empezar. Podrás editar los pasos después.")
                     .foregroundStyle(.secondary)
+                    .modifier(Reveal(shown: contentRevealed, order: 2))
                 if let first = streamingState.steps.first {
                     TintCard {
                         HStack(alignment: .top, spacing: 12) {
@@ -269,6 +316,7 @@ struct KitCreationStreamingProgress: View {
                             }
                         }
                     }
+                    .modifier(Reveal(shown: contentRevealed, order: 3))
                 }
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(streamingState.steps.enumerated()), id: \.offset) { index, step in
@@ -294,6 +342,7 @@ struct KitCreationStreamingProgress: View {
                     }
                 }
                 .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
+                .modifier(Reveal(shown: contentRevealed, order: 4))
                 if !streamingState.risks.isEmpty {
                     PlainCard {
                         Eyebrow(text: "A tener en cuenta", color: .secondary)
@@ -303,6 +352,7 @@ struct KitCreationStreamingProgress: View {
                                 .symbolRenderingMode(.multicolor)
                         }
                     }
+                    .modifier(Reveal(shown: contentRevealed, order: 5))
                 }
             }
             .padding()
@@ -326,6 +376,7 @@ struct KitCreationStreamingProgress: View {
             .padding(.horizontal)
             .padding(.vertical, 10)
             .background(.bar)
+            .modifier(Reveal(shown: contentRevealed, order: 3))
         }
     }
 
@@ -368,6 +419,19 @@ struct KitCreationStreamingProgress: View {
 }
 
 /// Barra de progreso suave con degradado de la marca y brillo que recorre la parte completada.
+/// Aparición en cascada de «Tu plan» tras dibujarse el anillo.
+private struct Reveal: ViewModifier {
+    let shown: Bool
+    let order: Int
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown ? 0 : 14)
+            .animation(.smooth(duration: 0.5).delay(Double(order) * 0.08), value: shown)
+    }
+}
+
 /// Motivos del modo cuidado. Sin colores de alarma: es acompañar, no juzgar.
 private struct CarefulReasonsList: View {
     let reasons: [String]

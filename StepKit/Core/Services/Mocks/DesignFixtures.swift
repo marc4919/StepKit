@@ -192,6 +192,8 @@ private struct CarefulCreationPreview: View {
             try? await Task.sleep(for: .seconds(1))
             state.handleEvent(event("step", step: index))
         }
+        try? await Task.sleep(for: .seconds(1))
+        state.handleEvent(event("done"))
     }
 }
 

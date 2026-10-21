@@ -234,6 +234,8 @@ struct OrbitMark: View {
     var buildProgress: Double? = nil
     /// Con `buildProgress`: la esfera despega hacia arriba (fin de la preparación).
     var liftOff = false
+    /// Oculta la esfera sin moverla: otra vista la toma desde aquí (transición a «Tu plan»).
+    var hidesSphere = false
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var drawn: CGFloat = 1
@@ -253,6 +255,7 @@ struct OrbitMark: View {
     }
 
     private var sphereOpacity: Double {
+        if hidesSphere { return 0 }
         guard let p = buildProgress else { return appeared ? 1 : 0 }
         return liftOff ? 0 : min(1, 0.25 + p * 1.5)
     }
