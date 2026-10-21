@@ -91,7 +91,8 @@ final class PlanProposal: Identifiable {
         case setDate(stepID: UUID, date: Date)
         case edit(stepID: UUID, title: String?, minutes: Int?)
         case split(stepID: UUID, titles: [String], minutes: Int?)
-        case add(afterStepID: UUID?, title: String, minutes: Int, date: Date?)
+        /// `afterStepID` nil y `atStart` true: al principio; nil y false: al final.
+        case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?)
         case remove(stepID: UUID)
         case block(stepID: UUID, reason: String)
     }
@@ -116,11 +117,13 @@ final class PlanProposal: Identifiable {
     func accept(in kit: GoalEntity, context: ModelContext) {
         let now = Date()
         func step(_ id: UUID) -> StepEntity? { kit.orderedActiveSteps.first { $0.id == id } }
-        func insert(_ title: String, minutes: Int, date: Date?, after anchor: StepEntity?) {
+        func insert(_ title: String, minutes: Int, date: Date?, after anchor: StepEntity?, atStart: Bool = false) {
+            let order = atStart ? (kit.orderedActiveSteps.first?.order ?? 0)
+                : (anchor?.order ?? (kit.orderedActiveSteps.last?.order ?? -1)) + 1
             let new = StepEntity(ownerID: kit.ownerID, stepTitle: title, descriptionShort: "", descriptionLong: "",
                                  estimateMinutes: minutes, suggestedDeadline: date ?? anchor?.suggestedDeadline,
                                  effortLevel: anchor?.effortLevel ?? "medium",
-                                 order: (anchor?.order ?? (kit.orderedActiveSteps.last?.order ?? -1)) + 1,
+                                 order: order,
                                  createdAt: now, updatedAt: now)
             // Hace hueco detrás del paso de referencia.
             for later in kit.orderedActiveSteps where later.order >= new.order {
@@ -144,6 +147,9 @@ final class PlanProposal: Identifiable {
             case .split(let id, let titles, let minutes):
                 guard let target = step(id), let first = titles.first else { continue }
                 target.stepTitle = first
+                // Dividir sirve para seguir avanzando: la primera parte deja de estar bloqueada.
+                target.blockedReason = nil
+                target.blockedAt = nil
                 if let minutes { target.estimateMinutes = minutes }
                 target.markModified(at: now)
                 var anchor = target
@@ -151,8 +157,8 @@ final class PlanProposal: Identifiable {
                     insert(title, minutes: minutes ?? target.estimateMinutes, date: target.suggestedDeadline, after: anchor)
                     if let added = kit.orderedActiveSteps.first(where: { $0.order == anchor.order + 1 }) { anchor = added }
                 }
-            case .add(let afterID, let title, let minutes, let date):
-                insert(title, minutes: minutes, date: date, after: afterID.flatMap(step))
+            case .add(let afterID, let atStart, let title, let minutes, let date):
+                insert(title, minutes: minutes, date: date, after: afterID.flatMap(step), atStart: atStart)
             case .remove(let id):
                 guard let target = step(id) else { continue }
                 target.deletedAt = now
