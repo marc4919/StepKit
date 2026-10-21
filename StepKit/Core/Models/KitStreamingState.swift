@@ -26,6 +26,17 @@ final class KitStreamingState {
     /// Riesgos identificados
     var risks: [String] = []
     
+    // MARK: - Modo del plan
+
+    /// El servidor prepara este Kit con más cuidado (salud, dinero, plazos…).
+    var isCareful = false
+
+    /// Motivos del modo cuidado, tal como los envía el servidor ("health", "tight_deadline"…).
+    var carefulReasons: [String] = []
+
+    /// El servidor ha empezado de nuevo con otro modelo: lo recibido se sustituye.
+    var isRestarting = false
+
     // MARK: - Estado de Steps
     
     /// Steps que se van añadiendo
@@ -72,6 +83,9 @@ final class KitStreamingState {
         if isComplete {
             return "¡Kit creado!"
         }
+        if isRestarting {
+            return "Ajustando tu plan…"
+        }
         if let total = totalSteps {
             return "Generando paso \(steps.count + 1) de \(total)..."
         }
@@ -86,7 +100,21 @@ final class KitStreamingState {
     /// Procesa un evento del stream
     func handleEvent(_ event: AIChatStreamEvent) {
         switch event.eventType {
+        case .planMode:
+            isCareful = event.mode == "careful"
+            carefulReasons = isCareful ? Array((event.reasons ?? []).prefix(3)) : []
+
+        case .restart:
+            kitTitle = nil
+            kpi = nil
+            horizonDays = nil
+            risks = []
+            steps = []
+            totalSteps = nil
+            isRestarting = true
+
         case .kitInfo:
+            isRestarting = false
             kitTitle = event.kitTitle
             kpi = event.kpi
             horizonDays = event.horizonDays
@@ -96,8 +124,8 @@ final class KitStreamingState {
             if let step = event.step {
                 steps.append(step)
             }
-            if totalSteps == nil {
-                totalSteps = event.totalSteps
+            if let total = event.totalSteps {
+                totalSteps = total
             }
             
         case .done:
@@ -116,6 +144,9 @@ final class KitStreamingState {
     
     /// Reinicia el estado para un nuevo intento
     func reset() {
+        isCareful = false
+        carefulReasons = []
+        isRestarting = false
         kitTitle = nil
         kpi = nil
         horizonDays = nil

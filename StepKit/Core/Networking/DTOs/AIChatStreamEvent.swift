@@ -8,10 +8,14 @@
 import Foundation
 
 /// Evento SSE para streaming de creación de kits
-/// Tipos: "kit_info" | "step" | "done" | "error"
+/// Tipos: "plan_mode" | "kit_info" | "step" | "restart" | "done" | "error"
 struct AIChatStreamEvent: Codable {
     let type: String
-    
+
+    // Para type = "plan_mode": "normal" | "careful" y los motivos del modo cuidado
+    var mode: String? = nil
+    var reasons: [String]? = nil
+
     // Para type = "kit_info"
     let kitTitle: String?
     let kpi: String?
@@ -37,8 +41,10 @@ struct AIChatStreamEvent: Codable {
     }
     
     enum EventType: String {
+        case planMode = "plan_mode"
         case kitInfo = "kit_info"
         case step = "step"
+        case restart = "restart"
         case done = "done"
         case error = "error"
         case unknown

@@ -28,6 +28,7 @@ enum DesignFixtureScenario: String {
     case welcome       // bienvenida
     case calendarEmpty // Calendario sin Kits
     case create        // formulario Crear Kit
+    case careful       // preparando un Kit delicado: pantalla de cuidado y reinicio con «Ajustando tu plan…»
     case signIn        // acceso
     case profile       // pestaña Perfil
 
@@ -76,6 +77,8 @@ struct DesignFixtureRoot: View {
             WelcomeView {}
         } else if scenario == .signIn {
             SignInView().environment(authManager)
+        } else if scenario == .careful {
+            CarefulCreationPreview()
         } else if scenario == .create {
             KitCreatorView()
                 .environment(authManager)
@@ -152,6 +155,46 @@ struct DesignFixtureRoot: View {
     }
 }
 
+/// Simula los eventos del servidor para un Kit delicado: plan_mode, título tardío, reinicio y pasos.
+private struct CarefulCreationPreview: View {
+    @State private var state = KitStreamingState()
+
+    var body: some View {
+        KitCreationStreamingProgress(streamingState: $state, onSave: {}, onDiscard: {})
+            .task { await play() }
+    }
+
+    private func event(_ type: String, title: String? = nil, step: Int? = nil,
+                       mode: String? = nil, reasons: [String]? = nil) -> AIChatStreamEvent {
+        AIChatStreamEvent(type: type, mode: mode, reasons: reasons,
+                          kitTitle: title, kpi: title == nil ? nil : "Correr 5 km sin parar",
+                          horizonDays: title == nil ? nil : 45, risks: nil,
+                          step: step.map { index in
+                              StreamStepOutput(stepTitle: "Paso \(index + 1)",
+                                               description: StreamDescriptionOutput(short: "Corto", long: "Largo"),
+                                               estimateMinutes: 20, suggestedDeadline: "2026-11-10",
+                                               effortLevel: "low", adaptsTo: "", blockedByPremium: false)
+                          },
+                          stepIndex: step, totalSteps: nil, kitId: nil, kit: nil, usage: nil, error: nil)
+    }
+
+    private func play() async {
+        state.handleEvent(event("plan_mode", mode: "careful", reasons: ["health", "tight_deadline"]))
+        try? await Task.sleep(for: .seconds(6))
+        state.handleEvent(event("kit_info", title: "Volver a correr"))
+        try? await Task.sleep(for: .seconds(2))
+        state.handleEvent(event("step", step: 0))
+        try? await Task.sleep(for: .seconds(2))
+        state.handleEvent(event("restart"))
+        try? await Task.sleep(for: .seconds(5))
+        state.handleEvent(event("kit_info", title: "Volver a correr"))
+        for index in 0..<4 {
+            try? await Task.sleep(for: .seconds(1))
+            state.handleEvent(event("step", step: index))
+        }
+    }
+}
+
 @MainActor
 enum DesignFixtureData {
     static let owner = "design-fixtures"
@@ -159,7 +202,7 @@ enum DesignFixtureData {
     static func seed(_ scenario: DesignFixtureScenario, into context: ModelContext) {
         defer { claimAll(in: context) }
         switch scenario {
-        case .empty, .welcome, .calendarEmpty, .create, .signIn:
+        case .empty, .welcome, .calendarEmpty, .create, .careful, .signIn:
             break
         case .one, .step, .kit:
             insertPortfolio(into: context, blocked: false)

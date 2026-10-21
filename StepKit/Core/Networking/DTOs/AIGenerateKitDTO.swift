@@ -23,7 +23,9 @@ struct AIGenerateKitRequest: Codable {
     let progressState: String // "just starting", "in progress", "almost done"
     let complexityScore: Double // 0.0-1.0
     let promptVersion: Int // 1 = heavyweight, 2 = lightweight
-    
+    /// La app sabe mostrar «Ajustando tu plan…» si el servidor reinicia con otro modelo.
+    var supportsRestart = true
+
     /// Crea un request a partir de los datos del formulario
     /// - Parameters:
     ///   - description: Descripción del objetivo

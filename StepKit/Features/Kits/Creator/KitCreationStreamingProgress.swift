@@ -19,6 +19,9 @@ struct KitCreationStreamingProgress: View {
     @State private var stepsChecked = false
     @State private var reviewChecked = false
     @State private var finalFill = false
+    /// Pantalla de cuidado: visible desde plan_mode «careful» hasta que llega el título (mínimo ~1 s).
+    @State private var showCareful = false
+    @State private var carefulShownAt: Date?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
@@ -58,22 +61,33 @@ struct KitCreationStreamingProgress: View {
                 // La esfera se forma mientras avanza la barra y, al terminar, despega.
                 OrbitMark(height: 190, buildProgress: shownProgress, liftOff: liftOff)
                     .padding(.horizontal, 20)
-                Text("Dando forma a tu proyecto")
+                Text(headline)
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-                VStack(alignment: .leading, spacing: 16) {
-                    phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
-                          title: "Resultado y supuestos",
-                          detail: streamingState.kitTitle == nil ? "Preparando" : "Recibido")
-                    phase(done: stepsChecked,
-                          active: streamingState.kitTitle != nil && !stepsChecked,
-                          title: "Pasos del plan", detail: stepsDetail)
-                    phase(done: reviewChecked, active: stepsChecked && !reviewChecked,
-                          title: "Plan listo para revisar",
-                          detail: reviewChecked ? "Listo" : "Lo revisarás tú antes de empezar")
+                    .contentTransition(.opacity)
+                    .accessibilityAddTraits(.updatesFrequently)
+                if showCareful {
+                    CarefulReasonsList(reasons: streamingState.carefulReasons)
+                        .padding(.horizontal, 30)
+                        .transition(.opacity)
+                } else {
+                    VStack(alignment: .leading, spacing: 16) {
+                        phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
+                              title: "Resultado y supuestos",
+                              detail: streamingState.isRestarting ? "Ajustando"
+                                : streamingState.kitTitle == nil ? "Preparando" : "Recibido")
+                        phase(done: stepsChecked,
+                              active: streamingState.kitTitle != nil && !stepsChecked,
+                              title: "Pasos del plan", detail: stepsDetail)
+                        phase(done: reviewChecked, active: stepsChecked && !reviewChecked,
+                              title: "Plan listo para revisar",
+                              detail: reviewChecked ? "Listo" : "Lo revisarás tú antes de empezar")
+                    }
+                    .opacity(streamingState.isRestarting ? 0.45 : 1)
+                    .padding(.horizontal, 30)
+                    .transition(.opacity)
                 }
-                .padding(.horizontal, 30)
                 SmoothProgressBar(value: shownProgress)
                     .padding(.horizontal, 30)
                     .accessibilityElement()
@@ -93,8 +107,18 @@ struct KitCreationStreamingProgress: View {
         .sensoryFeedback(.impact(weight: .light), trigger: stepsChecked)
         .sensoryFeedback(.impact(weight: .light), trigger: reviewChecked)
         .sensoryFeedback(.success, trigger: liftOff)
-        .onAppear { advance(to: targetProgress) }
+        .onAppear {
+            advance(to: targetProgress)
+            if streamingState.isCareful && streamingState.kitTitle == nil { presentCareful() }
+        }
         .onChange(of: targetProgress) { _, value in advance(to: value) }
+        .onChange(of: streamingState.isCareful) { _, careful in
+            if careful && streamingState.kitTitle == nil { presentCareful() }
+        }
+        .onChange(of: streamingState.kitTitle != nil) { _, hasTitle in
+            if hasTitle { dismissCareful() }
+        }
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.4), value: streamingState.isRestarting)
         .task {
             // Avance lento mientras se espera el siguiente evento, sin pasar del siguiente tramo.
             while !Task.isCancelled && !finalFill {
@@ -132,6 +156,36 @@ struct KitCreationStreamingProgress: View {
         }
     }
 
+    private var headline: String {
+        if streamingState.isRestarting { return "Ajustando tu plan…" }
+        if showCareful { return "Preparando tu plan con más cuidado" }
+        return "Dando forma a tu proyecto"
+    }
+
+    private func presentCareful() {
+        carefulShownAt = .now
+        if reduceMotion {
+            showCareful = true
+        } else {
+            withAnimation(.easeInOut(duration: 0.4)) { showCareful = true }
+        }
+    }
+
+    /// Se desvanece al llegar el título; si apenas se ha visto, aguanta hasta ~1 s para no parpadear.
+    /// No retrasa nada: el plan sigue llegando por detrás.
+    private func dismissCareful() {
+        guard showCareful else { return }
+        let elapsed = carefulShownAt.map { Date.now.timeIntervalSince($0) } ?? 1
+        Task {
+            if elapsed < 1 { try? await Task.sleep(for: .seconds(1 - elapsed)) }
+            if reduceMotion {
+                showCareful = false
+            } else {
+                withAnimation(.easeInOut(duration: 0.5)) { showCareful = false }
+            }
+        }
+    }
+
     private func advance(to value: Double, duration: Double = 0.9) {
         guard value > shownProgress else { return }
         if reduceMotion {
@@ -144,6 +198,9 @@ struct KitCreationStreamingProgress: View {
     private var stepsDetail: String {
         if let total = streamingState.totalSteps {
             return "Recibidos \(streamingState.steps.count) de \(total)"
+        }
+        if !streamingState.steps.isEmpty {
+            return streamingState.steps.count == 1 ? "Recibido 1" : "Recibidos \(streamingState.steps.count)"
         }
         return streamingState.kitTitle == nil ? "Pendiente" : "Preparando"
     }
@@ -305,6 +362,41 @@ struct KitCreationStreamingProgress: View {
 }
 
 /// Barra de progreso suave con degradado de la marca y brillo que recorre la parte completada.
+/// Motivos del modo cuidado. Sin colores de alarma: es acompañar, no juzgar.
+private struct CarefulReasonsList: View {
+    let reasons: [String]
+
+    private static let texts: [String: (text: String, symbol: String)] = [
+        "health": ("Afecta a tu salud", "heart"),
+        "mental_health": ("Cuida tu bienestar emocional", "leaf"),
+        "substances": ("Implica dejar o reducir una sustancia", "hand.raised"),
+        "disability": ("Adaptado a tu situación", "figure.roll"),
+        "financial_risk": ("Hay dinero en juego", "eurosign.circle"),
+        "legal": ("Buscamos una alternativa legal", "checkmark.shield"),
+        "tight_deadline": ("El plazo es muy corto", "clock")
+    ]
+
+    private var items: [(text: String, symbol: String)] {
+        reasons.compactMap { Self.texts[$0] }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Me tomo unos segundos más para que el plan te cuide bien.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            ForEach(items, id: \.text) { item in
+                HStack(spacing: 12) {
+                    IconChip(symbol: item.symbol, color: .accentColor, size: 34)
+                    Text(item.text).font(.headline)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
 private struct SmoothProgressBar: View {
     var value: Double
     @State private var shimmer = false
