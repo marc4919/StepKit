@@ -34,13 +34,14 @@ struct KitCreationStreamingProgress: View {
     private var targetProgress: Double {
         if finalFill { return 1 }
         if streamingState.isComplete { return 0.95 }
-        guard streamingState.kitTitle != nil else { return 0.12 }
+        guard streamingState.kitTitle != nil else { return 0.08 }
         let received = Double(streamingState.steps.count)
         if let total = streamingState.totalSteps, total > 0 {
-            return 0.25 + 0.7 * received / Double(total)
+            return 0.15 + 0.75 * received / Double(total)
         }
         // Sin total (el servidor ya no lo anuncia): cada paso acerca la barra, sin llegar al final.
-        return 0.25 + 0.65 * (1 - pow(0.8, received))
+        // Curva suave: cada paso suma algo parecido durante todo el plan (5 pasos ≈ 50 %, 10 ≈ 72 %).
+        return 0.15 + 0.75 * (1 - pow(0.88, received))
     }
 
     var body: some View {
@@ -116,7 +117,7 @@ struct KitCreationStreamingProgress: View {
                         phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
                               title: "Resultado y supuestos",
                               detail: streamingState.isRestarting ? "Ajustando"
-                                : streamingState.kitTitle == nil ? "Preparando" : "Recibido")
+                                : streamingState.kitTitle == nil ? "Preparando" : "Listo")
                         phase(done: stepsChecked,
                               active: streamingState.kitTitle != nil && !stepsChecked,
                               title: "Pasos del plan", detail: stepsDetail)
@@ -174,7 +175,7 @@ struct KitCreationStreamingProgress: View {
             // siguiente tramo pero nunca se queda quieto (en el modo cuidado la espera es larga).
             while !Task.isCancelled && !finalFill {
                 try? await Task.sleep(for: .milliseconds(450))
-                let ceiling = min(0.9, targetProgress + 0.15)
+                let ceiling = min(0.9, targetProgress + 0.06)
                 if shownProgress < ceiling {
                     let step = max(0.002, (ceiling - shownProgress) * 0.05)
                     advance(to: min(ceiling, shownProgress + step), duration: 0.45)
@@ -264,10 +265,10 @@ struct KitCreationStreamingProgress: View {
 
     private var stepsDetail: String {
         if let total = streamingState.totalSteps {
-            return "Recibidos \(streamingState.steps.count) de \(total)"
+            return "\(streamingState.steps.count) de \(total) listos"
         }
         if !streamingState.steps.isEmpty {
-            return streamingState.steps.count == 1 ? "Recibido 1" : "Recibidos \(streamingState.steps.count)"
+            return streamingState.steps.count == 1 ? "1 paso listo" : "\(streamingState.steps.count) pasos listos"
         }
         return streamingState.kitTitle == nil ? "Pendiente" : "Preparando"
     }

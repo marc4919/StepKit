@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import NaturalLanguage
 
 struct StepDetailView: View {
     @Bindable var stepEntity: StepEntity
@@ -134,7 +135,7 @@ struct StepDetailView: View {
                 if !stepEntity.descriptionLong.isEmpty, stepEntity.descriptionLong != stepEntity.descriptionShort {
                     PlainCard {
                         Eyebrow(text: "Descripción", color: .secondary)
-                        Text(stepEntity.descriptionLong)
+                        ParagraphText(text: stepEntity.descriptionLong)
                     }
                 }
                 if !stepEntity.adaptsTo.isEmpty {
@@ -446,5 +447,39 @@ struct HingeObserver: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// Texto largo en párrafos cortos: respeta los saltos que trae y, si no hay, agrupa de dos en dos frases.
+struct ParagraphText: View {
+    let text: String
+
+    static func paragraphs(of text: String) -> [String] {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let explicit = trimmed.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        if explicit.count > 1 || trimmed.count < 220 { return explicit }
+        let tokenizer = NLTokenizer(unit: .sentence)
+        tokenizer.string = trimmed
+        var sentences: [String] = []
+        tokenizer.enumerateTokens(in: trimmed.startIndex..<trimmed.endIndex) { range, _ in
+            sentences.append(trimmed[range].trimmingCharacters(in: .whitespaces))
+            return true
+        }
+        guard sentences.count > 2 else { return [trimmed] }
+        return stride(from: 0, to: sentences.count, by: 2).map {
+            sentences[$0..<min($0 + 2, sentences.count)].joined(separator: " ")
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(Self.paragraphs(of: text).enumerated()), id: \.offset) { _, paragraph in
+                Text(paragraph)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
