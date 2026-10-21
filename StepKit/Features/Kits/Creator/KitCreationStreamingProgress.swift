@@ -89,16 +89,28 @@ struct KitCreationStreamingProgress: View {
                             .matchedGeometryEffect(id: "sphere", in: sphereSpace, isSource: !showReview)
                     }
                     .padding(.horizontal, 20)
-                Text(headline)
-                    .font(.title.bold())
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .contentTransition(.opacity)
-                    .accessibilityAddTraits(.updatesFrequently)
+                ZStack {
+                    Text(headline)
+                        .font(.title.bold())
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .id(headline)
+                        .transition(Self.swap)
+                }
+                .accessibilityAddTraits(.updatesFrequently)
+                if streamingState.isRestarting {
+                    Text("Lo estoy rehaciendo para que encaje mejor con tu tiempo.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 30)
+                        .transition(Self.swap)
+                }
                 if showCareful {
                     CarefulReasonsList(reasons: streamingState.carefulReasons)
                         .padding(.horizontal, 30)
-                        .transition(.opacity)
+                        .transition(Self.swap)
                 } else {
                     VStack(alignment: .leading, spacing: 16) {
                         phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
@@ -114,7 +126,7 @@ struct KitCreationStreamingProgress: View {
                     }
                     .opacity(streamingState.isRestarting ? 0.45 : 1)
                     .padding(.horizontal, 30)
-                    .transition(.opacity)
+                    .transition(Self.swap)
                 }
                 SmoothProgressBar(value: shownProgress)
                     .padding(.horizontal, 30)
@@ -146,7 +158,17 @@ struct KitCreationStreamingProgress: View {
         .onChange(of: streamingState.kitTitle != nil) { _, hasTitle in
             if hasTitle { dismissCareful() }
         }
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.4), value: streamingState.isRestarting)
+        .onChange(of: streamingState.isRestarting) { _, restarting in
+            guard restarting else { return }
+            // El plan se rehace: la barra y la esfera vuelven atrás con calma, sin saltos.
+            let rewind = min(shownProgress, 0.18)
+            if reduceMotion {
+                shownProgress = rewind
+            } else {
+                withAnimation(.smooth(duration: 1.2)) { shownProgress = rewind }
+            }
+        }
+        .animation(reduceMotion ? nil : .smooth(duration: 0.6), value: streamingState.isRestarting)
         .task {
             // Avance continuo mientras se espera el siguiente evento: se frena al acercarse al
             // siguiente tramo pero nunca se queda quieto (en el modo cuidado la espera es larga).
@@ -194,6 +216,12 @@ struct KitCreationStreamingProgress: View {
             contentRevealed = true
         }
     }
+
+    /// Relevo de textos sin solaparse: lo anterior se va antes de que llegue lo nuevo.
+    private static let swap: AnyTransition = .asymmetric(
+        insertion: .opacity.animation(.easeOut(duration: 0.35).delay(0.25)),
+        removal: .opacity.animation(.easeIn(duration: 0.2))
+    )
 
     private var headline: String {
         if streamingState.isRestarting { return "Ajustando tu plan…" }
