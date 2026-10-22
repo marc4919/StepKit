@@ -290,6 +290,11 @@ enum RemoteProposalBuilder {
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
                                                   detail: "Se quita del plan", symbol: "minus.circle"))
                 actions.append(.remove(stepID: target.id))
+            case "change_kit_kpi":
+                guard let kpi = change.newTitles?.first, !kpi.isEmpty else { continue }
+                changes.append(ProposedStepChange(stepID: nil, stepLabel: "Meta del Kit", from: nil, to: nil,
+                                                  detail: "«\(kit.kpi)» → «\(kpi)»", symbol: "target"))
+                actions.append(.changeKPI(kpi))
             case "mark_step_blocked":
                 guard let target = step(change.stepNumber) else { continue }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,

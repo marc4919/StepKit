@@ -95,6 +95,7 @@ final class PlanProposal: Identifiable {
         case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?, reason: String?)
         case remove(stepID: UUID)
         case block(stepID: UUID, reason: String)
+        case changeKPI(String)
     }
 
     let id = UUID()
@@ -173,6 +174,8 @@ final class PlanProposal: Identifiable {
                 guard let target = step(id) else { continue }
                 target.deletedAt = now
                 target.markModified(at: now)
+            case .changeKPI(let kpi):
+                kit.kpi = kpi
             case .block(let id, let reason):
                 guard let target = step(id) else { continue }
                 target.blockedReason = reason
