@@ -64,6 +64,9 @@ final class KitsViewModel {
             clearSelection()
         }
         
+        // Guardar ya: la lista (@Query) solo se refresca tras guardar, y sin esto el Kit reaparece.
+        try? kit.modelContext?.save()
+
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 
         // Trigger sync

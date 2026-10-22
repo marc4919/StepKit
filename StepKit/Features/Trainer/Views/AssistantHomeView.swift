@@ -257,7 +257,7 @@ private struct AssistantAnswer: View {
                 Text(LocalizedStringKey(message.text))
                     .font(.body)
                     .textSelection(.enabled)
-                Text("Generado en tu dispositivo · \(message.timestamp.formatted(date: .omitted, time: .shortened))")
+                Text("\(message.fromServer ? "Asistente de StepKit" : "Generado en tu dispositivo") · \(message.timestamp.formatted(date: .omitted, time: .shortened))")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }

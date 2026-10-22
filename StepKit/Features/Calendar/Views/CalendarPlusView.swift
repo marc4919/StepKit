@@ -20,7 +20,6 @@ private enum CalendarRoute: Hashable {
 struct CalendarPlusView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(AuthManager.self) private var authManager
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted },
            sort: \GoalEntity.createdAt,
@@ -29,6 +28,7 @@ struct CalendarPlusView: View {
     @Query(sort: \WorkSessionEntity.startsAt) private var allSessions: [WorkSessionEntity]
 
     @State private var selectedDate: Date = Date()
+    @State private var detailToken = 0
     @State private var revealToken = 0
     @State private var dayVisible = true
     @State private var showingKitCreator = false
@@ -36,7 +36,6 @@ struct CalendarPlusView: View {
     @State private var reviewingSession: WorkSessionEntity?
     @State private var navigationPath = NavigationPath()
 
-    private static let dayAnchor = "calendar.day"
 
     private var ownerID: String? { authManager.currentUser?.id }
 
@@ -171,34 +170,30 @@ struct CalendarPlusView: View {
     }
 
     private var calendarList: some View {
-        ScrollViewReader { proxy in
-            List {
-                monthSection
-                daySection
-                if !upcomingSessions.isEmpty {
-                    Section {
-                        NavigationLink(value: CalendarRoute.upcomingSessions) {
-                            Label {
-                                Text("Próximas sesiones (\(upcomingSessions.count))")
-                            } icon: {
-                                Image(systemName: Symbols.session).foregroundStyle(.tint)
-                            }
+        List {
+            monthSection
+            daySection
+            if !upcomingSessions.isEmpty {
+                Section {
+                    NavigationLink(value: CalendarRoute.upcomingSessions) {
+                        Label {
+                            Text("Próximas sesiones (\(upcomingSessions.count))")
+                        } icon: {
+                            Image(systemName: Symbols.session).foregroundStyle(.tint)
                         }
-                        .accessibilityIdentifier("calendar.upcomingSessions")
                     }
+                    .accessibilityIdentifier("calendar.upcomingSessions")
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(alignment: .top) { BrandGlow() }
-            .background(Color(.systemGroupedBackground))
-            .onChange(of: selectedDate) { _, _ in
-                // Al tocar un día con cosas que hacer, la lista baja con suavidad hasta su detalle.
-                guard !(sessionsForSelectedDate.isEmpty && stepsForSelectedDate.isEmpty && goalsForSelectedDate.isEmpty)
-                else { return }
-                withAnimation(reduceMotion ? nil : .smooth(duration: 0.6)) {
-                    proxy.scrollTo(Self.dayAnchor, anchor: UnitPoint(x: 0.5, y: 0.12))
-                }
-            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(alignment: .top) { BrandGlow() }
+        .background(Color(.systemGroupedBackground))
+        .onChange(of: selectedDate) { _, _ in
+            // Al tocar un día con cosas que hacer, la lista baja con suavidad hasta su detalle.
+            guard !(sessionsForSelectedDate.isEmpty && stepsForSelectedDate.isEmpty && goalsForSelectedDate.isEmpty)
+            else { return }
+            detailToken += 1
         }
     }
 
@@ -259,7 +254,7 @@ struct CalendarPlusView: View {
 
     private var monthSection: some View {
         Section {
-            DecoratedCalendarView(selectedDate: $selectedDate, marks: marks, revealToken: revealToken)
+            DecoratedCalendarView(selectedDate: $selectedDate, marks: marks, revealToken: revealToken, detailToken: detailToken)
                 .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
         } header: {
             // Leyenda en la cabecera: siempre legible, sin ocupar una fila propia.
@@ -278,7 +273,6 @@ struct CalendarPlusView: View {
             Text(daySummary)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-                .id(Self.dayAnchor)
                 .onScrollVisibilityChange(threshold: 0.5) { dayVisible = $0 }
                 .accessibilityIdentifier("calendar.daySummary")
             if empty, !selectedDayIsPast {

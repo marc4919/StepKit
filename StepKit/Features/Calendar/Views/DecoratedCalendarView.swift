@@ -64,6 +64,8 @@ struct DecoratedCalendarView: UIViewRepresentable {
     var marks: [DateComponents: [CalendarMark: Int]]
     /// Al cambiar, el calendario muestra el mes del día elegido (botón Hoy).
     var revealToken: Int = 0
+    /// Al cambiar, la lista que contiene el calendario baja hasta lo que hay debajo (el detalle del día).
+    var detailToken: Int = 0
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -106,6 +108,10 @@ struct DecoratedCalendarView: UIViewRepresentable {
             context.coordinator.lastRevealToken = revealToken
             view.setVisibleDateComponents(components, animated: true)
         }
+        if context.coordinator.lastDetailToken != detailToken {
+            context.coordinator.lastDetailToken = detailToken
+            Self.revealContentBelow(view)
+        }
         if context.coordinator.lastMarks != marks {
             let changed = Set(context.coordinator.lastMarks.keys).union(marks.keys)
             context.coordinator.lastMarks = marks
@@ -113,10 +119,30 @@ struct DecoratedCalendarView: UIViewRepresentable {
         }
     }
 
+    /// La lista de SwiftUI ignora `scrollTo` mientras el calendario procesa la selección,
+    /// así que se desplaza su UIScrollView: el borde inferior del calendario queda arriba.
+    private static func revealContentBelow(_ view: UICalendarView) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            var ancestor = view.superview
+            while let current = ancestor, !(current is UIScrollView) { ancestor = current.superview }
+            guard let scrollView = ancestor as? UIScrollView else { return }
+            let calendarBottom = view.convert(view.bounds, to: scrollView).maxY
+            let top = -scrollView.adjustedContentInset.top
+            let maxY = max(top, scrollView.contentSize.height + scrollView.adjustedContentInset.bottom - scrollView.bounds.height)
+            let target = min(maxY, max(top, calendarBottom - scrollView.adjustedContentInset.top - 24))
+            guard abs(target - scrollView.contentOffset.y) > 1 else { return }
+            UIView.animate(withDuration: UIAccessibility.isReduceMotionEnabled ? 0 : 0.5, delay: 0,
+                           options: [.curveEaseInOut, .allowUserInteraction]) {
+                scrollView.contentOffset.y = target
+            }
+        }
+    }
+
     final class Coordinator: NSObject, UICalendarViewDelegate, UICalendarSelectionSingleDateDelegate {
         var parent: DecoratedCalendarView
         var lastMarks: [DateComponents: [CalendarMark: Int]] = [:]
         var lastRevealToken = 0
+        var lastDetailToken = 0
 
         init(_ parent: DecoratedCalendarView) { self.parent = parent }
 

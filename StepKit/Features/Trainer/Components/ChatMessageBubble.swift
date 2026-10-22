@@ -17,12 +17,15 @@ struct ChatMessage: Identifiable, Equatable {
     let timestamp: Date
     /// La respuesta no se pudo generar; `text` es el detalle técnico.
     var isError = false
+    /// Respuesta del asistente del servidor; si es false, la generó el modelo del dispositivo.
+    var fromServer = false
     
-    init(sender: Sender, text: String, timestamp: Date = Date(), isError: Bool = false) {
+    init(sender: Sender, text: String, timestamp: Date = Date(), isError: Bool = false, fromServer: Bool = false) {
         self.sender = sender
         self.text = text
         self.timestamp = timestamp
         self.isError = isError
+        self.fromServer = fromServer
     }
 }
 

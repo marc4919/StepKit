@@ -368,7 +368,8 @@ enum KitAssistant {
             let text = response.message.trimmingCharacters(in: .whitespacesAndNewlines)
             if !text.isEmpty || proposal != nil {
                 vm.messages.append(ChatMessage(sender: .assistant,
-                                               text: text.isEmpty ? "Te propongo un ajuste del plan." : text))
+                                               text: text.isEmpty ? "Te propongo un ajuste del plan." : text,
+                                               fromServer: true))
             }
             if let proposal { conversation.proposals.append(proposal) }
             return true

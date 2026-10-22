@@ -48,6 +48,7 @@ enum DesignFixtureScenario: String {
 
 struct DesignFixtureRoot: View {
     let scenario: DesignFixtureScenario
+    @MainActor private static var sharedContainer: ModelContainer?
     @State private var container: ModelContainer
     @State private var viewModel = KitsViewModel()
     @State private var authManager: AuthManager
@@ -58,18 +59,26 @@ struct DesignFixtureRoot: View {
         let suite = "StepKit.DesignFixtures"
         UserDefaults().removePersistentDomain(forName: suite)
         let auth = AuthManager(keychain: DesignFixtureKeychain(), preferences: UserDefaults(suiteName: suite) ?? .standard)
-        auth.saveAuth(token: "design-fixtures",
+        // STEPKIT_FIXTURE_TOKEN: sesión real para que el asistente hable con el servidor local.
+        let token = ProcessInfo.processInfo.environment["STEPKIT_FIXTURE_TOKEN"] ?? "design-fixtures"
+        auth.saveAuth(token: token,
                       user: UserInfo(id: DesignFixtureData.owner, tier: "premium",
                                      monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
         auth.updateDisplayName("Alex Martín")
         _authManager = State(initialValue: auth)
         _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .profile ? 3 : 0)
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
-        DesignFixtureData.seed(scenario, into: container.mainContext)
-        if scenario.isAssistant {
-            DesignFixtureData.seedConversations(in: container.mainContext)
-        }
+        // SwiftUI puede repetir este init: el contenedor se crea y se siembra una sola vez,
+        // o un Kit borrado reaparece con la siguiente siembra.
+        let container = Self.sharedContainer ?? {
+            let config = ModelConfiguration(isStoredInMemoryOnly: true)
+            let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self, configurations: config)
+            DesignFixtureData.seed(scenario, into: container.mainContext)
+            if scenario.isAssistant {
+                DesignFixtureData.seedConversations(in: container.mainContext)
+            }
+            Self.sharedContainer = container
+            return container
+        }()
         _container = State(initialValue: container)
     }
 
