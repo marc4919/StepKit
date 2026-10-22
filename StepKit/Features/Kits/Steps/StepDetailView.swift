@@ -20,6 +20,8 @@ struct StepDetailView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var showingSaveProgress = false
+    /// La hoja de avance se abre ya en «Me he atascado» (botón Atasco).
+    @State private var savingBlocked = false
     @State private var editingEntry: ProgressEntryEntity?
     @State private var hingePartiallyOpen = false
     @State private var assistantLaunch: AssistantLaunch?
@@ -98,7 +100,7 @@ struct StepDetailView: View {
             StepEditSheetView(stepEntity: stepEntity)
         }
         .sheet(isPresented: $showingSaveProgress) {
-            SaveProgressSheet(step: stepEntity, stepNumber: stepNumber)
+            SaveProgressSheet(step: stepEntity, stepNumber: stepNumber, startsBlocked: savingBlocked)
         }
         .sheet(item: $assistantLaunch) { launch in
             if let kit = stepEntity.goal {
@@ -381,14 +383,45 @@ struct StepDetailView: View {
                         .foregroundStyle(.secondary)
                 }
             case .pending, .inProgress:
-                saveProgressButton.buttonStyle(.borderedProminent)
-                completionButton.buttonStyle(.bordered)
+                // Tres acciones a la vista, una al lado de otra.
+                HStack(spacing: 8) {
+                    actionTile("Avance", symbol: Symbols.note, identifier: "step.saveProgress",
+                               accessibilityLabel: "Guardar avance") {
+                        savingBlocked = false
+                        showingSaveProgress = true
+                    }
+                    actionTile("Atasco", symbol: "hand.raised", identifier: "step.reportBlock",
+                               accessibilityLabel: "Me he atascado") {
+                        savingBlocked = true
+                        showingSaveProgress = true
+                    }
+                    actionTile("Completar", symbol: "checkmark", prominent: true, identifier: "step.toggleCompletion",
+                               accessibilityLabel: "Marcar como completado") {
+                        withAnimation { toggleStepCompletion() }
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    }
+                }
             }
         }
         .controlSize(compactHeight ? .regular : .large)
         .padding(.horizontal)
         .padding(.vertical, compactHeight ? 6 : 10)
         .background(.bar)
+    }
+
+    private func actionTile(_ title: String, symbol: String, prominent: Bool = false, identifier: String,
+                            accessibilityLabel: String? = nil, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: symbol).font(.title3.weight(.semibold))
+                Text(title).font(.subheadline.weight(.semibold))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(prominent ? AnyPrimitiveButtonStyle(.borderedProminent) : AnyPrimitiveButtonStyle(.bordered))
+        .accessibilityLabel(accessibilityLabel ?? title)
+        .accessibilityIdentifier(identifier)
     }
 
     // MARK: - Step Notification Toggle
@@ -591,4 +624,15 @@ struct HabitSessionsCard: View {
         .accessibilityValue(done ? "Hecha" : "Pendiente")
         .accessibilityAddTraits(done ? .isSelected : [])
     }
+}
+
+/// Para alternar entre estilos de botón del sistema sin duplicar la vista.
+struct AnyPrimitiveButtonStyle: PrimitiveButtonStyle {
+    private let make: (Configuration) -> AnyView
+
+    init<S: PrimitiveButtonStyle>(_ style: S) {
+        make = { AnyView(style.makeBody(configuration: $0)) }
+    }
+
+    func makeBody(configuration: Configuration) -> some View { make(configuration) }
 }

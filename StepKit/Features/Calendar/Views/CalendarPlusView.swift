@@ -112,12 +112,15 @@ struct CalendarPlusView: View {
             }
             .navigationTitle("Calendario")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Hoy") {
-                        selectedDate = Date()
-                        revealToken += 1
+                // «Hoy» solo cuando te has movido a otro día y hay algo planificado.
+                if !Calendar.current.isDateInToday(selectedDate), !marks.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Hoy") {
+                            selectedDate = Date()
+                            revealToken += 1
+                        }
+                        .accessibilityIdentifier("calendar.today")
                     }
-                    .accessibilityIdentifier("calendar.today")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -189,8 +192,10 @@ struct CalendarPlusView: View {
             .background(alignment: .top) { BrandGlow() }
             .background(Color(.systemGroupedBackground))
             .onChange(of: selectedDate) { _, _ in
-                // Al tocar un día, la lista baja hasta su agenda.
-                withAnimation(reduceMotion ? nil : .smooth(duration: 0.45)) {
+                // Al tocar un día con cosas que hacer, la lista baja con suavidad hasta su detalle.
+                guard !(sessionsForSelectedDate.isEmpty && stepsForSelectedDate.isEmpty && goalsForSelectedDate.isEmpty)
+                else { return }
+                withAnimation(reduceMotion ? nil : .smooth(duration: 0.6)) {
                     proxy.scrollTo(Self.dayAnchor, anchor: UnitPoint(x: 0.5, y: 0.12))
                 }
             }

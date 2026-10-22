@@ -10,14 +10,24 @@ import SwiftUI
 import SwiftData
 
 struct KitsHomeView: View {
-    let activeKits: [GoalEntity]
-    let completedKits: [GoalEntity]
+    let allActiveKits: [GoalEntity]
+    let allCompletedKits: [GoalEntity]
     @Bindable var viewModel: KitsViewModel
     /// iPhone: abre el Kit en la pila. iPad: lo selecciona en la columna de detalle.
     var isCompact = true
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var reviewingKit: GoalEntity?
     @State private var continuingStep: StepEntity?
+
+    init(activeKits: [GoalEntity], completedKits: [GoalEntity], viewModel: KitsViewModel, isCompact: Bool = true) {
+        self.allActiveKits = activeKits
+        self.allCompletedKits = completedKits
+        self.viewModel = viewModel
+        self.isCompact = isCompact
+    }
+
+    private var activeKits: [GoalEntity] { allActiveKits.filter { !viewModel.leavingKitIDs.contains($0.id) } }
+    private var completedKits: [GoalEntity] { allCompletedKits.filter { !viewModel.leavingKitIDs.contains($0.id) } }
 
     /// Todos los pasos terminados pero el resultado aún sin confirmar.
     private var pendingResultKits: [GoalEntity] {
@@ -54,15 +64,23 @@ struct KitsHomeView: View {
             } else {
                 // List para conservar el gesto clásico de deslizar para eliminar.
                 List {
-                    ForEach(pendingResultKits) { kit in
+                    if !pendingResultKits.isEmpty {
+                        // Discretos: una fila con la bandera, sin tarjeta grande ni todo en verde.
                         Section {
-                            PendingResultCard(kit: kit) {
-                                reviewingKit = kit
-                            } onBackToPlan: {
-                                open(kit)
+                            ForEach(pendingResultKits) { kit in
+                                Button { reviewingKit = kit } label: { PendingResultRow(kit: kit) }
+                                    .buttonStyle(.plain)
+                                    .accessibilityIdentifier("kit.row")
+                                    .accessibilityLabel("Kit: \(kit.title)")
+                                    .accessibilityValue("Todos los pasos hechos, falta revisar el resultado")
+                                    .listRowInsets(EdgeInsets())
+                                    .deletable { viewModel.prepareForDeletion(kit) }
                             }
-                            .cardRow()
-                            .deletable { viewModel.prepareForDeletion(kit) }
+                        } header: {
+                            Text("Por revisar")
+                                .font(.title3.bold())
+                                .foregroundStyle(Color(.label))
+                                .textCase(nil)
                         }
                     }
                     if let kit = continueKit {
@@ -272,6 +290,34 @@ private struct ContinueCard: View {
 
 // MARK: - Pasos terminados, resultado por confirmar
 
+private struct PendingResultRow: View {
+    let kit: GoalEntity
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "flag.checkered")
+                .font(.title3)
+                .foregroundStyle(MetaTint.done)
+                .frame(width: 44, height: 44)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(kit.title).font(.headline).foregroundStyle(.primary)
+                Text("\(kit.activeStepCount) de \(kit.activeStepCount) pasos · Revisa el resultado")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .contentShape(.rect)
+    }
+}
+
 private struct PendingResultCard: View {
     let kit: GoalEntity
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -422,7 +468,7 @@ struct KitsEmptyView: View {
     }
 
     @ViewBuilder private var copyContent: some View {
-        Text("Haz espacio a tu\npróximo proyecto")
+        Text("Haz espacio a tu\npróximo objetivo")
             .font(.largeTitle.bold())
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)

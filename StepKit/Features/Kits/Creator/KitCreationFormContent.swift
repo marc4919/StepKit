@@ -41,14 +41,14 @@ struct KitCreationFormContent: View {
                 .listRowBackground(Color.clear)
             }
             Section {
-                field("target", .accentColor, "Resultado", placeholder: "Ej: Publicar mi portfolio en seis semanas",
+                field("target", .accentColor, "Resultado", placeholder: "Ej.: Correr 5 km sin parar",
                       text: $description, focus: .description, identifier: "kitCreator.description")
                 field("checklist", .green, "Cómo sabré que está listo (opcional)",
-                      placeholder: "Ej: Tres casos y un contacto comprobado", text: $doneWhen, focus: .doneWhen)
+                      placeholder: "Ej.: Los corro en menos de 35 min", text: $doneWhen, focus: .doneWhen)
                 field("flag.fill", .pink, "Punto de partida (opcional)",
-                      placeholder: "Ej: Tengo tres proyectos y algunas imágenes", text: $startingPoint, focus: .startingPoint)
+                      placeholder: "Ej.: Ahora aguanto 10 min seguidos", text: $startingPoint, focus: .startingPoint)
                 field(Symbols.risk, .orange, "Qué te puede frenar (opcional)",
-                      placeholder: "Ej: Poco tiempo, permisos de imágenes", text: $inconveniences, focus: .obstacles)
+                      placeholder: "Ej.: Trabajo a turnos, me duele la rodilla", text: $inconveniences, focus: .obstacles)
             }
             Section {
                 Toggle(isOn: $oneSitting.animation(.smooth)) {
@@ -69,7 +69,7 @@ struct KitCreationFormContent: View {
                         Label {
                             Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
                         } icon: {
-                            IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28)
+                            IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                         }
                     }
                 }

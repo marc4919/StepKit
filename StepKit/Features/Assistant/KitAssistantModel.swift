@@ -92,7 +92,7 @@ final class PlanProposal: Identifiable {
         case edit(stepID: UUID, title: String?, minutes: Int?)
         case split(stepID: UUID, titles: [String], minutes: Int?)
         /// `afterStepID` nil y `atStart` true: al principio; nil y false: al final.
-        case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?)
+        case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?, reason: String?)
         case remove(stepID: UUID)
         case block(stepID: UUID, reason: String)
     }
@@ -117,10 +117,11 @@ final class PlanProposal: Identifiable {
     func accept(in kit: GoalEntity, context: ModelContext) {
         let now = Date()
         func step(_ id: UUID) -> StepEntity? { kit.orderedActiveSteps.first { $0.id == id } }
-        func insert(_ title: String, minutes: Int, date: Date?, after anchor: StepEntity?, atStart: Bool = false) {
+        func insert(_ title: String, minutes: Int, date: Date?, after anchor: StepEntity?, atStart: Bool = false,
+                    short: String = "", long: String = "") {
             let order = atStart ? (kit.orderedActiveSteps.first?.order ?? 0)
                 : (anchor?.order ?? (kit.orderedActiveSteps.last?.order ?? -1)) + 1
-            let new = StepEntity(ownerID: kit.ownerID, stepTitle: title, descriptionShort: "", descriptionLong: "",
+            let new = StepEntity(ownerID: kit.ownerID, stepTitle: title, descriptionShort: short, descriptionLong: long,
                                  estimateMinutes: minutes, suggestedDeadline: date ?? anchor?.suggestedDeadline,
                                  effortLevel: anchor?.effortLevel ?? "medium",
                                  order: order,
@@ -153,12 +154,17 @@ final class PlanProposal: Identifiable {
                 if let minutes { target.estimateMinutes = minutes }
                 target.markModified(at: now)
                 var anchor = target
+                // Las partes nuevas heredan la descripción del paso original para no quedar vacías.
+                let original = target.descriptionLong.isEmpty ? target.descriptionShort : target.descriptionLong
                 for title in titles.dropFirst() {
-                    insert(title, minutes: minutes ?? target.estimateMinutes, date: target.suggestedDeadline, after: anchor)
+                    insert(title, minutes: minutes ?? target.estimateMinutes, date: target.suggestedDeadline, after: anchor,
+                           short: "Parte de «\(first)». \(target.descriptionShort)".trimmingCharacters(in: .whitespaces),
+                           long: original)
                     if let added = kit.orderedActiveSteps.first(where: { $0.order == anchor.order + 1 }) { anchor = added }
                 }
-            case .add(let afterID, let atStart, let title, let minutes, let date):
-                insert(title, minutes: minutes, date: date, after: afterID.flatMap(step), atStart: atStart)
+            case .add(let afterID, let atStart, let title, let minutes, let date, let reason):
+                insert(title, minutes: minutes, date: date, after: afterID.flatMap(step), atStart: atStart,
+                       short: reason ?? "", long: reason ?? "")
             case .remove(let id):
                 guard let target = step(id) else { continue }
                 target.deletedAt = now

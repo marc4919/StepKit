@@ -13,6 +13,8 @@ final class KitsViewModel {
     // MARK: - Navigation & Selection State
     var selectedKitEntity: GoalEntity?
     var selectedKitId: UUID?
+    /// Kits que se están eliminando: salen de la lista con animación antes del borrado real.
+    var leavingKitIDs: Set<UUID> = []
     var selectedStepEntity: StepEntity?
     var navigationPath: [UUID] = []
     

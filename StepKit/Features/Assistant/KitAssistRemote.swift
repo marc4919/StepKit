@@ -277,7 +277,8 @@ enum RemoteProposalBuilder {
                                                   detail: change.newMinutes.map { "\($0) min" }, symbol: "plus.circle"))
                 // stepNumber = paso tras el que se inserta; 0 = al principio.
                 actions.append(.add(afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0,
-                                    title: title, minutes: change.newMinutes ?? 20, date: date(change.newDate)))
+                                    title: title, minutes: change.newMinutes ?? 20, date: date(change.newDate),
+                                    reason: change.reason))
             case "remove_step":
                 guard let target = step(change.stepNumber) else { continue }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,

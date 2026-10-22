@@ -41,11 +41,15 @@ struct KitsListCompactView: View {
                     let kit = viewModel.kitEntityToDelete
                     viewModel.showingDeleteConfirmation = false
                     Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(350))
+                        try? await Task.sleep(for: .milliseconds(300))
                         guard let kit else { return }
-                        withAnimation(.smooth(duration: 0.45)) {
-                            viewModel.deleteKit(kit, syncManager: syncManager)
+                        // Primero sale de la lista con suavidad; después se borra de verdad.
+                        withAnimation(.smooth(duration: 0.5)) {
+                            _ = viewModel.leavingKitIDs.insert(kit.id)
                         }
+                        try? await Task.sleep(for: .milliseconds(550))
+                        viewModel.deleteKit(kit, syncManager: syncManager)
+                        viewModel.leavingKitIDs.remove(kit.id)
                     }
                 },
                 onCancel: {
