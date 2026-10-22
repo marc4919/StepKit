@@ -156,8 +156,12 @@ final class PlanProposal: Identifiable {
                 var anchor = target
                 // Las partes nuevas heredan la descripción del paso original para no quedar vacías.
                 let original = target.descriptionLong.isEmpty ? target.descriptionShort : target.descriptionLong
-                for title in titles.dropFirst() {
-                    insert(title, minutes: minutes ?? target.estimateMinutes, date: target.suggestedDeadline, after: anchor,
+                for (offset, title) in titles.dropFirst().enumerated() {
+                    // Cada parte en su día, uno detrás de otro.
+                    let partDate = target.suggestedDeadline.flatMap {
+                        Calendar.current.date(byAdding: .day, value: offset + 1, to: $0)
+                    }
+                    insert(title, minutes: minutes ?? target.estimateMinutes, date: partDate, after: anchor,
                            short: "Parte de «\(first)». \(target.descriptionShort)".trimmingCharacters(in: .whitespaces),
                            long: original)
                     if let added = kit.orderedActiveSteps.first(where: { $0.order == anchor.order + 1 }) { anchor = added }

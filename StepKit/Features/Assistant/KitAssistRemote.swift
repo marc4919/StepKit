@@ -267,8 +267,14 @@ enum RemoteProposalBuilder {
                 actions.append(.edit(stepID: target.id, title: title, minutes: change.newMinutes))
             case "split_step":
                 guard let target = step(change.stepNumber), let titles = change.newTitles, titles.count > 1 else { continue }
+                let days = target.suggestedDeadline.map { first in
+                    titles.indices.compactMap { calendar.date(byAdding: .day, value: $0, to: first) }
+                        .map { $0.formatted(.dateTime.day().month(.abbreviated)) }
+                } ?? []
+                let parts = zip(titles, days + Array(repeating: "", count: max(0, titles.count - days.count)))
+                    .map { title, day in day.isEmpty ? "«\(title)»" : "«\(title)» (\(day))" }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
-                                                  detail: "Se divide en: " + titles.map { "«\($0)»" }.joined(separator: ", "),
+                                                  detail: "Se divide en: " + parts.joined(separator: ", "),
                                                   symbol: "square.split.2x1"))
                 actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes))
             case "add_step":
