@@ -529,3 +529,38 @@ extension View {
         modifier(BalancedHorizontalSafeArea())
     }
 }
+
+// MARK: - Respuesta táctil
+
+/// Tarjeta pulsable: se hunde un poco al tocarla y vibra suave al soltar, para que se note la elección.
+struct PressableCardStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in !pressed }
+    }
+}
+
+/// Inserta su contenido tras un retardo (p. ej. una propuesta cuando termina de escribirse la respuesta).
+/// Hasta entonces no ocupa sitio, para que la conversación no salte al final antes de tiempo.
+struct DelayedReveal<Content: View>: View {
+    let delay: Double
+    @ViewBuilder let content: () -> Content
+    @State private var shown = false
+
+    var body: some View {
+        // Un contenedor real (no Group): un Group vacío no lleva el `.task` a ningún sitio y nunca se mostraría.
+        VStack(alignment: .leading, spacing: 0) {
+            if shown {
+                content().transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .task {
+            guard delay > 0 else { shown = true; return }
+            try? await Task.sleep(for: .seconds(delay))
+            withAnimation(.smooth(duration: 0.45)) { shown = true }
+        }
+    }
+}

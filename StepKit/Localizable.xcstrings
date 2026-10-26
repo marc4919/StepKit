@@ -414,6 +414,16 @@
         }
       }
     },
+    "%lld propuestas pendientes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld proposals pending"
+          }
+        }
+      }
+    },
     "%lld sesiones": {
       "localizations": {
         "en": {
@@ -1792,6 +1802,16 @@
         }
       }
     },
+    "Conversación sobre el Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversation about the Kit"
+          }
+        }
+      }
+    },
     "Convierte tu idea en pasos claros. Revisa el plan y adáptalo a tu tiempo.": {
       "localizations": {
         "en": {
@@ -2364,6 +2384,26 @@
         }
       }
     },
+    "Ej.: «Escribí la introducción»": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g.: “Wrote the intro”"
+          }
+        }
+      }
+    },
+    "Ej.: «Me falta el permiso del cliente»": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g.: “Still waiting for the client's permission”"
+          }
+        }
+      }
+    },
     "El asistente está escribiendo": {
       "localizations": {
         "en": {
@@ -2410,6 +2450,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The model isn't ready yet. Try again later"
+          }
+        }
+      }
+    },
+    "El paso queda bloqueado hasta que lo resuelvas. El asistente puede proponerte cómo seguir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The step stays blocked until you resolve it. The assistant can suggest how to keep going."
           }
         }
       }
@@ -2846,6 +2896,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Write a note…"
+          }
+        }
+      }
+    },
+    "Escribir al asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write to the assistant"
           }
         }
       }
@@ -3710,6 +3770,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "What you wrote is kept in the form."
+          }
+        }
+      }
+    },
+    "Lo que llevas hecho (opcional)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you've done so far (optional)"
           }
         }
       }
@@ -4858,6 +4928,16 @@
         }
       }
     },
+    "Plan ajustado con el asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan adjusted with the assistant"
+          }
+        }
+      }
+    },
     "Plan listo para revisar": {
       "localizations": {
         "en": {
@@ -4954,6 +5034,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "To review"
+          }
+        }
+      }
+    },
+    "Pregunta lo que quieras sobre este Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask anything about this Kit"
           }
         }
       }
@@ -5946,16 +6036,6 @@
         }
       }
     },
-    "Sigo sin problema": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I'm doing fine"
-          }
-        }
-      }
-    },
     "Siguiente": {
       "localizations": {
         "en": {
@@ -5982,16 +6062,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "No notes"
-          }
-        }
-      }
-    },
-    "Sin detallar": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No details"
           }
         }
       }
@@ -6162,6 +6232,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subscription"
+          }
+        }
+      }
+    },
+    "Sustituida por otra más reciente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replaced by a newer one"
           }
         }
       }
@@ -6348,26 +6428,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your progress"
-          }
-        }
-      }
-    },
-    "Tu avance se guarda igualmente. El paso quedará bloqueado hasta que lo resuelvas.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your progress is still saved. The step stays blocked until you resolve it."
-          }
-        }
-      }
-    },
-    "Tu avance se guarda y el paso seguirá en curso.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your progress is saved and the step stays in progress."
           }
         }
       }
@@ -7180,16 +7240,6 @@
         }
       }
     },
-    "¿Cómo vas con este paso?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "How's this step going?"
-          }
-        }
-      }
-    },
     "¿Cómo voy con mi progreso?": {
       "localizations": {
         "en": {
@@ -7260,16 +7310,6 @@
         }
       }
     },
-    "¿Puedes seguir?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Can you keep going?"
-          }
-        }
-      }
-    },
     "¿Qué has hecho hoy?": {
       "localizations": {
         "en": {
@@ -7320,12 +7360,12 @@
         }
       }
     },
-    "¿Qué te frena? Ej.: «Me falta el permiso del cliente»": {
+    "¿Qué te frena?": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "What's holding you back? E.g.: “Still waiting for the client's permission”"
+            "value": "What's holding you back?"
           }
         }
       }

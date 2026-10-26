@@ -36,6 +36,22 @@ struct KitAssistantHubView: View {
                 .listRowBackground(Color.clear)
             }
             Section("Empezar una conversación") {
+                // Conversación libre: escribir directamente, sin elegir antes un tema.
+                Button {
+                    let conversation = store.newConversation(kit: kit, title: String(localized: "Conversación sobre el Kit"))
+                    opened = OpenedConversation(conversation: conversation, intent: nil)
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Escribir al asistente").foregroundStyle(.primary)
+                            Text("Pregunta lo que quieras sobre este Kit").font(.caption).foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        IconChip(symbol: "square.and.pencil", color: .accentColor, size: 30)
+                    }
+                }
+                .buttonStyle(PressableCardStyle())
+                .accessibilityIdentifier("kitAssistant.freeChat")
                 ForEach(AssistantIntent.kit) { intent in
                     Button {
                         let conversation = store.newConversation(kit: kit, title: intent.title)
@@ -50,12 +66,14 @@ struct KitAssistantHubView: View {
                             IconChip(symbol: intent.symbol, color: intent.color, size: 30)
                         }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableCardStyle())
                     .accessibilityIdentifier("kitAssistant.intent.\(intent.id)")
                 }
             }
             Section("Conversaciones") {
+                // Una conversación libre que se abrió y no se usó no aparece en la lista.
                 let conversations = store.conversations(for: kit.id)
+                    .filter { !$0.viewModel.messages.isEmpty || !$0.proposals.isEmpty }
                 if conversations.isEmpty {
                     Text("Aún no hay conversaciones. Las que abras desde un paso también aparecerán aquí.")
                         .font(.subheadline)
@@ -67,7 +85,7 @@ struct KitAssistantHubView: View {
                     } label: {
                         ConversationRow(conversation: conversation)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableCardStyle())
                 }
             }
         }
@@ -170,8 +188,11 @@ struct KitAssistantChatView: View {
             afterMessage: { message in
                 let anchored = conversation.proposals.filter { $0.anchorMessageID == message.id }
                 guard !anchored.isEmpty else { return nil }
-                return AnyView(VStack(alignment: .leading, spacing: 14) {
-                    ForEach(anchored) { proposalCard($0) }
+                // La propuesta llega cuando la respuesta termina de escribirse.
+                return AnyView(DelayedReveal(delay: ChatTyping.duration(of: message) + 0.2) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        ForEach(anchored) { proposalCard($0) }
+                    }
                 })
             }
         )
@@ -180,6 +201,13 @@ struct KitAssistantChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
+            // Conversación libre y vacía: el teclado ya listo para escribir.
+            if initialIntent == nil, vm.messages.isEmpty, conversation.proposals.isEmpty {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(450))
+                    inputFocused = true
+                }
+            }
             guard !didSendInitial, let id = initialIntent,
                   let intent = intents.first(where: { $0.id == id }) else { return }
             didSendInitial = true
@@ -190,6 +218,14 @@ struct KitAssistantChatView: View {
     private func proposalCard(_ proposal: PlanProposal) -> some View {
         ProposalCard(proposal: proposal) {
             proposal.accept(in: kit, context: modelContext)
+            // El cambio queda en «Tu recorrido» del Kit.
+            let lines = proposal.changes.map { change -> String in
+                if let to = change.to {
+                    return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
+                }
+                return [change.stepLabel, change.detail].compactMap { $0 }.joined(separator: ": ")
+            }
+            try? ProgressLog.addAssistantChange(title: proposal.title, lines: lines, kit: kit, context: modelContext)
             syncManager?.handleDataChange()
         } onDiscard: {
             proposal.state = .discarded

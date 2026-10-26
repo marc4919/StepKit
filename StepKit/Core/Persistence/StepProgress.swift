@@ -119,6 +119,26 @@ enum ProgressLog {
         try context.save()
     }
 
+    /// Prefijo que marca, dentro del registro, los cambios aceptados del asistente.
+    /// Se guardan como nota del Kit (tipo `progress` sin paso) para sincronizar sin un tipo nuevo en el servidor.
+    static let assistantChangeMarker = "⟡ "
+
+    static func isAssistantChange(_ entry: ProgressEntryEntity) -> Bool {
+        entry.stepID == nil && entry.note.hasPrefix(assistantChangeMarker)
+    }
+
+    /// Deja en el recorrido del Kit qué cambió al aceptar una propuesta del asistente.
+    static func addAssistantChange(title: String, lines: [String], kit: GoalEntity, context: ModelContext,
+                                   now: Date = Date()) throws {
+        let body = ([title] + lines.map { "• \($0)" }).joined(separator: "\n")
+        context.insert(ProgressEntryEntity(
+            ownerID: kit.ownerID, kitID: kit.id, stepID: nil, kind: .progress,
+            note: assistantChangeMarker + body, notedAt: now, createdAt: now, updatedAt: now
+        ))
+        kit.markModified(at: now)
+        try context.save()
+    }
+
     /// Las notas del Kit vivían solo en este iPhone (UserDefaults): pasan al registro para sincronizarse.
     static func importLegacyKitNotes(for kit: GoalEntity, context: ModelContext, now: Date = Date()) {
         let key = "kit_annotations_\(kit.id)"

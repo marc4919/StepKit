@@ -115,6 +115,15 @@ struct AssistantHomeView: View {
             .onChange(of: isTyping) { _, _ in
                 withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
             }
+            // Mientras una respuesta «se escribe», la conversación la acompaña hacia abajo.
+            .task(id: messages.last?.id) {
+                guard let last = messages.last, ChatTyping.isFresh(last) else { return }
+                let end = Date.now.addingTimeInterval(ChatTyping.duration(of: last) + 0.6)
+                while Date.now < end, !Task.isCancelled {
+                    try? await Task.sleep(for: .milliseconds(250))
+                    withAnimation(.smooth(duration: 0.25)) { proxy.scrollTo("bottom", anchor: .bottom) }
+                }
+            }
         }
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
@@ -132,7 +141,7 @@ struct AssistantHomeView: View {
                 .padding(.bottom, 6)
             ForEach(intents) { intent in
                 Button { onIntent(intent) } label: { IntentCard(intent: intent) }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableCardStyle())
                     .disabled(isResponding)
                     .accessibilityIdentifier("assistant.intent.\(intent.id)")
             }
@@ -252,20 +261,62 @@ private struct IntentCard: View {
 /// Respuesta como contenido, con barra de acento e identificación sobria del origen.
 private struct AssistantAnswer: View {
     let message: ChatMessage
+    /// Palabras visibles mientras la respuesta «se escribe»; nil = texto completo.
+    @State private var shownWords: Int?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var words: [Substring] { message.text.split(separator: " ", omittingEmptySubsequences: false) }
+
+    private var visibleText: String {
+        guard let shownWords else { return message.text }
+        return words.prefix(shownWords).joined(separator: " ")
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Rectangle().fill(Color.accentColor).frame(width: 3).clipShape(.capsule)
             VStack(alignment: .leading, spacing: 6) {
-                Text(LocalizedStringKey(message.text))
+                Text(LocalizedStringKey(visibleText))
                     .font(.body)
                     .textSelection(.enabled)
+                    .contentTransition(.opacity)
                 Text(String(localized: "\(message.fromServer ? String(localized: "Asistente de StepKit") : String(localized: "Generado en tu dispositivo")) · \(message.timestamp.formatted(date: .omitted, time: .shortened))"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(message.text)
+        .task(id: message.id) { await typeIn() }
+    }
+
+    /// Una respuesta recién llegada aparece poco a poco, como en una conversación.
+    private func typeIn() async {
+        guard !reduceMotion, ChatTyping.isFresh(message) else { return }
+        let total = words.count
+        shownWords = 0
+        for count in 1...max(total, 1) {
+            try? await Task.sleep(for: .milliseconds(ChatTyping.millisecondsPerWord))
+            if Task.isCancelled { break }
+            withAnimation(.easeOut(duration: 0.15)) { shownWords = count }
+        }
+        shownWords = nil
+    }
+}
+
+/// Ritmo con el que se «escriben» las respuestas del asistente.
+enum ChatTyping {
+    static let millisecondsPerWord = 45
+
+    static func isFresh(_ message: ChatMessage) -> Bool {
+        message.sender == .assistant && !message.isError && Date.now.timeIntervalSince(message.timestamp) < 2
+    }
+
+    /// Tiempo que tarda en escribirse un mensaje recién llegado (0 si ya estaba).
+    static func duration(of message: ChatMessage) -> Double {
+        guard isFresh(message) else { return 0 }
+        let words = message.text.split(separator: " ").count
+        return Double(words * millisecondsPerWord) / 1000
     }
 }
 

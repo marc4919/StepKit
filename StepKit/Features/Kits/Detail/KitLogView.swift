@@ -29,16 +29,20 @@ struct KitLogView: View {
         var result: [Item] = entries.filter { $0.kind != .session }.map { entry in
             let step = kit.orderedActiveSteps.first { $0.id == entry.stepID }
             let blocked = entry.kind == .blocked
-            let kitNote = entry.stepID == nil
+            let assistant = ProgressLog.isAssistantChange(entry)
+            let kitNote = entry.stepID == nil && !assistant
+            let note = assistant ? String(entry.note.dropFirst(ProgressLog.assistantChangeMarker.count)) : entry.note
             return Item(
                 id: "entry-\(entry.id)",
                 date: entry.notedAt,
-                symbol: blocked ? Symbols.blocked : kitNote ? Symbols.note : "circle.lefthalf.filled",
-                color: blocked ? .red : kitNote ? .orange : .accentColor,
-                title: blocked ? String(localized: "Bloqueo anotado") : kitNote ? String(localized: "Nota del Kit") : String(localized: "Avance guardado"),
-                text: entry.note.isEmpty ? String(localized: "Sin nota.") : entry.note,
+                symbol: assistant ? Symbols.assistant : blocked ? Symbols.blocked : kitNote ? Symbols.note : "circle.lefthalf.filled",
+                color: assistant ? .purple : blocked ? .red : kitNote ? .orange : .accentColor,
+                title: assistant ? String(localized: "Plan ajustado con el asistente")
+                    : blocked ? String(localized: "Bloqueo anotado") : kitNote ? String(localized: "Nota del Kit") : String(localized: "Avance guardado"),
+                text: note.isEmpty ? String(localized: "Sin nota.") : note,
                 stepNumber: step.map { kit.position(of: $0) },
-                entry: entry
+                // Los cambios del asistente no se editan como una nota.
+                entry: assistant ? nil : entry
             )
         }
         // La fecha exacta de completado no se guarda: se usa el último cambio del paso.
