@@ -475,9 +475,15 @@ struct ReadableContentWidth: ViewModifier {
     @State private var width: CGFloat = 0
 
     func body(content: Content) -> some View {
-        content
-            .contentMargins(.horizontal, max(0, (width - maxWidth) / 2), for: .scrollContent)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        Group {
+            // Solo cuando sobra ancho: un margen 0 quitaría los márgenes propios de la lista en iPhone.
+            if width > maxWidth + 40 {
+                content.contentMargins(.horizontal, (width - maxWidth) / 2, for: .scrollContent)
+            } else {
+                content
+            }
+        }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 }
 
