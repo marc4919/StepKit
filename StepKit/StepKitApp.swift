@@ -97,10 +97,8 @@ struct StepKitApp: App {
     private var appContent: some View {
         ZStack {
             rootContent
-                .transition(.asymmetric(
-                    insertion: .opacity.combined(with: .scale(scale: 0.98)),
-                    removal: .opacity
-                ))
+                // Solo fundido: con escala, la barra de pestañas parecía «asentarse» al entrar.
+                .transition(.opacity)
                 .id(rootPhase)
         }
         .animation(.easeInOut(duration: 0.45), value: rootPhase)

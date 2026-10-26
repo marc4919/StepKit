@@ -26,7 +26,7 @@ struct KitCreationFormContent: View {
 
     @State private var width: CGFloat = 0
     /// Interior del iPhone Duo, iPad o iPhone en horizontal: dos columnas en vez de una tira estirada.
-    private var twoColumns: Bool { width >= 640 }
+    private var twoColumns: Bool { TwoColumnLayout.fits(CGSize(width: width, height: height)) }
     @State private var height: CGFloat = 0
     private var landscape: Bool { width > height }
 
@@ -38,14 +38,18 @@ struct KitCreationFormContent: View {
                     headerContent.padding(.top, 8)
                     // Columnas con aire entre ellas y un ancho total contenido, sin pegarse ni estirarse.
                     // Cada columna conserva sus márgenes de formulario: nada se recorta ni se pega.
-                    HStack(alignment: .top, spacing: 0) {
+                    // Como en el calendario: dos listas con un hueco claro entre ellas.
+                    // Márgenes explícitos: 24 pt a los lados y 40 pt entre columnas, sin recortar las tarjetas.
+                    HStack(alignment: .top, spacing: 24) {
                         Form { goalSection }
                         Form {
                             timeSection
                             createSection
                         }
                     }
+                    .contentMargins(.horizontal, 8, for: .scrollContent)
                     .scrollContentBackground(.hidden)
+                    .padding(.horizontal, 16)
                     .frame(maxWidth: 1100)
                 }
                 .background(Color(.systemGroupedBackground))

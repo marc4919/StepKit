@@ -164,7 +164,7 @@ struct StepDetailView: View {
             .padding(.horizontal)
             .padding(.bottom, 20)
         }
-        .onGeometryChange(for: Bool.self) { $0.size.width >= 640 } action: { wideLayout = $0 }
+        .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { wideLayout = $0 }
     }
 
     private var stepActions: some View {

@@ -408,7 +408,7 @@ struct KitCreationStreamingProgress: View {
             }
             .padding()
         }
-        .onGeometryChange(for: Bool.self) { $0.size.width >= 640 } action: { reviewWide = $0 }
+        .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { reviewWide = $0 }
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
         .safeAreaInset(edge: .bottom) {

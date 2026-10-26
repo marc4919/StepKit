@@ -82,7 +82,7 @@ struct KitDetailView: View {
             .padding(.horizontal)
             .padding(.bottom, 30)
         }
-        .onGeometryChange(for: Bool.self) { $0.size.width >= 640 } action: { wideLayout = $0 }
+        .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { wideLayout = $0 }
         .onChange(of: allStepsDone) { _, done in
             guard done else { return }
             // Al completar el último paso: subir arriba y que aparezca el resultado.
