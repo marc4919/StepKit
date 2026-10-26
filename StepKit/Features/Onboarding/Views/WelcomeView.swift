@@ -23,15 +23,6 @@ struct WelcomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // En horizontal muy bajo (Duo cerrado, iPhone) el nombre cede su sitio al contenido.
-            if !(wide && size.height < 450) {
-                Text("StepKit")
-                    .font(.title.bold())
-                    .foregroundStyle(.tint)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
-                    .accessibilityAddTraits(.isHeader)
-            }
             TabView(selection: $page) {
                 ForEach(0..<3, id: \.self) { index in
                     pageContent(index).tag(index)
@@ -118,7 +109,7 @@ struct WelcomeView: View {
                     .frame(width: artHeight * 1.25)
             case 1: TrailArt(points: WelcomeTrails.plan, milestones: [0.2, 0.75],
                              adjusts: (from: 0.42, to: 0.52), sphereAt: 1)
-            default: resumeArt(current: current)
+            default: TrailArt(points: WelcomeTrails.loop, sphereAt: 0.97)
             }
         }
         .frame(height: artHeight)
@@ -200,27 +191,6 @@ struct WelcomeView: View {
              Row(symbol: Symbols.blocked, color: .red, text: String(localized: "Marca un bloqueo sin perder lo hecho")),
              Row(symbol: "arrow.uturn.forward", color: .green, text: String(localized: "Retoma con un paso concreto"))],
         ]
-    }
-
-    private func resumeArt(current: Bool) -> some View {
-        ZStack {
-            TrailArt(points: WelcomeTrails.loop, sphereAt: 0.93)
-            HStack(spacing: 10) {
-                IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
-                Text(String(localized: "Dos imágenes listas.\nFaltan material y permisos.")).font(.footnote)
-            }
-            .padding(12)
-            .background(.regularMaterial, in: .rect(cornerRadius: 16))
-            .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
-            // Con la ilustración pequeña (Duo cerrado) la nota encoge con ella y no tapa el bucle.
-            .scaleEffect(min(1, artHeight / 230), anchor: .topTrailing)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-            .padding(.trailing, 8)
-            .scaleEffect(current || reduceMotion ? 1 : 0.85)
-            .opacity(current || reduceMotion ? 1 : 0)
-            .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(current ? 1.0 : 0), value: current)
-            .accessibilityHidden(true)
-        }
     }
 }
 

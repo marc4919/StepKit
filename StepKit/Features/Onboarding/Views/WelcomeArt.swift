@@ -131,25 +131,27 @@ private struct TrailShape: Shape {
 }
 
 enum WelcomeTrails {
-    /// Página 2: ascenso suave de izquierda a derecha con tres hitos; el segundo se reajusta.
-    static let plan: [CGPoint] = [
-        CGPoint(x: 0.0, y: 0.92), CGPoint(x: 0.22, y: 0.84), CGPoint(x: 0.42, y: 0.66),
-        CGPoint(x: 0.60, y: 0.56), CGPoint(x: 0.80, y: 0.34), CGPoint(x: 1.0, y: 0.08)]
+    /// Página 2: una onda que serpentea mientras sube, con tres hitos; el segundo se reajusta.
+    /// Se muestrea una curva analítica para que el trazo salga limpio, sin quiebros.
+    static let plan: [CGPoint] = (0...60).map { i in
+        let x = Double(i) / 60
+        let y = 0.8 - 0.6 * x + 0.18 * sin(2 * .pi * 1.5 * x)
+        return CGPoint(x: x, y: y)
+    }
 
-    /// Página 3: el recorrido da una vuelta completa y retoma el camino donde lo dejó.
-    static let loop: [CGPoint] = [
-        CGPoint(x: 0, y: 0.82),
-        CGPoint(x: 0.19, y: 0.805),
-        CGPoint(x: 0.38, y: 0.79),
-        CGPoint(x: 0.5, y: 0.69),
-        CGPoint(x: 0.55, y: 0.45),
-        CGPoint(x: 0.5, y: 0.21),
-        CGPoint(x: 0.38, y: 0.11),
-        CGPoint(x: 0.26, y: 0.21),
-        CGPoint(x: 0.21, y: 0.45),
-        CGPoint(x: 0.26, y: 0.69),
-        CGPoint(x: 0.38, y: 0.79),
-        CGPoint(x: 0.62, y: 0.8),
-        CGPoint(x: 0.82, y: 0.77),
-        CGPoint(x: 1.0, y: 0.7)]
+    /// Página 3: el recorrido da una vuelta completa en lo alto y retoma el camino donde lo dejó
+    /// (cicloide alargada: entra y sale en horizontal).
+    static let loop: [CGPoint] = {
+        let d = 2.6
+        let samples = (0...80).map { i -> CGPoint in
+            let t = -Double.pi + 2 * .pi * Double(i) / 80
+            return CGPoint(x: t - d * sin(t), y: -d * cos(t))
+        }
+        let lead = 1.2
+        let all = [CGPoint(x: -Double.pi - lead, y: d)] + samples + [CGPoint(x: Double.pi + lead, y: d)]
+        // Misma escala en los dos ejes (la caja útil es ~1,7 veces más ancha que alta): el bucle sale redondo.
+        let width = 2 * (Double.pi + lead), height = 2 * d, aspect = 1.7
+        let scale = min(1 / width, 1 / (height * aspect))
+        return all.map { CGPoint(x: 0.5 + $0.x * scale, y: 0.5 + $0.y * scale * aspect) }
+    }()
 }
