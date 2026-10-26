@@ -2,7 +2,7 @@
 //  KitCreationStreamingProgress.swift
 //  StepKit
 //
-//  Crear Kit v4.4: «Dando forma a tu proyecto» mientras llegan los pasos y, al
+//  Crear Kit v4.4: «Dando forma a tu Kit» mientras llegan los pasos y, al
 //  terminar, «Tu plan» para revisarlo antes de aceptarlo.
 //
 
@@ -239,7 +239,7 @@ struct KitCreationStreamingProgress: View {
                 }
                 VStack(alignment: .leading, spacing: 16) {
                     phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
-                          title: "Qué vas a conseguir",
+                          title: "Tu objetivo",
                           detail: streamingState.isRestarting ? "Ajustando"
                             : streamingState.kitTitle == nil ? "Preparando" : "Listo")
                     phase(done: stepsChecked,
@@ -268,7 +268,7 @@ struct KitCreationStreamingProgress: View {
         if streamingState.isRestarting { return "Ajustando tu plan…" }
         if questionsVisible { return "Antes de prepararlo, cuéntame un poco más" }
         if showCareful { return "Preparando tu plan con más cuidado" }
-        return "Dando forma a tu proyecto"
+        return "Dando forma a tu Kit"
     }
 
     /// El aviso de cuidado se ve al menos ~2,5 s (los motivos entran y se leen) y luego

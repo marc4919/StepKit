@@ -21,6 +21,8 @@ struct SignInView: View {
     @State private var size = CGSize(width: 400, height: 800)
     /// Apaisado o pantalla exterior del iPhone Duo: marca a un lado y acceso al otro.
     private var wide: Bool { size.width > size.height }
+    /// Pantalla grande en vertical (iPhone Duo abierto, iPad).
+    private var roomy: Bool { size.width >= 600 }
 
     var body: some View {
         Group {
@@ -28,12 +30,15 @@ struct SignInView: View {
                 HStack(spacing: 24) {
                     brandingSection.frame(maxWidth: .infinity)
                     ScrollView {
+                        // Centrado en vertical: con el iPhone Duo abierto no se queda arriba.
                         VStack(spacing: 16) {
                             benefitsSection
-                            signInSection
+                            signInSection.frame(maxWidth: 440)
                         }
                         .padding(.vertical)
+                        .frame(maxWidth: .infinity, minHeight: size.height)
                     }
+                    .scrollBounceBehavior(.basedOnSize)
                     .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal)
@@ -43,8 +48,10 @@ struct SignInView: View {
                         Spacer(minLength: 12)
                         brandingSection
                         benefitsSection.padding(.horizontal, 24)
-                        Spacer(minLength: 12)
-                        signInSection.padding(.horizontal, 24)
+                        // En pantallas grandes, todo en un bloque centrado; en iPhone, el botón abajo, al alcance del pulgar.
+                        if !roomy { Spacer(minLength: 12) }
+                        signInSection.padding(.horizontal, 24).frame(maxWidth: 480)
+                        if roomy { Spacer(minLength: 12) }
                     }
                     .padding(.vertical, 12)
                     .frame(minHeight: size.height)

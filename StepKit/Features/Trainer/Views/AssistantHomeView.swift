@@ -276,7 +276,7 @@ private struct AssistantUnavailableCard: View {
                 IconChip(symbol: "bubble.left.and.exclamationmark.bubble.right", color: .accentColor)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("La ayuda no está disponible ahora").font(.headline)
-                    Text("Puedes seguir con tu proyecto. Tu plan y tus avances siguen aquí.")
+                    Text("Puedes seguir con tu Kit. Tu plan y tus avances siguen aquí.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }

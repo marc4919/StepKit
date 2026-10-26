@@ -656,12 +656,17 @@ struct HabitSessionsCard: View {
                 }
             }
             if doneCount == dates.count, !step.isCompleted {
-                Button(action: onCompleteStep) {
-                    Label("Has hecho todas las sesiones: completar paso", systemImage: "checkmark")
-                        .frame(maxWidth: .infinity)
+                VStack(spacing: 8) {
+                    Label("Sesiones cumplidas", systemImage: "checkmark.seal.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(MetaTint.done)
+                    Button(action: onCompleteStep) {
+                        Text("Completar paso").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(MetaTint.done)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(MetaTint.done)
+                .frame(maxWidth: .infinity)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
         }
