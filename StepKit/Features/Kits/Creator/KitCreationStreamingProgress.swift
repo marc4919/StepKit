@@ -92,8 +92,9 @@ struct KitCreationStreamingProgress: View {
                 // Pantalla ancha y baja (iPhone Duo abierto en horizontal): la esfera crece a la izquierda,
                 // centrada en vertical, y a la derecha el texto, las fases y la barra.
                 HStack(spacing: 24) {
+                    // Con preguntas, la esfera cede sitio: las preguntas necesitan más ancho.
                     preparingOrbit
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(maxWidth: questionsVisible ? 220 : .infinity, maxHeight: .infinity)
                     ScrollView {
                         VStack(alignment: .leading, spacing: 22) {
                             preparingContent
@@ -379,17 +380,26 @@ struct KitCreationStreamingProgress: View {
                 if reviewWide {
                     // Pantalla ancha (iPhone Duo abierto, iPad): resumen a la izquierda, «A tener en cuenta» a la derecha.
                     reviewHeader
-                    HStack(alignment: .top, spacing: 24) {
-                        VStack(alignment: .leading, spacing: 18) {
-                            reviewKPI
-                            reviewFirstStep
+                    if streamingState.risks.isEmpty {
+                        // Sin «A tener en cuenta»: meta y primer paso lado a lado; la nota debajo.
+                        HStack(alignment: .top, spacing: 24) {
+                            reviewKPI.frame(maxWidth: .infinity, alignment: .leading)
+                            reviewFirstStep.frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        VStack(alignment: .leading, spacing: 18) {
-                            reviewRisks
-                            reviewNote
+                        reviewNote
+                    } else {
+                        HStack(alignment: .top, spacing: 24) {
+                            VStack(alignment: .leading, spacing: 18) {
+                                reviewKPI
+                                reviewFirstStep
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            VStack(alignment: .leading, spacing: 18) {
+                                reviewRisks
+                                reviewNote
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     // Los pasos, debajo y a todo lo ancho.
                     reviewStepsList
