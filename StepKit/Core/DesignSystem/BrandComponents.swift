@@ -574,15 +574,29 @@ struct DelayedReveal<Content: View>: View {
 /// en cuanto empieza a cerrarse (al volver atrás). Con `.toolbar(.hidden, for: .tabBar)`
 /// la barra reaparecía de golpe al terminar la transición.
 struct HidesTabBarSmoothly: ViewModifier {
-    @State private var hidden = false
+    @State private var counted = false
 
     func body(content: Content) -> some View {
         content
-            .toolbarVisibility(hidden ? .hidden : .visible, for: .tabBar)
+            .toolbarVisibility(TabBarHiders.shared.count > 0 ? .hidden : .visible, for: .tabBar)
             .background(ViewControllerLifecycle(
-                willAppear: { withAnimation(.smooth(duration: 0.3)) { hidden = true } },
-                willDisappear: { withAnimation(.smooth(duration: 0.3)) { hidden = false } }))
+                willAppear: { setCounted(true) },
+                willDisappear: { setCounted(false) }))
     }
+
+    private func setCounted(_ value: Bool) {
+        guard counted != value else { return }
+        counted = value
+        withAnimation(.smooth(duration: 0.3)) { TabBarHiders.shared.count += value ? 1 : -1 }
+    }
+}
+
+/// Pantallas visibles que ocultan la barra de pestañas. Al pasar de un paso al siguiente,
+/// el nuevo aparece antes de que el anterior desaparezca: con un contador la barra no vuelve.
+@MainActor @Observable
+final class TabBarHiders {
+    static let shared = TabBarHiders()
+    var count = 0
 }
 
 extension View {
