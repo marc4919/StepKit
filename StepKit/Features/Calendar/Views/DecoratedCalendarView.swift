@@ -153,7 +153,8 @@ struct DecoratedCalendarView: UIViewRepresentable {
 
         func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {
             guard let dateComponents, let date = Calendar.current.date(from: dateComponents) else { return }
-            Task { @MainActor in self.parent.selectedDate = date }
+            // Animado: las filas del día entran y salen con suavidad al cambiar de un día a otro.
+            Task { @MainActor in withAnimation(.smooth(duration: 0.35)) { self.parent.selectedDate = date } }
         }
     }
 }

@@ -63,10 +63,122 @@ enum SessionLog {
     }
 }
 
+/// Qué se reserva desde el calendario: un rato para algo propio o una sesión de un Kit.
+enum SessionBookingKind: String, Identifiable {
+    case free, kit
+    var id: String { rawValue }
+}
+
+/// La próxima hora en punto, en el día elegido (o hoy si es pasado).
+enum SessionStart {
+    static func `default`(on day: Date) -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        let base = calendar.isDate(day, inSameDayAs: now) || day < now ? now : calendar.date(bySettingHour: 18, minute: 0, second: 0, of: day) ?? day
+        guard calendar.isDate(base, inSameDayAs: now) else { return base }
+        let nextHour = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
+        let hour = calendar.component(.hour, from: nextHour)
+        return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: nextHour) ?? nextHour
+    }
+}
+
+// MARK: - Algo propio
+
+/// Reservar un rato para algo que no es de un Kit: escribir qué es (o elegir una idea), cuándo y cuánto.
+struct BookFreeSessionSheet: View {
+    let ownerID: String
+    var initialDate: Date = Date()
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.syncManager) private var syncManager
+    @State private var title = ""
+    @State private var date = Date()
+    @State private var minutes = 30
+    @State private var remind = true
+    @State private var saveFailed = false
+    @FocusState private var titleFocused: Bool
+
+    private static let ideas = ["Gimnasio", "Leer", "Llamada", "Recados", "Estudiar", "Paseo"]
+    private var trimmedTitle: String { title.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("¿Qué vas a hacer?", text: $title)
+                        .font(.title3)
+                        .focused($titleFocused)
+                        .submitLabel(.done)
+                        .accessibilityIdentifier("session.freeTitle")
+                    FlowLayout(spacing: 8) {
+                        ForEach(Self.ideas, id: \.self) { idea in
+                            Button(idea) { withAnimation(.smooth) { title = idea } }
+                                .buttonStyle(.bordered)
+                                .buttonBorderShape(.capsule)
+                                .controlSize(.small)
+                                .tint(title == idea ? .accentColor : .secondary)
+                        }
+                    }
+                    .listRowSeparator(.hidden)
+                } header: {
+                    Text("Algo propio")
+                } footer: {
+                    Text("Un rato para ti que no forma parte de ningún Kit.")
+                }
+                SessionWhenSection(date: $date, minutes: $minutes, suggested: nil)
+                Section {
+                    Toggle("Recordármelo", isOn: $remind)
+                }
+                if !trimmedTitle.isEmpty {
+                    SessionSummary(symbol: "circle.fill", tint: .teal, title: trimmedTitle,
+                                   detail: nil, date: date, minutes: minutes)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+            }
+            .animation(.smooth, value: trimmedTitle.isEmpty)
+            .navigationTitle("Reservar algo propio")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Reservar") { save() }
+                        .disabled(trimmedTitle.isEmpty)
+                        .accessibilityIdentifier("session.save")
+                }
+            }
+            .alert("No se pudo reservar la sesión", isPresented: $saveFailed) {
+                Button("Aceptar", role: .cancel) {}
+            }
+        }
+        .onAppear {
+            date = SessionStart.default(on: initialDate)
+            titleFocused = true
+        }
+    }
+
+    private func save() {
+        do {
+            let session = try SessionLog.bookFree(title: trimmedTitle, ownerID: ownerID, startsAt: date,
+                                                  minutes: minutes, remind: remind, context: modelContext)
+            syncManager?.handleDataChange()
+            Task {
+                if remind { await NotificationService.shared.requestAuthorizationIfNeeded() }
+                await NotificationService.shared.scheduleReminder(for: session, kitTitle: session.title ?? "StepKit",
+                                                                  stepTitle: nil)
+            }
+            dismiss()
+        } catch {
+            saveFailed = true
+        }
+    }
+}
+
+// MARK: - Sesión de un Kit
+
+/// Reservar tiempo para un Kit: se elige el Kit, el paso (el siguiente viene marcado), cuándo y cuánto.
 struct BookSessionSheet: View {
     let kits: [GoalEntity]
-    /// Dueño para las sesiones libres (sin Kit).
-    var ownerID: String? = nil
     var initialKit: GoalEntity?
     var initialStep: StepEntity?
     var initialDate: Date = Date()
@@ -80,124 +192,121 @@ struct BookSessionSheet: View {
     @State private var minutes = 30
     @State private var remind = true
     @State private var saveFailed = false
-    @State private var isFree = false
-    @State private var freeTitle = ""
 
     private var kit: GoalEntity? { kits.first { $0.id == kitID } }
-    private var canSave: Bool {
-        isFree ? !freeTitle.trimmingCharacters(in: .whitespaces).isEmpty && ownerID != nil : kit != nil
-    }
     private var step: StepEntity? { kit?.orderedActiveSteps.first { $0.id == stepID } }
+    private var pendingSteps: [StepEntity] { kit?.orderedActiveSteps.filter { !$0.isCompleted } ?? [] }
 
     var body: some View {
         NavigationStack {
             Form {
-                if ownerID != nil {
-                    Section {
-                        Picker("Tipo", selection: $isFree.animation(.smooth)) {
-                            Text("De un Kit").tag(false)
-                            Text("Algo propio").tag(true)
-                        }
-                        .pickerStyle(.segmented)
-                        .disabled(kits.isEmpty)
-                    }
-                }
-                if isFree {
-                    Section("Qué vas a hacer") {
-                        TextField("Ej.: Llamar al fontanero, gimnasio…", text: $freeTitle)
-                            .accessibilityIdentifier("session.freeTitle")
-                    }
-                } else {
-                Section("Qué vas a hacer") {
-                    Picker("Kit", selection: $kitID) {
-                        ForEach(kits) { kit in
-                            Text(kit.title).tag(Optional(kit.id))
-                        }
-                    }
-                    if let kit {
-                        Picker("Paso", selection: $stepID) {
-                            Text("Sin paso concreto").tag(UUID?.none)
-                            ForEach(kit.orderedActiveSteps.filter { !$0.isCompleted }) { step in
-                                Text("\(kit.position(of: step)) · \(step.stepTitle)").tag(Optional(step.id))
+                Section("Kit") {
+                    ForEach(kits) { candidate in
+                        Button {
+                            withAnimation(.smooth) { choose(candidate) }
+                        } label: {
+                            HStack(spacing: 12) {
+                                IconChip(symbol: Symbols.kits, color: .accentColor, size: 30)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(candidate.title).foregroundStyle(.primary)
+                                    Text("\(candidate.completedStepCount) de \(candidate.activeStepCount) pasos")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                }
+                                Spacer(minLength: 0)
+                                if candidate.id == kitID {
+                                    Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Color.accentColor)
+                                }
                             }
                         }
+                        .tint(.primary)
+                        .accessibilityAddTraits(candidate.id == kitID ? .isSelected : [])
                     }
                 }
-                }
-                Section {
-                    DatePicker("Empieza", selection: $date)
-                    Picker("Duración", selection: $minutes) {
-                        Text("15 min").tag(15)
-                        Text("30 min").tag(30)
-                        Text("45 min").tag(45)
-                        Text("1 h").tag(60)
+                if kit != nil {
+                    Section {
+                        ForEach(pendingSteps) { candidate in
+                            Button {
+                                withAnimation(.smooth) {
+                                    stepID = candidate.id
+                                    minutes = candidate.estimateMinutes
+                                }
+                            } label: {
+                                stepRow(candidate)
+                            }
+                            .tint(.primary)
+                            .accessibilityAddTraits(candidate.id == stepID ? .isSelected : [])
+                        }
+                    } header: {
+                        Text("Paso")
+                    } footer: {
+                        Text("Reservar tiempo no completa el paso.")
                     }
-                    .pickerStyle(.segmented)
+                    .transition(.opacity)
                 }
+                SessionWhenSection(date: $date, minutes: $minutes, suggested: step?.estimateMinutes)
                 Section {
                     Toggle("Recordármelo", isOn: $remind)
-                } footer: {
-                    Text("Reservar tiempo no completa el paso ni cambia tu disponibilidad semanal.")
+                }
+                if let kit {
+                    SessionSummary(symbol: "circle.fill", tint: .blue, title: step?.stepTitle ?? kit.title,
+                                   detail: step == nil ? nil : kit.title, date: date, minutes: minutes)
                 }
             }
-            .navigationTitle("Reservar sesión")
+            .navigationTitle("Sesión de un Kit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
-                }
+                ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Guardar") { save() }
-                        .disabled(!canSave)
+                    Button("Reservar") { save() }
+                        .disabled(kit == nil)
                         .accessibilityIdentifier("session.save")
                 }
             }
             .alert("No se pudo reservar la sesión", isPresented: $saveFailed) {
                 Button("Aceptar", role: .cancel) {}
             }
-            .onChange(of: kitID) { _, _ in
-                if step == nil { stepID = kit?.nextStep?.id }
-            }
         }
         .onAppear {
-            isFree = kits.isEmpty && ownerID != nil
-            kitID = (initialKit ?? kits.first)?.id
-            stepID = (initialStep ?? (initialKit ?? kits.first)?.nextStep)?.id
-            date = Self.defaultStart(on: initialDate)
-            if let step = initialStep ?? (initialKit ?? kits.first)?.nextStep {
-                minutes = [15, 30, 45, 60].min { abs($0 - step.estimateMinutes) < abs($1 - step.estimateMinutes) } ?? 30
+            date = SessionStart.default(on: initialDate)
+            if let first = initialKit ?? kits.first { choose(first) }
+            if let initialStep {
+                stepID = initialStep.id
+                minutes = initialStep.estimateMinutes
             }
         }
     }
 
-    /// La próxima hora en punto, en el día elegido (o hoy si es pasado).
-    static func defaultStart(on day: Date) -> Date {
-        let calendar = Calendar.current
-        let now = Date()
-        let base = calendar.isDate(day, inSameDayAs: now) || day < now ? now : calendar.date(bySettingHour: 18, minute: 0, second: 0, of: day) ?? day
-        guard calendar.isDate(base, inSameDayAs: now) else { return base }
-        let nextHour = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
-        let hour = calendar.component(.hour, from: nextHour)
-        return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: nextHour) ?? nextHour
+    private func choose(_ candidate: GoalEntity) {
+        kitID = candidate.id
+        let next = candidate.nextStep
+        stepID = next?.id
+        if let next { minutes = next.estimateMinutes }
+    }
+
+    private func stepRow(_ candidate: StepEntity) -> some View {
+        HStack(spacing: 12) {
+            Text("\(kit?.position(of: candidate) ?? 0)")
+                .font(.caption.bold().monospacedDigit())
+                .foregroundStyle(candidate.id == stepID ? .white : Color.accentColor)
+                .frame(width: 26, height: 26)
+                .background(candidate.id == stepID ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color.accentColor.opacity(0.12)),
+                            in: .circle)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(candidate.stepTitle).foregroundStyle(.primary).lineLimit(2)
+                HStack(spacing: 8) {
+                    Label("\(candidate.estimateMinutes) min", systemImage: Symbols.time)
+                        .foregroundStyle(MetaTint.time)
+                    if candidate.id == kit?.nextStep?.id {
+                        Text("Siguiente").foregroundStyle(.secondary)
+                    }
+                }
+                .font(.caption)
+            }
+            Spacer(minLength: 0)
+        }
     }
 
     private func save() {
-        if isFree, let ownerID {
-            do {
-                let session = try SessionLog.bookFree(title: freeTitle, ownerID: ownerID, startsAt: date,
-                                                      minutes: minutes, remind: remind, context: modelContext)
-                syncManager?.handleDataChange()
-                Task {
-                    if remind { await NotificationService.shared.requestAuthorizationIfNeeded() }
-                    await NotificationService.shared.scheduleReminder(for: session, kitTitle: session.title ?? "StepKit",
-                                                                      stepTitle: nil)
-                }
-                dismiss()
-            } catch {
-                saveFailed = true
-            }
-            return
-        }
         guard let kit else { return }
         do {
             let session = try SessionLog.book(kit: kit, step: step, startsAt: date, minutes: minutes,
@@ -211,6 +320,78 @@ struct BookSessionSheet: View {
             dismiss()
         } catch {
             saveFailed = true
+        }
+    }
+}
+
+// MARK: - Piezas comunes
+
+/// Cuándo y cuánto: fecha y hora, y la duración en botones (la del paso, si la hay, va primero).
+private struct SessionWhenSection: View {
+    @Binding var date: Date
+    @Binding var minutes: Int
+    let suggested: Int?
+
+    private var options: [Int] {
+        var values = [15, 30, 45, 60, 90]
+        if let suggested, !values.contains(suggested) { values.append(suggested) }
+        return values.sorted()
+    }
+
+    var body: some View {
+        Section("Cuándo") {
+            DatePicker(selection: $date, in: Calendar.current.startOfDay(for: .now)...) {
+                Label { Text("Empieza") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+            }
+            VStack(alignment: .leading, spacing: 10) {
+                Label { Text("Duración") } icon: { IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28) }
+                FlowLayout(spacing: 8) {
+                    ForEach(options, id: \.self) { value in
+                        Button {
+                            withAnimation(.smooth) { minutes = value }
+                        } label: {
+                            Text(KitCreatorViewModel.durationText(value))
+                                .font(.subheadline.weight(minutes == value ? .semibold : .regular))
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .tint(minutes == value ? MetaTint.time : .secondary)
+                        .accessibilityAddTraits(minutes == value ? .isSelected : [])
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+}
+
+/// Resumen vivo de lo que se va a reservar, como quedará en el calendario.
+private struct SessionSummary: View {
+    let symbol: String
+    let tint: Color
+    let title: String
+    let detail: String?
+    let date: Date
+    let minutes: Int
+
+    private var end: Date { date.addingTimeInterval(TimeInterval(minutes * 60)) }
+
+    var body: some View {
+        Section("Así queda en tu calendario") {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: symbol).font(.caption).foregroundStyle(tint).padding(.top, 5)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title).font(.headline).contentTransition(.opacity)
+                    if let detail { Text(detail).font(.subheadline).foregroundStyle(.secondary) }
+                    Text("\(date.formatted(.dateTime.weekday(.wide).day().month(.wide))) · \(date.formatted(date: .omitted, time: .shortened))–\(end.formatted(date: .omitted, time: .shortened))")
+                        .font(.subheadline)
+                        .foregroundStyle(MetaTint.date)
+                        .contentTransition(.numericText())
+                }
+            }
+            .animation(.smooth, value: date)
+            .animation(.smooth, value: minutes)
+            .accessibilityElement(children: .combine)
         }
     }
 }
@@ -268,7 +449,7 @@ struct ReviewSessionSheet: View {
             }
         }
         .onAppear {
-            newDate = max(session.startsAt, BookSessionSheet.defaultStart(on: Date()))
+            newDate = max(session.startsAt, SessionStart.default(on: Date()))
         }
     }
 

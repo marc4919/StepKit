@@ -33,7 +33,7 @@ struct CalendarPlusView: View {
     @State private var revealToken = 0
     @State private var dayVisible = true
     @State private var showingKitCreator = false
-    @State private var showingBookSession = false
+    @State private var booking: SessionBookingKind?
     @State private var reviewingSession: WorkSessionEntity?
     @State private var navigationPath = NavigationPath()
 
@@ -124,7 +124,8 @@ struct CalendarPlusView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Button("Reservar sesión", systemImage: Symbols.session) { showingBookSession = true }
+                        bookingButtons
+                        Divider()
                         Button("Crear Kit para este día", systemImage: "plus.circle") { showingKitCreator = true }
                     } label: {
                         Label("Añadir", systemImage: "plus")
@@ -147,8 +148,13 @@ struct CalendarPlusView: View {
             .navigationDestination(for: CalendarRoute.self) { _ in
                 UpcomingSessionsView(sessions: upcomingSessions, kits: visibleGoalEntities)
             }
-            .sheet(isPresented: $showingBookSession) {
-                BookSessionSheet(kits: activeKits, ownerID: ownerID, initialDate: selectedDate)
+            .sheet(item: $booking) { kind in
+                switch kind {
+                case .free:
+                    if let ownerID { BookFreeSessionSheet(ownerID: ownerID, initialDate: selectedDate) }
+                case .kit:
+                    BookSessionSheet(kits: activeKits, initialDate: selectedDate)
+                }
             }
             .sheet(item: $reviewingSession) { session in
                 let kit = visibleGoalEntities.first { $0.id == session.kitID }
@@ -194,6 +200,15 @@ struct CalendarPlusView: View {
     /// Ancho y bajo: el calendario y su detalle no caben uno sobre otro.
     private func isSideBySide(_ proxy: GeometryProxy) -> Bool {
         proxy.size.width >= 760 && proxy.size.width > proxy.size.height
+    }
+
+    /// Dos formas de reservar: un rato para algo propio o tiempo para un paso de un Kit.
+    @ViewBuilder private var bookingButtons: some View {
+        Button("Algo propio", systemImage: "person.crop.circle.badge.clock") { booking = .free }
+            .accessibilityIdentifier("calendar.bookFree")
+        Button("Sesión de un Kit", systemImage: Symbols.kits) { booking = .kit }
+            .disabled(activeKits.isEmpty)
+            .accessibilityIdentifier("calendar.bookKit")
     }
 
     @ViewBuilder private var upcomingSection: some View {
@@ -308,8 +323,12 @@ struct CalendarPlusView: View {
                 .onScrollVisibilityChange(threshold: 0.5) { dayVisible = $0 }
                 .accessibilityIdentifier("calendar.daySummary")
             if empty, !selectedDayIsPast {
-                Button("Reservar sesión este día", systemImage: Symbols.session) { showingBookSession = true }
-                    .accessibilityIdentifier("calendar.bookDay")
+                Menu {
+                    bookingButtons
+                } label: {
+                    Label("Reservar este día", systemImage: Symbols.session)
+                }
+                .accessibilityIdentifier("calendar.bookDay")
             }
             ForEach(sessionsForSelectedDate) { session in
                 Button { reviewingSession = session } label: {
