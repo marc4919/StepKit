@@ -171,40 +171,40 @@ struct SubscriptionView: View {
                 FeatureRow(
                     icon: "infinity",
                     iconColor: .accentColor,
-                    title: "Objetivos ilimitados",
-                    description: "Crea tantos objetivos como quieras",
+                    title: String(localized: "Objetivos ilimitados"),
+                    description: String(localized: "Crea tantos objetivos como quieras"),
                     showDivider: true
                 )
 
                 FeatureRow(
                     icon: "sparkles",
                     iconColor: .purple,
-                    title: "IA sin limites",
-                    description: "Genera planes con IA de forma ilimitada",
+                    title: String(localized: "IA sin limites"),
+                    description: String(localized: "Genera planes con IA de forma ilimitada"),
                     showDivider: true
                 )
 
                 FeatureRow(
                     icon: "icloud",
                     iconColor: .accentHighlight,
-                    title: "Sincronizacion en la nube",
-                    description: "Accede desde cualquier dispositivo",
+                    title: String(localized: "Sincronizacion en la nube"),
+                    description: String(localized: "Accede desde cualquier dispositivo"),
                     showDivider: true
                 )
 
                 FeatureRow(
                     icon: "bell.badge",
                     iconColor: .orange,
-                    title: "Recordatorios personalizados",
-                    description: "Notificaciones inteligentes adaptadas",
+                    title: String(localized: "Recordatorios personalizados"),
+                    description: String(localized: "Notificaciones inteligentes adaptadas"),
                     showDivider: true
                 )
 
                 FeatureRow(
                     icon: "chart.line.uptrend.xyaxis",
                     iconColor: .green,
-                    title: "Analisis avanzado",
-                    description: "Estadisticas detalladas de tu progreso",
+                    title: String(localized: "Analisis avanzado"),
+                    description: String(localized: "Estadisticas detalladas de tu progreso"),
                     showDivider: false
                 )
             }
@@ -291,7 +291,7 @@ struct SubscriptionView: View {
                         .font(.body.weight(.semibold))
                 }
 
-                Text(viewModel.isLoading ? "Procesando..." : "Comenzar prueba gratuita")
+                Text(viewModel.isLoading ? String(localized: "Procesando...") : String(localized: "Comenzar prueba gratuita"))
                     .font(.body.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
@@ -306,8 +306,8 @@ struct SubscriptionView: View {
             .shadow(color: viewModel.isLoading ? .clear : Color.glowColor.opacity(0.4), radius: 12, x: 0, y: 6)
         }
         .accessibilityAddTraits(.isButton)
-        .accessibilityLabel(viewModel.isLoading ? "Procesando suscripción" : "Comenzar prueba gratuita")
-        .accessibilityValue(viewModel.isLoading ? "Procesando" : selectedProduct == nil ? "No disponible" : "")
+        .accessibilityLabel(viewModel.isLoading ? String(localized: "Procesando suscripción") : String(localized: "Comenzar prueba gratuita"))
+        .accessibilityValue(viewModel.isLoading ? String(localized: "Procesando") : selectedProduct == nil ? String(localized: "No disponible") : "")
         .accessibilityHint("Inicia el proceso de suscripción al plan seleccionado")
         .disabled(viewModel.isLoading || selectedProduct == nil)
     }
@@ -391,9 +391,9 @@ enum SubscriptionPlan: CaseIterable {
     var title: String {
         switch self {
         case .monthly:
-            return "Mensual"
+            return String(localized: "Mensual")
         case .yearly:
-            return "Anual"
+            return String(localized: "Anual")
         }
     }
 
@@ -421,11 +421,11 @@ enum SubscriptionPlan: CaseIterable {
 
     func billingInfo(from product: Product?) -> String {
         guard let product = product else {
-            return self == .monthly ? "Facturado mensualmente" : "39,99 facturado anualmente"
+            return self == .monthly ? String(localized: "Facturado mensualmente") : String(localized: "39,99 facturado anualmente")
         }
         switch self {
         case .monthly:
-            return "Facturado mensualmente"
+            return String(localized: "Facturado mensualmente")
         case .yearly:
             return "\(product.displayPrice) facturado anualmente"
         }
@@ -436,7 +436,7 @@ enum SubscriptionPlan: CaseIterable {
         case .monthly:
             return nil
         case .yearly:
-            return "Ahorra 33%"
+            return String(localized: "Ahorra 33%")
         }
     }
 

@@ -14,12 +14,12 @@ struct WelcomeView: View {
     @State private var artScale: CGFloat = 1
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private let titles = ["Un objetivo grande.\nUn primer paso claro.",
-                          "Un plan que puedes ajustar",
-                          "Vuelve con un paso claro"]
-    private let subtitles = ["Da forma a tu idea, avanza a tu ritmo y retoma donde lo dejaste.",
-                             "Convierte tu idea en pasos claros. Revisa el plan y adáptalo a tu tiempo.",
-                             "Guarda lo que avanzas y retoma desde donde lo dejaste."]
+    private let titles = [String(localized: "Un objetivo grande.\nUn primer paso claro."),
+                          String(localized: "Un plan que puedes ajustar"),
+                          String(localized: "Vuelve con un paso claro")]
+    private let subtitles = [String(localized: "Da forma a tu idea, avanza a tu ritmo y retoma donde lo dejaste."),
+                             String(localized: "Convierte tu idea en pasos claros. Revisa el plan y adáptalo a tu tiempo."),
+                             String(localized: "Guarda lo que avanzas y retoma desde donde lo dejaste.")]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -125,15 +125,15 @@ struct WelcomeView: View {
 
     private var rows: [[Row]] {
         [
-            [Row(symbol: Symbols.kits, color: .accentColor, text: "Un plan que puedes ajustar"),
-             Row(symbol: "checkmark", color: .green, text: "Avances que quedan guardados"),
-             Row(symbol: Symbols.calendar, color: .purple, text: "Tiempo que encaja contigo")],
-            [Row(symbol: "1.circle.fill", color: .accentColor, text: "Define lo que quieres conseguir"),
-             Row(symbol: "2.circle.fill", color: .accentColor, text: "Avanza por pasos con su tiempo y su fecha"),
-             Row(symbol: "3.circle.fill", color: .accentColor, text: "Confirma que tienes lo que buscabas")],
-            [Row(symbol: Symbols.note, color: .orange, text: "Anota lo que has hecho y lo que falta"),
-             Row(symbol: Symbols.blocked, color: .red, text: "Marca un bloqueo sin perder lo hecho"),
-             Row(symbol: "arrow.uturn.forward", color: .green, text: "Retoma con un paso concreto")],
+            [Row(symbol: Symbols.kits, color: .accentColor, text: String(localized: "Un plan que puedes ajustar")),
+             Row(symbol: "checkmark", color: .green, text: String(localized: "Avances que quedan guardados")),
+             Row(symbol: Symbols.calendar, color: .purple, text: String(localized: "Tiempo que encaja contigo"))],
+            [Row(symbol: "1.circle.fill", color: .accentColor, text: String(localized: "Define lo que quieres conseguir")),
+             Row(symbol: "2.circle.fill", color: .accentColor, text: String(localized: "Avanza por pasos con su tiempo y su fecha")),
+             Row(symbol: "3.circle.fill", color: .accentColor, text: String(localized: "Confirma que tienes lo que buscabas"))],
+            [Row(symbol: Symbols.note, color: .orange, text: String(localized: "Anota lo que has hecho y lo que falta")),
+             Row(symbol: Symbols.blocked, color: .red, text: String(localized: "Marca un bloqueo sin perder lo hecho")),
+             Row(symbol: "arrow.uturn.forward", color: .green, text: String(localized: "Retoma con un paso concreto"))],
         ]
     }
 
@@ -142,7 +142,7 @@ struct WelcomeView: View {
             OrbitMark(height: artHeight, animated: true)
             HStack(spacing: 10) {
                 IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
-                Text("Dos imágenes listas.\nFaltan material y permisos.").font(.footnote)
+                Text(String(localized: "Dos imágenes listas.\nFaltan material y permisos.")).font(.footnote)
             }
             .padding(12)
             .background(.regularMaterial, in: .rect(cornerRadius: 16))
@@ -193,6 +193,6 @@ private struct PageIndicator: View {
         }
         .animation(.default, value: current)
         .accessibilityElement()
-        .accessibilityLabel("Página \(current + 1) de \(count)")
+        .accessibilityLabel(String(localized: "Página \(current + 1) de \(count)"))
     }
 }

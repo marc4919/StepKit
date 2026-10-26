@@ -32,10 +32,10 @@ enum StepProgressState {
 
     var label: String {
         switch self {
-        case .pending: "Pendiente"
-        case .inProgress: "En curso"
-        case .blocked: "Bloqueado"
-        case .done: "Completado"
+        case .pending: String(localized: "Pendiente")
+        case .inProgress: String(localized: "En curso")
+        case .blocked: String(localized: "Bloqueado")
+        case .done: String(localized: "Completado")
         }
     }
 }

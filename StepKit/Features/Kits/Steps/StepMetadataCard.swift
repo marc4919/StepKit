@@ -18,7 +18,7 @@ struct StepMetadataCard: View {
             detailRow(
                 icon: "clock.fill",
                 iconColor: .accentColor,
-                title: "Tiempo estimado",
+                title: String(localized: "Tiempo estimado"),
                 value: formatMinutes(estimateMinutes),
                 showDivider: true
             )
@@ -28,7 +28,7 @@ struct StepMetadataCard: View {
                 detailRow(
                     icon: "calendar",
                     iconColor: .purple,
-                    title: "Fecha sugerida",
+                    title: String(localized: "Fecha sugerida"),
                     value: deadline.formatted(.dateTime.day().month(.wide)),
                     showDivider: true
                 )
@@ -118,7 +118,7 @@ struct StepMetadataCard: View {
     
     private func formatMinutes(_ minutes: Int) -> String {
         if minutes < 60 {
-            return "\(minutes) min"
+            return String(localized: "\(minutes) min")
         } else {
             let hours = minutes / 60
             let remainingMinutes = minutes % 60
@@ -132,9 +132,9 @@ struct StepMetadataCard: View {
     
     private var effortLevelText: String {
         switch effortLevel.lowercased() {
-        case "low": return "Bajo"
-        case "medium": return "Medio"
-        case "high": return "Alto"
+        case "low": return String(localized: "Bajo")
+        case "medium": return String(localized: "Medio")
+        case "high": return String(localized: "Alto")
         default: return effortLevel.capitalized
         }
     }

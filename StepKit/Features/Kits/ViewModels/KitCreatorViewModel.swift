@@ -49,6 +49,8 @@ final class KitCreatorViewModel {
     var oneSitting = false
 
     /// Texto que recibe la IA: el resultado más el contexto opcional del formulario.
+    /// Va siempre en español: el servidor reconoce estas etiquetas («Disponibilidad:»…).
+    /// El idioma de la respuesta se pide aparte.
     var composedDescription: String {
         var parts = [description.trimmingCharacters(in: .whitespacesAndNewlines)]
         let done = doneWhen.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -56,8 +58,8 @@ final class KitCreatorViewModel {
         if !done.isEmpty { parts.append("Sabré que está listo cuando: \(done)") }
         if !start.isEmpty { parts.append("Punto de partida: \(start)") }
         parts.append(oneSitting
-            ? "Disponibilidad: lo haré en una sola sesión de \(Self.durationText(sessionMinutes))."
-            : "Disponibilidad: \(sessionsPerWeek) \(sessionsPerWeek == 1 ? "sesión" : "sesiones") por semana de \(Self.durationText(sessionMinutes)).")
+            ? "Disponibilidad: lo haré en una sola sesión de \(Self.spanishDurationText(sessionMinutes))."
+            : "Disponibilidad: \(sessionsPerWeek) \(sessionsPerWeek == 1 ? "sesión" : "sesiones") por semana de \(Self.spanishDurationText(sessionMinutes)).")
         return parts.joined(separator: "\n")
     }
 
@@ -67,12 +69,22 @@ final class KitCreatorViewModel {
         max(10, sessionMinutes)
     }
 
-    static func durationText(_ minutes: Int) -> String {
+    /// Para el texto que recibe la IA (siempre en español).
+    static func spanishDurationText(_ minutes: Int) -> String {
         let hours = minutes / 60, rest = minutes % 60
         switch (hours, rest) {
         case (0, _): return "\(minutes) min"
         case (_, 0): return "\(hours) h"
         default: return "\(hours) h \(rest) min"
+        }
+    }
+
+    static func durationText(_ minutes: Int) -> String {
+        let hours = minutes / 60, rest = minutes % 60
+        switch (hours, rest) {
+        case (0, _): return String(localized: "\(minutes) min")
+        case (_, 0): return "\(hours) h"
+        default: return String(localized: "\(hours) h \(rest) min")
         }
     }
     
@@ -109,8 +121,8 @@ final class KitCreatorViewModel {
     
     var toolbarTitle: String {
         switch viewState {
-        case .form: return "Nuevo Kit"
-        case .loading, .streaming: return "Creando tu Kit"
+        case .form: return String(localized: "Nuevo Kit")
+        case .loading, .streaming: return String(localized: "Creando tu Kit")
         }
     }
     
@@ -126,7 +138,7 @@ final class KitCreatorViewModel {
     }
     
     var cancelButtonTitle: String {
-        viewState == .form ? "Cerrar" : "Cancelar"
+        viewState == .form ? String(localized: "Cerrar") : String(localized: "Cancelar")
     }
     
     // MARK: - Actions
@@ -228,10 +240,10 @@ final class KitCreatorViewModel {
                             withAnimation {
                                 viewState = .form
                             }
-                            handleError(event.error ?? "Error al conectar con la IA")
+                            handleError(event.error ?? String(localized: "Error al conectar con la IA"))
                         } else {
                             // Si ya estamos en streaming, el error se muestra en el estado del streaming
-                            streamingState.setError(mapErrorMessage(event.error ?? "Error desconocido"))
+                            streamingState.setError(mapErrorMessage(event.error ?? String(localized: "Error desconocido")))
                         }
                         UINotificationFeedbackGenerator().notificationOccurred(.error)
                     }
@@ -353,7 +365,7 @@ final class KitCreatorViewModel {
         } else if let err = error as? Error {
             errorMessage = mapErrorMessage(err)
         } else {
-            errorMessage = "Ha ocurrido un error inesperado"
+            errorMessage = String(localized: "Ha ocurrido un error inesperado")
         }
         showingError = true
     }
@@ -364,29 +376,29 @@ final class KitCreatorViewModel {
         }
         
         guard let error = error as? Error else {
-            return "Error desconocido"
+            return String(localized: "Error desconocido")
         }
         
         if let apiError = error as? APIError {
             switch apiError {
             case .premiumRequired:
-                return "La creación de kits con IA requiere una suscripción premium"
+                return String(localized: "La creación de kits con IA requiere una suscripción premium")
             case .quotaExceeded:
-                return "Has alcanzado el límite de creación de kits este mes"
+                return String(localized: "Has alcanzado el límite de creación de kits este mes")
             case .notAuthenticated:
-                return "Tu sesión ha expirado. Por favor, vuelve a iniciar sesión"
+                return String(localized: "Tu sesión ha expirado. Por favor, vuelve a iniciar sesión")
             case .serverError(let code, _):
                 if code >= 500 {
-                    return "El servidor no está disponible. Inténtalo más tarde"
+                    return String(localized: "El servidor no está disponible. Inténtalo más tarde")
                 }
-                return "No se pudo crear el kit. Inténtalo de nuevo"
+                return String(localized: "No se pudo crear el kit. Inténtalo de nuevo")
             default:
                 return apiError.localizedDescription
             }
         } else if (error as NSError).domain == NSURLErrorDomain {
-            return "No hay conexión a internet. Verifica tu conexión e inténtalo de nuevo"
+            return String(localized: "No hay conexión a internet. Verifica tu conexión e inténtalo de nuevo")
         }
-        return "No se pudo crear el kit. Inténtalo de nuevo"
+        return String(localized: "No se pudo crear el kit. Inténtalo de nuevo")
     }
     
     private func parseMinutes(from text: String) -> Int {

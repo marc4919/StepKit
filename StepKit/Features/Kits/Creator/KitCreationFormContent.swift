@@ -96,14 +96,14 @@ struct KitCreationFormContent: View {
 
     @ViewBuilder private var goalSection: some View {
         Section {
-            field("target", .accentColor, "Resultado", placeholder: "Ej.: Correr 5 km sin parar",
+            field("target", .accentColor, String(localized: "Resultado"), placeholder: String(localized: "Ej.: Correr 5 km sin parar"),
                   text: $description, focus: .description, identifier: "kitCreator.description")
-            field("checklist", .green, "Cómo sabré que está listo (opcional)",
-                  placeholder: "Ej.: Los corro en menos de 35 min", text: $doneWhen, focus: .doneWhen)
-            field("flag.fill", .pink, "Punto de partida (opcional)",
-                  placeholder: "Ej.: Ahora aguanto 10 min seguidos", text: $startingPoint, focus: .startingPoint)
-            field(Symbols.risk, .orange, "Qué te puede frenar (opcional)",
-                  placeholder: "Ej.: Trabajo a turnos, me duele la rodilla", text: $inconveniences, focus: .obstacles)
+            field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
+                  placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen)
+            field("flag.fill", .pink, String(localized: "Punto de partida (opcional)"),
+                  placeholder: String(localized: "Ej.: Ahora aguanto 10 min seguidos"), text: $startingPoint, focus: .startingPoint)
+            field(Symbols.risk, .orange, String(localized: "Qué te puede frenar (opcional)"),
+                  placeholder: String(localized: "Ej.: Trabajo a turnos, me duele la rodilla"), text: $inconveniences, focus: .obstacles)
         } header: {
             Text("Tu objetivo")
         }
@@ -127,7 +127,7 @@ struct KitCreationFormContent: View {
             if !oneSitting {
                 Stepper(value: $sessionsPerWeek, in: 1...14) {
                     Label {
-                        Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
+                        Text(sessionsPerWeek == 1 ? String(localized: "1 sesión por semana") : String(localized: "\(sessionsPerWeek) sesiones por semana"))
                     } icon: {
                         IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                     }
@@ -136,7 +136,7 @@ struct KitCreationFormContent: View {
             Picker(selection: $sessionMinutes) {
                 ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
             } label: {
-                Label { Text(oneSitting ? "Tiempo disponible" : "Cada sesión") } icon: {
+                Label { Text(oneSitting ? String(localized: "Tiempo disponible") : String(localized: "Cada sesión")) } icon: {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
                 }
             }

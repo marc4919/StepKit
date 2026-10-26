@@ -149,7 +149,7 @@ struct SearchView: View {
                             Label {
                                 VStack(alignment: .leading) {
                                     Text(entry.note).font(.headline).lineLimit(2)
-                                    Text([kit?.title, step.map { "Paso \(kit?.position(of: $0) ?? 1)" },
+                                    Text([kit?.title, step.map { String(localized: "Paso \(kit?.position(of: $0) ?? 1)") },
                                           entry.notedAt.formatted(.dateTime.day().month(.abbreviated))]
                                             .compactMap { $0 }.joined(separator: " · "))
                                         .font(.subheadline).foregroundStyle(.secondary)

@@ -170,7 +170,7 @@ struct ProgressRing: View {
         .frame(width: size * min(scale, 1.6), height: size * min(scale, 1.6))
         .accessibilityElement()
         .accessibilityLabel("Progreso")
-        .accessibilityValue("\(done) de \(total) pasos completados")
+        .accessibilityValue(String(localized: "\(done) de \(total) pasos completados"))
     }
 }
 

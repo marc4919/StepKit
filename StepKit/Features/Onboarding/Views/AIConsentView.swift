@@ -49,7 +49,7 @@ struct AIConsentView: View {
                 Section {
                     Toggle("Acepto compartir estos datos con el servicio de IA", isOn: $hasAccepted)
                         .accessibilityIdentifier("consent.accept")
-                        .accessibilityValue(hasAccepted ? "Aceptado" : "No aceptado")
+                        .accessibilityValue(hasAccepted ? String(localized: "Aceptado") : String(localized: "No aceptado"))
                 }
             }
             .navigationTitle("Uso de IA")

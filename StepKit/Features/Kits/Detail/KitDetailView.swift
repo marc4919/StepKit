@@ -103,7 +103,7 @@ struct KitDetailView: View {
                 }
                 .badge(hasPendingProposal ? 1 : 0)
                 .accessibilityIdentifier("kit.assistant")
-                .accessibilityValue(hasPendingProposal ? "Propuesta pendiente" : "")
+                .accessibilityValue(hasPendingProposal ? String(localized: "Propuesta pendiente") : "")
                 Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
                     .accessibilityIdentifier("kit.info")
                     .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
@@ -163,7 +163,7 @@ struct KitDetailView: View {
 
     @ViewBuilder private var headerChips: some View {
         MetaChip(symbol: "checkmark.circle",
-                 text: "\(kitEntity.completedStepCount) de \(kitEntity.activeStepCount)",
+                 text: String(localized: "\(kitEntity.completedStepCount) de \(kitEntity.activeStepCount)"),
                  color: MetaTint.done)
         if let date = kitEntity.dueDate {
             MetaChip(symbol: Symbols.wantedDate, text: date.formatted(.dateTime.day().month(.abbreviated)),
@@ -198,10 +198,10 @@ struct KitDetailView: View {
                 IconChip(symbol: confirmed ? "checkmark.seal.fill" : "flag.checkered",
                          color: MetaTint.done, size: 40)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(confirmed ? "Resultado confirmado" : "Has completado todos los pasos")
+                    Text(confirmed ? String(localized: "Resultado confirmado") : String(localized: "Has completado todos los pasos"))
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text(confirmed ? "Ver el resumen de tu recorrido" : "Revisa si tienes lo que buscabas")
+                    Text(confirmed ? String(localized: "Ver el resumen de tu recorrido") : String(localized: "Revisa si tienes lo que buscabas"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -277,7 +277,7 @@ private struct PlanStepRow: View {
     let state: StepProgressState
 
     @ViewBuilder private var meta: some View {
-        Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
+        Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
             .foregroundStyle(MetaTint.time)
         if let date = step.suggestedDeadline {
             Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
@@ -314,8 +314,8 @@ private struct PlanStepRow: View {
             .padding(.leading, 4)
             .padding(.top, 2)
             .sensoryFeedback(.success, trigger: step.isCompleted) { _, done in done }
-            .accessibilityLabel(step.isCompleted ? "Marcar como pendiente" : "Marcar como completado")
-            .accessibilityValue("Paso \(number): \(step.stepTitle)")
+            .accessibilityLabel(step.isCompleted ? String(localized: "Marcar como pendiente") : String(localized: "Marcar como completado"))
+            .accessibilityValue(String(localized: "Paso \(number): \(step.stepTitle)"))
             .accessibilityIdentifier("step.rowToggle")
             NavigationLink {
                 StepDetailView(stepEntity: step, stepNumber: number)
@@ -341,7 +341,7 @@ private struct PlanStepRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("Paso \(number): \(step.stepTitle). \(state.label)")
+            .accessibilityLabel(String(localized: "Paso \(number): \(step.stepTitle). \(state.label)"))
             .accessibilityHint("Toca dos veces para abrir los detalles del paso")
             .accessibilityIdentifier("step.row")
         }
@@ -357,7 +357,7 @@ private struct PlanStepRow: View {
         kpi: "Completar 5 proyectos funcionales",
         metaType: "learning",
         metaTags: ["technical", "desk"],
-        risks: ["Falta de tiempo", "Curva de aprendizaje"]
+        risks: [String(localized: "Falta de tiempo"), String(localized: "Curva de aprendizaje")]
     )
     container.mainContext.insert(kitEntity)
 

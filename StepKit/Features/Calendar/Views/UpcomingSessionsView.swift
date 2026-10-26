@@ -46,7 +46,7 @@ struct UpcomingSessionsView: View {
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(Self.when(session)).font(.subheadline.weight(.semibold)).foregroundStyle(.tint)
-                Text(step?.stepTitle ?? kit?.title ?? "Sesión").font(.headline)
+                Text(step?.stepTitle ?? kit?.title ?? String(localized: "Sesión")).font(.headline)
                 Text(Self.detail(session, kit: kit, step: step)).font(.subheadline).foregroundStyle(.secondary)
             }
             .padding(.bottom, last ? 0 : 12)
@@ -73,15 +73,15 @@ struct UpcomingSessionsView: View {
 
     static func when(_ session: WorkSessionEntity) -> String {
         let time = session.startsAt.formatted(date: .omitted, time: .shortened)
-        if Calendar.current.isDateInToday(session.startsAt) { return "Hoy · \(time)" }
-        if Calendar.current.isDateInTomorrow(session.startsAt) { return "Mañana · \(time)" }
+        if Calendar.current.isDateInToday(session.startsAt) { return String(localized: "Hoy · \(time)") }
+        if Calendar.current.isDateInTomorrow(session.startsAt) { return String(localized: "Mañana · \(time)") }
         return "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))) · \(time)"
     }
 
     static func detail(_ session: WorkSessionEntity, kit: GoalEntity?, step: StepEntity?) -> String {
-        var parts = ["\(session.durationMinutes) min"]
+        var parts = [String(localized: "\(session.durationMinutes) min")]
         if let kit { parts.append(kit.title) }
-        if let kit, let step { parts.append("Paso \(kit.position(of: step))") }
+        if let kit, let step { parts.append(String(localized: "Paso \(kit.position(of: step))")) }
         return parts.joined(separator: " · ")
     }
 }

@@ -52,7 +52,7 @@ final class KitAssistantStore {
             return existing
         }
         let created = KitConversation(kitID: kit.id, stepID: step.id,
-                                      title: "Paso \(kit.position(of: step)) · \(step.stepTitle)")
+                                      title: String(localized: "Paso \(kit.position(of: step)) · \(step.stepTitle)"))
         conversations.append(created)
         return created
     }
@@ -163,7 +163,7 @@ final class PlanProposal: Identifiable {
                         Calendar.current.date(byAdding: .day, value: offset + 1, to: $0)
                     }
                     insert(title, minutes: minutes ?? target.estimateMinutes, date: partDate, after: anchor,
-                           short: "Parte de «\(first)». \(target.descriptionShort)".trimmingCharacters(in: .whitespaces),
+                           short: String(localized: "Parte de «\(first)». \(target.descriptionShort)").trimmingCharacters(in: .whitespaces),
                            long: original)
                     if let added = kit.orderedActiveSteps.first(where: { $0.order == anchor.order + 1 }) { anchor = added }
                 }
@@ -204,23 +204,23 @@ enum PlanProposalBuilder {
         guard let index = steps.firstIndex(where: { $0.id == step.id }),
               let current = step.suggestedDeadline,
               let moved = calendar.date(byAdding: .day, value: days, to: current) else { return nil }
-        var changes = [ProposedStepChange(stepID: step.id, stepLabel: "Paso \(kit.position(of: step)) · \(step.stepTitle)",
+        var changes = [ProposedStepChange(stepID: step.id, stepLabel: String(localized: "Paso \(kit.position(of: step)) · \(step.stepTitle)"),
                                           from: current, to: moved)]
         var previous = moved
         for next in steps.dropFirst(index + 1) {
             guard let date = next.suggestedDeadline, date <= previous,
                   let shifted = calendar.date(byAdding: .day, value: 2, to: previous) else { break }
-            changes.append(ProposedStepChange(stepID: next.id, stepLabel: "Paso \(kit.position(of: next)) · \(next.stepTitle)",
+            changes.append(ProposedStepChange(stepID: next.id, stepLabel: String(localized: "Paso \(kit.position(of: next)) · \(next.stepTitle)"),
                                               from: date, to: shifted))
             previous = shifted
         }
         let impact: String
         if changes.count > 1, let last = changes.last {
-            impact = "Para mantener el orden, «\(last.stepLabel.components(separatedBy: " · ").last ?? "")» pasa al \(last.to.map(day) ?? ""). El resto del plan no cambia."
+            impact = String(localized: "Para mantener el orden, «\(last.stepLabel.components(separatedBy: " · ").last ?? "")» pasa al \(last.to.map(day) ?? ""). El resto del plan no cambia.")
         } else {
-            impact = "Solo cambia este paso. El resto del plan sigue igual."
+            impact = String(localized: "Solo cambia este paso. El resto del plan sigue igual.")
         }
-        return PlanProposal(title: "Mover el paso \(kit.position(of: step)) al \(day(moved))",
+        return PlanProposal(title: String(localized: "Mover el paso \(kit.position(of: step)) al \(day(moved))"),
                             changes: changes, impact: impact)
     }
 
@@ -231,11 +231,11 @@ enum PlanProposalBuilder {
         let changes = pending.compactMap { step -> ProposedStepChange? in
             guard let date = step.suggestedDeadline,
                   let shifted = calendar.date(byAdding: .day, value: days, to: date) else { return nil }
-            return ProposedStepChange(stepID: step.id, stepLabel: "Paso \(kit.position(of: step)) · \(step.stepTitle)",
+            return ProposedStepChange(stepID: step.id, stepLabel: String(localized: "Paso \(kit.position(of: step)) · \(step.stepTitle)"),
                                       from: date, to: shifted)
         }
         let newTarget = changes.compactMap(\.to).max().map(day) ?? ""
-        return PlanProposal(title: "Retrasar la fecha deseada una semana", changes: changes,
-                            impact: "La fecha deseada pasa al \(newTarget). Cada paso pendiente se mueve \(days) días.")
+        return PlanProposal(title: String(localized: "Retrasar la fecha deseada una semana"), changes: changes,
+                            impact: String(localized: "La fecha deseada pasa al \(newTarget). Cada paso pendiente se mueve \(days) días."))
     }
 }

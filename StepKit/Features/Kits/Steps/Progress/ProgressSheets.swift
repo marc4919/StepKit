@@ -34,7 +34,7 @@ struct SaveProgressSheet: View {
                                          size: 40, showsLabel: false)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Eyebrow(text: "\(step.goal?.title ?? "") · Paso \(stepNumber)")
+                            Eyebrow(text: String(localized: "\(step.goal?.title ?? "") · Paso \(stepNumber)"))
                             Text(step.stepTitle).font(.headline)
                         }
                     }
@@ -65,8 +65,8 @@ struct SaveProgressSheet: View {
                     Text("¿Cómo vas con este paso?")
                 } footer: {
                     Text(canContinue
-                         ? "Tu avance se guarda y el paso seguirá en curso."
-                         : "Tu avance se guarda igualmente. El paso quedará bloqueado hasta que lo resuelvas.")
+                         ? String(localized: "Tu avance se guarda y el paso seguirá en curso.")
+                         : String(localized: "Tu avance se guarda igualmente. El paso quedará bloqueado hasta que lo resuelvas."))
                 }
             }
             .navigationTitle("Guardar avance")
@@ -93,7 +93,7 @@ struct SaveProgressSheet: View {
 
     private func save() {
         do {
-            let blocked = canContinue ? nil : (reason.isEmpty ? "Sin detallar" : reason)
+            let blocked = canContinue ? nil : (reason.isEmpty ? String(localized: "Sin detallar") : reason)
             try ProgressLog.saveProgress(for: step, note: note, blockedReason: blocked, context: modelContext)
             syncManager?.handleDataChange()
             // El asistente reacciona: con un bloqueo puede proponer cómo seguir.

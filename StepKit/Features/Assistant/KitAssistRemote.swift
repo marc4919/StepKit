@@ -62,6 +62,8 @@ struct AssistRequest: Encodable {
     let progressLog: [LogEntry]
     let busyMinutesByDay: [String: Int]
     let conversation: Conversation
+    /// Idioma de la app («es» o «en»): la respuesta y la propuesta deben ir en este idioma.
+    var language: String = AppLanguage.code
 }
 
 struct AssistResponse: Decodable {
@@ -223,7 +225,7 @@ enum RemoteProposalBuilder {
     private static let calendar = Calendar.current
 
     private static func label(_ kit: GoalEntity, _ step: StepEntity) -> String {
-        "Paso \(kit.position(of: step)) · \(step.stepTitle)"
+        String(localized: "Paso \(kit.position(of: step)) · \(step.stepTitle)")
     }
 
     static func build(_ remote: AssistResponse.Proposal, kit: GoalEntity, maxStepsPerDay: Int = 3) -> PlanProposal? {
@@ -261,7 +263,7 @@ enum RemoteProposalBuilder {
                 let title = change.newTitles?.first
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
                                                   detail: [title.map { "«\($0)»" },
-                                                           change.newMinutes.map { "\($0) min" }]
+                                                           change.newMinutes.map { String(localized: "\($0) min") }]
                                                     .compactMap { $0 }.joined(separator: " · "),
                                                   symbol: "pencil"))
                 actions.append(.edit(stepID: target.id, title: title, minutes: change.newMinutes))
@@ -272,15 +274,15 @@ enum RemoteProposalBuilder {
                         .map { $0.formatted(.dateTime.day().month(.abbreviated)) }
                 } ?? []
                 let parts = zip(titles, days + Array(repeating: "", count: max(0, titles.count - days.count)))
-                    .map { title, day in day.isEmpty ? "«\(title)»" : "«\(title)» (\(day))" }
+                    .map { title, day in day.isEmpty ? String(localized: "«\(title)»") : String(localized: "«\(title)» (\(day))") }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
-                                                  detail: "Se divide en: " + parts.joined(separator: ", "),
+                                                  detail: String(localized: "Se divide en: ") + parts.joined(separator: ", "),
                                                   symbol: "square.split.2x1"))
                 actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes))
             case "add_step":
                 guard let title = change.newTitles?.first else { continue }
-                changes.append(ProposedStepChange(stepID: nil, stepLabel: "Paso nuevo · \(title)", from: nil, to: date(change.newDate),
-                                                  detail: change.newMinutes.map { "\($0) min" }, symbol: "plus.circle"))
+                changes.append(ProposedStepChange(stepID: nil, stepLabel: String(localized: "Paso nuevo · \(title)"), from: nil, to: date(change.newDate),
+                                                  detail: change.newMinutes.map { String(localized: "\($0) min") }, symbol: "plus.circle"))
                 // stepNumber = paso tras el que se inserta; 0 = al principio.
                 actions.append(.add(afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0,
                                     title: title, minutes: change.newMinutes ?? 20, date: date(change.newDate),
@@ -288,19 +290,19 @@ enum RemoteProposalBuilder {
             case "remove_step":
                 guard let target = step(change.stepNumber) else { continue }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
-                                                  detail: "Se quita del plan", symbol: "minus.circle"))
+                                                  detail: String(localized: "Se quita del plan"), symbol: "minus.circle"))
                 actions.append(.remove(stepID: target.id))
             case "change_kit_kpi":
                 guard let kpi = change.newTitles?.first, !kpi.isEmpty else { continue }
-                changes.append(ProposedStepChange(stepID: nil, stepLabel: "Meta del Kit", from: nil, to: nil,
-                                                  detail: "«\(kit.kpi)» → «\(kpi)»", symbol: "target"))
+                changes.append(ProposedStepChange(stepID: nil, stepLabel: String(localized: "Meta del Kit"), from: nil, to: nil,
+                                                  detail: String(localized: "«\(kit.kpi)» → «\(kpi)»"), symbol: "target"))
                 actions.append(.changeKPI(kpi))
             case "mark_step_blocked":
                 guard let target = step(change.stepNumber) else { continue }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
-                                                  detail: "Queda en pausa: \(change.reason ?? "pendiente de resolver")",
+                                                  detail: String(localized: "Queda en pausa: \(change.reason ?? String(localized: "pendiente de resolver"))"),
                                                   symbol: Symbols.blocked))
-                actions.append(.block(stepID: target.id, reason: change.reason ?? "Pendiente de resolver"))
+                actions.append(.block(stepID: target.id, reason: change.reason ?? String(localized: "Pendiente de resolver")))
             default:
                 continue
             }
@@ -320,7 +322,7 @@ enum RemoteProposalBuilder {
 
         guard !actions.isEmpty else { return nil }
         return PlanProposal(title: remote.summary, changes: changes,
-                            impact: remote.impact ?? "El resto del plan no cambia.", actions: actions)
+                            impact: remote.impact ?? String(localized: "El resto del plan no cambia."), actions: actions)
     }
 }
 
@@ -355,7 +357,7 @@ enum KitAssistant {
             let text = response.message.trimmingCharacters(in: .whitespacesAndNewlines)
             if !text.isEmpty || proposal != nil {
                 vm.messages.append(ChatMessage(sender: .assistant,
-                                               text: text.isEmpty ? "Te propongo un ajuste del plan." : text,
+                                               text: text.isEmpty ? String(localized: "Te propongo un ajuste del plan.") : text,
                                                fromServer: true))
             }
             if let proposal { conversation.proposals.append(proposal) }
@@ -364,7 +366,7 @@ enum KitAssistant {
             return false
         } catch {
             if visible {
-                vm.messages.append(ChatMessage(sender: .assistant, text: "No he podido responder ahora. Inténtalo de nuevo en un momento.",
+                vm.messages.append(ChatMessage(sender: .assistant, text: String(localized: "No he podido responder ahora. Inténtalo de nuevo en un momento."),
                                                isError: true))
             }
             return true
@@ -382,7 +384,7 @@ enum KitAssistant {
     ) {
         let conversation = step.map { KitAssistantStore.shared.conversation(kit: kit, step: $0) }
             ?? KitAssistantStore.shared.conversations(for: kit.id).first { $0.stepID == nil }
-            ?? KitAssistantStore.shared.newConversation(kit: kit, title: "Ajustes del plan")
+            ?? KitAssistantStore.shared.newConversation(kit: kit, title: String(localized: "Ajustes del plan"))
         Task { await ask(trigger, kit: kit, step: step, conversation: conversation, context: context,
                          apiClient: apiClient, token: token) }
     }

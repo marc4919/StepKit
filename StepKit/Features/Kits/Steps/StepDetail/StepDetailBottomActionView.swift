@@ -42,7 +42,7 @@ struct StepDetailBottomActionView: View {
                     .font(.system(size: 20, weight: .semibold))
                     .rotationEffect(.degrees(iconRotation))
 
-                Text(stepEntity.isCompleted ? "Marcar como pendiente" : "Marcar como completado")
+                Text(stepEntity.isCompleted ? String(localized: "Marcar como pendiente") : String(localized: "Marcar como completado"))
                     .font(.body)
                     .fontWeight(.semibold)
             }
@@ -58,8 +58,8 @@ struct StepDetailBottomActionView: View {
         }
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("step.toggleCompletion")
-        .accessibilityLabel(stepEntity.isCompleted ? "Marcar como pendiente" : "Marcar como completado")
-        .accessibilityValue(stepEntity.isCompleted ? "Completado" : "Pendiente")
+        .accessibilityLabel(stepEntity.isCompleted ? String(localized: "Marcar como pendiente") : String(localized: "Marcar como completado"))
+        .accessibilityValue(stepEntity.isCompleted ? String(localized: "Completado") : String(localized: "Pendiente"))
         .accessibilityHint("Toca dos veces para cambiar el estado de completado del paso")
         .scaleEffect(buttonScale)
         .animation(.easeInOut(duration: 0.2), value: stepEntity.isCompleted)

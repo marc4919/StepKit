@@ -81,21 +81,21 @@ final class KitStreamingState {
     /// Texto de estado para mostrar al usuario
     var statusText: String {
         if hasError {
-            return "Error al crear el kit"
+            return String(localized: "Error al crear el kit")
         }
         if isComplete {
-            return "¡Kit creado!"
+            return String(localized: "¡Kit creado!")
         }
         if isRestarting {
-            return "Ajustando tu plan…"
+            return String(localized: "Ajustando tu plan…")
         }
         if let total = totalSteps {
-            return "Generando paso \(steps.count + 1) de \(total)..."
+            return String(localized: "Generando paso \(steps.count + 1) de \(total)...")
         }
         if kitTitle != nil {
-            return "Preparando los pasos..."
+            return String(localized: "Preparando los pasos...")
         }
-        return "Conectando con la IA..."
+        return String(localized: "Conectando con la IA...")
     }
     
     // MARK: - Métodos para Actualizar Estado
@@ -141,7 +141,7 @@ final class KitStreamingState {
             usage = event.usage
             
         case .error:
-            error = event.error ?? "Error desconocido"
+            error = event.error ?? String(localized: "Error desconocido")
             
         case .unknown:
             break

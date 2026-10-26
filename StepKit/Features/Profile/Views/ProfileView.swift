@@ -28,6 +28,7 @@ struct ProfileView: View {
     }
 
     @State private var twoColumns = false
+    @Environment(\.openURL) private var openURL
 
     @ViewBuilder private var headerSection: some View {
         Section {
@@ -38,30 +39,40 @@ struct ProfileView: View {
     @ViewBuilder private var accountSection: some View {
         Section {
             NavigationLink { SubscriptionView() } label: {
-                ProfileRow(title: "Suscripción", detail: displayTier, symbol: "crown.fill", color: .orange)
+                ProfileRow(title: String(localized: "Suscripción"), detail: displayTier, symbol: "crown.fill", color: .orange)
             }
             NavigationLink { RemindersSettingsView() } label: {
-                ProfileRow(title: "Recordatorios", symbol: "bell.fill", color: .red)
+                ProfileRow(title: String(localized: "Recordatorios"), symbol: "bell.fill", color: .red)
             }
             NavigationLink { AIPrivacyView() } label: {
-                ProfileRow(title: "IA y privacidad", symbol: "hand.raised.fill", color: .blue)
+                ProfileRow(title: String(localized: "IA y privacidad"), symbol: "hand.raised.fill", color: .blue)
             }
             .accessibilityIdentifier("profile.aiPrivacy")
+            // El idioma de cada app se elige en Ajustes de iOS (como recomienda Apple); aquí se abre directamente.
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+            } label: {
+                ProfileRow(title: String(localized: "Idioma"), detail: AppLanguage.displayName,
+                           symbol: "globe", color: .indigo)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(String(localized: "Abre los ajustes de StepKit para cambiar el idioma"))
+            .accessibilityIdentifier("profile.language")
         }
     }
 
     @ViewBuilder private var infoSection: some View {
         Section("Información") {
             Button { showingTermsOfService = true } label: {
-                ProfileRow(title: "Términos de uso", symbol: "doc.text.fill", color: .gray)
+                ProfileRow(title: String(localized: "Términos de uso"), symbol: "doc.text.fill", color: .gray)
             }
             .buttonStyle(.plain)
             Button { showingPrivacyPolicy = true } label: {
-                ProfileRow(title: "Política de privacidad", symbol: "lock.fill", color: .green)
+                ProfileRow(title: String(localized: "Política de privacidad"), symbol: "lock.fill", color: .green)
             }
             .buttonStyle(.plain)
             NavigationLink { AboutView() } label: {
-                ProfileRow(title: "Acerca de StepKit", symbol: "info", color: .accentColor)
+                ProfileRow(title: String(localized: "Acerca de StepKit"), symbol: "info", color: .accentColor)
             }
         }
     }
@@ -173,11 +184,11 @@ struct ProfileView: View {
     }
 
     @ViewBuilder private var chips: some View {
-        MetaChip(symbol: Symbols.kits, text: visibleKits.count == 1 ? "1 Kit" : "\(visibleKits.count) Kits",
+        MetaChip(symbol: Symbols.kits, text: visibleKits.count == 1 ? String(localized: "1 Kit") : String(localized: "\(visibleKits.count) Kits"),
                  color: .accentColor)
         let done = visibleKits.filter { $0.resultConfirmedAt != nil }.count
         if done > 0 {
-            MetaChip(symbol: "checkmark.circle", text: done == 1 ? "1 terminado" : "\(done) terminados",
+            MetaChip(symbol: "checkmark.circle", text: done == 1 ? String(localized: "1 terminado") : String(localized: "\(done) terminados"),
                      color: MetaTint.done)
         }
     }
@@ -212,17 +223,17 @@ struct ProfileView: View {
            !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return name
         }
-        return "Tu perfil"
+        return String(localized: "Tu perfil")
     }
 
     private var initials: String {
         let letters = displayName.split(separator: " ").prefix(2).compactMap(\.first)
         let value = String(letters).uppercased()
-        return value.isEmpty || displayName == "Tu perfil" ? "SK" : value
+        return value.isEmpty || displayName == String(localized: "Tu perfil") ? "SK" : value
     }
 
     private var displayTier: String {
-        authManager.currentUser?.tier == "premium" ? "Premium" : "Gratuita"
+        authManager.currentUser?.tier == "premium" ? "Premium" : String(localized: "Gratuita")
     }
 }
 
@@ -289,7 +300,7 @@ struct AIPrivacyView: View {
             Section {
                 VStack(alignment: .leading, spacing: 10) {
                     OrbitMark(height: 90).frame(maxWidth: 200)
-                    Text("Tú decides cómo\nrecibir ayuda").font(.largeTitle.bold())
+                    Text(String(localized: "Tú decides cómo\nrecibir ayuda")).font(.largeTitle.bold())
                     Text("Revisas cualquier plan o propuesta antes de aplicarlo.").foregroundStyle(.secondary)
                 }
                 .listRowBackground(Color.clear)
@@ -305,7 +316,7 @@ struct AIPrivacyView: View {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("IA externa para crear planes")
-                            Text(aiConsentGiven ? "Permitido" : "Se pedirá al crear un Kit")
+                            Text(aiConsentGiven ? String(localized: "Permitido") : String(localized: "Se pedirá al crear un Kit"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

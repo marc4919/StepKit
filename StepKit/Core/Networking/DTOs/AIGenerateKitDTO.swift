@@ -29,6 +29,8 @@ struct AIGenerateKitRequest: Codable {
     var supportsQuestions = true
     /// Respuestas a esas preguntas; el servidor no guarda estado, así que va también el texto.
     var answers: [KitAnswer]? = nil
+    /// Idioma de la app («es» o «en»): el plan debe escribirse en este idioma.
+    var language: String? = AppLanguage.code
 
     /// Crea un request a partir de los datos del formulario
     /// - Parameters:

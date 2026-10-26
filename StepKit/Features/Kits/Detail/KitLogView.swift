@@ -35,8 +35,8 @@ struct KitLogView: View {
                 date: entry.notedAt,
                 symbol: blocked ? Symbols.blocked : kitNote ? Symbols.note : "circle.lefthalf.filled",
                 color: blocked ? .red : kitNote ? .orange : .accentColor,
-                title: blocked ? "Bloqueo anotado" : kitNote ? "Nota del Kit" : "Avance guardado",
-                text: entry.note.isEmpty ? "Sin nota." : entry.note,
+                title: blocked ? String(localized: "Bloqueo anotado") : kitNote ? String(localized: "Nota del Kit") : String(localized: "Avance guardado"),
+                text: entry.note.isEmpty ? String(localized: "Sin nota.") : entry.note,
                 stepNumber: step.map { kit.position(of: $0) },
                 entry: entry
             )
@@ -45,20 +45,20 @@ struct KitLogView: View {
         for step in kit.orderedActiveSteps where step.isCompleted {
             result.append(Item(
                 id: "done-\(step.id)", date: step.updatedAt, symbol: "checkmark.circle.fill",
-                color: MetaTint.done, title: step.stepTitle, text: "Paso completado.",
+                color: MetaTint.done, title: step.stepTitle, text: String(localized: "Paso completado."),
                 stepNumber: kit.position(of: step)
             ))
         }
         if let confirmed = kit.resultConfirmedAt {
             result.append(Item(
                 id: "result", date: confirmed, symbol: "checkmark.seal.fill", color: MetaTint.done,
-                title: "Confirmaste el resultado", text: kit.kpi.isEmpty ? kit.title : kit.kpi
+                title: String(localized: "Confirmaste el resultado"), text: kit.kpi.isEmpty ? kit.title : kit.kpi
             ))
         }
         result.sort { $0.date > $1.date }
         result.append(Item(
             id: "start", date: kit.createdAt, symbol: "flag.fill", color: MetaTint.date,
-            title: "Tu plan empezó aquí",
+            title: String(localized: "Tu plan empezó aquí"),
             text: [kit.kpi.isEmpty ? nil : kit.kpi,
                    kit.dueDate.map { "fecha deseada \($0.formatted(.dateTime.day().month(.abbreviated)))" }]
                 .compactMap { $0 }.joined(separator: " · ")
@@ -81,7 +81,7 @@ struct KitLogView: View {
                 .foregroundStyle(.secondary)
                 .padding(.top, 6)
             PlainCard {
-                Eyebrow(text: "Notas del Kit", color: .secondary)
+                Eyebrow(text: String(localized: "Notas del Kit"), color: .secondary)
                 Text("Apuntes generales que no pertenecen a un paso concreto. Aparecen en tu recorrido.")
                     .foregroundStyle(.secondary)
                 Button("Añadir nota", systemImage: "plus", action: onAddNote)
@@ -103,7 +103,7 @@ struct KitLogView: View {
                 Text([item.entry == nil
                         ? item.date.formatted(.dateTime.day().month(.abbreviated))
                         : item.date.formatted(.dateTime.day().month(.abbreviated).hour().minute()),
-                      item.stepNumber.map { "Paso \($0)" }].compactMap { $0 }.joined(separator: " · "))
+                      item.stepNumber.map { String(localized: "Paso \($0)") }].compactMap { $0 }.joined(separator: " · "))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(item.title).font(.headline)

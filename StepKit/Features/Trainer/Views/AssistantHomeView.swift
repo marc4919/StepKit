@@ -18,62 +18,62 @@ struct AssistantIntent: Identifiable {
 
     /// Intenciones sobre un paso.
     static let step: [AssistantIntent] = all + [
-        AssistantIntent(id: "split", title: "Ayúdame a dividir esta tarea",
-                        detail: "Partirla en tramos más pequeños", symbol: "square.split.2x1", color: .teal),
-        AssistantIntent(id: "fifteen", title: "¿Qué puedo avanzar en 15 minutos?",
-                        detail: "Un avance concreto para ahora", symbol: "timer", color: .orange),
+        AssistantIntent(id: "split", title: String(localized: "Ayúdame a dividir esta tarea"),
+                        detail: String(localized: "Partirla en tramos más pequeños"), symbol: "square.split.2x1", color: .teal),
+        AssistantIntent(id: "fifteen", title: String(localized: "¿Qué puedo avanzar en 15 minutos?"),
+                        detail: String(localized: "Un avance concreto para ahora"), symbol: "timer", color: .orange),
     ]
 
     /// Intenciones sobre el Kit completo.
     static let kit: [AssistantIntent] = [
-        AssistantIntent(id: "reduce-scope", title: "Necesito reducir el alcance",
-                        detail: "Quitar o juntar pasos sin perder el resultado", symbol: "scissors", color: .orange),
-        AssistantIntent(id: "where-left", title: "¿Dónde lo dejamos?",
-                        detail: "Recuperar el hilo con tu último avance", symbol: Symbols.note, color: .accentColor),
-        AssistantIntent(id: "change-date", title: "Quiero cambiar la fecha objetivo",
-                        detail: "Ver qué pasos se mueven y por qué", symbol: Symbols.wantedDate, color: .purple),
-        AssistantIntent(id: "still-sense", title: "¿Sigue teniendo sentido este plan?",
-                        detail: "Revisar el plan con lo que ya sabes", symbol: "questionmark.circle", color: .green),
+        AssistantIntent(id: "reduce-scope", title: String(localized: "Necesito reducir el alcance"),
+                        detail: String(localized: "Quitar o juntar pasos sin perder el resultado"), symbol: "scissors", color: .orange),
+        AssistantIntent(id: "where-left", title: String(localized: "¿Dónde lo dejamos?"),
+                        detail: String(localized: "Recuperar el hilo con tu último avance"), symbol: Symbols.note, color: .accentColor),
+        AssistantIntent(id: "change-date", title: String(localized: "Quiero cambiar la fecha objetivo"),
+                        detail: String(localized: "Ver qué pasos se mueven y por qué"), symbol: Symbols.wantedDate, color: .purple),
+        AssistantIntent(id: "still-sense", title: String(localized: "¿Sigue teniendo sentido este plan?"),
+                        detail: String(localized: "Revisar el plan con lo que ya sabes"), symbol: "questionmark.circle", color: .green),
     ]
 
     static let all: [AssistantIntent] = [
-        AssistantIntent(id: "less-time", title: "Tengo menos tiempo",
-                        detail: "Buscar un tramo más pequeño para ahora", symbol: Symbols.time, color: .blue),
-        AssistantIntent(id: "how-to-start", title: "No sé cómo empezar",
-                        detail: "Aclarar la primera acción", symbol: "arrow.turn.down.right", color: .accentColor),
-        AssistantIntent(id: "missing", title: "Me falta algo",
-                        detail: "Revisar un bloqueo sin perder lo hecho", symbol: Symbols.blocked, color: .red),
-        AssistantIntent(id: "not-fitting", title: "Este paso ya no encaja",
-                        detail: "Pensar un cambio que decidirás tú", symbol: "pencil", color: .purple),
+        AssistantIntent(id: "less-time", title: String(localized: "Tengo menos tiempo"),
+                        detail: String(localized: "Buscar un tramo más pequeño para ahora"), symbol: Symbols.time, color: .blue),
+        AssistantIntent(id: "how-to-start", title: String(localized: "No sé cómo empezar"),
+                        detail: String(localized: "Aclarar la primera acción"), symbol: "arrow.turn.down.right", color: .accentColor),
+        AssistantIntent(id: "missing", title: String(localized: "Me falta algo"),
+                        detail: String(localized: "Revisar un bloqueo sin perder lo hecho"), symbol: Symbols.blocked, color: .red),
+        AssistantIntent(id: "not-fitting", title: String(localized: "Este paso ya no encaja"),
+                        detail: String(localized: "Pensar un cambio que decidirás tú"), symbol: "pencil", color: .purple),
     ]
 
     /// Mensaje que se envía al modelo; menciona el Kit y el paso para no depender de la memoria.
     func prompt(kit: GoalEntity?, step explicitStep: StepEntity? = nil) -> String {
-        let kitName = kit?.title ?? "mi Kit"
+        let kitName = kit?.title ?? String(localized: "mi Kit")
         let step = explicitStep ?? kit?.nextStep
-        let stepText = step.map { "«\($0.stepTitle)» (\($0.estimateMinutes) min)" } ?? "el siguiente paso"
+        let stepText = step.map { String(localized: "«\($0.stepTitle)» (\($0.estimateMinutes) min)") } ?? String(localized: "el siguiente paso")
         switch id {
         case "less-time":
-            return "Hoy tengo poco tiempo. En \(kitName), ¿qué tramo pequeño de \(stepText) puedo hacer ahora?"
+            return String(localized: "Hoy tengo poco tiempo. En \(kitName), ¿qué tramo pequeño de \(stepText) puedo hacer ahora?")
         case "how-to-start":
-            return "No sé cómo empezar \(stepText) en \(kitName). ¿Cuál sería la primera acción concreta?"
+            return String(localized: "No sé cómo empezar \(stepText) en \(kitName). ¿Cuál sería la primera acción concreta?")
         case "missing":
             let reason = step?.blockedReason.map { " Me frena: \($0)." } ?? ""
-            return "Me falta algo para avanzar en \(stepText) de \(kitName).\(reason) ¿Cómo puedo seguir sin perder lo hecho?"
+            return String(localized: "Me falta algo para avanzar en \(stepText) de \(kitName).\(reason) ¿Cómo puedo seguir sin perder lo hecho?")
         case "split":
-            return "Ayúdame a dividir \(stepText) de \(kitName) en tres o cuatro tramos pequeños y concretos."
+            return String(localized: "Ayúdame a dividir \(stepText) de \(kitName) en tres o cuatro tramos pequeños y concretos.")
         case "fifteen":
-            return "Tengo 15 minutos. ¿Qué avance concreto puedo hacer ahora en \(stepText) de \(kitName)?"
+            return String(localized: "Tengo 15 minutos. ¿Qué avance concreto puedo hacer ahora en \(stepText) de \(kitName)?")
         case "reduce-scope":
-            return "Necesito reducir el alcance de \(kitName). ¿Qué pasos podría quitar o juntar sin perder el resultado?"
+            return String(localized: "Necesito reducir el alcance de \(kitName). ¿Qué pasos podría quitar o juntar sin perder el resultado?")
         case "where-left":
-            return "¿Dónde lo dejé en \(kitName)? Resume mi último avance y dime el siguiente paso concreto."
+            return String(localized: "¿Dónde lo dejé en \(kitName)? Resume mi último avance y dime el siguiente paso concreto.")
         case "change-date":
-            return "Quiero cambiar la fecha objetivo de \(kitName). ¿Qué pasos tendría que mover?"
+            return String(localized: "Quiero cambiar la fecha objetivo de \(kitName). ¿Qué pasos tendría que mover?")
         case "still-sense":
-            return "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve."
+            return String(localized: "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve.")
         default:
-            return "Creo que \(stepText) ya no encaja en \(kitName). ¿Qué cambio me propondrías? Lo decidiré yo."
+            return String(localized: "Creo que \(stepText) ya no encaja en \(kitName). ¿Qué cambio me propondrías? Lo decidiré yo.")
         }
     }
 }
@@ -88,8 +88,8 @@ struct AssistantHomeView: View {
     let onIntent: (AssistantIntent) -> Void
     var onRetry: (() -> Void)?
     var intents: [AssistantIntent] = AssistantIntent.all
-    var startTitle = "¿Por dónde seguimos?"
-    var startSubtitle = "Elige qué necesitas y revisamos tu siguiente paso."
+    var startTitle = String(localized: "¿Por dónde seguimos?")
+    var startSubtitle = String(localized: "Elige qué necesitas y revisamos tu siguiente paso.")
     /// Contexto visible (Kit o paso) sobre la conversación.
     var context: String?
     /// Contenido propio tras los mensajes: propuestas, acciones del paso…
@@ -257,7 +257,7 @@ private struct AssistantAnswer: View {
                 Text(LocalizedStringKey(message.text))
                     .font(.body)
                     .textSelection(.enabled)
-                Text("\(message.fromServer ? "Asistente de StepKit" : "Generado en tu dispositivo") · \(message.timestamp.formatted(date: .omitted, time: .shortened))")
+                Text(String(localized: "\(message.fromServer ? String(localized: "Asistente de StepKit") : String(localized: "Generado en tu dispositivo")) · \(message.timestamp.formatted(date: .omitted, time: .shortened))"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }

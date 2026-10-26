@@ -94,8 +94,8 @@ final class NotificationService {
 
         // Crear contenido de la notificación
         let content = UNMutableNotificationContent()
-        content.title = step.goal?.planTitle ?? "Recordatorio"
-        content.body = "Mañana: \(step.stepTitle)"
+        content.title = step.goal?.planTitle ?? String(localized: "Recordatorio")
+        content.body = String(localized: "Mañana: \(step.stepTitle)")
         content.sound = .default
 
         // Crear trigger basado en fecha
@@ -176,7 +176,7 @@ final class NotificationService {
 
         let content = UNMutableNotificationContent()
         content.title = kitTitle
-        content.body = "En 10 min: \(stepTitle ?? "tu sesión") · \(session.durationMinutes) min"
+        content.body = String(localized: "En 10 min: \(stepTitle ?? String(localized: "tu sesión")) · \(session.durationMinutes) min")
         content.sound = .default
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)

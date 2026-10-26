@@ -235,17 +235,17 @@ struct StepRepetition: Hashable {
         switch every {
         case .day where times % 7 == 0:
             let weeks = times / 7
-            return "Cada día, durante \(weeks) \(weeks == 1 ? "semana" : "semanas")"
+            return weeks == 1 ? String(localized: "Cada día, durante 1 semana") : String(localized: "Cada día, durante \(weeks) semanas")
         case .day:
-            return "Cada día, durante \(times) días"
+            return String(localized: "Cada día, durante \(times) días")
         case .week:
-            return "Una vez por semana, durante \(times) semanas"
+            return String(localized: "Una vez por semana, durante \(times) semanas")
         }
     }
 
     /// «Día 3 de 14» o «Semana 2 de 4».
     func sessionName(_ index: Int) -> String {
-        "\(every == .day ? "Día" : "Semana") \(index + 1) de \(times)"
+        every == .day ? String(localized: "Día \(index + 1) de \(times)") : String(localized: "Semana \(index + 1) de \(times)")
     }
 
     func dates(from first: Date, calendar: Calendar = .current) -> [Date] {

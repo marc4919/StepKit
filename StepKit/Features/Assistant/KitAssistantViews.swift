@@ -160,15 +160,15 @@ struct KitAssistantChatView: View {
             onIntent: send,
             onRetry: { vm.retryLast(goals: [kit]) },
             intents: intents,
-            startTitle: step == nil ? "¿En qué te ayudo con el Kit?" : "¿Qué te ayudaría con este paso?",
+            startTitle: step == nil ? String(localized: "¿En qué te ayudo con el Kit?") : String(localized: "¿Qué te ayudaría con este paso?"),
             startSubtitle: step == nil
-                ? "Las propuestas que cambien el plan las revisas tú antes de aplicarlas."
-                : "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes.",
-            context: step.map { "Paso \(kit.position(of: $0)) · \($0.stepTitle)" } ?? kit.title,
+                ? String(localized: "Las propuestas que cambien el plan las revisas tú antes de aplicarlas.")
+                : String(localized: "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes."),
+            context: step.map { String(localized: "Paso \(kit.position(of: $0)) · \($0.stepTitle)") } ?? kit.title,
             accessory: AnyView(accessory)
         )
         .readableContentWidth(720)
-        .navigationTitle(step == nil ? conversation.title : "Ayuda del paso")
+        .navigationTitle(step == nil ? conversation.title : String(localized: "Ayuda del paso"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
@@ -190,7 +190,7 @@ struct KitAssistantChatView: View {
                 }
             }
             if let step, step.isBlocked,
-               conversation.viewModel.messages.contains(where: { $0.text == "Me falta algo" }) {
+               conversation.viewModel.messages.contains(where: { $0.text == String(localized: "Me falta algo") }) {
                 ResolveBlockCard(step: step) {
                     try? ProgressLog.resolveBlock(for: step, context: modelContext)
                     syncManager?.handleDataChange()
@@ -256,7 +256,7 @@ struct ProposalCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Eyebrow(text: "Propuesta", color: .orange)
+                Eyebrow(text: String(localized: "Propuesta"), color: .orange)
                 Spacer()
                 switch proposal.state {
                 case .accepted:
@@ -316,8 +316,8 @@ struct ProposalCard: View {
                 }
                 .controlSize(.large)
                 Text(proposal.changes.count > 1
-                     ? "Los \(proposal.changes.count) cambios se aplican o se descartan juntos para que el plan siga en orden."
-                     : "Solo cambia este paso.")
+                     ? String(localized: "Los \(proposal.changes.count) cambios se aplican o se descartan juntos para que el plan siga en orden.")
+                     : String(localized: "Solo cambia este paso."))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }

@@ -89,7 +89,7 @@ struct KitDetailHeaderView: View {
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
 
-                Text("\(kitEntity.steps.filter { $0.isCompleted }.count) de \(kitEntity.steps.count) pasos completados")
+                Text(String(localized: "\(kitEntity.steps.filter { $0.isCompleted }.count) de \(kitEntity.steps.count) pasos completados"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

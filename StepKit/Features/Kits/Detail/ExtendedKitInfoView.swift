@@ -71,7 +71,7 @@ struct ExtendedKitInfoView: View {
     // MARK: - Notifications Section
     private var notificationsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "bell.fill", title: "Recordatorios")
+            sectionHeader(icon: "bell.fill", title: String(localized: "Recordatorios"))
 
             Toggle(isOn: $kitNotificationsEnabled) {
                 HStack(spacing: 12) {

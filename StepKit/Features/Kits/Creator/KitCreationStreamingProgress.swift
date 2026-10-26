@@ -273,15 +273,15 @@ struct KitCreationStreamingProgress: View {
                 }
                 VStack(alignment: .leading, spacing: 16) {
                     phase(done: streamingState.kitTitle != nil, active: streamingState.kitTitle == nil,
-                          title: "Tu objetivo",
-                          detail: streamingState.isRestarting ? "Ajustando"
-                            : streamingState.kitTitle == nil ? "Preparando" : "Listo")
+                          title: String(localized: "Tu objetivo"),
+                          detail: streamingState.isRestarting ? String(localized: "Ajustando")
+                            : streamingState.kitTitle == nil ? String(localized: "Preparando") : String(localized: "Listo"))
                     phase(done: stepsChecked,
                           active: streamingState.kitTitle != nil && !stepsChecked,
-                          title: "Pasos del plan", detail: stepsDetail)
+                          title: String(localized: "Pasos del plan"), detail: stepsDetail)
                     phase(done: reviewChecked, active: stepsChecked && !reviewChecked,
-                          title: "Plan listo para revisar",
-                          detail: reviewChecked ? "Listo" : "Lo revisarás tú antes de empezar")
+                          title: String(localized: "Plan listo para revisar"),
+                          detail: reviewChecked ? String(localized: "Listo") : String(localized: "Lo revisarás tú antes de empezar"))
                 }
                 .opacity(streamingState.isRestarting ? 0.45 : 1)
                 .padding(.horizontal, 30)
@@ -299,10 +299,10 @@ struct KitCreationStreamingProgress: View {
     )
 
     private var headline: String {
-        if streamingState.isRestarting { return "Ajustando tu plan…" }
-        if questionsVisible { return "Antes de prepararlo, cuéntame un poco más" }
-        if showCareful { return "Preparando tu plan con más cuidado" }
-        return "Dando forma a tu Kit"
+        if streamingState.isRestarting { return String(localized: "Ajustando tu plan…") }
+        if questionsVisible { return String(localized: "Antes de prepararlo, cuéntame un poco más") }
+        if showCareful { return String(localized: "Preparando tu plan con más cuidado") }
+        return String(localized: "Dando forma a tu Kit")
     }
 
     /// El aviso de cuidado se ve al menos ~2,5 s (los motivos entran y se leen) y luego
@@ -349,12 +349,12 @@ struct KitCreationStreamingProgress: View {
 
     private var stepsDetail: String {
         if let total = streamingState.totalSteps {
-            return "\(streamingState.steps.count) de \(total) listos"
+            return String(localized: "\(streamingState.steps.count) de \(total) listos")
         }
         if !streamingState.steps.isEmpty {
-            return streamingState.steps.count == 1 ? "1 paso listo" : "\(streamingState.steps.count) pasos listos"
+            return streamingState.steps.count == 1 ? String(localized: "1 paso listo") : String(localized: "\(streamingState.steps.count) pasos listos")
         }
-        return streamingState.kitTitle == nil ? "Pendiente" : "Preparando"
+        return streamingState.kitTitle == nil ? String(localized: "Pendiente") : String(localized: "Preparando")
     }
 
     private func phase(done: Bool, active: Bool, title: String, detail: String) -> some View {
@@ -458,13 +458,13 @@ struct KitCreationStreamingProgress: View {
             .frame(width: 70, height: 70)
             .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 6) {
-                Text(streamingState.kitTitle ?? "Tu plan")
+                Text(streamingState.kitTitle ?? String(localized: "Tu plan"))
                     .font(.title2.bold())
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 6) {
-                    MetaChip(symbol: "list.bullet", text: "\(streamingState.steps.count) pasos", color: .accentColor)
+                    MetaChip(symbol: "list.bullet", text: String(localized: "\(streamingState.steps.count) pasos"), color: .accentColor)
                     if let days = streamingState.horizonDays {
-                        MetaChip(symbol: Symbols.wantedDate, text: "\(days) días", color: MetaTint.date)
+                        MetaChip(symbol: Symbols.wantedDate, text: String(localized: "\(days) días"), color: MetaTint.date)
                     }
                 }
             }
@@ -475,7 +475,7 @@ struct KitCreationStreamingProgress: View {
     @ViewBuilder private var reviewKPI: some View {
         if let kpi = streamingState.kpi, !kpi.isEmpty {
             PlainCard {
-                Eyebrow(text: "Sabrás que está listo cuando", color: .secondary)
+                Eyebrow(text: String(localized: "Sabrás que está listo cuando"), color: .secondary)
                 Text(kpi)
             }
             .modifier(Reveal(shown: contentRevealed, order: 1))
@@ -494,14 +494,14 @@ struct KitCreationStreamingProgress: View {
                 HStack(alignment: .top, spacing: 12) {
                     NextMark()
                     VStack(alignment: .leading, spacing: 3) {
-                        Eyebrow(text: "Tu primer paso")
+                        Eyebrow(text: String(localized: "Tu primer paso"))
                         Text(first.stepTitle).font(.title3.bold())
                         HStack(spacing: 10) {
                             if let day = Self.stepDay(first.suggestedDeadline) {
                                 Label(day, systemImage: Symbols.calendar)
                                     .foregroundStyle(MetaTint.date)
                             }
-                            Label("\(first.estimateMinutes) min orientativos", systemImage: Symbols.time)
+                            Label(String(localized: "\(first.estimateMinutes) min orientativos"), systemImage: Symbols.time)
                                 .foregroundStyle(MetaTint.time)
                         }
                         .font(.subheadline)
@@ -528,7 +528,7 @@ struct KitCreationStreamingProgress: View {
                                 Label(day, systemImage: Symbols.calendar)
                                     .foregroundStyle(MetaTint.date)
                             }
-                            Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
+                            Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
                                 .foregroundStyle(MetaTint.time)
                             if let repetition = step.repetition?.repetition {
                                 Label(repetition.label, systemImage: "repeat")
@@ -553,7 +553,7 @@ struct KitCreationStreamingProgress: View {
     @ViewBuilder private var reviewRisks: some View {
         if !streamingState.risks.isEmpty {
             PlainCard {
-                Eyebrow(text: "A tener en cuenta", color: .secondary)
+                Eyebrow(text: String(localized: "A tener en cuenta"), color: .secondary)
                 ForEach(streamingState.risks, id: \.self) { risk in
                     let topic = RiskTopic(risk)
                     Label {
@@ -585,7 +585,7 @@ struct KitCreationStreamingProgress: View {
                 .padding(.horizontal, 30)
                 Text("Tu idea sigue aquí")
                     .font(.largeTitle.bold())
-                Text(streamingState.error ?? "No se pudo preparar el plan.")
+                Text(streamingState.error ?? String(localized: "No se pudo preparar el plan."))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                 Button(action: onDiscard) {
@@ -626,14 +626,14 @@ private struct CarefulReasonsList: View {
     @State private var appeared = false
 
     static let texts: [String: (text: String, symbol: String)] = [
-        "health": ("Afecta a tu salud", "heart"),
-        "mental_health": ("Cuida tu bienestar emocional", "leaf"),
-        "substances": ("Implica dejar o reducir una sustancia", "hand.raised"),
-        "disability": ("Adaptado a tu situación", "figure.roll"),
-        "financial_risk": ("Hay dinero en juego", "eurosign.circle"),
-        "legal": ("Buscamos una alternativa legal", "checkmark.shield"),
-        "tight_deadline": ("El plazo es muy corto", "clock"),
-        "safety": ("Hay que hacerlo con seguridad", "exclamationmark.shield")
+        "health": (String(localized: "Afecta a tu salud"), "heart"),
+        "mental_health": (String(localized: "Cuida tu bienestar emocional"), "leaf"),
+        "substances": (String(localized: "Implica dejar o reducir una sustancia"), "hand.raised"),
+        "disability": (String(localized: "Adaptado a tu situación"), "figure.roll"),
+        "financial_risk": (String(localized: "Hay dinero en juego"), "eurosign.circle"),
+        "legal": (String(localized: "Buscamos una alternativa legal"), "checkmark.shield"),
+        "tight_deadline": (String(localized: "El plazo es muy corto"), "clock"),
+        "safety": (String(localized: "Hay que hacerlo con seguridad"), "exclamationmark.shield")
     ]
 
     private var items: [(text: String, symbol: String)] {

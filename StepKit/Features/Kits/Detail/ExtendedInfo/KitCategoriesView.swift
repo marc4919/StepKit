@@ -52,13 +52,13 @@ struct KitCategoriesView: View {
 
     private func localizedType(_ type: String) -> String {
         switch type.lowercased() {
-        case "health": return "Salud"
-        case "learning": return "Aprendizaje"
-        case "fitness": return "Fitness"
-        case "productivity": return "Productividad"
-        case "finance": return "Finanzas"
-        case "creative": return "Creatividad"
-        case "setup": return "Configuración"
+        case "health": return String(localized: "Salud")
+        case "learning": return String(localized: "Aprendizaje")
+        case "fitness": return String(localized: "Fitness")
+        case "productivity": return String(localized: "Productividad")
+        case "finance": return String(localized: "Finanzas")
+        case "creative": return String(localized: "Creatividad")
+        case "setup": return String(localized: "Configuración")
         default: return type.capitalized
         }
     }

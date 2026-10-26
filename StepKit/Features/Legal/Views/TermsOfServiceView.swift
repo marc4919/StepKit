@@ -28,19 +28,19 @@ struct TermsOfServiceView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         termSection(
                             number: "1",
-                            title: "Aceptación de los Términos",
-                            content: "Al descargar, instalar o utilizar la aplicación StepKit ('la Aplicación'), aceptas estar legalmente vinculado por estos Términos de Uso ('Términos'). Si no estás de acuerdo con estos Términos, no debes utilizar la Aplicación. Debes tener al menos 13 años (o la edad mínima requerida en tu país) para utilizar la Aplicación."
+                            title: String(localized: "Aceptación de los Términos"),
+                            content: String(localized: "Al descargar, instalar o utilizar la aplicación StepKit ('la Aplicación'), aceptas estar legalmente vinculado por estos Términos de Uso ('Términos'). Si no estás de acuerdo con estos Términos, no debes utilizar la Aplicación. Debes tener al menos 13 años (o la edad mínima requerida en tu país) para utilizar la Aplicación.")
                         )
                         
                         termSection(
                             number: "2",
-                            title: "Descripción del Servicio",
-                            content: "StepKit es una herramienta diseñada para ayudarte a definir, gestionar y alcanzar tus objetivos personales mediante el desglose de tareas paso a paso. La Aplicación puede utilizar inteligencia artificial (IA) para generar sugerencias y planes. Estas sugerencias son generadas automáticamente y deben ser evaluadas por ti antes de seguirlas. StepKit no ofrece asesoramiento profesional (médico, legal, financiero, etc.)."
+                            title: String(localized: "Descripción del Servicio"),
+                            content: String(localized: "StepKit es una herramienta diseñada para ayudarte a definir, gestionar y alcanzar tus objetivos personales mediante el desglose de tareas paso a paso. La Aplicación puede utilizar inteligencia artificial (IA) para generar sugerencias y planes. Estas sugerencias son generadas automáticamente y deben ser evaluadas por ti antes de seguirlas. StepKit no ofrece asesoramiento profesional (médico, legal, financiero, etc.).")
                         )
                         
                         termSection(
                             number: "3",
-                            title: "Suscripciones y Pagos",
+                            title: String(localized: "Suscripciones y Pagos"),
                             content: """
                             StepKit ofrece una versión gratuita y una suscripción 'Premium' con funciones adicionales.
                             
@@ -53,44 +53,44 @@ struct TermsOfServiceView: View {
                         
                         termSection(
                             number: "4",
-                            title: "Cuentas de Usuario",
-                            content: "Para acceder a ciertas funciones, debes crear una cuenta (por ejemplo, mediante 'Sign in with Apple'). Eres responsable de mantener la confidencialidad de tu cuenta y de todas las actividades que ocurran bajo ella. Nos reservamos el derecho de suspender o eliminar tu cuenta si violas estos Términos."
+                            title: String(localized: "Cuentas de Usuario"),
+                            content: String(localized: "Para acceder a ciertas funciones, debes crear una cuenta (por ejemplo, mediante 'Sign in with Apple'). Eres responsable de mantener la confidencialidad de tu cuenta y de todas las actividades que ocurran bajo ella. Nos reservamos el derecho de suspender o eliminar tu cuenta si violas estos Términos.")
                         )
                         
                         termSection(
                             number: "5",
-                            title: "Contenido y Propiedad Intelectual",
-                            content: "Tú conservas los derechos sobre el contenido que creas en la Aplicación. Sin embargo, al usar la Aplicación, nos otorgas una licencia para usar, almacenar y procesar dicho contenido únicamente para proporcionarte el servicio. El contenido generado por la IA de StepKit se proporciona para tu uso personal."
+                            title: String(localized: "Contenido y Propiedad Intelectual"),
+                            content: String(localized: "Tú conservas los derechos sobre el contenido que creas en la Aplicación. Sin embargo, al usar la Aplicación, nos otorgas una licencia para usar, almacenar y procesar dicho contenido únicamente para proporcionarte el servicio. El contenido generado por la IA de StepKit se proporciona para tu uso personal.")
                         )
                         
                         termSection(
                             number: "6",
-                            title: "Uso Prohibido",
-                            content: "No debes usar la Aplicación para fines ilegales, dañinos o fraudulentos. Está prohibido intentar interferir con el funcionamiento de la Aplicación, realizar ingeniería inversa o usar la IA para generar contenido ofensivo o peligroso."
+                            title: String(localized: "Uso Prohibido"),
+                            content: String(localized: "No debes usar la Aplicación para fines ilegales, dañinos o fraudulentos. Está prohibido intentar interferir con el funcionamiento de la Aplicación, realizar ingeniería inversa o usar la IA para generar contenido ofensivo o peligroso.")
                         )
                         
                         termSection(
                             number: "7",
-                            title: "Exención de Garantías",
-                            content: "La Aplicación se proporciona 'tal cual' y 'según disponibilidad', sin garantías de ningún tipo, explícitas o implícitas. No garantizamos que la Aplicación esté libre de errores, sea segura o que el contenido generado por IA sea siempre preciso o útil."
+                            title: String(localized: "Exención de Garantías"),
+                            content: String(localized: "La Aplicación se proporciona 'tal cual' y 'según disponibilidad', sin garantías de ningún tipo, explícitas o implícitas. No garantizamos que la Aplicación esté libre de errores, sea segura o que el contenido generado por IA sea siempre preciso o útil.")
                         )
                         
                         termSection(
                             number: "8",
-                            title: "Limitación de Responsabilidad",
-                            content: "En la medida máxima permitida por la ley, StepKit y sus desarrolladores no serán responsables por daños indirectos, incidentales, especiales o consecuentes derivados de tu uso o imposibilidad de uso de la Aplicación."
+                            title: String(localized: "Limitación de Responsabilidad"),
+                            content: String(localized: "En la medida máxima permitida por la ley, StepKit y sus desarrolladores no serán responsables por daños indirectos, incidentales, especiales o consecuentes derivados de tu uso o imposibilidad de uso de la Aplicación.")
                         )
                         
                         termSection(
                             number: "9",
-                            title: "Modificaciones",
-                            content: "Podemos modificar estos Términos en cualquier momento. Te notificaremos sobre cambios importantes a través de la Aplicación. El uso continuado de la Aplicación después de dichos cambios constituye tu aceptación de los nuevos Términos."
+                            title: String(localized: "Modificaciones"),
+                            content: String(localized: "Podemos modificar estos Términos en cualquier momento. Te notificaremos sobre cambios importantes a través de la Aplicación. El uso continuado de la Aplicación después de dichos cambios constituye tu aceptación de los nuevos Términos.")
                         )
                         
                         termSection(
                             number: "10",
-                            title: "Contacto",
-                            content: "Si tienes preguntas sobre estos Términos, contáctanos en support@stepkit.app."
+                            title: String(localized: "Contacto"),
+                            content: String(localized: "Si tienes preguntas sobre estos Términos, contáctanos en support@stepkit.app.")
                         )
                     }
                 }

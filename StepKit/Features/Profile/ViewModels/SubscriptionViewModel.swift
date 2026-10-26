@@ -41,11 +41,11 @@ final class SubscriptionViewModel {
     func subscribeToPlan(storeKitManager: any SubscriptionPurchasing, apiClient: any APIClientProtocol, authManager: any AuthManaging) async {
         guard !isLoading, !Task.isCancelled else { return }
         guard storeKitManager.isProductAvailable(for: selectedPlan) else {
-            errorMessage = "Producto no disponible"
+            errorMessage = String(localized: "Producto no disponible")
             return
         }
         guard let session = Session(authManager) else {
-            errorMessage = "Necesitas una sesión válida para suscribirte"
+            errorMessage = String(localized: "Necesitas una sesión válida para suscribirte")
             return
         }
 
@@ -72,7 +72,7 @@ final class SubscriptionViewModel {
         guard !isLoading, !Task.isCancelled else { return }
         // Capture before AppStore.sync; never adopt a new login midway through a restore.
         guard let session = Session(authManager) else {
-            errorMessage = "Necesitas una sesión válida para restaurar compras"
+            errorMessage = String(localized: "Necesitas una sesión válida para restaurar compras")
             return
         }
 
@@ -84,13 +84,13 @@ final class SubscriptionViewModel {
         await storeKitManager.restorePurchases()
         guard session.isCurrent(authManager), !Task.isCancelled else { return }
         guard storeKitManager.hasActiveSubscription else {
-            errorMessage = "No se encontraron compras anteriores"
+            errorMessage = String(localized: "No se encontraron compras anteriores")
             return
         }
         let transactionID = await storeKitManager.getOriginalTransactionId()
         guard session.isCurrent(authManager), !Task.isCancelled else { return }
         guard let transactionID else {
-            errorMessage = "No se encontraron compras anteriores"
+            errorMessage = String(localized: "No se encontraron compras anteriores")
             return
         }
 
@@ -98,7 +98,7 @@ final class SubscriptionViewModel {
             try await verifyAndRefresh(transactionID: transactionID, session: session, apiClient: apiClient, authManager: authManager)
         } catch {
             guard session.isCurrent(authManager), !Task.isCancelled else { return }
-            errorMessage = "Error al verificar la suscripcion: \(error.localizedDescription)"
+            errorMessage = String(localized: "Error al verificar la suscripcion: \(error.localizedDescription)")
         }
     }
 

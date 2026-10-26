@@ -12,15 +12,15 @@ struct KitPlanInfoView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "calendar.badge.clock", title: "Planificación")
+            sectionHeader(icon: "calendar.badge.clock", title: String(localized: "Planificación"))
 
             VStack(spacing: 0) {
                 // Horizonte
                 infoRow(
                     icon: "hourglass",
                     iconColor: .accentColor,
-                    title: "Horizonte",
-                    value: "\(goalEntity.horizonDays) días",
+                    title: String(localized: "Horizonte"),
+                    value: String(localized: "\(goalEntity.horizonDays) días"),
                     showDivider: goalEntity.dueDate != nil
                 )
 
@@ -29,7 +29,7 @@ struct KitPlanInfoView: View {
                     infoRow(
                         icon: "calendar",
                         iconColor: .orange,
-                        title: "Fecha objetivo",
+                        title: String(localized: "Fecha objetivo"),
                         value: dueDate.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).year()),
                         showDivider: true
                     )
@@ -41,8 +41,8 @@ struct KitPlanInfoView: View {
                     infoRow(
                         icon: daysRemaining < 0 ? "exclamationmark.triangle.fill" : "clock.badge.checkmark",
                         iconColor: daysRemaining < 0 ? .red : (daysRemaining <= 3 ? .orange : .green),
-                        title: "Días restantes",
-                        value: daysRemaining < 0 ? "Vencido hace \(abs(daysRemaining)) días" : "\(daysRemaining) días",
+                        title: String(localized: "Días restantes"),
+                        value: daysRemaining < 0 ? String(localized: "Vencido hace \(abs(daysRemaining)) días") : String(localized: "\(daysRemaining) días"),
                         showDivider: false
                     )
                 }

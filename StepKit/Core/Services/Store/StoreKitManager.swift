@@ -214,15 +214,15 @@ enum StoreKitError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .productUnavailable:
-            return "Producto no disponible"
+            return String(localized: "Producto no disponible")
         case .userCancelled:
-            return "La compra fue cancelada"
+            return String(localized: "La compra fue cancelada")
         case .pending:
-            return "La compra esta pendiente de aprobacion"
+            return String(localized: "La compra esta pendiente de aprobacion")
         case .verificationFailed:
-            return "No se pudo verificar la compra"
+            return String(localized: "No se pudo verificar la compra")
         case .unknown:
-            return "Error desconocido en la compra"
+            return String(localized: "Error desconocido en la compra")
         }
     }
 }

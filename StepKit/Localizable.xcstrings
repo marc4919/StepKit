@@ -1,0 +1,7425 @@
+{
+  "sourceLanguage": "es",
+  "strings": {
+    "": {},
+    "  · último que avanzaste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "  · last one you worked on"
+          }
+        }
+      }
+    },
+    "%@\nestá listo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@\nis ready"
+          }
+        }
+      }
+    },
+    "%@ reservados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ booked"
+          }
+        }
+      }
+    },
+    "%@ · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@–%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@–%@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@–%3$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$lld min"
+          }
+        }
+      }
+    },
+    "%@ · %lld min · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld min · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$lld min · %3$@"
+          }
+        }
+      }
+    },
+    "%@ · Paso %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · Step %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · Paso %2$lld"
+          }
+        }
+      }
+    },
+    "%@ · Paso sugerido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · Suggested step"
+          }
+        }
+      }
+    },
+    "%@, %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, KPI: %@%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, KPI: %@%@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, KPI: %2$@%3$@"
+          }
+        }
+      }
+    },
+    "%@. %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@. %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@. %2$@"
+          }
+        }
+      }
+    },
+    "%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
+    "%lld Kits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Kits"
+          }
+        }
+      }
+    },
+    "%lld de %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "%lld de %lld completados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld completed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld completados"
+          }
+        }
+      }
+    },
+    "%lld de %lld listos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld ready"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld listos"
+          }
+        }
+      }
+    },
+    "%lld de %lld pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld steps"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld pasos"
+          }
+        }
+      }
+    },
+    "%lld de %lld pasos completados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld steps completed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld pasos completados"
+          }
+        }
+      }
+    },
+    "%lld de %lld pasos terminados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld steps done"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld pasos terminados"
+          }
+        }
+      }
+    },
+    "%lld de %lld pasos terminados.\nEl anillo cuenta pasos, no el resultado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld steps done.\nThe ring counts steps, not the result."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld pasos terminados.\nEl anillo cuenta pasos, no el resultado."
+          }
+        }
+      }
+    },
+    "%lld de %lld pasos · Revisa el resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld steps · Review the result"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld de %2$lld pasos · Revisa el resultado"
+          }
+        }
+      }
+    },
+    "%lld días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days"
+          }
+        }
+      }
+    },
+    "%lld fechas previstas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld expected dates"
+          }
+        }
+      }
+    },
+    "%lld h": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h"
+          }
+        }
+      }
+    },
+    "%lld h %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h %lld min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld h %2$lld min"
+          }
+        }
+      }
+    },
+    "%lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        }
+      }
+    },
+    "%lld min orientativos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "about %lld min"
+          }
+        }
+      }
+    },
+    "%lld pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld steps"
+          }
+        }
+      }
+    },
+    "%lld pasos listos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld steps ready"
+          }
+        }
+      }
+    },
+    "%lld pasos sugeridos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld suggested steps"
+          }
+        }
+      }
+    },
+    "%lld sesiones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sessions"
+          }
+        }
+      }
+    },
+    "%lld sesiones por semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sessions a week"
+          }
+        }
+      }
+    },
+    "%lld terminados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld done"
+          }
+        }
+      }
+    },
+    "%lld%%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "%lld%% completado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% complete"
+          }
+        }
+      }
+    },
+    "%lldh %lldmin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lldh %lldmin"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lldh %2$lldmin"
+          }
+        }
+      }
+    },
+    "1 Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Kit"
+          }
+        }
+      }
+    },
+    "1 día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 day"
+          }
+        }
+      }
+    },
+    "1 fecha prevista": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 expected date"
+          }
+        }
+      }
+    },
+    "1 paso listo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 step ready"
+          }
+        }
+      }
+    },
+    "1 paso sugerido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 suggested step"
+          }
+        }
+      }
+    },
+    "1 sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 session"
+          }
+        }
+      }
+    },
+    "1 sesión por semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 session a week"
+          }
+        }
+      }
+    },
+    "1 terminado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 done"
+          }
+        }
+      }
+    },
+    "39,99 facturado anualmente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "39.99 billed yearly"
+          }
+        }
+      }
+    },
+    "7 dias gratis, despues %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 days free, then %@"
+          }
+        }
+      }
+    },
+    "A tener en cuenta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep in mind"
+          }
+        }
+      }
+    },
+    "Abre el creador de kits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the Kit creator"
+          }
+        }
+      }
+    },
+    "Abre el plan del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the Kit's plan"
+          }
+        }
+      }
+    },
+    "Abre el siguiente paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the next step"
+          }
+        }
+      }
+    },
+    "Abre el siguiente paso de %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the next step of %@"
+          }
+        }
+      }
+    },
+    "Abre la política de privacidad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the privacy policy"
+          }
+        }
+      }
+    },
+    "Abre los ajustes de StepKit para cambiar el idioma": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens StepKit settings to change the language"
+          }
+        }
+      }
+    },
+    "Abre los términos de uso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the terms of use"
+          }
+        }
+      }
+    },
+    "Abrir Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Kit"
+          }
+        }
+      }
+    },
+    "Accede a todas las funciones premium": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get every premium feature"
+          }
+        }
+      }
+    },
+    "Accede desde cualquier dispositivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use it on any device"
+          }
+        }
+      }
+    },
+    "Aceptación de los Términos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceptance of the Terms"
+          }
+        }
+      }
+    },
+    "Aceptado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accepted"
+          }
+        }
+      }
+    },
+    "Aceptar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Aceptar y empezar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accept and start"
+          }
+        }
+      }
+    },
+    "Acepto compartir estos datos con el servicio de IA": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I agree to share this data with the AI service"
+          }
+        }
+      }
+    },
+    "Acerca de StepKit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About StepKit"
+          }
+        }
+      }
+    },
+    "Aclarar la primera acción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin down the first action"
+          }
+        }
+      }
+    },
+    "Activa Apple Intelligence en Ajustes para usar el asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on Apple Intelligence in Settings to use the assistant"
+          }
+        }
+      }
+    },
+    "Activa las notificaciones globales en tu Perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on notifications in your Profile"
+          }
+        }
+      }
+    },
+    "Activa o desactiva el recordatorio de este paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turns this step's reminder on or off"
+          }
+        }
+      }
+    },
+    "Adaptado a tu situación": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adapted to your situation"
+          }
+        }
+      }
+    },
+    "Adaptado para ti": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Made for you"
+          }
+        }
+      }
+    },
+    "Afecta a tu salud": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It affects your health"
+          }
+        }
+      }
+    },
+    "Agrega notas personales para este kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add personal notes for this Kit"
+          }
+        }
+      }
+    },
+    "Ahora no": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        }
+      }
+    },
+    "Ahorra 33%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save 33%"
+          }
+        }
+      }
+    },
+    "Ajustando": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjusting"
+          }
+        }
+      }
+    },
+    "Ajustando tu plan…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjusting your plan…"
+          }
+        }
+      }
+    },
+    "Ajustes del plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan changes"
+          }
+        }
+      }
+    },
+    "Ajustes → Apple Intelligence y Siri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings → Apple Intelligence & Siri"
+          }
+        }
+      }
+    },
+    "Al continuar, aceptas nuestros": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By continuing, you accept our"
+          }
+        }
+      }
+    },
+    "Al crear un Kit, tu objetivo, tu tiempo y los obstáculos que menciones se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you create a Kit, your goal, your time and any obstacles you mention are sent through our server to an AI service run by another company. You can withdraw permission at any time."
+          }
+        }
+      }
+    },
+    "Al descargar, instalar o utilizar la aplicación StepKit ('la Aplicación'), aceptas estar legalmente vinculado por estos Términos de Uso ('Términos'). Si no estás de acuerdo con estos Términos, no debes utilizar la Aplicación. Debes tener al menos 13 años (o la edad mínima requerida en tu país) para utilizar la Aplicación.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By downloading, installing or using the StepKit app ('the App'), you agree to be legally bound by these Terms of Use ('Terms'). If you do not agree to these Terms, do not use the App. You must be at least 13 years old (or the minimum age required in your country) to use the App."
+          }
+        }
+      }
+    },
+    "Al empezar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At the start"
+          }
+        }
+      }
+    },
+    "Al resolverlo, el paso vuelve a «En curso». Tu avance se conserva.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once it's resolved, the step goes back to “In progress”. Your progress is kept."
+          }
+        }
+      }
+    },
+    "Al terminar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When done"
+          }
+        }
+      }
+    },
+    "Algo propio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something of your own"
+          }
+        }
+      }
+    },
+    "Alto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High"
+          }
+        }
+      }
+    },
+    "Analisis avanzado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced insights"
+          }
+        }
+      }
+    },
+    "Anota lo que has hecho y lo que falta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note what you've done and what's left"
+          }
+        }
+      }
+    },
+    "Anotaciones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "Antes de preparar tu plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before preparing your plan"
+          }
+        }
+      }
+    },
+    "Antes de prepararlo, cuéntame un poco más": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before I prepare it, tell me a bit more"
+          }
+        }
+      }
+    },
+    "Anual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yearly"
+          }
+        }
+      }
+    },
+    "Aplicada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applied"
+          }
+        }
+      }
+    },
+    "Aprendizaje": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learning"
+          }
+        }
+      }
+    },
+    "Apuntes generales que no pertenecen a un paso concreto. Aparecen en tu recorrido.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General notes that don't belong to a specific step. They appear in your journey."
+          }
+        }
+      }
+    },
+    "Apúntalo para retomarlo sin pensar la próxima vez. Se guarda con la fecha y la hora, y no completa el paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write it down so you can pick up next time without thinking. It's saved with the date and time, and doesn't complete the step."
+          }
+        }
+      }
+    },
+    "Asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assistant"
+          }
+        }
+      }
+    },
+    "Asistente de StepKit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit assistant"
+          }
+        }
+      }
+    },
+    "Asistente del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit assistant"
+          }
+        }
+      }
+    },
+    "Asistente en tu dispositivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On-device assistant"
+          }
+        }
+      }
+    },
+    "Así queda en tu calendario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How it will look in your calendar"
+          }
+        }
+      }
+    },
+    "Atasco": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stuck"
+          }
+        }
+      }
+    },
+    "Autenticando...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signing in..."
+          }
+        }
+      }
+    },
+    "Avance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress"
+          }
+        }
+      }
+    },
+    "Avance guardado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress saved"
+          }
+        }
+      }
+    },
+    "Avances que quedan guardados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress that stays saved"
+          }
+        }
+      }
+    },
+    "Avanza paso a paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move forward step by step"
+          }
+        }
+      }
+    },
+    "Avanza por pasos con su tiempo y su fecha": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work through steps, each with its time and date"
+          }
+        }
+      }
+    },
+    "Avisos para volver a tus pasos y a tus sesiones reservadas.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders to get back to your steps and booked sessions."
+          }
+        }
+      }
+    },
+    "Ayuda del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step help"
+          }
+        }
+      }
+    },
+    "Ayúdame a dividir %@ de %@ en tres o cuatro tramos pequeños y concretos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help me split %@ of %@ into three or four small, concrete chunks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Ayúdame a dividir %1$@ de %2$@ en tres o cuatro tramos pequeños y concretos."
+          }
+        }
+      }
+    },
+    "Ayúdame a dividir esta tarea": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help me split this task"
+          }
+        }
+      }
+    },
+    "Ayúdame con este paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help me with this step"
+          }
+        }
+      }
+    },
+    "Añadir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        }
+      }
+    },
+    "Añadir nota": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add note"
+          }
+        }
+      }
+    },
+    "Aún no has guardado avances en este paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You haven't saved any progress on this step yet."
+          }
+        }
+      }
+    },
+    "Aún no hay conversaciones. Las que abras desde un paso también aparecerán aquí.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No conversations yet. Ones you start from a step will also show up here."
+          }
+        }
+      }
+    },
+    "Aún no hay nada planificado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing planned yet"
+          }
+        }
+      }
+    },
+    "Bajo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low"
+          }
+        }
+      }
+    },
+    "Beneficios Premium": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premium benefits"
+          }
+        }
+      }
+    },
+    "Bloqueado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked"
+          }
+        }
+      }
+    },
+    "Bloqueo anotado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocker noted"
+          }
+        }
+      }
+    },
+    "Borrar todo y empezar de cero": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erase everything and start over"
+          }
+        }
+      }
+    },
+    "Busca por nombre de Kit, paso o nota.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search by Kit, step or note."
+          }
+        }
+      }
+    },
+    "Buscamos una alternativa legal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll look for a legal alternative"
+          }
+        }
+      }
+    },
+    "Buscar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        }
+      }
+    },
+    "Buscar un tramo más pequeño para ahora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find a smaller chunk for now"
+          }
+        }
+      }
+    },
+    "CONTINUAR": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CONTINUE"
+          }
+        }
+      }
+    },
+    "Cada avance queda vinculado a su paso. Guardar avance no completa el paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each progress note is linked to its step. Saving progress doesn't complete the step."
+          }
+        }
+      }
+    },
+    "Cada día, durante %lld días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every day for %lld days"
+          }
+        }
+      }
+    },
+    "Cada día, durante %lld semanas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every day for %lld weeks"
+          }
+        }
+      }
+    },
+    "Cada día, durante 1 semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every day for 1 week"
+          }
+        }
+      }
+    },
+    "Cada paso puede desactivar su recordatorio. StepKit pide permiso de notificaciones la primera vez que hace falta.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each step can turn its reminder off. StepKit asks for notification permission the first time it's needed."
+          }
+        }
+      }
+    },
+    "Cada sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each session"
+          }
+        }
+      }
+    },
+    "Calendario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar"
+          }
+        }
+      }
+    },
+    "Cambios a esta Política": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes to This Policy"
+          }
+        }
+      }
+    },
+    "Cancela en cualquier momento desde la App Store": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel anytime from the App Store"
+          }
+        }
+      }
+    },
+    "Cancelar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Cargando planes de suscripción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading subscription plans"
+          }
+        }
+      }
+    },
+    "Cerrar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Cerrar mensaje de error": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss error message"
+          }
+        }
+      }
+    },
+    "Cerrar sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out"
+          }
+        }
+      }
+    },
+    "Cierra la sesión actual y regresa a la pantalla de inicio de sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signs you out and returns to the sign-in screen"
+          }
+        }
+      }
+    },
+    "Comenzar prueba gratuita": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start free trial"
+          }
+        }
+      }
+    },
+    "Compartir Información": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sharing Information"
+          }
+        }
+      }
+    },
+    "Completado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed"
+          }
+        }
+      }
+    },
+    "Completados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed"
+          }
+        }
+      }
+    },
+    "Completar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete"
+          }
+        }
+      }
+    },
+    "Completar los pasos no confirma por sí solo el resultado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completing the steps doesn't confirm the result on its own."
+          }
+        }
+      }
+    },
+    "Completar paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete step"
+          }
+        }
+      }
+    },
+    "Con tus respuestas el plan se adapta mejor a ti. Puedes saltarlas.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your answers help the plan fit you better. You can skip them."
+          }
+        }
+      }
+    },
+    "Conectando con la IA...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting to the AI..."
+          }
+        }
+      }
+    },
+    "Configuración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "Configurar proyecto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up the project"
+          }
+        }
+      }
+    },
+    "Confirma que tienes lo que buscabas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm you got what you wanted"
+          }
+        }
+      }
+    },
+    "Confirmado por ti · %@ · %lld de %lld pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmed by you · %@ · %lld of %lld steps"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Confirmado por ti · %1$@ · %2$lld de %3$lld pasos"
+          }
+        }
+      }
+    },
+    "Confirmar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm"
+          }
+        }
+      }
+    },
+    "Confirmar resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm result"
+          }
+        }
+      }
+    },
+    "Confirmaste el resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You confirmed the result"
+          }
+        }
+      }
+    },
+    "Consejos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tips"
+          }
+        }
+      }
+    },
+    "Contacto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contact"
+          }
+        }
+      }
+    },
+    "Contenido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content"
+          }
+        }
+      }
+    },
+    "Contenido Premium": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premium content"
+          }
+        }
+      }
+    },
+    "Contenido y Propiedad Intelectual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content and Intellectual Property"
+          }
+        }
+      }
+    },
+    "Continuar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        }
+      }
+    },
+    "Conversaciones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversations"
+          }
+        }
+      }
+    },
+    "Conversaciones sobre %@. Cualquier cambio en el plan llega como propuesta que tú decides.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversations about %@. Any change to the plan comes as a proposal you decide on."
+          }
+        }
+      }
+    },
+    "Convierte tu idea en pasos claros. Revisa el plan y adáptalo a tu tiempo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn your idea into clear steps. Review the plan and fit it to your time."
+          }
+        }
+      }
+    },
+    "Crea tantos objetivos como quieras": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create as many goals as you like"
+          }
+        }
+      }
+    },
+    "Crea tu primer kit y empieza a avanzar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create your first Kit and start moving"
+          }
+        }
+      }
+    },
+    "Creando tu Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creating your Kit"
+          }
+        }
+      }
+    },
+    "Crear Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create Kit"
+          }
+        }
+      }
+    },
+    "Crear Kit para este día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create Kit for this day"
+          }
+        }
+      }
+    },
+    "Crear kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create Kit"
+          }
+        }
+      }
+    },
+    "Crear mi plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create my plan"
+          }
+        }
+      }
+    },
+    "Crear mi primer Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create my first Kit"
+          }
+        }
+      }
+    },
+    "Crear un Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a Kit"
+          }
+        }
+      }
+    },
+    "Creatividad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creativity"
+          }
+        }
+      }
+    },
+    "Creo que %@ ya no encaja en %@. ¿Qué cambio me propondrías? Lo decidiré yo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I think %@ no longer fits in %@. What change would you suggest? I'll decide."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Creo que %1$@ ya no encaja en %2$@. ¿Qué cambio me propondrías? Lo decidiré yo."
+          }
+        }
+      }
+    },
+    "Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha prevista. También podrás reservar sesiones para avanzar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you create a Kit, you'll see its suggested steps and expected date here. You can also book sessions to make progress."
+          }
+        }
+      }
+    },
+    "Cuentas de Usuario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User Accounts"
+          }
+        }
+      }
+    },
+    "Cuida tu bienestar emocional": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look after your emotional wellbeing"
+          }
+        }
+      }
+    },
+    "Curva de aprendizaje": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learning curve"
+          }
+        }
+      }
+    },
+    "Cuándo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When"
+          }
+        }
+      }
+    },
+    "Cuándo terminaría el Kit según su plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When the Kit would finish according to its plan."
+          }
+        }
+      }
+    },
+    "Cómo sabré que está listo (opcional)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How I'll know it's done (optional)"
+          }
+        }
+      }
+    },
+    "Da el primer paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take the first step"
+          }
+        }
+      }
+    },
+    "Da forma a tu idea, avanza a tu ritmo y retoma donde lo dejaste.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shape your idea, move at your pace and pick up where you left off."
+          }
+        }
+      }
+    },
+    "Da forma a un objetivo, guarda lo que avanzas y retoma con una acción concreta.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shape a goal, save your progress and pick up with a concrete action."
+          }
+        }
+      }
+    },
+    "Dame consejos para avanzar en mis kits actuales": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give me tips to move forward with my current Kits"
+          }
+        }
+      }
+    },
+    "Dame motivación para seguir con mi objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give me motivation to keep going with my goal"
+          }
+        }
+      }
+    },
+    "Dando forma a tu Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shaping your Kit"
+          }
+        }
+      }
+    },
+    "Define lo que quieres conseguir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Define what you want to achieve"
+          }
+        }
+      }
+    },
+    "Dependiendo de tu ubicación, puedes tener derecho a acceder, corregir, eliminar o restringir el procesamiento de tus datos personales. Puedes eliminar tu cuenta y todos tus datos directamente desde la configuración de la aplicación.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depending on where you live, you may have the right to access, correct, delete or restrict the processing of your personal data. You can delete your account and all your data directly from the app's settings."
+          }
+        }
+      }
+    },
+    "Desbloquea StepKit Pro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock StepKit Pro"
+          }
+        }
+      }
+    },
+    "Desbloquea todo el potencial": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock its full potential"
+          }
+        }
+      }
+    },
+    "Desbloquear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
+          }
+        }
+      }
+    },
+    "Descartada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discarded"
+          }
+        }
+      }
+    },
+    "Descartar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard"
+          }
+        }
+      }
+    },
+    "Descartar y volver a mi idea": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard and go back to my idea"
+          }
+        }
+      }
+    },
+    "Describe la acción concreta necesaria para completar este paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the concrete action needed to complete this step."
+          }
+        }
+      }
+    },
+    "Descripción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description"
+          }
+        }
+      }
+    },
+    "Descripción breve": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short description"
+          }
+        }
+      }
+    },
+    "Descripción del Servicio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description of the Service"
+          }
+        }
+      }
+    },
+    "Descripción detallada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed description"
+          }
+        }
+      }
+    },
+    "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing here changes the rest of the Kit without a proposal you accept."
+          }
+        }
+      }
+    },
+    "Detalles del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit details"
+          }
+        }
+      }
+    },
+    "Dos imágenes listas.\nFaltan material y permisos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two images ready.\nMaterials and permissions still missing."
+          }
+        }
+      }
+    },
+    "Duración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duration"
+          }
+        }
+      }
+    },
+    "Día %lld de %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day %lld of %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Día %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Días restantes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days left"
+          }
+        }
+      }
+    },
+    "Dónde lo dejaste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where you left off"
+          }
+        }
+      }
+    },
+    "Editar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
+    "Editar Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Kit"
+          }
+        }
+      }
+    },
+    "Editar la nota conserva su fecha y no cambia el estado del paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editing the note keeps its date and doesn't change the step's status."
+          }
+        }
+      }
+    },
+    "Editar nota": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit note"
+          }
+        }
+      }
+    },
+    "Editar paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit step"
+          }
+        }
+      }
+    },
+    "Editar registro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit entry"
+          }
+        }
+      }
+    },
+    "Ej.: Ahora aguanto 10 min seguidos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g.: I can go 10 min nonstop now"
+          }
+        }
+      }
+    },
+    "Ej.: Correr 5 km sin parar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g.: Run 5 km without stopping"
+          }
+        }
+      }
+    },
+    "Ej.: Los corro en menos de 35 min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g.: I run it in under 35 min"
+          }
+        }
+      }
+    },
+    "Ej.: Trabajo a turnos, me duele la rodilla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g.: I work shifts, my knee hurts"
+          }
+        }
+      }
+    },
+    "Ej.: «Escribí la introducción. Me falta el resultado»": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g.: “Wrote the intro. The result is still missing”"
+          }
+        }
+      }
+    },
+    "El asistente está escribiendo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The assistant is typing"
+          }
+        }
+      }
+    },
+    "El asistente no está disponible en este momento": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The assistant isn't available right now"
+          }
+        }
+      }
+    },
+    "El dispositivo no está configurado para crear passkeys. Verifica la configuración.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device isn't set up to create passkeys. Check your settings."
+          }
+        }
+      }
+    },
+    "El estado del paso no cambia.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The step's status doesn't change."
+          }
+        }
+      }
+    },
+    "El modelo aún no está listo. Inténtalo de nuevo más tarde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model isn't ready yet. Try again later"
+          }
+        }
+      }
+    },
+    "El plazo es muy corto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The deadline is very tight"
+          }
+        }
+      }
+    },
+    "El resto del plan no cambia.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The rest of the plan stays the same."
+          }
+        }
+      }
+    },
+    "El servidor no está disponible. Inténtalo más tarde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server isn't available. Try again later"
+          }
+        }
+      }
+    },
+    "El tiempo que apartas para avanzar. Son tu compromiso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time you set aside to make progress. It's your commitment."
+          }
+        }
+      }
+    },
+    "El tiempo que tienes disponible": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The time you have available"
+          }
+        }
+      }
+    },
+    "Elige qué necesitas y revisamos tu siguiente paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose what you need and we'll look at your next step."
+          }
+        }
+      }
+    },
+    "Elige tu plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your plan"
+          }
+        }
+      }
+    },
+    "Elige un Kit para ver su plan y su registro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a Kit to see its plan and log"
+          }
+        }
+      }
+    },
+    "Eliminar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "Eliminar Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Kit"
+          }
+        }
+      }
+    },
+    "Eliminar kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Kit"
+          }
+        }
+      }
+    },
+    "Eliminar registro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete entry"
+          }
+        }
+      }
+    },
+    "Empezar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start"
+          }
+        }
+      }
+    },
+    "Empezar una conversación": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start a conversation"
+          }
+        }
+      }
+    },
+    "Empieza": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts"
+          }
+        }
+      }
+    },
+    "Empieza por lo que quieres conseguir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start with what you want to achieve."
+          }
+        }
+      }
+    },
+    "En %lld días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In %lld days"
+          }
+        }
+      }
+    },
+    "En 10 min: %@ · %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In 10 min: %@ · %lld min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "En 10 min: %1$@ · %2$lld min"
+          }
+        }
+      }
+    },
+    "En StepKit, respetamos tu privacidad y nos comprometemos a proteger tus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos y compartimos tu información cuando utilizas nuestra aplicación móvil.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At StepKit, we respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use and share your information when you use our mobile app."
+          }
+        }
+      }
+    },
+    "En curso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In progress"
+          }
+        }
+      }
+    },
+    "En la medida máxima permitida por la ley, StepKit y sus desarrolladores no serán responsables por daños indirectos, incidentales, especiales o consecuentes derivados de tu uso o imposibilidad de uso de la Aplicación.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To the maximum extent permitted by law, StepKit and its developers will not be liable for any indirect, incidental, special or consequential damages arising from your use of, or inability to use, the App."
+          }
+        }
+      }
+    },
+    "En progreso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In progress"
+          }
+        }
+      }
+    },
+    "En una sola sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In a single session"
+          }
+        }
+      }
+    },
+    "Encuentra tus Kits y pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find your Kits and steps"
+          }
+        }
+      }
+    },
+    "Enviar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
+    "Era": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It was"
+          }
+        }
+      }
+    },
+    "Era el último paso del Kit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That was the Kit's last step."
+          }
+        }
+      }
+    },
+    "Error": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
+          }
+        }
+      }
+    },
+    "Error al conectar con la IA": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't connect to the AI"
+          }
+        }
+      }
+    },
+    "Error al crear el kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't create the Kit"
+          }
+        }
+      }
+    },
+    "Error al exportar la credencial. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't export the credential. Try again."
+          }
+        }
+      }
+    },
+    "Error al importar la credencial. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't import the credential. Try again."
+          }
+        }
+      }
+    },
+    "Error al procesar la respuesta: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't process the response: %@"
+          }
+        }
+      }
+    },
+    "Error al verificar la suscripcion: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't verify the subscription: %@"
+          }
+        }
+      }
+    },
+    "Error de API": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API error"
+          }
+        }
+      }
+    },
+    "Error de red: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network error: %@"
+          }
+        }
+      }
+    },
+    "Error del servidor (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server error (%lld)"
+          }
+        }
+      }
+    },
+    "Error desconocido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown error"
+          }
+        }
+      }
+    },
+    "Error desconocido en la compra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown purchase error"
+          }
+        }
+      }
+    },
+    "Error: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error: %@"
+          }
+        }
+      }
+    },
+    "Escribe tu respuesta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type your answer"
+          }
+        }
+      }
+    },
+    "Escribe una nota...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a note..."
+          }
+        }
+      }
+    },
+    "Escribe una nota…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a note…"
+          }
+        }
+      }
+    },
+    "Esfuerzo %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ effort"
+          }
+        }
+      }
+    },
+    "Esperando respuesta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for a reply"
+          }
+        }
+      }
+    },
+    "Esta acción no se puede deshacer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This can't be undone"
+          }
+        }
+      }
+    },
+    "Esta función requiere una suscripción premium": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This feature requires a premium subscription"
+          }
+        }
+      }
+    },
+    "Estadisticas detalladas de tu progreso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed stats on your progress"
+          }
+        }
+      }
+    },
+    "Estado E2E": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2E state"
+          }
+        }
+      }
+    },
+    "Este dispositivo no es compatible con Apple Intelligence": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device doesn't support Apple Intelligence"
+          }
+        }
+      }
+    },
+    "Este paso ya no encaja": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This step no longer fits"
+          }
+        }
+      }
+    },
+    "Estos cambios se guardarán en el Kit y se sincronizarán con tus otros dispositivos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These changes will be saved to the Kit and synced to your other devices."
+          }
+        }
+      }
+    },
+    "Exención de Garantías": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disclaimer of Warranties"
+          }
+        }
+      }
+    },
+    "Facturado mensualmente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Billed monthly"
+          }
+        }
+      }
+    },
+    "Falta de tiempo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lack of time"
+          }
+        }
+      }
+    },
+    "Fecha": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
+          }
+        }
+      }
+    },
+    "Fecha deseada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target date"
+          }
+        }
+      }
+    },
+    "Fecha deseada · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target date · %@"
+          }
+        }
+      }
+    },
+    "Fecha objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target date"
+          }
+        }
+      }
+    },
+    "Fecha prevista": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expected date"
+          }
+        }
+      }
+    },
+    "Fecha sugerida": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggested date"
+          }
+        }
+      }
+    },
+    "Finanzas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finance"
+          }
+        }
+      }
+    },
+    "Fitness": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fitness"
+          }
+        }
+      }
+    },
+    "Genera planes con IA de forma ilimitada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate unlimited AI plans"
+          }
+        }
+      }
+    },
+    "Generado en tu dispositivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generated on your device"
+          }
+        }
+      }
+    },
+    "Generando paso %lld de %lld...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generating step %lld of %lld..."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Generando paso %1$lld de %2$lld..."
+          }
+        }
+      }
+    },
+    "Gratuita": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free"
+          }
+        }
+      }
+    },
+    "Guarda lo que avanzas y retoma desde donde lo dejaste.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save your progress and pick up where you left off."
+          }
+        }
+      }
+    },
+    "Guardar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Guardar avance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save progress"
+          }
+        }
+      }
+    },
+    "Ha ocurrido un error inesperado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something unexpected went wrong"
+          }
+        }
+      }
+    },
+    "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something unexpected went wrong with Sign in with Apple. Try again later."
+          }
+        }
+      }
+    },
+    "Has alcanzado el límite de creación de kits este mes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've reached this month's Kit creation limit"
+          }
+        }
+      }
+    },
+    "Has alcanzado el límite de uso mensual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've reached your monthly usage limit"
+          }
+        }
+      }
+    },
+    "Has cancelado el inicio de sesión.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You canceled sign-in."
+          }
+        }
+      }
+    },
+    "Has completado los pasos. Comprueba que tienes lo que buscabas antes de confirmar el resultado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've completed the steps. Check you have what you wanted before confirming the result."
+          }
+        }
+      }
+    },
+    "Has completado todos los pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've completed every step"
+          }
+        }
+      }
+    },
+    "Has confirmado el resultado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've confirmed the result."
+          }
+        }
+      }
+    },
+    "Has usado toda la ayuda IA de este mes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've used all of this month's AI help"
+          }
+        }
+      }
+    },
+    "Hay dinero en juego": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There's money at stake"
+          }
+        }
+      }
+    },
+    "Hay que hacerlo con seguridad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It needs to be done safely"
+          }
+        }
+      }
+    },
+    "Haz espacio a tu\npróximo objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make room for your\nnext goal"
+          }
+        }
+      }
+    },
+    "Hecha": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Hola 👋 Soy tu asistente de StepKit. Puedo ayudarte con tu progreso, motivación o dudas. ¿Qué necesitas?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hi 👋 I'm your StepKit assistant. I can help with your progress, motivation or questions. What do you need?"
+          }
+        }
+      }
+    },
+    "Horizonte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horizon"
+          }
+        }
+      }
+    },
+    "Hoy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Hoy tengo poco tiempo. En %@, ¿qué tramo pequeño de %@ puedo hacer ahora?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm short on time today. In %@, what small part of %@ can I do now?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Hoy tengo poco tiempo. En %1$@, ¿qué tramo pequeño de %2$@ puedo hacer ahora?"
+          }
+        }
+      }
+    },
+    "Hoy · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today · %@"
+          }
+        }
+      }
+    },
+    "IA disponible este mes: %lld / %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI available this month: %lld / %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "IA disponible este mes: %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "IA externa para crear planes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "External AI to create plans"
+          }
+        }
+      }
+    },
+    "IA sin limites": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlimited AI"
+          }
+        }
+      }
+    },
+    "IA y privacidad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI and privacy"
+          }
+        }
+      }
+    },
+    "Idioma": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        }
+      }
+    },
+    "Implementamos medidas de seguridad técnicas y organizativas para proteger tus datos. Sin embargo, ninguna transmisión por internet es 100% segura, por lo que no podemos garantizar seguridad absoluta.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We use technical and organizational security measures to protect your data. However, no transmission over the internet is 100% secure, so we can't guarantee absolute security."
+          }
+        }
+      }
+    },
+    "Implica dejar o reducir una sustancia": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It involves quitting or cutting down a substance"
+          }
+        }
+      }
+    },
+    "Indicador de éxito": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Success measure"
+          }
+        }
+      }
+    },
+    "Información": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Information"
+          }
+        }
+      }
+    },
+    "Información que Recopilamos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Information We Collect"
+          }
+        }
+      }
+    },
+    "Inicia el proceso de suscripción al plan seleccionado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts subscribing to the selected plan"
+          }
+        }
+      }
+    },
+    "Introducción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduction"
+          }
+        }
+      }
+    },
+    "Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit"
+          }
+        }
+      }
+    },
+    "Kit: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit: %@"
+          }
+        }
+      }
+    },
+    "Kits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kits"
+          }
+        }
+      }
+    },
+    "Kits, pasos y notas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kits, steps and notes"
+          }
+        }
+      }
+    },
+    "La Aplicación se proporciona 'tal cual' y 'según disponibilidad', sin garantías de ningún tipo, explícitas o implícitas. No garantizamos que la Aplicación esté libre de errores, sea segura o que el contenido generado por IA sea siempre preciso o útil.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The App is provided 'as is' and 'as available', without warranties of any kind, express or implied. We don't guarantee that the App is error-free or secure, or that AI-generated content is always accurate or useful."
+          }
+        }
+      }
+    },
+    "La ayuda no está disponible ahora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help isn't available right now"
+          }
+        }
+      }
+    },
+    "La compra esta pendiente de aprobacion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The purchase is pending approval"
+          }
+        }
+      }
+    },
+    "La compra fue cancelada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The purchase was canceled"
+          }
+        }
+      }
+    },
+    "La conversación es muy larga. Se ha reiniciado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The conversation got too long. It has been restarted."
+          }
+        }
+      }
+    },
+    "La creación de kits con IA requiere una suscripción premium": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creating Kits with AI requires a premium subscription"
+          }
+        }
+      }
+    },
+    "La credencial está excluida. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The credential is excluded. Try again."
+          }
+        }
+      }
+    },
+    "La fecha deseada pasa al %@. Cada paso pendiente se mueve %lld días.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The target date moves to %@. Each pending step moves %lld days."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "La fecha deseada pasa al %1$@. Cada paso pendiente se mueve %2$lld días."
+          }
+        }
+      }
+    },
+    "La fecha es orientativa. Podrás ajustar el plan y tu tiempo después.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The date is a guide. You can adjust the plan and your time later."
+          }
+        }
+      }
+    },
+    "La fecha orientativa de cada paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each step's guide date."
+          }
+        }
+      }
+    },
+    "La respuesta de Apple no ha sido válida. Vuelve a intentarlo en unos minutos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple's response wasn't valid. Try again in a few minutes."
+          }
+        }
+      }
+    },
+    "La solicitud de inicio de sesión no se ha podido procesar. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sign-in request couldn't be processed. Try again."
+          }
+        }
+      }
+    },
+    "La solicitud de inicio de sesión requiere interacción del usuario.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sign-in request needs your input."
+          }
+        }
+      }
+    },
+    "La solicitud fue cancelada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The request was canceled"
+          }
+        }
+      }
+    },
+    "Las propuestas que cambien el plan las revisas tú antes de aplicarlas.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You review any proposal that changes the plan before it's applied."
+          }
+        }
+      }
+    },
+    "Las respuestas se generan en tu dispositivo. Revisa siempre lo que propongan antes de cambiar tu plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replies are generated on your device. Always review what they suggest before changing your plan."
+          }
+        }
+      }
+    },
+    "Leer la Política de privacidad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read the Privacy Policy"
+          }
+        }
+      }
+    },
+    "Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha prevista": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Legend: dot, booked session; circle, suggested step; flag, expected date"
+          }
+        }
+      }
+    },
+    "Limitación de Responsabilidad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limitation of Liability"
+          }
+        }
+      }
+    },
+    "Limpiar búsqueda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear search"
+          }
+        }
+      }
+    },
+    "Listo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Lo estoy rehaciendo para que encaje mejor con tu tiempo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm redoing it so it fits your time better."
+          }
+        }
+      }
+    },
+    "Lo que escribiste se conserva en el formulario.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you wrote is kept in the form."
+          }
+        }
+      }
+    },
+    "Lo que querías conseguir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you wanted to achieve"
+          }
+        }
+      }
+    },
+    "Lo revisarás tú antes de empezar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll review it before starting"
+          }
+        }
+      }
+    },
+    "Los %lld cambios se aplican o se descartan juntos para que el plan siga en orden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The %lld changes are applied or discarded together so the plan stays in order."
+          }
+        }
+      }
+    },
+    "Los cambios no se han confirmado. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The changes weren't saved. Try again."
+          }
+        }
+      }
+    },
+    "Los obstáculos que menciones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any obstacles you mention"
+          }
+        }
+      }
+    },
+    "Mantenerla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep it"
+          }
+        }
+      }
+    },
+    "Mantenerla como pasada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep it as past"
+          }
+        }
+      }
+    },
+    "Marca el resultado cuando lo hayas comprobado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark the result once you've checked it."
+          }
+        }
+      }
+    },
+    "Marca un bloqueo sin perder lo hecho": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flag a blocker without losing what you've done"
+          }
+        }
+      }
+    },
+    "Marcar como completado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as completed"
+          }
+        }
+      }
+    },
+    "Marcar como pendiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as pending"
+          }
+        }
+      }
+    },
+    "Mañana · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow · %@"
+          }
+        }
+      }
+    },
+    "Mañana: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow: %@"
+          }
+        }
+      }
+    },
+    "Me falta algo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm missing something"
+          }
+        }
+      }
+    },
+    "Me falta algo para avanzar en %@ de %@.%@ ¿Cómo puedo seguir sin perder lo hecho?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm missing something to move forward on %@ of %@.%@ How can I keep going without losing what I've done?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Me falta algo para avanzar en %1$@ de %2$@.%3$@ ¿Cómo puedo seguir sin perder lo hecho?"
+          }
+        }
+      }
+    },
+    "Me falta algo: pedir ayuda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm missing something: ask for help"
+          }
+        }
+      }
+    },
+    "Me he atascado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm stuck"
+          }
+        }
+      }
+    },
+    "Me tomo unos segundos más para que el plan te cuide bien:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm taking a few more seconds so the plan looks after you:"
+          }
+        }
+      }
+    },
+    "Medio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medium"
+          }
+        }
+      }
+    },
+    "Mensual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monthly"
+          }
+        }
+      }
+    },
+    "Meta del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit goal"
+          }
+        }
+      }
+    },
+    "Mis Kits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My Kits"
+          }
+        }
+      }
+    },
+    "Modelo no disponible": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model not available"
+          }
+        }
+      }
+    },
+    "Modificaciones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes"
+          }
+        }
+      }
+    },
+    "Motivación": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivation"
+          }
+        }
+      }
+    },
+    "Mover el paso %lld al %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move step %lld to %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mover el paso %1$lld al %2$@"
+          }
+        }
+      }
+    },
+    "Moverla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move it"
+          }
+        }
+      }
+    },
+    "Muestra los detalles del Kit y permite editarlos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows the Kit's details and lets you edit them"
+          }
+        }
+      }
+    },
+    "Nada previsto este día.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing planned for this day."
+          }
+        }
+      }
+    },
+    "Necesitas iniciar sesión para crear un kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need to sign in to create a Kit"
+          }
+        }
+      }
+    },
+    "Necesitas una sesión válida para restaurar compras": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need to be signed in to restore purchases"
+          }
+        }
+      }
+    },
+    "Necesitas una sesión válida para suscribirte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need to be signed in to subscribe"
+          }
+        }
+      }
+    },
+    "Necesito reducir el alcance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I need to cut the scope"
+          }
+        }
+      }
+    },
+    "Necesito reducir el alcance de %@. ¿Qué pasos podría quitar o juntar sin perder el resultado?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I need to cut the scope of %@. Which steps could I drop or merge without losing the result?"
+          }
+        }
+      }
+    },
+    "Nivel de esfuerzo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effort level"
+          }
+        }
+      }
+    },
+    "No aceptado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not accepted"
+          }
+        }
+      }
+    },
+    "No debes usar la Aplicación para fines ilegales, dañinos o fraudulentos. Está prohibido intentar interferir con el funcionamiento de la Aplicación, realizar ingeniería inversa o usar la IA para generar contenido ofensivo o peligroso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You must not use the App for illegal, harmful or fraudulent purposes. Trying to interfere with how the App works, reverse engineering it or using the AI to generate offensive or dangerous content is prohibited."
+          }
+        }
+      }
+    },
+    "No disponible": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not available"
+          }
+        }
+      }
+    },
+    "No encontramos coincidencias": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No matches found"
+          }
+        }
+      }
+    },
+    "No estás autenticado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're not signed in"
+          }
+        }
+      }
+    },
+    "No hay conexión a internet. Verifica tu conexión e inténtalo de nuevo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No internet connection. Check your connection and try again"
+          }
+        }
+      }
+    },
+    "No hay pasos definidos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No steps yet"
+          }
+        }
+      }
+    },
+    "No he podido responder ahora. Inténtalo de nuevo en un momento.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I couldn't reply right now. Try again in a moment."
+          }
+        }
+      }
+    },
+    "No hemos podido completar el inicio de sesión con Apple. Vuelve a intentarlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We couldn't complete Sign in with Apple. Try again."
+          }
+        }
+      }
+    },
+    "No puedo responder a eso. ¿Hay algo más en lo que pueda ayudarte?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I can't answer that. Is there anything else I can help with?"
+          }
+        }
+      }
+    },
+    "No se encontraron compras anteriores": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No previous purchases found"
+          }
+        }
+      }
+    },
+    "No se ha podido conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't connect to the server. Check your internet connection and try again."
+          }
+        }
+      }
+    },
+    "No se pudo completar el inicio de sesión con Apple. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't complete Sign in with Apple. Try again."
+          }
+        }
+      }
+    },
+    "No se pudo completar la autenticación. Inténtalo de nuevo más tarde.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't complete authentication. Try again later."
+          }
+        }
+      }
+    },
+    "No se pudo crear el kit. Inténtalo de nuevo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't create the Kit. Try again"
+          }
+        }
+      }
+    },
+    "No se pudo guardar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save"
+          }
+        }
+      }
+    },
+    "No se pudo guardar el Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the Kit"
+          }
+        }
+      }
+    },
+    "No se pudo guardar el avance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save your progress"
+          }
+        }
+      }
+    },
+    "No se pudo guardar el paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the step"
+          }
+        }
+      }
+    },
+    "No se pudo iniciar la conversación": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't start the conversation"
+          }
+        }
+      }
+    },
+    "No se pudo preparar el plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't prepare the plan."
+          }
+        }
+      }
+    },
+    "No se pudo reservar la sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't book the session"
+          }
+        }
+      }
+    },
+    "No se pudo verificar la compra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't verify the purchase"
+          }
+        }
+      }
+    },
+    "No se usa para publicidad ni se vende": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's not used for advertising or sold"
+          }
+        }
+      }
+    },
+    "No sé cómo empezar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I don't know how to start"
+          }
+        }
+      }
+    },
+    "No sé cómo empezar %@ en %@. ¿Cuál sería la primera acción concreta?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I don't know how to start %@ in %@. What would the first concrete action be?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "No sé cómo empezar %1$@ en %2$@. ¿Cuál sería la primera acción concreta?"
+          }
+        }
+      }
+    },
+    "No tienes sesiones reservadas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have no booked sessions"
+          }
+        }
+      }
+    },
+    "Nota": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "Nota del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit note"
+          }
+        }
+      }
+    },
+    "Notas del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit notes"
+          }
+        }
+      }
+    },
+    "Notificaciones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        }
+      }
+    },
+    "Notificaciones inteligentes adaptadas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smart, tailored notifications"
+          }
+        }
+      }
+    },
+    "Nuestra aplicación no está dirigida a niños menores de 13 años. No recopilamos conscientemente información personal de niños menores de 13 años.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Our app is not directed at children under 13. We don't knowingly collect personal information from children under 13."
+          }
+        }
+      }
+    },
+    "Nueva hora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New time"
+          }
+        }
+      }
+    },
+    "Nuevo Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Kit"
+          }
+        }
+      }
+    },
+    "Objetivos ilimitados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlimited goals"
+          }
+        }
+      }
+    },
+    "Oculta este mensaje de error": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hides this error message"
+          }
+        }
+      }
+    },
+    "Opción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option"
+          }
+        }
+      }
+    },
+    "Organiza tus objetivos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Organize your goals"
+          }
+        }
+      }
+    },
+    "Otros Kits en curso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other Kits in progress"
+          }
+        }
+      }
+    },
+    "POPULAR": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "POPULAR"
+          }
+        }
+      }
+    },
+    "Para acceder a ciertas funciones, debes crear una cuenta (por ejemplo, mediante 'Sign in with Apple'). Eres responsable de mantener la confidencialidad de tu cuenta y de todas las actividades que ocurran bajo ella. Nos reservamos el derecho de suspender o eliminar tu cuenta si violas estos Términos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To use certain features, you must create an account (for example, with 'Sign in with Apple'). You are responsible for keeping your account confidential and for all activity under it. We reserve the right to suspend or delete your account if you violate these Terms."
+          }
+        }
+      }
+    },
+    "Para algo que harás de una vez, como una receta o un montaje.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For something you'll do in one go, like a recipe or an assembly."
+          }
+        }
+      }
+    },
+    "Para apuntes que no son de un paso concreto. La verás en el Registro del Kit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For notes that aren't about a specific step. You'll see it in the Kit's log."
+          }
+        }
+      }
+    },
+    "Para mantener el orden, se mueve 1 paso más": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To keep the order, 1 more step moves"
+          }
+        }
+      }
+    },
+    "Para mantener el orden, se mueven %lld pasos más": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To keep the order, %lld more steps move"
+          }
+        }
+      }
+    },
+    "Para mantener el orden, «%@» pasa al %@. El resto del plan no cambia.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To keep the order, “%@” moves to %@. The rest of the plan stays the same."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Para mantener el orden, «%1$@» pasa al %2$@. El resto del plan no cambia."
+          }
+        }
+      }
+    },
+    "Para proponerte los pasos, StepKit envía lo que escribas sobre tu objetivo a un servicio de inteligencia artificial de otra empresa, a través de nuestro servidor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To suggest steps, StepKit sends what you write about your goal through our server to an AI service run by another company."
+          }
+        }
+      }
+    },
+    "Parte de «%@». %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part of “%@”. %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Parte de «%1$@». %2$@"
+          }
+        }
+      }
+    },
+    "Partirla en tramos más pequeños": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break it into smaller chunks"
+          }
+        }
+      }
+    },
+    "Paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step"
+          }
+        }
+      }
+    },
+    "Paso %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld"
+          }
+        }
+      }
+    },
+    "Paso %lld · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Paso %1$lld · %2$@"
+          }
+        }
+      }
+    },
+    "Paso %lld · %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld · %lld min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Paso %1$lld · %2$lld min"
+          }
+        }
+      }
+    },
+    "Paso %lld: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Paso %1$lld: %2$@"
+          }
+        }
+      }
+    },
+    "Paso %lld: %@. %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld: %@. %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Paso %1$lld: %2$@. %3$@"
+          }
+        }
+      }
+    },
+    "Paso bloqueado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step blocked"
+          }
+        }
+      }
+    },
+    "Paso completado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step completed."
+          }
+        }
+      }
+    },
+    "Paso no encontrado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step not found"
+          }
+        }
+      }
+    },
+    "Paso nuevo · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New step · %@"
+          }
+        }
+      }
+    },
+    "Pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps"
+          }
+        }
+      }
+    },
+    "Pasos del plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan steps"
+          }
+        }
+      }
+    },
+    "Pasos sugeridos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggested steps"
+          }
+        }
+      }
+    },
+    "Pasos terminados · falta revisar el resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps done · result still to review"
+          }
+        }
+      }
+    },
+    "Pendiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending"
+          }
+        }
+      }
+    },
+    "Pendiente de resolver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To be resolved"
+          }
+        }
+      }
+    },
+    "Pensando…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thinking…"
+          }
+        }
+      }
+    },
+    "Pensar un cambio que decidirás tú": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Think through a change you'll decide on"
+          }
+        }
+      }
+    },
+    "Perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    },
+    "Permite cambiar el título y el indicador de éxito del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lets you change the Kit's title and success measure"
+          }
+        }
+      }
+    },
+    "Permite cambiar el título, las descripciones, la fecha y el tiempo del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lets you change the step's title, descriptions, date and time"
+          }
+        }
+      }
+    },
+    "Permitido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed"
+          }
+        }
+      }
+    },
+    "Permitir y preparar el plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow and prepare the plan"
+          }
+        }
+      }
+    },
+    "Plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan"
+          }
+        }
+      }
+    },
+    "Plan listo para revisar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan ready to review"
+          }
+        }
+      }
+    },
+    "Planificación": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planning"
+          }
+        }
+      }
+    },
+    "Planificación recomendada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recommended schedule"
+          }
+        }
+      }
+    },
+    "Plegar el teléfono no abre ningún formulario: guardas cuando quieras.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folding the phone doesn't open a form: save whenever you like."
+          }
+        }
+      }
+    },
+    "Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos sobre cambios significativos a través de la aplicación.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We may update this Privacy Policy from time to time. We'll notify you of significant changes in the app."
+          }
+        }
+      }
+    },
+    "Podemos modificar estos Términos en cualquier momento. Te notificaremos sobre cambios importantes a través de la Aplicación. El uso continuado de la Aplicación después de dichos cambios constituye tu aceptación de los nuevos Términos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We may change these Terms at any time. We'll notify you of important changes in the App. Continuing to use the App after such changes means you accept the new Terms."
+          }
+        }
+      }
+    },
+    "Podrás volver a entrar con tu Apple Account. Tus Kits se conservan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can sign back in with your Apple Account. Your Kits are kept."
+          }
+        }
+      }
+    },
+    "Política de Privacidad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy Policy"
+          }
+        }
+      }
+    },
+    "Política de privacidad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        }
+      }
+    },
+    "Por revisar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To review"
+          }
+        }
+      }
+    },
+    "Premium desbloquea acompanamiento continuo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premium unlocks ongoing support."
+          }
+        }
+      }
+    },
+    "Premium users don't see the indicator": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premium users don't see the indicator"
+          }
+        }
+      }
+    },
+    "Preparando": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing"
+          }
+        }
+      }
+    },
+    "Preparando los pasos...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing the steps..."
+          }
+        }
+      }
+    },
+    "Preparando tu plan con más cuidado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing your plan with extra care"
+          }
+        }
+      }
+    },
+    "Preparar plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepare plan"
+          }
+        }
+      }
+    },
+    "Privacidad de los Niños": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Children's Privacy"
+          }
+        }
+      }
+    },
+    "Procesando": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing"
+          }
+        }
+      }
+    },
+    "Procesando suscripción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing subscription"
+          }
+        }
+      }
+    },
+    "Procesando...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing..."
+          }
+        }
+      }
+    },
+    "Productividad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Productivity"
+          }
+        }
+      }
+    },
+    "Producto no disponible": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Product not available"
+          }
+        }
+      }
+    },
+    "Progreso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress"
+          }
+        }
+      }
+    },
+    "Progreso del kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit progress"
+          }
+        }
+      }
+    },
+    "Progreso del plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan progress"
+          }
+        }
+      }
+    },
+    "Progreso: %lld%%, KPI: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress: %lld%%, KPI: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Progreso: %1$lld%%, KPI: %2$@"
+          }
+        }
+      }
+    },
+    "Propuesta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proposal"
+          }
+        }
+      }
+    },
+    "Propuesta pendiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proposal pending"
+          }
+        }
+      }
+    },
+    "Proyecto funcionando": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Project up and running"
+          }
+        }
+      }
+    },
+    "Prueba con otro nombre de Kit, paso o nota.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try another Kit, step or note."
+          }
+        }
+      }
+    },
+    "Próximas sesiones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming sessions"
+          }
+        }
+      }
+    },
+    "Próximas sesiones (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming sessions (%lld)"
+          }
+        }
+      }
+    },
+    "Puedes cancelar: tu idea se conserva en el formulario.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can cancel: your idea is kept in the form."
+          }
+        }
+      }
+    },
+    "Puedes descartar cualquier propuesta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can discard any proposal"
+          }
+        }
+      }
+    },
+    "Puedes retirar el permiso en Perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can withdraw permission in Profile"
+          }
+        }
+      }
+    },
+    "Puedes seguir con tu Kit. Tu plan y tus avances siguen aquí.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can carry on with your Kit. Your plan and progress are still here."
+          }
+        }
+      }
+    },
+    "Puedes seguir tu plan sin ayuda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can follow your plan without help"
+          }
+        }
+      }
+    },
+    "Punto de partida (opcional)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting point (optional)"
+          }
+        }
+      }
+    },
+    "Página %lld de %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page %lld of %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Página %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Queda en pausa: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On hold: %@"
+          }
+        }
+      }
+    },
+    "Quiero cambiar la fecha objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I want to change the target date"
+          }
+        }
+      }
+    },
+    "Quiero cambiar la fecha objetivo de %@. ¿Qué pasos tendría que mover?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I want to change the target date of %@. Which steps would I need to move?"
+          }
+        }
+      }
+    },
+    "Quitar la sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the session"
+          }
+        }
+      }
+    },
+    "Quitar o juntar pasos sin perder el resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop or merge steps without losing the result"
+          }
+        }
+      }
+    },
+    "Qué quieres hacer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do you want to do"
+          }
+        }
+      }
+    },
+    "Qué se envía": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's sent"
+          }
+        }
+      }
+    },
+    "Qué te frena": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's holding you back"
+          }
+        }
+      }
+    },
+    "Qué te puede frenar (opcional)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What might hold you back (optional)"
+          }
+        }
+      }
+    },
+    "Qué verás aquí": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you'll see here"
+          }
+        }
+      }
+    },
+    "Reabrir resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reopen result"
+          }
+        }
+      }
+    },
+    "Recordar antes de cada paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind me before each step"
+          }
+        }
+      }
+    },
+    "Recordatorio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder"
+          }
+        }
+      }
+    },
+    "Recordatorios": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
+          }
+        }
+      }
+    },
+    "Recordatorios de StepKit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit reminders"
+          }
+        }
+      }
+    },
+    "Recordatorios personalizados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personalized reminders"
+          }
+        }
+      }
+    },
+    "Recordármelo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind me"
+          }
+        }
+      }
+    },
+    "Recupera el hilo cuando vuelvas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick up the thread when you come back"
+          }
+        }
+      }
+    },
+    "Recuperar el hilo con tu último avance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick up the thread with your last progress"
+          }
+        }
+      }
+    },
+    "Registro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log"
+          }
+        }
+      }
+    },
+    "Reintentar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        }
+      }
+    },
+    "Requiere StepKit Pro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requires StepKit Pro"
+          }
+        }
+      }
+    },
+    "Reservar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Book"
+          }
+        }
+      }
+    },
+    "Reservar este día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Book this day"
+          }
+        }
+      }
+    },
+    "Reservar tiempo no completa el paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Booking time doesn't complete the step."
+          }
+        }
+      }
+    },
+    "Resolver bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolve blocker"
+          }
+        }
+      }
+    },
+    "Respuesta inválida del servidor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid server response"
+          }
+        }
+      }
+    },
+    "Restaura las compras anteriores realizadas desde este dispositivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restores previous purchases made from this device"
+          }
+        }
+      }
+    },
+    "Restaurando…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restoring…"
+          }
+        }
+      }
+    },
+    "Restaurar compras": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore purchases"
+          }
+        }
+      }
+    },
+    "Restaurar demo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset demo"
+          }
+        }
+      }
+    },
+    "Resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Result"
+          }
+        }
+      }
+    },
+    "Resultado confirmado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Result confirmed"
+          }
+        }
+      }
+    },
+    "Resultado por confirmar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Result to confirm"
+          }
+        }
+      }
+    },
+    "Resultado sin confirmar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Result not confirmed"
+          }
+        }
+      }
+    },
+    "Retoma con un paso concreto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick up with a concrete step"
+          }
+        }
+      }
+    },
+    "Retrasar la fecha deseada una semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Push the target date back a week"
+          }
+        }
+      }
+    },
+    "Revisa el plan antes de empezar. Podrás editar los pasos después.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review the plan before starting. You can edit the steps later."
+          }
+        }
+      }
+    },
+    "Revisa si tienes lo que buscabas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check whether you have what you wanted"
+          }
+        }
+      }
+    },
+    "Revisar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review"
+          }
+        }
+      }
+    },
+    "Revisar el plan con lo que ya sabes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review the plan with what you know now"
+          }
+        }
+      }
+    },
+    "Revisar resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review result"
+          }
+        }
+      }
+    },
+    "Revisar sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review session"
+          }
+        }
+      }
+    },
+    "Revisar un bloqueo sin perder lo hecho": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review a blocker without losing what you've done"
+          }
+        }
+      }
+    },
+    "Revisarás el plan antes de aceptarlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll review the plan before accepting it."
+          }
+        }
+      }
+    },
+    "Revisas cada plan antes de aceptarlo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You review every plan before accepting it"
+          }
+        }
+      }
+    },
+    "Revisas cualquier plan o propuesta antes de aplicarlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You review any plan or proposal before it's applied."
+          }
+        }
+      }
+    },
+    "S%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "W%lld"
+          }
+        }
+      }
+    },
+    "Sabrás que está listo cuando": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll know it's done when"
+          }
+        }
+      }
+    },
+    "Saltar y crear el plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip and create the plan"
+          }
+        }
+      }
+    },
+    "Salud": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health"
+          }
+        }
+      }
+    },
+    "Se borrarán tus Kits, avances y sesiones de esta cuenta, aquí y en el servidor de pruebas. Después se cerrará la sesión y verás la bienvenida.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Kits, progress and sessions for this account will be erased here and on the test server. Then you'll be signed out and see the welcome screen."
+          }
+        }
+      }
+    },
+    "Se divide en: ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split into: "
+          }
+        }
+      }
+    },
+    "Se pedirá al crear un Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll be asked when creating a Kit"
+          }
+        }
+      }
+    },
+    "Se prefiere usar Sign in with Apple. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Apple is preferred. Try again."
+          }
+        }
+      }
+    },
+    "Se quita del plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed from the plan"
+          }
+        }
+      }
+    },
+    "Seguridad de los Datos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data Security"
+          }
+        }
+      }
+    },
+    "Selecciona un Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a Kit"
+          }
+        }
+      }
+    },
+    "Semana %lld de %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week %lld of %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Semana %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Sesiones cumplidas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessions done"
+          }
+        }
+      }
+    },
+    "Sesiones reservadas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Booked sessions"
+          }
+        }
+      }
+    },
+    "Sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session"
+          }
+        }
+      }
+    },
+    "Sesión de un Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit session"
+          }
+        }
+      }
+    },
+    "Sesión iniciada con Apple": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in with Apple"
+          }
+        }
+      }
+    },
+    "Sesión propia": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Own session"
+          }
+        }
+      }
+    },
+    "Si la nueva fecha alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho %lld pasos al día.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If the new date reaches the next steps, they move with it: same order and at most %lld steps a day."
+          }
+        }
+      }
+    },
+    "Si tienes preguntas sobre esta política, contáctanos en support@stepkit.app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you have questions about this policy, contact us at support@stepkit.app."
+          }
+        }
+      }
+    },
+    "Si tienes preguntas sobre estos Términos, contáctanos en support@stepkit.app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you have questions about these Terms, contact us at support@stepkit.app."
+          }
+        }
+      }
+    },
+    "Sigo sin problema": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm doing fine"
+          }
+        }
+      }
+    },
+    "Siguiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "Siguiente: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next: %@"
+          }
+        }
+      }
+    },
+    "Sin anotaciones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No notes"
+          }
+        }
+      }
+    },
+    "Sin detallar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No details"
+          }
+        }
+      }
+    },
+    "Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without this permission you can keep using StepKit, but not create plans with AI."
+          }
+        }
+      }
+    },
+    "Sin nota.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No note."
+          }
+        }
+      }
+    },
+    "Sincronizacion en la nube": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloud sync"
+          }
+        }
+      }
+    },
+    "Solo cambia este paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only this step changes"
+          }
+        }
+      }
+    },
+    "Solo cambia este paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only this step changes."
+          }
+        }
+      }
+    },
+    "Solo cambia este paso. El resto del plan sigue igual.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only this step changes. The rest of the plan stays the same."
+          }
+        }
+      }
+    },
+    "Solo en versiones de prueba. Borra tus Kits de esta cuenta, cierra la sesión y vuelve a la bienvenida para enseñar la app desde cero.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test builds only. Erases your Kits for this account, signs you out and returns to the welcome screen to show the app from scratch."
+          }
+        }
+      }
+    },
+    "Step": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step"
+          }
+        }
+      }
+    },
+    "StepKit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit"
+          }
+        }
+      }
+    },
+    "StepKit Pro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit Pro"
+          }
+        }
+      }
+    },
+    "StepKit es una herramienta diseñada para ayudarte a definir, gestionar y alcanzar tus objetivos personales mediante el desglose de tareas paso a paso. La Aplicación puede utilizar inteligencia artificial (IA) para generar sugerencias y planes. Estas sugerencias son generadas automáticamente y deben ser evaluadas por ti antes de seguirlas. StepKit no ofrece asesoramiento profesional (médico, legal, financiero, etc.).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit is a tool designed to help you define, manage and reach your personal goals by breaking them down step by step. The App may use artificial intelligence (AI) to generate suggestions and plans. These suggestions are generated automatically and you should evaluate them before following them. StepKit does not provide professional advice (medical, legal, financial, etc.)."
+          }
+        }
+      }
+    },
+    "Sugerencia": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggestion"
+          }
+        }
+      }
+    },
+    "Sugerencias": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggestions"
+          }
+        }
+      }
+    },
+    "Suscripcion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscription"
+          }
+        }
+      }
+    },
+    "Suscripcion activada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscription active"
+          }
+        }
+      }
+    },
+    "Suscripciones y Pagos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscriptions and Payments"
+          }
+        }
+      }
+    },
+    "Suscripción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscription"
+          }
+        }
+      }
+    },
+    "Te propongo un ajuste del plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Here's a suggested change to the plan."
+          }
+        }
+      }
+    },
+    "Tengo 15 minutos. ¿Qué avance concreto puedo hacer ahora en %@ de %@?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have 15 minutes. What concrete progress can I make now on %@ of %@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Tengo 15 minutos. ¿Qué avance concreto puedo hacer ahora en %1$@ de %2$@?"
+          }
+        }
+      }
+    },
+    "Tengo menos tiempo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have less time"
+          }
+        }
+      }
+    },
+    "Terminados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finished"
+          }
+        }
+      }
+    },
+    "Tiempo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        }
+      }
+    },
+    "Tiempo disponible": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time available"
+          }
+        }
+      }
+    },
+    "Tiempo estimado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimated time"
+          }
+        }
+      }
+    },
+    "Tiempo que encaja contigo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time that fits you"
+          }
+        }
+      }
+    },
+    "Tipo de objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal type"
+          }
+        }
+      }
+    },
+    "Toca dos veces para %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to %@"
+          }
+        }
+      }
+    },
+    "Toca dos veces para abrir esta configuración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to open this setting"
+          }
+        }
+      }
+    },
+    "Toca dos veces para abrir los detalles del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to open the step's details"
+          }
+        }
+      }
+    },
+    "Toca dos veces para cambiar el estado de completado del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to toggle whether the step is completed"
+          }
+        }
+      }
+    },
+    "Toca dos veces para seleccionar este kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to select this Kit"
+          }
+        }
+      }
+    },
+    "Toca dos veces para seleccionar este plan de suscripción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to select this subscription plan"
+          }
+        }
+      }
+    },
+    "Toca dos veces para ver los detalles del kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to see the Kit's details"
+          }
+        }
+      }
+    },
+    "Todos los pasos hechos, falta revisar el resultado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All steps done, result still to review"
+          }
+        }
+      }
+    },
+    "Tu avance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress"
+          }
+        }
+      }
+    },
+    "Tu avance se guarda igualmente. El paso quedará bloqueado hasta que lo resuelvas.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress is still saved. The step stays blocked until you resolve it."
+          }
+        }
+      }
+    },
+    "Tu avance se guarda y el paso seguirá en curso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress is saved and the step stays in progress."
+          }
+        }
+      }
+    },
+    "Tu avance sigue guardado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress is still saved."
+          }
+        }
+      }
+    },
+    "Tu avance y la fecha prevista del Kit se conservan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress and the Kit's expected date are kept."
+          }
+        }
+      }
+    },
+    "Tu control": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're in control"
+          }
+        }
+      }
+    },
+    "Tu idea sigue aquí": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your idea is still here"
+          }
+        }
+      }
+    },
+    "Tu objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your goal"
+          }
+        }
+      }
+    },
+    "Tu objetivo y la fecha que quieres": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your goal and the date you want"
+          }
+        }
+      }
+    },
+    "Tu perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your profile"
+          }
+        }
+      }
+    },
+    "Tu plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your plan"
+          }
+        }
+      }
+    },
+    "Tu plan empezó aquí": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your plan started here"
+          }
+        }
+      }
+    },
+    "Tu primer paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your first step"
+          }
+        }
+      }
+    },
+    "Tu recorrido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your journey"
+          }
+        }
+      }
+    },
+    "Tu recorrido en este paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your journey on this step"
+          }
+        }
+      }
+    },
+    "Tu sesión ha expirado. Por favor, vuelve a iniciar sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your session has expired. Please sign in again"
+          }
+        }
+      }
+    },
+    "Tu suscripcion a StepKit Pro esta activa. Disfruta de todas las funciones premium.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your StepKit Pro subscription is active. Enjoy every premium feature."
+          }
+        }
+      }
+    },
+    "Tu tiempo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your time"
+          }
+        }
+      }
+    },
+    "Tu último avance": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your last progress"
+          }
+        }
+      }
+    },
+    "Tus Derechos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Rights"
+          }
+        }
+      }
+    },
+    "Tus avances": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress"
+          }
+        }
+      }
+    },
+    "Tus sesiones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your sessions"
+          }
+        }
+      }
+    },
+    "Términos de Uso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terms of Use"
+          }
+        }
+      }
+    },
+    "Términos de Uso de StepKit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit Terms of Use"
+          }
+        }
+      }
+    },
+    "Términos de uso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terms of use"
+          }
+        }
+      }
+    },
+    "Título del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit title"
+          }
+        }
+      }
+    },
+    "Título del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step title"
+          }
+        }
+      }
+    },
+    "Tú conservas los derechos sobre el contenido que creas en la Aplicación. Sin embargo, al usar la Aplicación, nos otorgas una licencia para usar, almacenar y procesar dicho contenido únicamente para proporcionarte el servicio. El contenido generado por la IA de StepKit se proporciona para tu uso personal.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You keep the rights to the content you create in the App. However, by using the App you grant us a license to use, store and process that content solely to provide the service to you. Content generated by StepKit's AI is provided for your personal use."
+          }
+        }
+      }
+    },
+    "Tú decides cómo\nrecibir ayuda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You decide how\nto get help"
+          }
+        }
+      }
+    },
+    "Tú: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You: %@"
+          }
+        }
+      }
+    },
+    "Un avance concreto para ahora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One concrete bit of progress for now"
+          }
+        }
+      }
+    },
+    "Un objetivo grande.\nUn primer paso claro.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A big goal.\nA clear first step."
+          }
+        }
+      }
+    },
+    "Un paso claro para volver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A clear step to come back to"
+          }
+        }
+      }
+    },
+    "Un plan claro. Un paso posible.\nY un lugar al que volver.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A clear plan. A doable step.\nAnd a place to come back to."
+          }
+        }
+      }
+    },
+    "Un plan que puedes ajustar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A plan you can adjust"
+          }
+        }
+      }
+    },
+    "Un rato para ti que no forma parte de ningún Kit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time for yourself that isn't part of any Kit."
+          }
+        }
+      }
+    },
+    "Una vez por semana, durante %lld semanas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once a week for %lld weeks"
+          }
+        }
+      }
+    },
+    "Usa Apple Intelligence. Las conversaciones no salen del iPhone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses Apple Intelligence. Conversations never leave your iPhone."
+          }
+        }
+      }
+    },
+    "Uso Prohibido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prohibited Use"
+          }
+        }
+      }
+    },
+    "Uso de IA": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI usage"
+          }
+        }
+      }
+    },
+    "Uso de Inteligencia Artificial Externa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use of External Artificial Intelligence"
+          }
+        }
+      }
+    },
+    "Uso de la Información": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How We Use Information"
+          }
+        }
+      }
+    },
+    "Validando sesión…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking your session…"
+          }
+        }
+      }
+    },
+    "Vencido hace %lld días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overdue by %lld days"
+          }
+        }
+      }
+    },
+    "Ver el resumen de tu recorrido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See a summary of your journey"
+          }
+        }
+      }
+    },
+    "Ver menos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show less"
+          }
+        }
+      }
+    },
+    "Ver mis Kits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See my Kits"
+          }
+        }
+      }
+    },
+    "Ver qué pasos se mueven y por qué": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See which steps move and why"
+          }
+        }
+      }
+    },
+    "Ver todos (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See all (%lld)"
+          }
+        }
+      }
+    },
+    "Versión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        }
+      }
+    },
+    "Vinculada al paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linked to the step"
+          }
+        }
+      }
+    },
+    "Vista": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View"
+          }
+        }
+      }
+    },
+    "Volver a Mis Kits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to My Kits"
+          }
+        }
+      }
+    },
+    "Volver a mi idea": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to my idea"
+          }
+        }
+      }
+    },
+    "Volver al plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to the plan"
+          }
+        }
+      }
+    },
+    "Vuelve con un paso claro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Come back to a clear step"
+          }
+        }
+      }
+    },
+    "Ya está resuelto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's resolved"
+          }
+        }
+      }
+    },
+    "Ya está resuelto: resolver bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's resolved: resolve blocker"
+          }
+        }
+      }
+    },
+    "Ya tienes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You now have"
+          }
+        }
+      }
+    },
+    "avance anotado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "progress note"
+          }
+        }
+      }
+    },
+    "avances anotados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "progress notes"
+          }
+        }
+      }
+    },
+    "bloqueo superado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "blocker overcome"
+          }
+        }
+      }
+    },
+    "bloqueos superados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "blockers overcome"
+          }
+        }
+      }
+    },
+    "de %lld previstos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "of %lld planned"
+          }
+        }
+      }
+    },
+    "de trabajo en tus pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "of work on your steps"
+          }
+        }
+      }
+    },
+    "desde que empezaste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "since you started"
+          }
+        }
+      }
+    },
+    "el siguiente paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the next step"
+          }
+        }
+      }
+    },
+    "mi Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "my Kit"
+          }
+        }
+      }
+    },
+    "paso completado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "step completed"
+          }
+        }
+      }
+    },
+    "pasos completados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "steps completed"
+          }
+        }
+      }
+    },
+    "pendiente de resolver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "to be resolved"
+          }
+        }
+      }
+    },
+    "sesiones reservadas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "booked sessions"
+          }
+        }
+      }
+    },
+    "sesión reservada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "booked session"
+          }
+        }
+      }
+    },
+    "tu sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "your session"
+          }
+        }
+      }
+    },
+    "y": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "and"
+          }
+        }
+      }
+    },
+    "¡Kit creado!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit created!"
+          }
+        }
+      }
+    },
+    "¡Paso completado!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step completed!"
+          }
+        }
+      }
+    },
+    "«%@»": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@”"
+          }
+        }
+      }
+    },
+    "«%@» (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” (%@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "«%1$@» (%2$@)"
+          }
+        }
+      }
+    },
+    "«%@» (%lld min)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” (%lld min)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "«%1$@» (%2$lld min)"
+          }
+        }
+      }
+    },
+    "«%@» → «%@»": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” → “%@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "«%1$@» → «%2$@»"
+          }
+        }
+      }
+    },
+    "¿Cuáles son las preguntas más frecuentes?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What are the most common questions?"
+          }
+        }
+      }
+    },
+    "¿Cómo vas con este paso?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How's this step going?"
+          }
+        }
+      }
+    },
+    "¿Cómo voy con mi progreso?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How am I doing?"
+          }
+        }
+      }
+    },
+    "¿Dónde lo dejamos?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where did we leave off?"
+          }
+        }
+      }
+    },
+    "¿Dónde lo dejé en %@? Resume mi último avance y dime el siguiente paso concreto.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where did I leave off in %@? Summarize my last progress and tell me the next concrete step."
+          }
+        }
+      }
+    },
+    "¿Eliminar este kit?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this Kit?"
+          }
+        }
+      }
+    },
+    "¿Eliminar este registro?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this entry?"
+          }
+        }
+      }
+    },
+    "¿En qué te ayudo con el Kit?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How can I help with the Kit?"
+          }
+        }
+      }
+    },
+    "¿Por dónde seguimos?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where shall we pick up?"
+          }
+        }
+      }
+    },
+    "¿Puedes seguir?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can you keep going?"
+          }
+        }
+      }
+    },
+    "¿Qué has hecho hoy?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What did you do today?"
+          }
+        }
+      }
+    },
+    "¿Qué necesitas ahora?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do you need now?"
+          }
+        }
+      }
+    },
+    "¿Qué puedo avanzar en 15 minutos?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What can I get done in 15 minutes?"
+          }
+        }
+      }
+    },
+    "¿Qué quieres conseguir?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do you want to achieve?"
+          }
+        }
+      }
+    },
+    "¿Qué te ayudaría con este paso?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What would help with this step?"
+          }
+        }
+      }
+    },
+    "¿Qué te frena? Ej.: «Me falta el permiso del cliente»": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's holding you back? E.g.: “Still waiting for the client's permission”"
+          }
+        }
+      }
+    },
+    "¿Qué vas a hacer?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What are you going to do?"
+          }
+        }
+      }
+    },
+    "¿Restaurar la demo?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset the demo?"
+          }
+        }
+      }
+    },
+    "¿Sigue teniendo sentido el plan de %@ con lo que llevo hecho? Sé breve.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Does the plan for %@ still make sense given what I've done? Keep it short."
+          }
+        }
+      }
+    },
+    "¿Sigue teniendo sentido este plan?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Does this plan still make sense?"
+          }
+        }
+      }
+    },
+    "¿Ya tienes el resultado que buscabas?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do you have the result you wanted?"
+          }
+        }
+      }
+    },
+    "Última actualización: Diciembre 2025": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last updated: December 2025"
+          }
+        }
+      }
+    },
+    "Último avance · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last progress · %@"
+          }
+        }
+      }
+    },
+    "•": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "•"
+          }
+        }
+      }
+    },
+    "≈ %lld h": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %lld h"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -14,7 +14,7 @@ struct StepDetailHeaderView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Número de paso
-            Text("Paso \(stepNumber)")
+            Text(String(localized: "Paso \(stepNumber)"))
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundColor(.accentColor)

@@ -196,7 +196,7 @@ struct BookSessionSheet: View {
                                 IconChip(symbol: Symbols.kits, color: .accentColor, size: 30)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(candidate.title).foregroundStyle(.primary)
-                                    Text("\(candidate.completedStepCount) de \(candidate.activeStepCount) pasos")
+                                    Text(String(localized: "\(candidate.completedStepCount) de \(candidate.activeStepCount) pasos"))
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer(minLength: 0)
@@ -272,7 +272,7 @@ struct BookSessionSheet: View {
 
     private func stepRow(_ candidate: StepEntity) -> some View {
         HStack(spacing: 12) {
-            Text("\(kit?.position(of: candidate) ?? 0)")
+            Text(String(localized: "\(kit?.position(of: candidate) ?? 0)"))
                 .font(.caption.bold().monospacedDigit())
                 .foregroundStyle(candidate.id == stepID ? .white : Color.accentColor)
                 .frame(width: 26, height: 26)
@@ -281,7 +281,7 @@ struct BookSessionSheet: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(candidate.stepTitle).foregroundStyle(.primary).lineLimit(2)
                 HStack(spacing: 8) {
-                    Label("\(candidate.estimateMinutes) min", systemImage: Symbols.time)
+                    Label(String(localized: "\(candidate.estimateMinutes) min"), systemImage: Symbols.time)
                         .foregroundStyle(MetaTint.time)
                     if candidate.id == kit?.nextStep?.id {
                         Text("Siguiente").foregroundStyle(.secondary)
@@ -414,20 +414,20 @@ struct ReviewSessionSheet: View {
             Form {
                 Section {
                     if session.isFree {
-                        LabeledContent("Sesión", value: session.title ?? "Sesión propia")
+                        LabeledContent("Sesión", value: session.title ?? String(localized: "Sesión propia"))
                     } else if let step, let kit {
-                        LabeledContent("Paso \(kit.position(of: step))", value: step.stepTitle)
+                        LabeledContent(String(localized: "Paso \(kit.position(of: step))"), value: step.stepTitle)
                     } else if let kit {
                         LabeledContent("Kit", value: kit.title)
                     }
-                    LabeledContent("Era", value: "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())) · \(session.durationMinutes) min")
+                    LabeledContent("Era", value: String(localized: "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())) · \(session.durationMinutes) min"))
                 } footer: {
                     Text("Tu avance y la fecha prevista del Kit se conservan.")
                 }
                 Section("Qué quieres hacer") {
                     Picker("Opción", selection: $choice) {
                         Text("Moverla").tag(Choice.move)
-                        Text(session.startsAt < Date() ? "Mantenerla como pasada" : "Mantenerla").tag(Choice.keep)
+                        Text(session.startsAt < Date() ? String(localized: "Mantenerla como pasada") : String(localized: "Mantenerla")).tag(Choice.keep)
                         Text("Quitar la sesión").tag(Choice.remove)
                     }
                     .pickerStyle(.inline)

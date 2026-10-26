@@ -128,7 +128,7 @@ struct KitView: View {
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
                 
-                Text("\(steps.filter { $0.isCompleted }.count) de \(steps.count) completados")
+                Text(String(localized: "\(steps.filter { $0.isCompleted }.count) de \(steps.count) completados"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -205,14 +205,14 @@ struct KitView: View {
     // MARK: - Helpers
     private func formatMinutes(_ minutes: Int) -> String {
         if minutes < 60 {
-            return "\(minutes) min"
+            return String(localized: "\(minutes) min")
         } else {
             let hours = minutes / 60
             let remainingMinutes = minutes % 60
             if remainingMinutes == 0 {
                 return "\(hours) h"
             } else {
-                return "\(hours)h \(remainingMinutes)min"
+                return String(localized: "\(hours)h \(remainingMinutes)min")
             }
         }
     }

@@ -76,40 +76,40 @@ struct PremiumFeaturesList: View {
                 FeatureBenefitRow(
                     icon: "infinity",
                     iconColor: .accentColor,
-                    title: "Objetivos ilimitados",
-                    description: "Crea tantos objetivos como quieras",
+                    title: String(localized: "Objetivos ilimitados"),
+                    description: String(localized: "Crea tantos objetivos como quieras"),
                     showDivider: true
                 )
 
                 FeatureBenefitRow(
                     icon: "sparkles",
                     iconColor: .purple,
-                    title: "IA sin limites",
-                    description: "Genera planes con IA de forma ilimitada",
+                    title: String(localized: "IA sin limites"),
+                    description: String(localized: "Genera planes con IA de forma ilimitada"),
                     showDivider: true
                 )
 
                 FeatureBenefitRow(
                     icon: "icloud",
                     iconColor: .accentHighlight,
-                    title: "Sincronizacion en la nube",
-                    description: "Accede desde cualquier dispositivo",
+                    title: String(localized: "Sincronizacion en la nube"),
+                    description: String(localized: "Accede desde cualquier dispositivo"),
                     showDivider: true
                 )
 
                 FeatureBenefitRow(
                     icon: "bell.badge",
                     iconColor: .orange,
-                    title: "Recordatorios personalizados",
-                    description: "Notificaciones inteligentes adaptadas",
+                    title: String(localized: "Recordatorios personalizados"),
+                    description: String(localized: "Notificaciones inteligentes adaptadas"),
                     showDivider: true
                 )
 
                 FeatureBenefitRow(
                     icon: "chart.line.uptrend.xyaxis",
                     iconColor: .green,
-                    title: "Analisis avanzado",
-                    description: "Estadisticas detalladas de tu progreso",
+                    title: String(localized: "Analisis avanzado"),
+                    description: String(localized: "Estadisticas detalladas de tu progreso"),
                     showDivider: false
                 )
             }

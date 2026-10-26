@@ -127,7 +127,7 @@ struct StepEditSheetView: View {
         } header: {
             Text("Planificación")
         } footer: {
-            Text("Si la nueva fecha alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho \(PlanReschedule.maxStepsPerDay) pasos al día.")
+            Text(String(localized: "Si la nueva fecha alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho \(PlanReschedule.maxStepsPerDay) pasos al día."))
         }
     }
 
@@ -198,9 +198,9 @@ private struct ReschedulePreview: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label {
-                Text(others == 0 ? "Solo cambia este paso" :
-                        others == 1 ? "Para mantener el orden, se mueve 1 paso más" :
-                        "Para mantener el orden, se mueven \(others) pasos más")
+                Text(others == 0 ? String(localized: "Solo cambia este paso") :
+                        others == 1 ? String(localized: "Para mantener el orden, se mueve 1 paso más") :
+                        String(localized: "Para mantener el orden, se mueven \(others) pasos más"))
                     .font(.subheadline.weight(.semibold))
                     .contentTransition(.numericText())
             } icon: {
