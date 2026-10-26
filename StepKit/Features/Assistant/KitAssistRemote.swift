@@ -308,21 +308,8 @@ enum RemoteProposalBuilder {
 
         // Efecto dominó: el orden del plan se mantiene y ningún día pasa del máximo de pasos.
         if !newDates.isEmpty {
-            var previous: Date?
-            var perDay: [DateComponents: Int] = [:]
-            for s in steps where !s.isCompleted {
-                guard var current = newDates[s.id] ?? s.suggestedDeadline else { continue }
-                if let previous, current < previous { current = previous }
-                while perDay[DateComponents.day(of: current), default: 0] >= maxStepsPerDay,
-                      let next = calendar.date(byAdding: .day, value: 1, to: current) {
-                    current = next
-                }
-                perDay[DateComponents.day(of: current), default: 0] += 1
-                if let original = s.suggestedDeadline, !calendar.isDate(original, inSameDayAs: current) {
-                    newDates[s.id] = current
-                }
-                previous = current
-            }
+            newDates = PlanReschedule.dates(for: steps, overrides: newDates, maxStepsPerDay: maxStepsPerDay,
+                                            calendar: calendar)
             for s in steps {
                 guard let to = newDates[s.id], let from = s.suggestedDeadline,
                       !calendar.isDate(from, inSameDayAs: to) else { continue }

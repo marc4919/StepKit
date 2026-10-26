@@ -97,7 +97,7 @@ struct StepDetailView: View {
                     showingEditor = true
                 }
                 .accessibilityIdentifier("step.edit")
-                .accessibilityHint("Permite cambiar el título y las descripciones del paso")
+                .accessibilityHint("Permite cambiar el título, las descripciones, la fecha y el tiempo del paso")
             }
         }
         .safeAreaInset(edge: .bottom) {

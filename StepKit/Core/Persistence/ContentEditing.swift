@@ -84,12 +84,18 @@ struct StepEditDraft: Equatable {
     var title: String
     var shortDescription: String
     var longDescription: String
+    /// Fecha y minutos del paso; nil si no se editan.
+    var deadline: Date?
+    var estimateMinutes: Int?
     private let baselineUpdatedAt: Date?
 
-    init(title: String, shortDescription: String, longDescription: String) {
+    init(title: String, shortDescription: String, longDescription: String,
+         deadline: Date? = nil, estimateMinutes: Int? = nil) {
         self.title = title
         self.shortDescription = shortDescription
         self.longDescription = longDescription
+        self.deadline = deadline
+        self.estimateMinutes = estimateMinutes
         self.baselineUpdatedAt = nil
     }
 
@@ -97,7 +103,16 @@ struct StepEditDraft: Equatable {
         self.title = step.stepTitle
         self.shortDescription = step.descriptionShort
         self.longDescription = step.descriptionLong
+        self.deadline = step.suggestedDeadline
+        self.estimateMinutes = step.estimateMinutes
         self.baselineUpdatedAt = step.updatedAt
+    }
+
+    /// Cambia la fecha (día distinto) respecto al paso guardado.
+    func changesDate(of step: StepEntity) -> Bool {
+        guard let deadline else { return false }
+        guard let current = step.suggestedDeadline else { return true }
+        return !Calendar.current.isDate(deadline, inSameDayAs: current)
     }
 
     var isValid: Bool {
@@ -108,6 +123,8 @@ struct StepEditDraft: Equatable {
         normalizedTitle != step.stepTitle
             || normalizedShortDescription != step.descriptionShort
             || normalizedLongDescription != step.descriptionLong
+            || changesDate(of: step)
+            || (estimateMinutes.map { $0 != step.estimateMinutes } ?? false)
     }
 
     @discardableResult
@@ -144,6 +161,8 @@ struct StepEditDraft: Equatable {
         step.stepTitle = normalizedTitle
         step.descriptionShort = normalizedShortDescription
         step.descriptionLong = normalizedLongDescription
+        if changesDate(of: step) { step.suggestedDeadline = deadline }
+        if let estimateMinutes { step.estimateMinutes = estimateMinutes }
         step.markModified(at: date)
         return true
     }
