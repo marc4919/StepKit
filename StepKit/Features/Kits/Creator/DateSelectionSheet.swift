@@ -72,7 +72,7 @@ struct DateSelectionSheet: View {
                             .font(.subheadline)
                             .fontWeight(.semibold)
 
-                        Text(daysRemaining == 0 ? "Hoy" : "En \(daysRemaining) días")
+                        Text(daysRemaining == 0 ? String(localized: "Hoy") : String(localized: "En \(daysRemaining) días"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

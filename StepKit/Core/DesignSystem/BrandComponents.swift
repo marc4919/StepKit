@@ -170,7 +170,7 @@ struct ProgressRing: View {
         .frame(width: size * min(scale, 1.6), height: size * min(scale, 1.6))
         .accessibilityElement()
         .accessibilityLabel("Progreso")
-        .accessibilityValue("\(done) de \(total) pasos completados")
+        .accessibilityValue(String(localized: "\(done) de \(total) pasos completados"))
     }
 }
 
@@ -500,5 +500,70 @@ enum TwoColumnLayout {
     /// Con el Duo abierto en vertical la pantalla es casi cuadrada y una sola columna, como cerrado, se lee mejor.
     static func fits(_ size: CGSize) -> Bool {
         size.width >= 700 && size.width > size.height
+    }
+}
+
+// MARK: - Márgenes equilibrados
+
+/// En el iPhone Duo abierto en horizontal, la hora y las pestañas ocupan una franja a la derecha.
+/// Ese hueco solo existe en un lado, así que el contenido se veía desplazado a la izquierda.
+/// Este modificador añade al lado contrario el mismo margen para que el bloque quede centrado en la pantalla.
+struct BalancedHorizontalSafeArea: ViewModifier {
+    @State private var insets = EdgeInsets()
+    @State private var landscape = false
+
+    func body(content: Content) -> some View {
+        // Solo en horizontal y solo para la franja del sistema (unos 60–90 pt). En una columna de
+        // detalle junto al panel lateral la diferencia puede ser enorme y aplastaba el contenido.
+        let difference = insets.trailing - insets.leading
+        let applies = landscape && abs(difference) <= 120
+        let extraLeading = applies ? max(0, difference) : 0
+        let extraTrailing = applies ? max(0, -difference) : 0
+        content
+            .padding(.leading, extraLeading)
+            .padding(.trailing, extraTrailing)
+            .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
+            .onGeometryChange(for: Bool.self) { $0.size.width > $0.size.height } action: { landscape = $0 }
+    }
+}
+
+extension View {
+    func balancedHorizontalSafeArea() -> some View {
+        modifier(BalancedHorizontalSafeArea())
+    }
+}
+
+// MARK: - Respuesta táctil
+
+/// Tarjeta pulsable: se hunde un poco al tocarla y vibra suave al soltar, para que se note la elección.
+struct PressableCardStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in !pressed }
+    }
+}
+
+/// Inserta su contenido tras un retardo (p. ej. una propuesta cuando termina de escribirse la respuesta).
+/// Hasta entonces no ocupa sitio, para que la conversación no salte al final antes de tiempo.
+struct DelayedReveal<Content: View>: View {
+    let delay: Double
+    @ViewBuilder let content: () -> Content
+    @State private var shown = false
+
+    var body: some View {
+        // Un contenedor real (no Group): un Group vacío no lleva el `.task` a ningún sitio y nunca se mostraría.
+        VStack(alignment: .leading, spacing: 0) {
+            if shown {
+                content().transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .task {
+            guard delay > 0 else { shown = true; return }
+            try? await Task.sleep(for: .seconds(delay))
+            withAnimation(.smooth(duration: 0.45)) { shown = true }
+        }
     }
 }

@@ -189,6 +189,7 @@ struct CalendarPlusView: View {
                     upcomingSection
                 }
             }
+            .balancedHorizontalSafeArea()
             .scrollContentBackground(.hidden)
             .background(alignment: .top) { BrandGlow() }
             .background(Color(.systemGroupedBackground))
@@ -217,7 +218,7 @@ struct CalendarPlusView: View {
             Section {
                 NavigationLink(value: CalendarRoute.upcomingSessions) {
                     Label {
-                        Text("Próximas sesiones (\(upcomingSessions.count))")
+                        Text(String(localized: "Todo lo reservado (\(upcomingSessions.count))"))
                     } icon: {
                         Image(systemName: Symbols.session).foregroundStyle(.tint)
                     }
@@ -270,12 +271,12 @@ struct CalendarPlusView: View {
                 .padding(.vertical, 6)
             }
             Section("Qué verás aquí") {
-                legendRow(symbol: "circle.fill", title: "Sesiones reservadas",
-                          detail: "El tiempo que apartas para avanzar. Son tu compromiso.")
-                legendRow(symbol: "circle", title: "Pasos sugeridos",
-                          detail: "La fecha orientativa de cada paso.")
-                legendRow(symbol: "flag.fill", title: "Fecha prevista", tint: .purple,
-                          detail: "Cuándo terminaría el Kit según su plan.")
+                legendRow(symbol: "circle.fill", title: String(localized: "Sesiones reservadas"),
+                          detail: String(localized: "El tiempo que apartas para avanzar. Son tu compromiso."))
+                legendRow(symbol: "circle", title: String(localized: "Pasos sugeridos"),
+                          detail: String(localized: "La fecha orientativa de cada paso."))
+                legendRow(symbol: "flag.fill", title: String(localized: "Fecha prevista"), tint: .purple,
+                          detail: String(localized: "Cuándo terminaría el Kit según su plan."))
             }
         }
         .scrollContentBackground(.hidden)
@@ -335,7 +336,7 @@ struct CalendarPlusView: View {
                 Button { reviewingSession = session } label: {
                     dayRow(symbol: session.isFree ? "circle.fill" : "circle.fill", tint: session.isFree ? .teal : .blue,
                            title: sessionTitle(session),
-                           detail: "\(session.startsAt.formatted(date: .omitted, time: .shortened)) · \(session.durationMinutes) min · \(session.isFree ? "Algo propio" : "Sesión")")
+                           detail: String(localized: "\(session.startsAt.formatted(date: .omitted, time: .shortened)) · \(session.durationMinutes) min · \(session.isFree ? String(localized: "Algo propio") : String(localized: "Sesión"))"))
                 }
                 .buttonStyle(.plain)
             }
@@ -349,7 +350,7 @@ struct CalendarPlusView: View {
             }
             ForEach(goalsForSelectedDate) { kit in
                 NavigationLink(value: GoalNavigation(id: kit.id)) {
-                    dayRow(symbol: "flag.fill", tint: .purple, title: kit.title, detail: "Fecha prevista")
+                    dayRow(symbol: "flag.fill", tint: .purple, title: kit.title, detail: String(localized: "Fecha prevista"))
                 }
             }
         } header: {
@@ -374,36 +375,36 @@ struct CalendarPlusView: View {
         let daySessions = sessionsForSelectedDate
         if !daySessions.isEmpty {
             let count = daySessions.count
-            parts.append(count == 1 ? "1 sesión" : "\(count) sesiones")
-            parts.append("\(Self.duration(daySessions.reduce(0) { $0 + $1.durationMinutes })) reservados")
+            parts.append(count == 1 ? String(localized: "1 sesión") : String(localized: "\(count) sesiones"))
+            parts.append(String(localized: "\(Self.duration(daySessions.reduce(0) { $0 + $1.durationMinutes })) reservados"))
         }
         let steps = stepsForSelectedDate.count
         if steps > 0 {
-            parts.append(steps == 1 ? "1 paso sugerido" : "\(steps) pasos sugeridos")
+            parts.append(steps == 1 ? String(localized: "1 paso sugerido") : String(localized: "\(steps) pasos sugeridos"))
         }
         let kits = goalsForSelectedDate.count
         if kits > 0 {
-            parts.append(kits == 1 ? "1 fecha prevista" : "\(kits) fechas previstas")
+            parts.append(kits == 1 ? String(localized: "1 fecha prevista") : String(localized: "\(kits) fechas previstas"))
         }
-        return parts.isEmpty ? "Nada previsto este día." : parts.joined(separator: " · ")
+        return parts.isEmpty ? String(localized: "Nada previsto este día.") : parts.joined(separator: " · ")
     }
 
     private static func duration(_ minutes: Int) -> String {
         let hours = minutes / 60
         let rest = minutes % 60
-        if hours == 0 { return "\(rest) min" }
-        return rest == 0 ? "\(hours) h" : "\(hours) h \(rest) min"
+        if hours == 0 { return String(localized: "\(rest) min") }
+        return rest == 0 ? String(localized: "\(hours) h") : String(localized: "\(hours) h \(rest) min")
     }
 
     // MARK: - Filas
 
     private func sessionTitle(_ session: WorkSessionEntity) -> String {
-        if session.isFree { return session.title ?? "Sesión propia" }
+        if session.isFree { return session.title ?? String(localized: "Sesión propia") }
         let kit = visibleGoalEntities.first { $0.id == session.kitID }
         if let step = kit?.orderedActiveSteps.first(where: { $0.id == session.stepID }) {
             return step.stepTitle
         }
-        return kit?.title ?? "Sesión"
+        return kit?.title ?? String(localized: "Sesión")
     }
 
     /// «Kit · Paso sugerido», o «Kit · Día 3 de 14» si el paso se repite.
@@ -411,8 +412,8 @@ struct CalendarPlusView: View {
         let kit = step.goal?.title ?? ""
         guard let repetition = step.repetition,
               let index = step.sessionDates.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: selectedDate) })
-        else { return "\(kit) · Paso sugerido" }
-        return "\(kit) · \(repetition.sessionName(index))"
+        else { return String(localized: "\(kit) · Paso sugerido") }
+        return String(localized: "\(kit) · \(repetition.sessionName(index))")
     }
 
     private func dayRow(symbol: String, tint: Color, title: String, detail: String) -> some View {

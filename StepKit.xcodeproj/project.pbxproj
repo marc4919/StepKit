@@ -269,12 +269,12 @@
 				};
 			};
 			buildConfigurationList = D8C11B7E2E942169006BBA7F /* Build configuration list for PBXProject "StepKit" */;
-			developmentRegion = en;
+			developmentRegion = es;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				es,
 				en,
 				Base,
-				es,
 			);
 			mainGroup = D8C11B7A2E942169006BBA7F;
 			minimizedProjectReferenceProxies = 1;

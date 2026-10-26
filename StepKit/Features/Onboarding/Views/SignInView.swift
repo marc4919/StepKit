@@ -87,9 +87,9 @@ struct SignInView: View {
     /// Bloque de ventajas con su ancho natural, centrado y algo separado del lema.
     private var benefitsSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            WelcomeFeatureRow(symbol: Symbols.kits, color: .accentColor, text: "Organiza tus objetivos")
-            WelcomeFeatureRow(symbol: "chart.line.uptrend.xyaxis", color: .green, text: "Avanza paso a paso")
-            WelcomeFeatureRow(symbol: "bell.fill", color: .purple, text: "Recupera el hilo cuando vuelvas")
+            WelcomeFeatureRow(symbol: Symbols.kits, color: .accentColor, text: String(localized: "Organiza tus objetivos"))
+            WelcomeFeatureRow(symbol: "chart.line.uptrend.xyaxis", color: .green, text: String(localized: "Avanza paso a paso"))
+            WelcomeFeatureRow(symbol: "bell.fill", color: .purple, text: String(localized: "Recupera el hilo cuando vuelvas"))
         }
         .fixedSize(horizontal: true, vertical: false)
         .frame(maxWidth: .infinity)
@@ -184,7 +184,7 @@ struct SignInView: View {
               let identityTokenData = appleIDCredential.identityToken,
               let identityToken = String(data: identityTokenData, encoding: .utf8) else {
             // Mensaje más humano cuando falla la obtención del token
-            errorMessage = "No hemos podido completar el inicio de sesión con Apple. Vuelve a intentarlo."
+            errorMessage = String(localized: "No hemos podido completar el inicio de sesión con Apple. Vuelve a intentarlo.")
             return
         }
         
@@ -257,41 +257,41 @@ struct SignInView: View {
         if let authError = error as? ASAuthorizationError {
             switch authError.code {
             case .canceled:
-                return "Has cancelado el inicio de sesión."
+                return String(localized: "Has cancelado el inicio de sesión.")
             case .failed:
-                return "No se pudo completar el inicio de sesión con Apple. Inténtalo de nuevo."
+                return String(localized: "No se pudo completar el inicio de sesión con Apple. Inténtalo de nuevo.")
             case .invalidResponse:
-                return "La respuesta de Apple no ha sido válida. Vuelve a intentarlo en unos minutos."
+                return String(localized: "La respuesta de Apple no ha sido válida. Vuelve a intentarlo en unos minutos.")
             case .notHandled:
-                return "La solicitud de inicio de sesión no se ha podido procesar. Inténtalo de nuevo."
+                return String(localized: "La solicitud de inicio de sesión no se ha podido procesar. Inténtalo de nuevo.")
             case .notInteractive:
-                return "La solicitud de inicio de sesión requiere interacción del usuario."
+                return String(localized: "La solicitud de inicio de sesión requiere interacción del usuario.")
             case .matchedExcludedCredential:
-                return "La credencial está excluida. Inténtalo de nuevo."
+                return String(localized: "La credencial está excluida. Inténtalo de nuevo.")
             case .credentialImport:
-                return "Error al importar la credencial. Inténtalo de nuevo."
+                return String(localized: "Error al importar la credencial. Inténtalo de nuevo.")
             case .credentialExport:
-                return "Error al exportar la credencial. Inténtalo de nuevo."
+                return String(localized: "Error al exportar la credencial. Inténtalo de nuevo.")
             case .preferSignInWithApple:
-                return "Se prefiere usar Sign in with Apple. Inténtalo de nuevo."
+                return String(localized: "Se prefiere usar Sign in with Apple. Inténtalo de nuevo.")
             case .deviceNotConfiguredForPasskeyCreation:
-                return "El dispositivo no está configurado para crear passkeys. Verifica la configuración."
+                return String(localized: "El dispositivo no está configurado para crear passkeys. Verifica la configuración.")
             case .unknown:
-                return "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde."
+                return String(localized: "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde.")
             @unknown default:
                 // Casos futuros no conocidos en tiempo de compilación
-                return "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde."
+                return String(localized: "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde.")
             }
         }
         
         // Errores de red típicos
         let nsError = error as NSError
         if nsError.domain == NSURLErrorDomain {
-            return "No se ha podido conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo."
+            return String(localized: "No se ha podido conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo.")
         }
         
         // Fallback genérico
-        return "No se pudo completar la autenticación. Inténtalo de nuevo más tarde."
+        return String(localized: "No se pudo completar la autenticación. Inténtalo de nuevo más tarde.")
     }
 }
 

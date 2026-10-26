@@ -118,9 +118,10 @@ struct KitsListRegularView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
-            // En vertical (iPad o interior del iPhone Duo) el detalle ocupa toda la pantalla
-            // y Mis Kits queda a un toque con el botón de barra lateral.
-            let target: NavigationSplitViewVisibility = width < 900 ? .detailOnly : .all
+            // Por debajo de 1100 pt (iPad en vertical, iPhone Duo abierto en vertical u horizontal) el detalle
+            // ocupa toda la pantalla y Mis Kits queda a un toque. Con el Duo en horizontal no caben las dos
+            // columnas y la lista acababa encima del Kit, tapándolo.
+            let target: NavigationSplitViewVisibility = width < 1100 ? .detailOnly : .all
             guard target != columnVisibility else { return }
             // Diferido solo la primera vez: durante su primera presentación el split vuelve a mostrar
             // la barra lateral y descarta un cambio inmediato (iOS 27.1, iPhone Duo). Después, al

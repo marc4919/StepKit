@@ -49,7 +49,7 @@ struct ResultReviewView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 16) {
                     ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 92)
-                    Text("\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados.\nEl anillo cuenta pasos, no el resultado.")
+                    Text(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados.\nEl anillo cuenta pasos, no el resultado."))
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 0)
                 }
@@ -58,7 +58,7 @@ struct ResultReviewView: View {
                     .font(.largeTitle.bold())
                     .fixedSize(horizontal: false, vertical: true)
                 PlainCard {
-                    Eyebrow(text: "Lo que querías conseguir", color: .secondary)
+                    Eyebrow(text: String(localized: "Lo que querías conseguir"), color: .secondary)
                     Toggle(isOn: $achieved) {
                         Text(kit.kpi.isEmpty ? kit.title : kit.kpi)
                     }
@@ -136,7 +136,7 @@ private struct ResultConfirmedContent: View {
                         .accessibilityHidden(true)
                 }
                 .padding(.top, 24)
-                Text("\(kit.title)\nestá listo")
+                Text(String(localized: "\(kit.title)\nestá listo"))
                     .font(.largeTitle.bold())
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
@@ -145,7 +145,7 @@ private struct ResultConfirmedContent: View {
                     Label(kit.kpi.isEmpty ? kit.title : kit.kpi, systemImage: "checkmark.circle.fill")
                         .symbolRenderingMode(.multicolor)
                     if let date = kit.resultConfirmedAt {
-                        Text("Confirmado por ti · \(date.formatted(.dateTime.day().month(.abbreviated))) · \(kit.completedStepCount) de \(kit.activeStepCount) pasos")
+                        Text(String(localized: "Confirmado por ti · \(date.formatted(.dateTime.day().month(.abbreviated))) · \(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -201,7 +201,7 @@ struct JourneySummary {
     }
 
     var timeText: String {
-        minutes >= 90 ? "≈ \(Int((Double(minutes) / 60).rounded())) h" : "\(minutes) min"
+        minutes >= 90 ? String(localized: "≈ \(Int((Double(minutes) / 60).rounded())) h") : String(localized: "\(minutes) min")
     }
 }
 
@@ -210,7 +210,7 @@ struct JourneyCard: View {
 
     var body: some View {
         PlainCard {
-            Eyebrow(text: "Tu recorrido", color: .secondary)
+            Eyebrow(text: String(localized: "Tu recorrido"), color: .secondary)
             // Solo lo que aporta: nada de contadores a cero.
             LazyVGrid(columns: [GridItem(.flexible(), alignment: .topLeading), GridItem(.flexible(), alignment: .topLeading)],
                       alignment: .leading, spacing: 14) {
@@ -221,9 +221,9 @@ struct JourneyCard: View {
             if let first = summary.firstNote {
                 Divider()
                 VStack(alignment: .leading, spacing: 10) {
-                    quote(title: "Al empezar", entry: first)
+                    quote(title: String(localized: "Al empezar"), entry: first)
                     if let last = summary.lastNote {
-                        quote(title: "Tu último avance", entry: last)
+                        quote(title: String(localized: "Tu último avance"), entry: last)
                     }
                 }
             }
@@ -241,23 +241,23 @@ struct JourneyCard: View {
     private var stats: [Stat] {
         var items = [
             Stat(symbol: Symbols.calendar, tint: MetaTint.date,
-                 value: summary.days == 1 ? "1 día" : "\(summary.days) días",
-                 detail: summary.plannedDays > 0 ? "de \(summary.plannedDays) previstos" : "desde que empezaste"),
-            Stat(symbol: Symbols.time, tint: MetaTint.time, value: summary.timeText, detail: "de trabajo en tus pasos"),
+                 value: summary.days == 1 ? String(localized: "1 día") : String(localized: "\(summary.days) días"),
+                 detail: summary.plannedDays > 0 ? String(localized: "de \(summary.plannedDays) previstos") : String(localized: "desde que empezaste")),
+            Stat(symbol: Symbols.time, tint: MetaTint.time, value: summary.timeText, detail: String(localized: "de trabajo en tus pasos")),
             Stat(symbol: "checkmark.circle", tint: MetaTint.done, value: "\(summary.steps)",
-                 detail: summary.steps == 1 ? "paso completado" : "pasos completados"),
+                 detail: summary.steps == 1 ? String(localized: "paso completado") : String(localized: "pasos completados")),
         ]
         if summary.notes > 0 {
             items.append(Stat(symbol: Symbols.note, tint: .orange, value: "\(summary.notes)",
-                              detail: summary.notes == 1 ? "avance anotado" : "avances anotados"))
+                              detail: summary.notes == 1 ? String(localized: "avance anotado") : String(localized: "avances anotados")))
         }
         if summary.blocks > 0 {
             items.append(Stat(symbol: Symbols.blocked, tint: .red, value: "\(summary.blocks)",
-                              detail: summary.blocks == 1 ? "bloqueo superado" : "bloqueos superados"))
+                              detail: summary.blocks == 1 ? String(localized: "bloqueo superado") : String(localized: "bloqueos superados")))
         }
         if summary.sessions > 0 {
             items.append(Stat(symbol: Symbols.session, tint: .accentColor, value: "\(summary.sessions)",
-                              detail: summary.sessions == 1 ? "sesión reservada" : "sesiones reservadas"))
+                              detail: summary.sessions == 1 ? String(localized: "sesión reservada") : String(localized: "sesiones reservadas")))
         }
         return items
     }

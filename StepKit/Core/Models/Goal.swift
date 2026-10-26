@@ -89,15 +89,15 @@ struct Goal: Identifiable, Hashable, Codable {
         horizonDays: 42,
         kpi: "Completar 5 proyectos funcionales",
         meta: PlanMetadata(type: "learning", tags: ["technical", "desk"]),
-        risks: ["Falta de tiempo", "Curva de aprendizaje"],
+        risks: [String(localized: "Falta de tiempo"), String(localized: "Curva de aprendizaje")],
         steps: []
     )
     
     static let previewCompleted = Goal(
         id: UUID(),
-        planTitle: "Configurar proyecto",
+        planTitle: String(localized: "Configurar proyecto"),
         horizonDays: 7,
-        kpi: "Proyecto funcionando",
+        kpi: String(localized: "Proyecto funcionando"),
         meta: PlanMetadata(type: "setup", tags: []),
         risks: [],
         steps: []

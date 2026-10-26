@@ -34,15 +34,15 @@ final class AssistantService {
         case .available:
             return nil
         case .unavailable(.deviceNotEligible):
-            return "Este dispositivo no es compatible con Apple Intelligence"
+            return String(localized: "Este dispositivo no es compatible con Apple Intelligence")
         case .unavailable(.appleIntelligenceNotEnabled):
-            return "Activa Apple Intelligence en Ajustes para usar el asistente"
+            return String(localized: "Activa Apple Intelligence en Ajustes para usar el asistente")
         case .unavailable(.modelNotReady):
-            return "El modelo aún no está listo. Inténtalo de nuevo más tarde"
+            return String(localized: "El modelo aún no está listo. Inténtalo de nuevo más tarde")
         case .unavailable:
-            return "El asistente no está disponible en este momento"
+            return String(localized: "El asistente no está disponible en este momento")
         @unknown default:
-            return "El asistente no está disponible"
+            return String(localized: "El asistente no está disponible")
         }
     }
 
@@ -76,7 +76,7 @@ final class AssistantService {
             \(quickActionContext)
 
             REGLAS:
-            - Responde siempre en español
+            - Responde siempre en \(AppLanguage.nameInSpanish)
             - Sé conciso: 2-4 oraciones normalmente, máximo un párrafo corto
             - Usa los datos del usuario para personalizar cada respuesta
             - No inventes datos que no tengas
@@ -100,7 +100,7 @@ final class AssistantService {
         quickAction: QuickActionType? = nil
     ) async throws -> AsyncThrowingStream<String, Error> {
         guard isAvailable else {
-            throw AssistantError.modelUnavailable(unavailabilityReason ?? "Modelo no disponible")
+            throw AssistantError.modelUnavailable(unavailabilityReason ?? String(localized: "Modelo no disponible"))
         }
 
         // Crear nueva sesión si es necesario o si se excedió el límite
@@ -156,7 +156,7 @@ final class AssistantService {
         quickAction: QuickActionType? = nil
     ) async throws -> String {
         guard isAvailable else {
-            throw AssistantError.modelUnavailable(unavailabilityReason ?? "Modelo no disponible")
+            throw AssistantError.modelUnavailable(unavailabilityReason ?? String(localized: "Modelo no disponible"))
         }
 
         // Crear nueva sesión si es necesario
@@ -225,13 +225,13 @@ enum AssistantError: LocalizedError {
         case .modelUnavailable(let reason):
             return reason
         case .sessionCreationFailed:
-            return "No se pudo iniciar la conversación"
+            return String(localized: "No se pudo iniciar la conversación")
         case .contextWindowExceeded:
-            return "La conversación es muy larga. Se ha reiniciado."
+            return String(localized: "La conversación es muy larga. Se ha reiniciado.")
         case .guardrailViolation:
-            return "No puedo responder a eso. ¿Hay algo más en lo que pueda ayudarte?"
+            return String(localized: "No puedo responder a eso. ¿Hay algo más en lo que pueda ayudarte?")
         case .cancelled:
-            return "La solicitud fue cancelada"
+            return String(localized: "La solicitud fue cancelada")
         case .unknown(let message):
             return message
         }

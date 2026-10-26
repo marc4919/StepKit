@@ -12,7 +12,7 @@ extension Int {
     func formattedDuration() -> String {
         let minutes = self
         if minutes < 60 {
-            return "\(minutes) min"
+            return String(localized: "\(minutes) min")
         } else {
             let hours = minutes / 60
             let remainingMinutes = minutes % 60

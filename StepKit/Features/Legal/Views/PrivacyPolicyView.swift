@@ -28,13 +28,13 @@ struct PrivacyPolicyView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         policySection(
                             number: "1",
-                            title: "Introducción",
-                            content: "En StepKit, respetamos tu privacidad y nos comprometemos a proteger tus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos y compartimos tu información cuando utilizas nuestra aplicación móvil."
+                            title: String(localized: "Introducción"),
+                            content: String(localized: "En StepKit, respetamos tu privacidad y nos comprometemos a proteger tus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos y compartimos tu información cuando utilizas nuestra aplicación móvil.")
                         )
                         
                         policySection(
                             number: "2",
-                            title: "Información que Recopilamos",
+                            title: String(localized: "Información que Recopilamos"),
                             content: """
                             Recopilamos la siguiente información:
                             
@@ -47,7 +47,7 @@ struct PrivacyPolicyView: View {
                         
                         policySection(
                             number: "3",
-                            title: "Uso de la Información",
+                            title: String(localized: "Uso de la Información"),
                             content: """
                             Utilizamos tu información para:
                             
@@ -61,7 +61,7 @@ struct PrivacyPolicyView: View {
                         
                         policySection(
                             number: "4",
-                            title: "Compartir Información",
+                            title: String(localized: "Compartir Información"),
                             content: """
                             No vendemos tu información personal. Podemos compartir información con:
                             
@@ -72,7 +72,7 @@ struct PrivacyPolicyView: View {
                         
                         policySection(
                             number: "4.1",
-                            title: "Uso de Inteligencia Artificial Externa",
+                            title: String(localized: "Uso de Inteligencia Artificial Externa"),
                             content: """
                             StepKit utiliza servicios de inteligencia artificial externos para generar planes personalizados de objetivos. Esta sección explica cómo y qué datos compartimos con estos servicios.
                             
@@ -98,32 +98,32 @@ struct PrivacyPolicyView: View {
                         
                         policySection(
                             number: "5",
-                            title: "Seguridad de los Datos",
-                            content: "Implementamos medidas de seguridad técnicas y organizativas para proteger tus datos. Sin embargo, ninguna transmisión por internet es 100% segura, por lo que no podemos garantizar seguridad absoluta."
+                            title: String(localized: "Seguridad de los Datos"),
+                            content: String(localized: "Implementamos medidas de seguridad técnicas y organizativas para proteger tus datos. Sin embargo, ninguna transmisión por internet es 100% segura, por lo que no podemos garantizar seguridad absoluta.")
                         )
                         
                         policySection(
                             number: "6",
-                            title: "Tus Derechos",
-                            content: "Dependiendo de tu ubicación, puedes tener derecho a acceder, corregir, eliminar o restringir el procesamiento de tus datos personales. Puedes eliminar tu cuenta y todos tus datos directamente desde la configuración de la aplicación."
+                            title: String(localized: "Tus Derechos"),
+                            content: String(localized: "Dependiendo de tu ubicación, puedes tener derecho a acceder, corregir, eliminar o restringir el procesamiento de tus datos personales. Puedes eliminar tu cuenta y todos tus datos directamente desde la configuración de la aplicación.")
                         )
                         
                         policySection(
                             number: "7",
-                            title: "Privacidad de los Niños",
-                            content: "Nuestra aplicación no está dirigida a niños menores de 13 años. No recopilamos conscientemente información personal de niños menores de 13 años."
+                            title: String(localized: "Privacidad de los Niños"),
+                            content: String(localized: "Nuestra aplicación no está dirigida a niños menores de 13 años. No recopilamos conscientemente información personal de niños menores de 13 años.")
                         )
                         
                         policySection(
                             number: "8",
-                            title: "Cambios a esta Política",
-                            content: "Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos sobre cambios significativos a través de la aplicación."
+                            title: String(localized: "Cambios a esta Política"),
+                            content: String(localized: "Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos sobre cambios significativos a través de la aplicación.")
                         )
                         
                         policySection(
                             number: "9",
-                            title: "Contacto",
-                            content: "Si tienes preguntas sobre esta política, contáctanos en support@stepkit.app."
+                            title: String(localized: "Contacto"),
+                            content: String(localized: "Si tienes preguntas sobre esta política, contáctanos en support@stepkit.app.")
                         )
                     }
                 }

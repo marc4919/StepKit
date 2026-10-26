@@ -22,10 +22,10 @@ struct UpcomingSessionsView: View {
         }
         .overlay {
             if sessions.isEmpty {
-                ContentUnavailableView("No tienes sesiones reservadas", systemImage: Symbols.session)
+                ContentUnavailableView("No tienes nada reservado", systemImage: Symbols.session)
             }
         }
-        .navigationTitle("Próximas sesiones")
+        .navigationTitle("Tiempo reservado")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $reviewingSession) { session in
             let kit = kits.first { $0.id == session.kitID }
@@ -39,14 +39,15 @@ struct UpcomingSessionsView: View {
         let step = kit?.orderedActiveSteps.first { $0.id == session.stepID }
         let label = HStack(alignment: .top, spacing: 14) {
             VStack(spacing: 0) {
-                Circle().fill(Color.accentColor).frame(width: 12, height: 12).padding(.top, 5)
+                // Mismo código de color que el calendario: azul para un Kit, verde azulado para algo propio.
+                Circle().fill(session.isFree ? Color.teal : Color.accentColor).frame(width: 12, height: 12).padding(.top, 5)
                 if !last {
                     Rectangle().fill(Color.accentColor.opacity(0.3)).frame(width: 2).frame(maxHeight: .infinity)
                 }
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(Self.when(session)).font(.subheadline.weight(.semibold)).foregroundStyle(.tint)
-                Text(step?.stepTitle ?? kit?.title ?? "Sesión").font(.headline)
+                Text(Self.title(session, kit: kit, step: step)).font(.headline)
                 Text(Self.detail(session, kit: kit, step: step)).font(.subheadline).foregroundStyle(.secondary)
             }
             .padding(.bottom, last ? 0 : 12)
@@ -73,15 +74,22 @@ struct UpcomingSessionsView: View {
 
     static func when(_ session: WorkSessionEntity) -> String {
         let time = session.startsAt.formatted(date: .omitted, time: .shortened)
-        if Calendar.current.isDateInToday(session.startsAt) { return "Hoy · \(time)" }
-        if Calendar.current.isDateInTomorrow(session.startsAt) { return "Mañana · \(time)" }
+        if Calendar.current.isDateInToday(session.startsAt) { return String(localized: "Hoy · \(time)") }
+        if Calendar.current.isDateInTomorrow(session.startsAt) { return String(localized: "Mañana · \(time)") }
         return "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))) · \(time)"
     }
 
+    /// Lo que se va a hacer: el paso, el Kit o, si es algo propio, lo que escribiste al reservarlo.
+    static func title(_ session: WorkSessionEntity, kit: GoalEntity?, step: StepEntity?) -> String {
+        if session.isFree, let title = session.title, !title.isEmpty { return title }
+        return step?.stepTitle ?? kit?.title ?? String(localized: "Algo propio")
+    }
+
     static func detail(_ session: WorkSessionEntity, kit: GoalEntity?, step: StepEntity?) -> String {
-        var parts = ["\(session.durationMinutes) min"]
+        var parts = [String(localized: "\(session.durationMinutes) min")]
+        if session.isFree { parts.append(String(localized: "Algo propio")) }
         if let kit { parts.append(kit.title) }
-        if let kit, let step { parts.append("Paso \(kit.position(of: step))") }
+        if let kit, let step { parts.append(String(localized: "Paso \(kit.position(of: step))")) }
         return parts.joined(separator: " · ")
     }
 }

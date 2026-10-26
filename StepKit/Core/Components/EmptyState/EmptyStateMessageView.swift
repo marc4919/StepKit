@@ -59,7 +59,7 @@ struct EmptyStateMessageView: View {
             .accessibilityAddTraits(.isButton)
             .accessibilityIdentifier("emptyState.primaryAction")
             .accessibilityLabel(buttonTitle)
-            .accessibilityHint("Toca dos veces para \(buttonTitle.lowercased())")
+            .accessibilityHint(String(localized: "Toca dos veces para \(buttonTitle.lowercased())"))
             .padding(.top, 40)
             .opacity(showButton ? 1 : 0)
             .offset(y: showButton ? 0 : 20)
@@ -78,9 +78,9 @@ struct EmptyStateMessageView: View {
 
 #Preview {
     EmptyStateMessageView(
-        title: "Da el primer paso",
-        subtitle: "Crea tu primer kit y empieza a avanzar",
-        buttonTitle: "Crear kit"
+        title: String(localized: "Da el primer paso"),
+        subtitle: String(localized: "Crea tu primer kit y empieza a avanzar"),
+        buttonTitle: String(localized: "Crear kit")
     ) {
         print("Crear kit tapped")
     }

@@ -11,7 +11,7 @@ import SwiftData
 struct SaveProgressSheet: View {
     let step: StepEntity
     let stepNumber: Int
-    /// Abre directamente con «Estoy bloqueado» seleccionado.
+    /// «Atasco»: la hoja pide qué te frena. Si no, es «Avance»: solo lo que has hecho.
     var startsBlocked = false
 
     @Environment(\.dismiss) private var dismiss
@@ -20,9 +20,12 @@ struct SaveProgressSheet: View {
     @Environment(\.apiClient) private var apiClient: any APIClientProtocol
     @Environment(AuthManager.self) private var authManager
     @State private var note = ""
-    @State private var canContinue = true
     @State private var reason = ""
     @State private var saveFailed = false
+    @FocusState private var focused: Field?
+
+    private enum Field { case note, reason }
+    private var reportingBlock: Bool { startsBlocked }
 
     var body: some View {
         NavigationStack {
@@ -34,42 +37,45 @@ struct SaveProgressSheet: View {
                                          size: 40, showsLabel: false)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Eyebrow(text: "\(step.goal?.title ?? "") · Paso \(stepNumber)")
+                            Eyebrow(text: String(localized: "\(step.goal?.title ?? "") · Paso \(stepNumber)"))
                             Text(step.stepTitle).font(.headline)
                         }
                     }
                     .accessibilityElement(children: .combine)
                 }
-                Section {
-                    TextField("Ej.: «Escribí la introducción. Me falta el resultado»", text: $note, axis: .vertical)
-                        .lineLimit(3...8)
-                        .accessibilityIdentifier("progress.note")
-                } header: {
-                    Text("¿Qué has hecho hoy?")
-                } footer: {
-                    Text("Apúntalo para retomarlo sin pensar la próxima vez. Se guarda con la fecha y la hora, y no completa el paso.")
-                }
-                Section {
-                    Picker("¿Puedes seguir?", selection: $canContinue) {
-                        Text("Sigo sin problema").tag(true)
-                        Text("Me he atascado").tag(false)
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityIdentifier("progress.canContinue")
-                    if !canContinue {
-                        TextField("¿Qué te frena? Ej.: «Me falta el permiso del cliente»", text: $reason, axis: .vertical)
-                            .lineLimit(2...4)
+                if reportingBlock {
+                    Section {
+                        TextField("Ej.: «Me falta el permiso del cliente»", text: $reason, axis: .vertical)
+                            .lineLimit(2...5)
+                            .focused($focused, equals: .reason)
                             .accessibilityIdentifier("progress.blockedReason")
+                    } header: {
+                        Text("¿Qué te frena?")
+                    } footer: {
+                        Text("El paso queda bloqueado hasta que lo resuelvas. El asistente puede proponerte cómo seguir.")
                     }
-                } header: {
-                    Text("¿Cómo vas con este paso?")
-                } footer: {
-                    Text(canContinue
-                         ? "Tu avance se guarda y el paso seguirá en curso."
-                         : "Tu avance se guarda igualmente. El paso quedará bloqueado hasta que lo resuelvas.")
+                    Section {
+                        TextField("Ej.: «Escribí la introducción»", text: $note, axis: .vertical)
+                            .lineLimit(2...6)
+                            .focused($focused, equals: .note)
+                            .accessibilityIdentifier("progress.note")
+                    } header: {
+                        Text("Lo que llevas hecho (opcional)")
+                    }
+                } else {
+                    Section {
+                        TextField("Ej.: «Escribí la introducción. Me falta el resultado»", text: $note, axis: .vertical)
+                            .lineLimit(3...8)
+                            .focused($focused, equals: .note)
+                            .accessibilityIdentifier("progress.note")
+                    } header: {
+                        Text("¿Qué has hecho hoy?")
+                    } footer: {
+                        Text("Apúntalo para retomarlo sin pensar la próxima vez. Se guarda con la fecha y la hora, y no completa el paso.")
+                    }
                 }
             }
-            .navigationTitle("Guardar avance")
+            .navigationTitle(reportingBlock ? String(localized: "Me he atascado") : String(localized: "Guardar avance"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -77,6 +83,7 @@ struct SaveProgressSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Guardar") { save() }
+                        .disabled(!canSave)
                         .accessibilityIdentifier("progress.save")
                 }
             }
@@ -85,20 +92,26 @@ struct SaveProgressSheet: View {
             }
         }
         .onAppear {
-            canContinue = !(startsBlocked || step.isBlocked)
-            reason = step.blockedReason ?? ""
+            if reportingBlock { reason = step.blockedReason ?? "" }
+            focused = reportingBlock ? .reason : .note
         }
-        .animation(.default, value: canContinue)
+    }
+
+    private var canSave: Bool {
+        reportingBlock ? !reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                       : !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func save() {
         do {
-            let blocked = canContinue ? nil : (reason.isEmpty ? "Sin detallar" : reason)
-            try ProgressLog.saveProgress(for: step, note: note, blockedReason: blocked, context: modelContext)
+            // Avance no cambia el estado del paso: si ya estaba bloqueado, sigue bloqueado.
+            try ProgressLog.saveProgress(for: step, note: note,
+                                         blockedReason: reportingBlock ? reason.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
+                                         context: modelContext, keepsBlockState: !reportingBlock)
             syncManager?.handleDataChange()
             // El asistente reacciona: con un bloqueo puede proponer cómo seguir.
             if let kit = step.goal {
-                KitAssistant.react(blocked == nil ? .progress : .blocked, kit: kit, step: step,
+                KitAssistant.react(reportingBlock ? .blocked : .progress, kit: kit, step: step,
                                    context: modelContext, apiClient: apiClient, token: authManager.token)
             }
             UINotificationFeedbackGenerator().notificationOccurred(.success)

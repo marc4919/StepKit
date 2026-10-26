@@ -49,9 +49,10 @@ struct StepDetailView: View {
     private var lastProgress: ProgressEntryEntity? { progressNotes.first }
 
     /// El asistente ha dejado una propuesta para este paso (tras un bloqueo, un cambio…).
-    private var stepHasProposal: Bool {
+    private var stepPendingProposals: Int {
         KitAssistantStore.shared.conversations(for: stepEntity.goal?.id ?? UUID())
-            .contains { $0.stepID == stepEntity.id && $0.proposals.contains { $0.state == .pending } }
+            .filter { $0.stepID == stepEntity.id }
+            .reduce(0) { $0 + $1.pendingProposalCount }
     }
 
     /// Días con la sesión del hábito hecha.
@@ -88,9 +89,9 @@ struct StepDetailView: View {
                 Button("Ayúdame con este paso", systemImage: Symbols.assistant) {
                     assistantLaunch = AssistantLaunch(intent: nil)
                 }
-                .badge(stepHasProposal ? 1 : 0)
+                .badge(stepPendingProposals)
                 .accessibilityIdentifier("step.assistant")
-                .accessibilityValue(stepHasProposal ? "Propuesta pendiente" : "")
+                .accessibilityValue(stepPendingProposals == 0 ? "" : stepPendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(stepPendingProposals) propuestas pendientes"))
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Editar paso", systemImage: "pencil") {
@@ -164,6 +165,7 @@ struct StepDetailView: View {
             .padding(.horizontal)
             .padding(.bottom, 20)
         }
+        .balancedHorizontalSafeArea()
         .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { wideLayout = $0 }
     }
 
@@ -182,7 +184,7 @@ struct StepDetailView: View {
 
     private var stepHeader: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Eyebrow(text: "Paso \(stepNumber) · \(state.label)",
+            Eyebrow(text: String(localized: "Paso \(stepNumber) · \(state.label)"),
                     color: state == .pending ? .accentColor : state.tint)
             Text(stepEntity.stepTitle)
                 .font(.largeTitle.bold())
@@ -222,7 +224,7 @@ struct StepDetailView: View {
     @ViewBuilder private var stepDetails: some View {
         if !stepEntity.descriptionLong.isEmpty, stepEntity.descriptionLong != stepEntity.descriptionShort {
             PlainCard {
-                Eyebrow(text: "Descripción", color: .secondary)
+                Eyebrow(text: String(localized: "Descripción"), color: .secondary)
                 ParagraphText(text: stepEntity.descriptionLong)
             }
         }
@@ -231,7 +233,7 @@ struct StepDetailView: View {
                 HStack(alignment: .top, spacing: 12) {
                     NextMark().padding(.top, 2)
                     VStack(alignment: .leading, spacing: 2) {
-                        Eyebrow(text: "Planificación recomendada")
+                        Eyebrow(text: String(localized: "Planificación recomendada"))
                         Text(stepEntity.adaptsTo).font(.headline)
                     }
                 }
@@ -270,7 +272,7 @@ struct StepDetailView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))
                                 .font(.caption).foregroundStyle(.secondary)
-                            Text(entry.note.isEmpty ? "Avance guardado" : entry.note)
+                            Text(entry.note.isEmpty ? String(localized: "Avance guardado") : entry.note)
                         }
                     }
                 }
@@ -296,7 +298,7 @@ struct StepDetailView: View {
         let visible = showingAllProgress ? notes : Array(notes.prefix(3))
         return PlainCard {
             HStack {
-                Text(notes.count == 1 ? "Tu avance" : "Tus avances").font(.headline)
+                Text(notes.count == 1 ? String(localized: "Tu avance") : String(localized: "Tus avances")).font(.headline)
                 Spacer()
                 if notes.count > 1 {
                     Text("\(notes.count)")
@@ -328,7 +330,7 @@ struct StepDetailView: View {
                 .padding(.top, 4)
             }
             if notes.count > 3 {
-                Button(showingAllProgress ? "Ver menos" : "Ver todos (\(notes.count))") {
+                Button(showingAllProgress ? String(localized: "Ver menos") : String(localized: "Ver todos (\(notes.count))")) {
                     withAnimation(.snappy) { showingAllProgress.toggle() }
                 }
                 .font(.subheadline)
@@ -379,7 +381,7 @@ struct StepDetailView: View {
                  text: StepDetailHelpers.formatMinutes(stepEntity.estimateMinutes),
                  color: MetaTint.time)
         MetaChip(symbol: Symbols.effort,
-                 text: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: stepEntity.effortLevel).lowercased())",
+                 text: String(localized: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: stepEntity.effortLevel).lowercased())"),
                  color: MetaTint.effort,
                  level: EffortLevel.fill(stepEntity.effortLevel))
         if let deadline = stepEntity.suggestedDeadline {
@@ -401,12 +403,12 @@ struct StepDetailView: View {
         Button {
             withAnimation { toggleStepCompletion() }
         } label: {
-            Label(stepEntity.isCompleted ? "Marcar como pendiente" : "Marcar como completado",
+            Label(stepEntity.isCompleted ? String(localized: "Marcar como pendiente") : String(localized: "Marcar como completado"),
                   systemImage: stepEntity.isCompleted ? "arrow.uturn.backward" : "checkmark")
                 .frame(maxWidth: .infinity)
         }
         .accessibilityIdentifier("step.toggleCompletion")
-        .accessibilityValue(stepEntity.isCompleted ? "Completado" : "Pendiente")
+        .accessibilityValue(stepEntity.isCompleted ? String(localized: "Completado") : String(localized: "Pendiente"))
     }
 
     private var saveProgressButton: some View {
@@ -424,7 +426,7 @@ struct StepDetailView: View {
                 try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
                 syncManager?.handleDataChange()
             }
-            Button("Guardar avance", systemImage: Symbols.note) { showingSaveProgress = true }
+            Button("Guardar avance", systemImage: Symbols.note) { savingBlocked = false; showingSaveProgress = true }
         } label: {
             Text("Resolver bloqueo").frame(maxWidth: .infinity)
         }
@@ -450,18 +452,18 @@ struct StepDetailView: View {
                 // Tres acciones a la vista, una al lado de otra, como controles de Liquid Glass.
                 GlassEffectContainer(spacing: 8) {
                 HStack(spacing: 8) {
-                    actionTile("Avance", symbol: Symbols.note, identifier: "step.saveProgress",
-                               accessibilityLabel: "Guardar avance") {
+                    actionTile(String(localized: "Avance"), symbol: Symbols.note, identifier: "step.saveProgress",
+                               accessibilityLabel: String(localized: "Guardar avance")) {
                         savingBlocked = false
                         showingSaveProgress = true
                     }
-                    actionTile("Atasco", symbol: "hand.raised", identifier: "step.reportBlock",
-                               accessibilityLabel: "Me he atascado") {
+                    actionTile(String(localized: "Atasco"), symbol: "hand.raised", identifier: "step.reportBlock",
+                               accessibilityLabel: String(localized: "Me he atascado")) {
                         savingBlocked = true
                         showingSaveProgress = true
                     }
-                    actionTile("Completar", symbol: "checkmark", prominent: true, identifier: "step.toggleCompletion",
-                               accessibilityLabel: "Marcar como completado") {
+                    actionTile(String(localized: "Completar"), symbol: "checkmark", prominent: true, identifier: "step.toggleCompletion",
+                               accessibilityLabel: String(localized: "Marcar como completado")) {
                         withAnimation(.smooth) { toggleStepCompletion() }
                     }
                 }
@@ -687,7 +689,7 @@ struct HabitSessionsCard: View {
         let weekly = step.repetition?.every == .week
         return Button { onToggle(date) } label: {
             VStack(spacing: 3) {
-                Text(weekly ? "S\((dates.firstIndex(of: date) ?? 0) + 1)"
+                Text(weekly ? String(localized: "S\((dates.firstIndex(of: date) ?? 0) + 1)")
                             : date.formatted(.dateTime.weekday(.narrow)))
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(isToday ? Color.accentColor : .secondary)
@@ -716,7 +718,7 @@ struct HabitSessionsCard: View {
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: done)
         .accessibilityLabel("\(step.repetition?.sessionName(dates.firstIndex(of: date) ?? 0) ?? ""), \(date.formatted(.dateTime.weekday(.wide).day().month(.wide)))")
-        .accessibilityValue(done ? "Hecha" : "Pendiente")
+        .accessibilityValue(done ? String(localized: "Hecha") : String(localized: "Pendiente"))
         .accessibilityAddTraits(done ? .isSelected : [])
     }
 }
@@ -765,7 +767,7 @@ private struct CompletionBanner: View {
                 .symbolEffect(.bounce, value: appeared)
             VStack(alignment: .leading, spacing: 2) {
                 Text("¡Paso completado!").font(.headline)
-                Text(celebration.nextTitle.map { "Siguiente: \($0)" } ?? "Era el último paso del Kit.")
+                Text(celebration.nextTitle.map { String(localized: "Siguiente: \($0)") } ?? String(localized: "Era el último paso del Kit."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)

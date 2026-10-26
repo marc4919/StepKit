@@ -12,7 +12,7 @@ struct KitRisksView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "lightbulb.fill", title: "A tener en cuenta")
+            sectionHeader(icon: "lightbulb.fill", title: String(localized: "A tener en cuenta"))
 
             VStack(spacing: 10) {
                 ForEach(Array(risks.enumerated()), id: \.offset) { _, risk in

@@ -102,10 +102,10 @@ struct KitsHomeView: View {
                         }
                     }
                     if !otherKits.isEmpty {
-                        section(title: continueKit != nil ? "Otros Kits en curso" : "En curso", kits: otherKits)
+                        section(title: continueKit != nil ? String(localized: "Otros Kits en curso") : String(localized: "En curso"), kits: otherKits)
                     }
                     if !confirmedKits.isEmpty {
-                        section(title: "Terminados", kits: confirmedKits)
+                        section(title: String(localized: "Terminados"), kits: confirmedKits)
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -150,7 +150,7 @@ struct KitsHomeView: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("kit.row")
                     .accessibilityLabel("Kit: \(kit.title)")
-                    .accessibilityValue("\(kit.completedStepCount) de \(kit.activeStepCount) pasos")
+                    .accessibilityValue(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
                     .listRowInsets(EdgeInsets())
                     .alignmentGuide(.listRowSeparatorLeading) { _ in 72 }
                     .deletable { viewModel.prepareForDeletion(kit) }
@@ -197,7 +197,7 @@ private struct ContinueCard: View {
             Button(action: onOpenKit) { header.contentShape(.rect) }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Kit: \(kit.title)")
-                .accessibilityValue("\(kit.completedStepCount) de \(kit.activeStepCount) pasos")
+                .accessibilityValue(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
                 .accessibilityHint("Abre el plan del Kit")
                 .accessibilityIdentifier("kit.row")
             if lastProgress != nil || kit.nextStep != nil {
@@ -209,7 +209,7 @@ private struct ContinueCard: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Dónde lo dejaste").font(.headline)
                         Text(entry.note).foregroundStyle(.secondary)
-                        Label("Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))",
+                        Label(String(localized: "Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))"),
                               systemImage: Symbols.calendar)
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -267,7 +267,7 @@ private struct ContinueCard: View {
     }
 
     private var stepCount: some View {
-        Text("\(kit.completedStepCount) de \(kit.activeStepCount) pasos")
+        Text(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
             .foregroundStyle(.secondary)
     }
 
@@ -276,7 +276,7 @@ private struct ContinueCard: View {
             HStack(alignment: .top, spacing: 12) {
                 NextMark().padding(.top, 2)
                 VStack(alignment: .leading, spacing: 4) {
-                    Eyebrow(text: "Paso \(kit.position(of: step)) · \(step.estimateMinutes) min")
+                    Eyebrow(text: String(localized: "Paso \(kit.position(of: step)) · \(step.estimateMinutes) min"))
                     Text(step.title)
                         .font(.title3.bold())
                         .fixedSize(horizontal: false, vertical: true)
@@ -315,7 +315,7 @@ private struct PendingResultRow: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 Text(kit.title).font(.headline).foregroundStyle(.primary)
-                Text("\(kit.activeStepCount) de \(kit.activeStepCount) pasos · Revisa el resultado")
+                Text(String(localized: "\(kit.activeStepCount) de \(kit.activeStepCount) pasos · Revisa el resultado"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -339,7 +339,7 @@ private struct PendingResultCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Eyebrow(text: "Pasos terminados · falta revisar el resultado", color: MetaTint.done)
+            Eyebrow(text: String(localized: "Pasos terminados · falta revisar el resultado"), color: MetaTint.done)
             let layout = typeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
                 : AnyLayout(HStackLayout(spacing: 14))
@@ -349,7 +349,7 @@ private struct PendingResultCard: View {
                     Text(kit.title).font(.title2.bold())
                         .accessibilityIdentifier("kit.row")
                         .accessibilityLabel("Kit: \(kit.title)")
-                    Text("\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados")
+                    Text(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados"))
                         .foregroundStyle(.secondary)
                     Text("Resultado sin confirmar")
                         .font(.subheadline.weight(.semibold))
@@ -401,7 +401,7 @@ private struct KitHomeRow: View {
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.leading)
                 if kit.isCompleted {
-                    Label("\(kit.activeStepCount) de \(kit.activeStepCount) pasos", systemImage: "checkmark.circle.fill")
+                    Label(String(localized: "\(kit.activeStepCount) de \(kit.activeStepCount) pasos"), systemImage: "checkmark.circle.fill")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else if let next = kit.nextStep {
@@ -481,11 +481,11 @@ struct KitsEmptyView: View {
     }
 
     @ViewBuilder private var copyContent: some View {
-        Text("Haz espacio a tu\npróximo objetivo")
+        Text(String(localized: "Haz espacio a tu\npróximo objetivo"))
             .font(.largeTitle.bold())
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
-        Text("Un plan claro. Un paso posible.\nY un lugar al que volver.")
+        Text(String(localized: "Un plan claro. Un paso posible.\nY un lugar al que volver."))
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)

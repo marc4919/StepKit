@@ -37,9 +37,9 @@ struct EmptyStateContainerView: View {
                 
                 // Mensaje + CTA
                 EmptyStateMessageView(
-                    title: "Da el primer paso",
-                    subtitle: "Crea tu primer kit y empieza a avanzar",
-                    buttonTitle: "Crear kit"
+                    title: String(localized: "Da el primer paso"),
+                    subtitle: String(localized: "Crea tu primer kit y empieza a avanzar"),
+                    buttonTitle: String(localized: "Crear kit")
                 ) {
                     showingKitCreator = true
                 }

@@ -12,7 +12,7 @@ enum StepDetailHelpers {
     /// Formatea minutos en formato legible (ej: "45 min", "1h 30m", "2h")
     static func formatMinutes(_ minutes: Int) -> String {
         if minutes < 60 {
-            return "\(minutes) min"
+            return String(localized: "\(minutes) min")
         } else {
             let hours = minutes / 60
             let remainingMinutes = minutes % 60
@@ -27,9 +27,9 @@ enum StepDetailHelpers {
     /// Devuelve el texto del nivel de esfuerzo en español
     static func effortLevelText(for effortLevel: String) -> String {
         switch effortLevel.lowercased() {
-        case "low": return "Bajo"
-        case "medium": return "Medio"
-        case "high": return "Alto"
+        case "low": return String(localized: "Bajo")
+        case "medium": return String(localized: "Medio")
+        case "high": return String(localized: "Alto")
         default: return effortLevel.capitalized
         }
     }

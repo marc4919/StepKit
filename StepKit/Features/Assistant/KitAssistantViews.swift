@@ -36,6 +36,22 @@ struct KitAssistantHubView: View {
                 .listRowBackground(Color.clear)
             }
             Section("Empezar una conversación") {
+                // Conversación libre: escribir directamente, sin elegir antes un tema.
+                Button {
+                    let conversation = store.newConversation(kit: kit, title: String(localized: "Conversación sobre el Kit"))
+                    opened = OpenedConversation(conversation: conversation, intent: nil)
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Escribir al asistente").foregroundStyle(.primary)
+                            Text("Pregunta lo que quieras sobre este Kit").font(.caption).foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        IconChip(symbol: "square.and.pencil", color: .accentColor, size: 30)
+                    }
+                }
+                .buttonStyle(PressableCardStyle())
+                .accessibilityIdentifier("kitAssistant.freeChat")
                 ForEach(AssistantIntent.kit) { intent in
                     Button {
                         let conversation = store.newConversation(kit: kit, title: intent.title)
@@ -50,12 +66,14 @@ struct KitAssistantHubView: View {
                             IconChip(symbol: intent.symbol, color: intent.color, size: 30)
                         }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableCardStyle())
                     .accessibilityIdentifier("kitAssistant.intent.\(intent.id)")
                 }
             }
             Section("Conversaciones") {
+                // Una conversación libre que se abrió y no se usó no aparece en la lista.
                 let conversations = store.conversations(for: kit.id)
+                    .filter { !$0.viewModel.messages.isEmpty || !$0.proposals.isEmpty }
                 if conversations.isEmpty {
                     Text("Aún no hay conversaciones. Las que abras desde un paso también aparecerán aquí.")
                         .font(.subheadline)
@@ -67,7 +85,7 @@ struct KitAssistantHubView: View {
                     } label: {
                         ConversationRow(conversation: conversation)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableCardStyle())
                 }
             }
         }
@@ -104,8 +122,9 @@ private struct ConversationRow: View {
                             .padding(.vertical, 2)
                             .background(Color.purple.opacity(0.12), in: .capsule)
                     }
-                    if conversation.proposals.contains(where: { $0.state == .pending }) {
-                        Text("Propuesta pendiente")
+                    if conversation.pendingProposalCount > 0 {
+                        Text(conversation.pendingProposalCount == 1 ? String(localized: "Propuesta pendiente")
+                             : String(localized: "\(conversation.pendingProposalCount) propuestas pendientes"))
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.orange)
                             .padding(.horizontal, 8)
@@ -160,18 +179,35 @@ struct KitAssistantChatView: View {
             onIntent: send,
             onRetry: { vm.retryLast(goals: [kit]) },
             intents: intents,
-            startTitle: step == nil ? "¿En qué te ayudo con el Kit?" : "¿Qué te ayudaría con este paso?",
+            startTitle: step == nil ? String(localized: "¿En qué te ayudo con el Kit?") : String(localized: "¿Qué te ayudaría con este paso?"),
             startSubtitle: step == nil
-                ? "Las propuestas que cambien el plan las revisas tú antes de aplicarlas."
-                : "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes.",
-            context: step.map { "Paso \(kit.position(of: $0)) · \($0.stepTitle)" } ?? kit.title,
-            accessory: AnyView(accessory)
+                ? String(localized: "Las propuestas que cambien el plan las revisas tú antes de aplicarlas.")
+                : String(localized: "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes."),
+            context: step.map { String(localized: "Paso \(kit.position(of: $0)) · \($0.stepTitle)") } ?? kit.title,
+            accessory: AnyView(accessory),
+            afterMessage: { message in
+                let anchored = conversation.proposals.filter { $0.anchorMessageID == message.id }
+                guard !anchored.isEmpty else { return nil }
+                // La propuesta llega cuando la respuesta termina de escribirse.
+                return AnyView(DelayedReveal(delay: ChatTyping.duration(of: message) + 0.2) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        ForEach(anchored) { proposalCard($0) }
+                    }
+                })
+            }
         )
         .readableContentWidth(720)
-        .navigationTitle(step == nil ? conversation.title : "Ayuda del paso")
+        .navigationTitle(step == nil ? conversation.title : String(localized: "Ayuda del paso"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
+            // Conversación libre y vacía: el teclado ya listo para escribir.
+            if initialIntent == nil, vm.messages.isEmpty, conversation.proposals.isEmpty {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(450))
+                    inputFocused = true
+                }
+            }
             guard !didSendInitial, let id = initialIntent,
                   let intent = intents.first(where: { $0.id == id }) else { return }
             didSendInitial = true
@@ -179,18 +215,32 @@ struct KitAssistantChatView: View {
         }
     }
 
+    private func proposalCard(_ proposal: PlanProposal) -> some View {
+        ProposalCard(proposal: proposal) {
+            proposal.accept(in: kit, context: modelContext)
+            // El cambio queda en «Tu recorrido» del Kit.
+            let lines = proposal.changes.map { change -> String in
+                if let to = change.to {
+                    return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
+                }
+                return [change.stepLabel, change.detail].compactMap { $0 }.joined(separator: ": ")
+            }
+            try? ProgressLog.addAssistantChange(title: proposal.title, lines: lines, kit: kit, context: modelContext)
+            syncManager?.handleDataChange()
+        } onDiscard: {
+            proposal.state = .discarded
+        }
+    }
+
     @ViewBuilder private var accessory: some View {
         VStack(alignment: .leading, spacing: 14) {
-            ForEach(conversation.proposals) { proposal in
-                ProposalCard(proposal: proposal) {
-                    proposal.accept(in: kit, context: modelContext)
-                    syncManager?.handleDataChange()
-                } onDiscard: {
-                    proposal.state = .discarded
-                }
+            // Solo las propuestas sin mensaje de referencia (p. ej. de ejemplo) van al final.
+            let messageIDs = Set(conversation.viewModel.messages.map(\.id))
+            ForEach(conversation.proposals.filter { $0.anchorMessageID.map { !messageIDs.contains($0) } ?? true }) {
+                proposalCard($0)
             }
             if let step, step.isBlocked,
-               conversation.viewModel.messages.contains(where: { $0.text == "Me falta algo" }) {
+               conversation.viewModel.messages.contains(where: { $0.text == String(localized: "Me falta algo") }) {
                 ResolveBlockCard(step: step) {
                     try? ProgressLog.resolveBlock(for: step, context: modelContext)
                     syncManager?.handleDataChange()
@@ -233,11 +283,11 @@ struct KitAssistantChatView: View {
             switch intent.id {
             case "not-fitting":
                 if let step, let proposal = PlanProposalBuilder.moveStep(step, in: kit) {
-                    conversation.proposals.append(proposal)
+                    conversation.add(proposal)
                 }
             case "change-date":
                 if let proposal = PlanProposalBuilder.shiftTarget(of: kit) {
-                    conversation.proposals.append(proposal)
+                    conversation.add(proposal)
                 }
             default:
                 break
@@ -256,18 +306,23 @@ struct ProposalCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Eyebrow(text: "Propuesta", color: .orange)
+                Eyebrow(text: String(localized: "Propuesta"), color: .orange)
                 Spacer()
                 switch proposal.state {
                 case .accepted:
                     Label("Aplicada", systemImage: "checkmark.circle.fill").font(.caption.weight(.semibold)).foregroundStyle(.green)
                 case .discarded:
                     Label("Descartada", systemImage: "xmark.circle").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                case .superseded:
+                    Label("Sustituida por otra más reciente", systemImage: "arrow.uturn.down.circle")
+                        .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 case .pending:
                     EmptyView()
                 }
             }
             Text(proposal.title).font(.headline)
+            // Las propuestas ya decididas o sustituidas se pliegan para que la conversación se lea bien.
+            if proposal.state == .pending {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(proposal.changes) { change in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -301,6 +356,7 @@ struct ProposalCard: View {
             Label(proposal.impact, systemImage: "info.circle")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+            }
             if proposal.state == .pending {
                 HStack(spacing: 10) {
                     Button(action: onAccept) {
@@ -316,15 +372,15 @@ struct ProposalCard: View {
                 }
                 .controlSize(.large)
                 Text(proposal.changes.count > 1
-                     ? "Los \(proposal.changes.count) cambios se aplican o se descartan juntos para que el plan siga en orden."
-                     : "Solo cambia este paso.")
+                     ? String(localized: "Los \(proposal.changes.count) cambios se aplican o se descartan juntos para que el plan siga en orden.")
+                     : String(localized: "Solo cambia este paso."))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
         .padding(16)
-        .background(Color.orange.opacity(0.08), in: .rect(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.orange.opacity(0.25)))
+        .background(Color.orange.opacity(proposal.state == .pending ? 0.08 : 0.04), in: .rect(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.orange.opacity(proposal.state == .pending ? 0.25 : 0.12)))
         .animation(.default, value: proposal.state)
     }
 }

@@ -15,7 +15,7 @@ struct KitStatsView: View {
             // Progreso
             statCard(
                 value: "\(Int(goalEntity.computedProgress * 100))%",
-                label: "Progreso",
+                label: String(localized: "Progreso"),
                 icon: "chart.pie.fill",
                 color: goalEntity.isCompleted ? .green : .accentColor
             )
@@ -23,7 +23,7 @@ struct KitStatsView: View {
             // Pasos completados
             statCard(
                 value: "\(goalEntity.steps.filter { $0.isCompleted }.count)/\(goalEntity.steps.count)",
-                label: "Pasos",
+                label: String(localized: "Pasos"),
                 icon: "list.bullet.circle.fill",
                 color: .orange
             )
@@ -31,7 +31,7 @@ struct KitStatsView: View {
             // Tiempo total
             statCard(
                 value: formatTotalTime(),
-                label: "Tiempo",
+                label: String(localized: "Tiempo"),
                 icon: "clock.fill",
                 color: .purple
             )

@@ -124,23 +124,23 @@ enum APIError: Error, LocalizedError, CustomStringConvertible {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "Respuesta inválida del servidor"
+            return String(localized: "Respuesta inválida del servidor")
         case .serverError(let code, _):
-            return "Error del servidor (\(code))"
+            return String(localized: "Error del servidor (\(code))")
         case .notAuthenticated:
-            return "No estás autenticado"
+            return String(localized: "No estás autenticado")
         case .networkError(let error):
-            return "Error de red: \(error.localizedDescription)"
+            return String(localized: "Error de red: \(error.localizedDescription)")
         case .decodingError(let error):
-            return "Error al procesar la respuesta: \(error.localizedDescription)"
+            return String(localized: "Error al procesar la respuesta: \(error.localizedDescription)")
         case .premiumRequired:
-            return "Esta función requiere una suscripción premium"
+            return String(localized: "Esta función requiere una suscripción premium")
         case .quotaExceeded:
-            return "Has alcanzado el límite de uso mensual"
+            return String(localized: "Has alcanzado el límite de uso mensual")
         }
     }
 
     var description: String {
-        errorDescription ?? "Error de API"
+        errorDescription ?? String(localized: "Error de API")
     }
 }

@@ -44,7 +44,7 @@ struct StepDetailsCard: View {
             StepDetailRow(
                 icon: "clock.fill",
                 iconColor: .accentColor,
-                title: "Tiempo estimado",
+                title: String(localized: "Tiempo estimado"),
                 value: StepDetailHelpers.formatMinutes(stepEntity.estimateMinutes),
                 showDivider: true
             )
@@ -54,7 +54,7 @@ struct StepDetailsCard: View {
                 StepDetailRow(
                     icon: "calendar",
                     iconColor: .purple,
-                    title: "Fecha sugerida",
+                    title: String(localized: "Fecha sugerida"),
                     value: deadline.formatted(.dateTime.day().month(.wide)),
                     showDivider: true
                 )
@@ -64,7 +64,7 @@ struct StepDetailsCard: View {
             StepDetailRow(
                 icon: StepDetailHelpers.effortIcon(for: stepEntity.effortLevel),
                 iconColor: StepDetailHelpers.effortColor(for: stepEntity.effortLevel),
-                title: "Nivel de esfuerzo",
+                title: String(localized: "Nivel de esfuerzo"),
                 showDivider: false,
                 trailing: {
                     StepEffortIndicator(effortLevel: stepEntity.effortLevel)

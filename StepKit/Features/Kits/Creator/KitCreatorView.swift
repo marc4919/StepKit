@@ -93,7 +93,7 @@ struct KitCreatorView: View {
                         if let token = authManager.token {
                             vm.createKit(token: token)
                         } else {
-                            vm.errorMessage = "Necesitas iniciar sesión para crear un kit"
+                            vm.errorMessage = String(localized: "Necesitas iniciar sesión para crear un kit")
                             vm.showingError = true
                         }
                     }
@@ -161,7 +161,7 @@ struct KitCreatorView: View {
             }
             Button("Cancelar", role: .cancel) { }
         } message: {
-            Text(vm.errorMessage ?? "Ha ocurrido un error inesperado")
+            Text(vm.errorMessage ?? String(localized: "Ha ocurrido un error inesperado"))
         }
         .interactiveDismissDisabled(vm.viewState != .form)
 

@@ -112,7 +112,7 @@ struct KitRowView: View {
             }
         }
         .accessibilityLabel("Progreso del kit")
-        .accessibilityValue(isCompleted ? "Completado" : "\(Int(progress * 100))% completado")
+        .accessibilityValue(isCompleted ? String(localized: "Completado") : String(localized: "\(Int(progress * 100))% completado"))
     }
 
     // MARK: - Helpers
@@ -128,7 +128,7 @@ struct KitRowView: View {
     }
 }
 
-#Preview("En progreso") {
+#Preview(String(localized: "En progreso")) {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, configurations: config)
     let kitEntity = GoalEntity(
@@ -148,9 +148,9 @@ struct KitRowView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: GoalEntity.self, StepEntity.self, configurations: config)
     let kitEntity = GoalEntity(
-        planTitle: "Configurar proyecto",
+        planTitle: String(localized: "Configurar proyecto"),
         horizonDays: 7,
-        kpi: "Proyecto funcionando",
+        kpi: String(localized: "Proyecto funcionando"),
         progress: 1.0
     )
     container.mainContext.insert(kitEntity)

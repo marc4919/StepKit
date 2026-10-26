@@ -32,10 +32,10 @@ enum StepProgressState {
 
     var label: String {
         switch self {
-        case .pending: "Pendiente"
-        case .inProgress: "En curso"
-        case .blocked: "Bloqueado"
-        case .done: "Completado"
+        case .pending: String(localized: "Pendiente")
+        case .inProgress: String(localized: "En curso")
+        case .blocked: String(localized: "Bloqueado")
+        case .done: String(localized: "Completado")
         }
     }
 }
@@ -67,9 +67,22 @@ enum ProgressLog {
         note: String,
         blockedReason: String?,
         context: ModelContext,
-        now: Date = Date()
+        now: Date = Date(),
+        keepsBlockState: Bool = false
     ) throws {
         guard let kit = step.goal else { return }
+        // Solo una nota de avance: el estado del paso (bloqueado o no) no cambia.
+        if keepsBlockState {
+            let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            context.insert(ProgressEntryEntity(
+                ownerID: step.ownerID, kitID: kit.id, stepID: step.id, kind: .progress,
+                note: trimmed, notedAt: now, createdAt: now, updatedAt: now
+            ))
+            step.markModified(at: now)
+            try context.save()
+            return
+        }
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
         let reason = blockedReason?.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -101,6 +114,26 @@ enum ProgressLog {
         context.insert(ProgressEntryEntity(
             ownerID: kit.ownerID, kitID: kit.id, stepID: nil, kind: .progress,
             note: trimmed, notedAt: now, createdAt: now, updatedAt: now
+        ))
+        kit.markModified(at: now)
+        try context.save()
+    }
+
+    /// Prefijo que marca, dentro del registro, los cambios aceptados del asistente.
+    /// Se guardan como nota del Kit (tipo `progress` sin paso) para sincronizar sin un tipo nuevo en el servidor.
+    static let assistantChangeMarker = "⟡ "
+
+    static func isAssistantChange(_ entry: ProgressEntryEntity) -> Bool {
+        entry.stepID == nil && entry.note.hasPrefix(assistantChangeMarker)
+    }
+
+    /// Deja en el recorrido del Kit qué cambió al aceptar una propuesta del asistente.
+    static func addAssistantChange(title: String, lines: [String], kit: GoalEntity, context: ModelContext,
+                                   now: Date = Date()) throws {
+        let body = ([title] + lines.map { "• \($0)" }).joined(separator: "\n")
+        context.insert(ProgressEntryEntity(
+            ownerID: kit.ownerID, kitID: kit.id, stepID: nil, kind: .progress,
+            note: assistantChangeMarker + body, notedAt: now, createdAt: now, updatedAt: now
         ))
         kit.markModified(at: now)
         try context.save()

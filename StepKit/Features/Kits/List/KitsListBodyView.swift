@@ -30,7 +30,7 @@ struct KitsListBodyView: View {
                                 kitRow(kitEntity)
                             }
                         } header: {
-                            SectionHeaderView(title: "En progreso", icon: "target", count: activeKits.count)
+                            SectionHeaderView(title: String(localized: "En progreso"), icon: "target", count: activeKits.count)
                         }
                     }
                     
@@ -41,7 +41,7 @@ struct KitsListBodyView: View {
                                 kitRow(kitEntity)
                             }
                         } header: {
-                            SectionHeaderView(title: "Completados", icon: "checkmark.circle", count: completedKits.count)
+                            SectionHeaderView(title: String(localized: "Completados"), icon: "checkmark.circle", count: completedKits.count)
                         }
                     }
                 }
@@ -93,7 +93,7 @@ struct KitsListBodyView: View {
             .accessibilityIdentifier("kit.row")
             .accessibilityLabel("Kit: \(kitEntity.title)")
             .accessibilityValue("Progreso: \(Int(kitEntity.progress * 100))%, KPI: \(kitEntity.kpi)")
-            .accessibilityHint(isCompact ? "Toca dos veces para ver los detalles del kit" : "Toca dos veces para seleccionar este kit")
+            .accessibilityHint(isCompact ? String(localized: "Toca dos veces para ver los detalles del kit") : String(localized: "Toca dos veces para seleccionar este kit"))
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))

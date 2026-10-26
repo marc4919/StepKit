@@ -149,7 +149,7 @@ struct SearchView: View {
                             Label {
                                 VStack(alignment: .leading) {
                                     Text(entry.note).font(.headline).lineLimit(2)
-                                    Text([kit?.title, step.map { "Paso \(kit?.position(of: $0) ?? 1)" },
+                                    Text([kit?.title, step.map { String(localized: "Paso \(kit?.position(of: $0) ?? 1)") },
                                           entry.notedAt.formatted(.dateTime.day().month(.abbreviated))]
                                             .compactMap { $0 }.joined(separator: " · "))
                                         .font(.subheadline).foregroundStyle(.secondary)
@@ -175,10 +175,13 @@ private struct SearchEmptyPlacement: ViewModifier {
     func body(content: Content) -> some View {
         Group {
             if size.width > size.height {
+                // Centrado respecto a la pantalla (como el campo de búsqueda), no solo al hueco
+                // que deja la franja del sistema a la derecha.
                 content
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .padding(.top, 24)
+                    .balancedHorizontalSafeArea()
             } else {
                 content
             }

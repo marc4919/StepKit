@@ -99,7 +99,6 @@ struct BookFreeSessionSheet: View {
     @State private var saveFailed = false
     @FocusState private var titleFocused: Bool
 
-    private static let ideas = ["Gimnasio", "Leer", "Llamada", "Recados", "Estudiar", "Paseo"]
     private var trimmedTitle: String { title.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     var body: some View {
@@ -111,22 +110,10 @@ struct BookFreeSessionSheet: View {
                         .focused($titleFocused)
                         .submitLabel(.done)
                         .accessibilityIdentifier("session.freeTitle")
-                    FlowLayout(spacing: 8) {
-                        ForEach(Self.ideas, id: \.self) { idea in
-                            Button(idea) { withAnimation(.smooth) { title = idea } }
-                                .buttonStyle(.bordered)
-                                .buttonBorderShape(.capsule)
-                                .controlSize(.small)
-                                .tint(title == idea ? .accentColor : .secondary)
-                        }
-                    }
-                    .listRowSeparator(.hidden)
-                } header: {
-                    Text("Algo propio")
                 } footer: {
                     Text("Un rato para ti que no forma parte de ningún Kit.")
                 }
-                SessionWhenSection(date: $date, minutes: $minutes, suggested: nil)
+                SessionWhenSection(date: $date, minutes: $minutes, suggested: nil, allowsLongSessions: true)
                 Section {
                     Toggle("Recordármelo", isOn: $remind)
                 }
@@ -137,7 +124,7 @@ struct BookFreeSessionSheet: View {
                 }
             }
             .animation(.smooth, value: trimmedTitle.isEmpty)
-            .navigationTitle("Reservar algo propio")
+            .navigationTitle("Algo propio")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
@@ -209,7 +196,7 @@ struct BookSessionSheet: View {
                                 IconChip(symbol: Symbols.kits, color: .accentColor, size: 30)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(candidate.title).foregroundStyle(.primary)
-                                    Text("\(candidate.completedStepCount) de \(candidate.activeStepCount) pasos")
+                                    Text(String(localized: "\(candidate.completedStepCount) de \(candidate.activeStepCount) pasos"))
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer(minLength: 0)
@@ -285,7 +272,7 @@ struct BookSessionSheet: View {
 
     private func stepRow(_ candidate: StepEntity) -> some View {
         HStack(spacing: 12) {
-            Text("\(kit?.position(of: candidate) ?? 0)")
+            Text(String(localized: "\(kit?.position(of: candidate) ?? 0)"))
                 .font(.caption.bold().monospacedDigit())
                 .foregroundStyle(candidate.id == stepID ? .white : Color.accentColor)
                 .frame(width: 26, height: 26)
@@ -294,7 +281,7 @@ struct BookSessionSheet: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(candidate.stepTitle).foregroundStyle(.primary).lineLimit(2)
                 HStack(spacing: 8) {
-                    Label("\(candidate.estimateMinutes) min", systemImage: Symbols.time)
+                    Label(String(localized: "\(candidate.estimateMinutes) min"), systemImage: Symbols.time)
                         .foregroundStyle(MetaTint.time)
                     if candidate.id == kit?.nextStep?.id {
                         Text("Siguiente").foregroundStyle(.secondary)
@@ -331,6 +318,10 @@ private struct SessionWhenSection: View {
     @Binding var date: Date
     @Binding var minutes: Int
     let suggested: Int?
+    /// Algo propio puede durar mucho más que un paso: de 5 min a 8 h, en un selector.
+    var allowsLongSessions = false
+
+    private static let longOptions = [5, 10, 15, 20, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 420, 480]
 
     private var options: [Int] {
         var values = [15, 30, 45, 60, 90]
@@ -343,6 +334,14 @@ private struct SessionWhenSection: View {
             DatePicker(selection: $date, in: Calendar.current.startOfDay(for: .now)...) {
                 Label { Text("Empieza") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
             }
+            if allowsLongSessions {
+                Picker(selection: $minutes) {
+                    ForEach(Self.longOptions, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
+                } label: {
+                    Label { Text("Duración") } icon: { IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28) }
+                }
+                .accessibilityIdentifier("session.duration")
+            } else {
             VStack(alignment: .leading, spacing: 10) {
                 Label { Text("Duración") } icon: { IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28) }
                 FlowLayout(spacing: 8) {
@@ -361,6 +360,7 @@ private struct SessionWhenSection: View {
                 }
             }
             .padding(.vertical, 4)
+            }
         }
     }
 }
@@ -414,20 +414,20 @@ struct ReviewSessionSheet: View {
             Form {
                 Section {
                     if session.isFree {
-                        LabeledContent("Sesión", value: session.title ?? "Sesión propia")
+                        LabeledContent("Sesión", value: session.title ?? String(localized: "Sesión propia"))
                     } else if let step, let kit {
-                        LabeledContent("Paso \(kit.position(of: step))", value: step.stepTitle)
+                        LabeledContent(String(localized: "Paso \(kit.position(of: step))"), value: step.stepTitle)
                     } else if let kit {
                         LabeledContent("Kit", value: kit.title)
                     }
-                    LabeledContent("Era", value: "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())) · \(session.durationMinutes) min")
+                    LabeledContent("Era", value: String(localized: "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())) · \(session.durationMinutes) min"))
                 } footer: {
                     Text("Tu avance y la fecha prevista del Kit se conservan.")
                 }
                 Section("Qué quieres hacer") {
                     Picker("Opción", selection: $choice) {
                         Text("Moverla").tag(Choice.move)
-                        Text(session.startsAt < Date() ? "Mantenerla como pasada" : "Mantenerla").tag(Choice.keep)
+                        Text(session.startsAt < Date() ? String(localized: "Mantenerla como pasada") : String(localized: "Mantenerla")).tag(Choice.keep)
                         Text("Quitar la sesión").tag(Choice.remove)
                     }
                     .pickerStyle(.inline)

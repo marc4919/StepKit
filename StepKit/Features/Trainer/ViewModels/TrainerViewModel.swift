@@ -41,14 +41,14 @@ final class TrainerViewModel {
     // MARK: - Constants
     
     let quickActions: [QuickAction] = [
-        QuickAction(icon: "flame.fill", title: "Motivación", prompt: "Dame motivación para seguir con mi objetivo"),
-        QuickAction(icon: "lightbulb.fill", title: "Consejos", prompt: "Dame consejos para avanzar en mis kits actuales"),
-        QuickAction(icon: "questionmark.circle.fill", title: "FAQ", prompt: "¿Cuáles son las preguntas más frecuentes?"),
-        QuickAction(icon: "chart.line.uptrend.xyaxis", title: "Progreso", prompt: "¿Cómo voy con mi progreso?")
+        QuickAction(icon: "flame.fill", title: String(localized: "Motivación"), prompt: String(localized: "Dame motivación para seguir con mi objetivo")),
+        QuickAction(icon: "lightbulb.fill", title: String(localized: "Consejos"), prompt: String(localized: "Dame consejos para avanzar en mis kits actuales")),
+        QuickAction(icon: "questionmark.circle.fill", title: "FAQ", prompt: String(localized: "¿Cuáles son las preguntas más frecuentes?")),
+        QuickAction(icon: "chart.line.uptrend.xyaxis", title: String(localized: "Progreso"), prompt: String(localized: "¿Cómo voy con mi progreso?"))
     ]
     
     private let welcomeMessages = [
-        "Hola 👋 Soy tu asistente de StepKit. Puedo ayudarte con tu progreso, motivación o dudas. ¿Qué necesitas?"
+        String(localized: "Hola 👋 Soy tu asistente de StepKit. Puedo ayudarte con tu progreso, motivación o dudas. ¿Qué necesitas?")
     ]
     
     // MARK: - Computed Properties
@@ -196,13 +196,13 @@ final class TrainerViewModel {
         // Convertir el título de la acción a QuickActionType
         let quickActionType: QuickActionType?
         switch action.title {
-        case "Motivación":
+        case String(localized: "Motivación"):
             quickActionType = .motivation
-        case "Consejos":
+        case String(localized: "Consejos"):
             quickActionType = .tips
         case "FAQ":
             quickActionType = .faq
-        case "Progreso":
+        case String(localized: "Progreso"):
             quickActionType = .progress
         default:
             quickActionType = nil

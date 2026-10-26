@@ -40,7 +40,7 @@ struct StepCompletionToggleButton: View {
                     .font(.system(size: 20, weight: .semibold))
                     .rotationEffect(.degrees(iconRotation))
 
-                Text(isCompleted ? "Marcar como pendiente" : "Marcar como completado")
+                Text(isCompleted ? String(localized: "Marcar como pendiente") : String(localized: "Marcar como completado"))
                     .font(.body)
                     .fontWeight(.semibold)
             }

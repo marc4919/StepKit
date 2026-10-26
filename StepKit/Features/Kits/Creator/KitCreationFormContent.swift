@@ -36,10 +36,7 @@ struct KitCreationFormContent: View {
                 // El título abarca las dos columnas; debajo, el objetivo y el tiempo lado a lado.
                 VStack(spacing: 0) {
                     headerContent.padding(.top, 8)
-                    // Columnas con aire entre ellas y un ancho total contenido, sin pegarse ni estirarse.
-                    // Cada columna conserva sus márgenes de formulario: nada se recorta ni se pega.
-                    // Como en el calendario: dos listas con un hueco claro entre ellas.
-                    // Márgenes explícitos: 24 pt a los lados y 40 pt entre columnas, sin recortar las tarjetas.
+                    // 24 pt a los lados y 40 pt entre columnas, sin recortar las tarjetas.
                     HStack(alignment: .top, spacing: 24) {
                         Form { goalSection }
                         Form {
@@ -52,19 +49,37 @@ struct KitCreationFormContent: View {
                     .padding(.horizontal, 16)
                     .frame(maxWidth: 1100)
                 }
+                .balancedHorizontalSafeArea()
                 .background(Color(.systemGroupedBackground))
             } else {
-                Form {
-                    headerSection
-                    goalSection
-                    timeSection
-                    createSection
+                ScrollViewReader { proxy in
+                    Form {
+                        headerSection
+                        goalSection
+                        timeSection
+                        createSection
+                    }
+                    // Al tocar un campo, la lista se desplaza con suavidad hasta él, por encima del teclado.
+                    .onChange(of: focusedField.wrappedValue) { _, field in
+                        guard let field else { return }
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .milliseconds(250))
+                            withAnimation(.smooth(duration: 0.45)) {
+                                proxy.scrollTo(field, anchor: UnitPoint(x: 0.5, y: 0.25))
+                            }
+                        }
+                    }
                 }
             }
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { width = $0.width; height = $0.height }
         .scrollDismissesKeyboard(.interactively)
+        // Al tocar un interruptor, un selector o la fecha, el teclado se retira: ya no estás escribiendo.
+        .onChange(of: sessionsPerWeek) { _, _ in dismissKeyboard() }
+        .onChange(of: sessionMinutes) { _, _ in dismissKeyboard() }
+        .onChange(of: dueDate) { _, _ in dismissKeyboard() }
         .onChange(of: oneSitting) { _, _ in
+            dismissKeyboard()
             // Se mantiene el tiempo elegido; si no existe en la otra lista, el más cercano (sin saltos bruscos).
             if !durations.contains(sessionMinutes),
                let nearest = durations.min(by: { abs($0 - sessionMinutes) < abs($1 - sessionMinutes) }) {
@@ -96,14 +111,14 @@ struct KitCreationFormContent: View {
 
     @ViewBuilder private var goalSection: some View {
         Section {
-            field("target", .accentColor, "Resultado", placeholder: "Ej.: Correr 5 km sin parar",
+            field("target", .accentColor, String(localized: "Resultado"), placeholder: String(localized: "Ej.: Correr 5 km sin parar"),
                   text: $description, focus: .description, identifier: "kitCreator.description")
-            field("checklist", .green, "Cómo sabré que está listo (opcional)",
-                  placeholder: "Ej.: Los corro en menos de 35 min", text: $doneWhen, focus: .doneWhen)
-            field("flag.fill", .pink, "Punto de partida (opcional)",
-                  placeholder: "Ej.: Ahora aguanto 10 min seguidos", text: $startingPoint, focus: .startingPoint)
-            field(Symbols.risk, .orange, "Qué te puede frenar (opcional)",
-                  placeholder: "Ej.: Trabajo a turnos, me duele la rodilla", text: $inconveniences, focus: .obstacles)
+            field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
+                  placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen)
+            field("flag.fill", .pink, String(localized: "Punto de partida (opcional)"),
+                  placeholder: String(localized: "Ej.: Ahora aguanto 10 min seguidos"), text: $startingPoint, focus: .startingPoint)
+            field(Symbols.risk, .orange, String(localized: "Qué te puede frenar (opcional)"),
+                  placeholder: String(localized: "Ej.: Trabajo a turnos, me duele la rodilla"), text: $inconveniences, focus: .obstacles)
         } header: {
             Text("Tu objetivo")
         }
@@ -111,7 +126,7 @@ struct KitCreationFormContent: View {
 
     @ViewBuilder private var timeSection: some View {
         Section {
-            Toggle(isOn: $oneSitting.animation(.smooth)) {
+            Toggle(isOn: $oneSitting.animation(.smooth(duration: 0.5))) {
                 Label {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("En una sola sesión")
@@ -127,16 +142,23 @@ struct KitCreationFormContent: View {
             if !oneSitting {
                 Stepper(value: $sessionsPerWeek, in: 1...14) {
                     Label {
-                        Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
+                        Text(sessionsPerWeek == 1 ? String(localized: "1 sesión por semana") : String(localized: "\(sessionsPerWeek) sesiones por semana"))
                     } icon: {
                         IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                     }
                 }
+                // La fila se pliega y se funde a la vez, sin aparecer ni desaparecer de golpe.
+                .transition(.asymmetric(
+                    insertion: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.5).delay(0.05)),
+                    removal: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.35))))
             }
             Picker(selection: $sessionMinutes) {
                 ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
             } label: {
-                Label { Text(oneSitting ? "Tiempo disponible" : "Cada sesión") } icon: {
+                Label {
+                    Text(oneSitting ? String(localized: "Tiempo disponible") : String(localized: "Cada sesión"))
+                        .contentTransition(.opacity)
+                } icon: {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
                 }
             }
@@ -149,6 +171,12 @@ struct KitCreationFormContent: View {
         } footer: {
             Text("La fecha es orientativa. Podrás ajustar el plan y tu tiempo después.")
         }
+    }
+
+    /// Cambiar un control que no es de texto retira el teclado, para que no tape el formulario.
+    /// (Sin gestos añadidos a los controles: un TapGesture simultáneo bloqueaba el interruptor.)
+    private func dismissKeyboard() {
+        focusedField.wrappedValue = nil
     }
 
     @ViewBuilder private var createSection: some View {
@@ -194,5 +222,6 @@ struct KitCreationFormContent: View {
                     .accessibilityLabel(title)
             }
         }
+        .id(focus)
     }
 }

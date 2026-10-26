@@ -397,9 +397,9 @@ enum SubscriptionPlan: CaseIterable {
 
 /// Límites del plan gratuito. El servidor los aplica; la app solo los explica.
 enum PlanLimits {
-    static let freeActiveKits = 3
+    static let freeActiveKits = 2
     /// Valor por defecto si el perfil aún no ha llegado; manda `monthlyAICallsQuota` del servidor.
-    static let freeCloudAIPerMonth = 20
+    static let freeCloudAIPerMonth = 10
 }
 
 /// Límite que se ha tocado al intentar algo con el plan gratuito.

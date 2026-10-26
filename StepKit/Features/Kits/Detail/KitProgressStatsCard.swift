@@ -19,7 +19,7 @@ struct KitProgressStatsCard: View {
             // Progreso
             statCard(
                 value: "\(progressPercent)%",
-                label: "Progreso",
+                label: String(localized: "Progreso"),
                 icon: "chart.pie.fill",
                 color: isCompleted ? .green : .accentColor
             )
@@ -27,7 +27,7 @@ struct KitProgressStatsCard: View {
             // Pasos completados
             statCard(
                 value: "\(completedSteps)/\(totalSteps)",
-                label: "Pasos",
+                label: String(localized: "Pasos"),
                 icon: "list.bullet.circle.fill",
                 color: .orange
             )
@@ -35,7 +35,7 @@ struct KitProgressStatsCard: View {
             // Tiempo total
             statCard(
                 value: totalTimeFormatted,
-                label: "Tiempo",
+                label: String(localized: "Tiempo"),
                 icon: "clock.fill",
                 color: .purple
             )
