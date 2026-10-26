@@ -63,6 +63,7 @@ struct SearchView: View {
                     } description: {
                         Text("Busca por nombre de Kit, paso o nota.")
                     }
+                    .modifier(SearchEmptyPlacement())
                     .background(alignment: .top) { BrandGlow() }
                 } else if matchingKits.isEmpty && matchingSteps.isEmpty && matchingEntries.isEmpty {
                     ContentUnavailableView {
@@ -74,6 +75,7 @@ struct SearchView: View {
                     } actions: {
                         Button("Limpiar búsqueda") { searchText = "" }
                     }
+                    .modifier(SearchEmptyPlacement())
                 } else {
                     results
                 }
@@ -161,5 +163,26 @@ struct SearchView: View {
                 }
             }
         }
+    }
+}
+
+/// Mensaje de la búsqueda sin resultados: centrado en horizontal y en la parte alta.
+/// Con el teclado abierto en pantallas anchas y bajas (iPhone Duo abierto en horizontal)
+/// el centro vertical queda tapado o desplazado; arriba siempre se ve centrado y entero.
+private struct SearchEmptyPlacement: ViewModifier {
+    @State private var size: CGSize = .zero
+
+    func body(content: Content) -> some View {
+        Group {
+            if size.width > size.height {
+                content
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .padding(.top, 24)
+            } else {
+                content
+            }
+        }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
     }
 }
