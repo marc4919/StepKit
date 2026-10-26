@@ -34,6 +34,8 @@ struct KitCreationStreamingProgress: View {
     /// Las preguntas entran después de que el aviso de cuidado se haya visto con calma.
     @State private var questionsVisible = false
     @State private var reviewWide = false
+    @State private var preparingSize: CGSize = .zero
+    private var preparingSideBySide: Bool { preparingSize.width >= 760 && preparingSize.width > preparingSize.height }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
@@ -85,68 +87,35 @@ struct KitCreationStreamingProgress: View {
     // MARK: - Preparando
 
     private var preparingView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
-                // La esfera se forma mientras avanza la barra y, al terminar, despega.
-                OrbitMark(height: questionsVisible ? 120 : 190, buildProgress: shownProgress, liftOff: liftOff, hidesSphere: sphereInFlight)
-                    .background {
-                        if showCareful && !sphereInFlight {
-                            CarefulHalo(diameter: 59 * (0.15 + 0.85 * shownProgress))
+        Group {
+            if preparingSideBySide {
+                // Pantalla ancha y baja (iPhone Duo abierto en horizontal): la esfera crece a la izquierda,
+                // centrada en vertical, y a la derecha el texto, las fases y la barra.
+                HStack(spacing: 24) {
+                    preparingOrbit
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 22) {
+                            preparingContent
                         }
+                        .padding(.vertical)
+                        .frame(minHeight: preparingSize.height, alignment: .center)
                     }
-                    .overlay {
-                        // Hueco de la esfera (190 × 0,31): de aquí sale hacia «Tu plan».
-                        Color.clear
-                            .frame(width: 59, height: 59)
-                            .matchedGeometryEffect(id: "sphere", in: sphereSpace, isSource: !showReview)
-                    }
-                    .padding(.horizontal, 20)
-                ZStack {
-                    Text(headline)
-                        .font(.title.bold())
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 24)
-                        .id(headline)
-                        .transition(Self.swap)
-                }
-                .accessibilityAddTraits(.updatesFrequently)
-                if streamingState.isRestarting {
-                    Text("Lo estoy rehaciendo para que encaje mejor con tu tiempo.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 30)
-                        .transition(Self.swap)
-                }
-                if questionsVisible {
-                    // Los motivos quedan como recordatorio compacto encima de las preguntas.
-                    CarefulReasonChips(reasons: streamingState.carefulReasons)
-                        .padding(.horizontal, 24)
-                        .transition(.asymmetric(
-                            insertion: .opacity.animation(.easeOut(duration: 0.35).delay(0.3)),
-                            removal: .opacity))
-                    KitQuestionsCard(questions: streamingState.pendingQuestions,
-                                     onSubmit: onAnswer, onSkip: onSkipQuestions)
-                        .padding(.horizontal, 24)
-                        .transition(.asymmetric(
-                            insertion: .opacity.combined(with: .offset(y: 40)),
-                            removal: .opacity))
-                } else {
-                    preparingDetails
-                        .transition(.asymmetric(
-                            insertion: .opacity.animation(.easeOut(duration: 0.4).delay(0.2)),
-                            removal: .opacity.combined(with: .scale(scale: 0.97, anchor: .top))))
-                }
-                Text("Puedes cancelar: tu idea se conserva en el formulario.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .scrollBounceBehavior(.basedOnSize)
                     .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal, 24)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 22) {
+                        preparingOrbit
+                        preparingContent
+                    }
+                    .padding(.vertical)
+                }
             }
-            .padding(.vertical)
         }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { preparingSize = $0 }
         .background { EntryBackground() }
         // Hápticos sutiles: un toque ligero por cada check y éxito al despegar.
         .sensoryFeedback(.impact(weight: .light), trigger: streamingState.kitTitle != nil)
@@ -194,6 +163,69 @@ struct KitCreationStreamingProgress: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder private var preparingOrbit: some View {
+        // La esfera se forma mientras avanza la barra y, al terminar, despega.
+        OrbitMark(height: preparingSideBySide ? min(320, preparingSize.height * 0.55) : (questionsVisible ? 120 : 190), buildProgress: shownProgress, liftOff: liftOff, hidesSphere: sphereInFlight)
+            .background {
+                if showCareful && !sphereInFlight {
+                    CarefulHalo(diameter: 59 * (0.15 + 0.85 * shownProgress))
+                }
+            }
+            .overlay {
+                // Hueco de la esfera (190 × 0,31): de aquí sale hacia «Tu plan».
+                Color.clear
+                    .frame(width: 59, height: 59)
+                    .matchedGeometryEffect(id: "sphere", in: sphereSpace, isSource: !showReview)
+            }
+            .padding(.horizontal, 20)
+    }
+
+    @ViewBuilder private var preparingContent: some View {
+        ZStack {
+            Text(headline)
+                .font(.title.bold())
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
+                .id(headline)
+                .transition(Self.swap)
+        }
+        .accessibilityAddTraits(.updatesFrequently)
+        if streamingState.isRestarting {
+            Text("Lo estoy rehaciendo para que encaje mejor con tu tiempo.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 30)
+                .transition(Self.swap)
+        }
+        if questionsVisible {
+            // Los motivos quedan como recordatorio compacto encima de las preguntas.
+            CarefulReasonChips(reasons: streamingState.carefulReasons)
+                .padding(.horizontal, 24)
+                .transition(.asymmetric(
+                    insertion: .opacity.animation(.easeOut(duration: 0.35).delay(0.3)),
+                    removal: .opacity))
+            KitQuestionsCard(questions: streamingState.pendingQuestions,
+                             onSubmit: onAnswer, onSkip: onSkipQuestions)
+                .padding(.horizontal, 24)
+                .transition(.asymmetric(
+                    insertion: .opacity.combined(with: .offset(y: 40)),
+                    removal: .opacity))
+        } else {
+            preparingDetails
+                .transition(.asymmetric(
+                    insertion: .opacity.animation(.easeOut(duration: 0.4).delay(0.2)),
+                    removal: .opacity.combined(with: .scale(scale: 0.97, anchor: .top))))
+        }
+        Text("Puedes cancelar: tu idea se conserva en el formulario.")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
     }
 
     private func scheduleReview() {
@@ -345,19 +377,22 @@ struct KitCreationStreamingProgress: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 if reviewWide {
-                    // Pantalla ancha (iPhone Duo abierto, iPad): el resumen a la izquierda y los pasos a la derecha.
+                    // Pantalla ancha (iPhone Duo abierto, iPad): resumen a la izquierda, «A tener en cuenta» a la derecha.
                     reviewHeader
                     HStack(alignment: .top, spacing: 24) {
                         VStack(alignment: .leading, spacing: 18) {
                             reviewKPI
-                            reviewNote
                             reviewFirstStep
-                            reviewRisks
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        reviewStepsList
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 18) {
+                            reviewRisks
+                            reviewNote
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    // Los pasos, debajo y a todo lo ancho.
+                    reviewStepsList
                 } else {
                     reviewHeader
                     reviewKPI

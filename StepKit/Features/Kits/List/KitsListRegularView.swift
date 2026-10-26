@@ -31,7 +31,7 @@ struct KitsListRegularView: View {
             }
         }
         // Al borrar el último Kit, de dos columnas a pantalla única con un fundido suave.
-        .animation(.smooth(duration: 0.5), value: kitEntities.isEmpty)
+        .animation(.smooth(duration: 0.6), value: kitEntities.isEmpty)
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
             KitCreatorView { newKit in
                 // Buscar el GoalEntity correspondiente
@@ -50,13 +50,18 @@ struct KitsListRegularView: View {
                     Task { @MainActor in
                         try? await Task.sleep(for: .milliseconds(300))
                         guard let kit else { return }
-                        // Primero sale de la lista con suavidad; después se borra de verdad.
+                        // Primero sale de la lista y, si estaba abierto, su detalle se funde;
+                        // después se borra de verdad. Si era el último, las dos columnas dan paso
+                        // a Mis Kits con un fundido (ver `.animation` del cuerpo).
                         withAnimation(.smooth(duration: 0.5)) {
                             _ = viewModel.leavingKitIDs.insert(kit.id)
+                            if viewModel.selectedKitId == kit.id { viewModel.clearSelection() }
                         }
                         try? await Task.sleep(for: .milliseconds(550))
-                        viewModel.deleteKit(kit, syncManager: syncManager)
-                        viewModel.leavingKitIDs.remove(kit.id)
+                        withAnimation(.smooth(duration: 0.6)) {
+                            viewModel.deleteKit(kit, syncManager: syncManager)
+                            viewModel.leavingKitIDs.remove(kit.id)
+                        }
                     }
                 },
                 onCancel: {

@@ -27,62 +27,104 @@ struct ProfileView: View {
         return goalEntities.filter { $0.ownerID == ownerID }
     }
 
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    header.listRowBackground(Color.clear)
-                }
-                Section {
-                    NavigationLink { SubscriptionView() } label: {
-                        ProfileRow(title: "Suscripción", detail: displayTier, symbol: "crown.fill", color: .orange)
-                    }
-                    NavigationLink { RemindersSettingsView() } label: {
-                        ProfileRow(title: "Recordatorios", symbol: "bell.fill", color: .red)
-                    }
-                    NavigationLink { AIPrivacyView() } label: {
-                        ProfileRow(title: "IA y privacidad", symbol: "hand.raised.fill", color: .blue)
-                    }
-                    .accessibilityIdentifier("profile.aiPrivacy")
-                }
-                Section("Información") {
-                    Button { showingTermsOfService = true } label: {
-                        ProfileRow(title: "Términos de uso", symbol: "doc.text.fill", color: .gray)
-                    }
-                    .buttonStyle(.plain)
-                    Button { showingPrivacyPolicy = true } label: {
-                        ProfileRow(title: "Política de privacidad", symbol: "lock.fill", color: .green)
-                    }
-                    .buttonStyle(.plain)
-                    NavigationLink { AboutView() } label: {
-                        ProfileRow(title: "Acerca de StepKit", symbol: "info", color: .accentColor)
-                    }
-                }
-                #if DEBUG
-                Section {
-                    Button {
-                        showingDemoReset = true
-                    } label: {
-                        if resettingDemo {
-                            HStack { ProgressView(); Text("Restaurando…") }
-                        } else {
-                            Label("Restaurar demo", systemImage: "arrow.counterclockwise")
-                        }
-                    }
-                    .disabled(resettingDemo)
-                    .accessibilityIdentifier("profile.resetDemo")
-                } footer: {
-                    Text("Solo en versiones de prueba. Borra tus Kits de esta cuenta, cierra la sesión y vuelve a la bienvenida para enseñar la app desde cero.")
-                }
-                #endif
-                Section {
-                    Button("Cerrar sesión", role: .destructive) { showingSignOutAlert = true }
-                        .accessibilityIdentifier("profile.signOut")
-                        .accessibilityHint("Cierra la sesión actual y regresa a la pantalla de inicio de sesión")
+    @State private var twoColumns = false
+
+    @ViewBuilder private var headerSection: some View {
+        Section {
+            header.listRowBackground(Color.clear)
+        }
+    }
+
+    @ViewBuilder private var accountSection: some View {
+        Section {
+            NavigationLink { SubscriptionView() } label: {
+                ProfileRow(title: "Suscripción", detail: displayTier, symbol: "crown.fill", color: .orange)
+            }
+            NavigationLink { RemindersSettingsView() } label: {
+                ProfileRow(title: "Recordatorios", symbol: "bell.fill", color: .red)
+            }
+            NavigationLink { AIPrivacyView() } label: {
+                ProfileRow(title: "IA y privacidad", symbol: "hand.raised.fill", color: .blue)
+            }
+            .accessibilityIdentifier("profile.aiPrivacy")
+        }
+    }
+
+    @ViewBuilder private var infoSection: some View {
+        Section("Información") {
+            Button { showingTermsOfService = true } label: {
+                ProfileRow(title: "Términos de uso", symbol: "doc.text.fill", color: .gray)
+            }
+            .buttonStyle(.plain)
+            Button { showingPrivacyPolicy = true } label: {
+                ProfileRow(title: "Política de privacidad", symbol: "lock.fill", color: .green)
+            }
+            .buttonStyle(.plain)
+            NavigationLink { AboutView() } label: {
+                ProfileRow(title: "Acerca de StepKit", symbol: "info", color: .accentColor)
+            }
+        }
+    }
+
+    @ViewBuilder private var debugSection: some View {
+        #if DEBUG
+        Section {
+            Button {
+                showingDemoReset = true
+            } label: {
+                if resettingDemo {
+                    HStack { ProgressView(); Text("Restaurando…") }
+                } else {
+                    Label("Restaurar demo", systemImage: "arrow.counterclockwise")
                 }
             }
+            .disabled(resettingDemo)
+            .accessibilityIdentifier("profile.resetDemo")
+        } footer: {
+            Text("Solo en versiones de prueba. Borra tus Kits de esta cuenta, cierra la sesión y vuelve a la bienvenida para enseñar la app desde cero.")
+        }
+        #endif
+    }
+
+    @ViewBuilder private var signOutSection: some View {
+        Section {
+            Button("Cerrar sesión", role: .destructive) { showingSignOutAlert = true }
+                .accessibilityIdentifier("profile.signOut")
+                .accessibilityHint("Cierra la sesión actual y regresa a la pantalla de inicio de sesión")
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if twoColumns {
+                    // iPhone Duo abierto en horizontal o iPad: tu cuenta a la izquierda, información a la derecha.
+                    HStack(alignment: .top, spacing: 16) {
+                        List {
+                            headerSection
+                            accountSection
+                            signOutSection
+                        }
+                        List {
+                            infoSection
+                            debugSection
+                        }
+                    }
+                    .frame(maxWidth: 1100)
+                    .frame(maxWidth: .infinity)
+                } else {
+                    List {
+                        headerSection
+                        accountSection
+                        infoSection
+                        debugSection
+                        signOutSection
+                    }
+                    .readableContentWidth()
+                }
+            }
+            .onGeometryChange(for: Bool.self) { $0.size.width >= 760 && $0.size.width > $0.size.height } action: { twoColumns = $0 }
             .scrollContentBackground(.hidden)
-            .readableContentWidth()
             .background(alignment: .top) { BrandGlow() }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Perfil")

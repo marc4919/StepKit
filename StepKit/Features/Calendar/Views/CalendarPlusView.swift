@@ -180,9 +180,10 @@ struct CalendarPlusView: View {
         if sideBySide {
             // Pantalla ancha y baja (iPhone Duo abierto en horizontal, iPad): el mes a la izquierda
             // y el día elegido a la derecha, a la vista sin desplazarse.
-            HStack(alignment: .top, spacing: 0) {
+            // Separación clara entre el mes y el día, sin recortar ninguna de las dos columnas.
+            HStack(alignment: .top, spacing: 16) {
                 List { monthSection }
-                    .frame(maxWidth: 520)
+                    .frame(maxWidth: 500)
                 List {
                     daySection
                     upcomingSection

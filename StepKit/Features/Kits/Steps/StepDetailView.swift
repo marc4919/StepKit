@@ -101,16 +101,9 @@ struct StepDetailView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 10) {
-                if let celebration {
-                    CompletionBanner(celebration: celebration) { openNextStep() }
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-                bottomActions
+            if !wideLayout {
+                stepActions
             }
-            // En pantallas anchas los botones no se estiran de borde a borde.
-            .frame(maxWidth: 600)
-            .frame(maxWidth: .infinity)
         }
         .sensoryFeedback(.success, trigger: celebration)
         .navigationDestination(item: $openedNextStep) { step in
@@ -156,6 +149,8 @@ struct StepDetailView: View {
                         VStack(alignment: .leading, spacing: 18) {
                             stepProgress
                             stepReminder
+                            // Con dos columnas, las acciones van aquí, bajo el recordatorio, y no en una barra abajo.
+                            stepActions
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -170,6 +165,19 @@ struct StepDetailView: View {
             .padding(.bottom, 20)
         }
         .onGeometryChange(for: Bool.self) { $0.size.width >= 640 } action: { wideLayout = $0 }
+    }
+
+    private var stepActions: some View {
+        VStack(spacing: 10) {
+            if let celebration {
+                CompletionBanner(celebration: celebration) { openNextStep() }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            bottomActions
+        }
+        // En pantallas anchas los botones no se estiran de borde a borde.
+        .frame(maxWidth: 600)
+        .frame(maxWidth: .infinity)
     }
 
     private var stepHeader: some View {
@@ -461,7 +469,7 @@ struct StepDetailView: View {
             }
         }
         .controlSize(compactHeight ? .regular : .large)
-        .padding(.horizontal)
+        .padding(.horizontal, wideLayout ? 0 : 16)
         .padding(.vertical, compactHeight ? 6 : 10)
     }
 

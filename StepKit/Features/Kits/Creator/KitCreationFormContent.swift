@@ -37,17 +37,16 @@ struct KitCreationFormContent: View {
                 VStack(spacing: 0) {
                     headerContent.padding(.top, 8)
                     // Columnas con aire entre ellas y un ancho total contenido, sin pegarse ni estirarse.
-                    HStack(alignment: .top, spacing: 24) {
+                    // Cada columna conserva sus márgenes de formulario: nada se recorta ni se pega.
+                    HStack(alignment: .top, spacing: 0) {
                         Form { goalSection }
                         Form {
                             timeSection
                             createSection
                         }
                     }
-                    .contentMargins(.horizontal, 0, for: .scrollContent)
                     .scrollContentBackground(.hidden)
-                    .frame(maxWidth: 1000)
-                    .padding(.horizontal, 24)
+                    .frame(maxWidth: 1100)
                 }
                 .background(Color(.systemGroupedBackground))
             } else {
