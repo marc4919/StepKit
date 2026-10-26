@@ -175,10 +175,13 @@ private struct SearchEmptyPlacement: ViewModifier {
     func body(content: Content) -> some View {
         Group {
             if size.width > size.height {
+                // Centrado respecto a la pantalla (como el campo de búsqueda), no solo al hueco
+                // que deja la franja del sistema a la derecha.
                 content
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .padding(.top, 24)
+                    .balancedHorizontalSafeArea()
             } else {
                 content
             }
