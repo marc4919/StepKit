@@ -10,8 +10,8 @@ import SwiftUI
 
 struct WelcomeView: View {
     var onFinish: () -> Void
-    @State private var page = 0
-    @State private var artScale: CGFloat = 1
+    @State var page = 0
+    @State private var size = CGSize(width: 390, height: 844)
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let titles = [String(localized: "Un objetivo grande.\nUn primer paso claro."),
@@ -35,6 +35,9 @@ struct WelcomeView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
+            // Las páginas no se redibujan al cambiar el tamaño de fuera (girar o plegar el Duo):
+            // se reconstruyen cuando cambia su maquetación. La página actual se conserva.
+            .id("\(wide)-\(short)-\(Int(artHeight))")
             PageIndicator(current: page, count: 3)
                 .padding(.top, 8)
             Button {
@@ -55,71 +58,130 @@ struct WelcomeView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .frame(maxWidth: 480)
             .padding(.horizontal, 24)
             .padding(.top, 16)
             .padding(.bottom, 12)
             .accessibilityIdentifier("onboarding.action")
         }
         .background { EntryBackground() }
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
-            // Pantallas bajas (exterior del iPhone Duo, apaisado): ilustración más pequeña.
-            artScale = min(1, max(0.55, (height - 420) / 420))
-        }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
     }
 
-    /// Las tres páginas comparten estructura y alturas: ilustración animada arriba,
-    /// título y texto centrados y tres filas que entran escalonadas.
+    /// Las tres páginas comparten estructura y medidas: la ilustración tiene siempre la misma
+    /// altura y el texto reserva el sitio del más largo, así título y filas quedan en el mismo
+    /// lugar al pasar de página. En pantallas anchas y apaisadas, ilustración a la izquierda.
     private func pageContent(_ index: Int) -> some View {
         let current = page == index
-        return ScrollView {
-            VStack(spacing: 0) {
+        return GeometryReader { geo in
+            ScrollView {
                 Group {
-                    switch index {
-                    case 0: OrbitMark(height: artHeight, animated: true)
-                    // Con hitos la esfera sube: se dibuja algo más baja para que no se corte.
-                    case 1: OrbitMark(height: artHeight * 0.78, milestones: [0.2, 0.42, 0.66], animated: true)
-                            .padding(.top, artHeight * 0.18)
-                    default: resumeArt(current: current)
+                    if wide {
+                        HStack(spacing: 32) {
+                            art(index, current: current)
+                                .frame(maxWidth: .infinity)
+                            VStack(spacing: 0) {
+                                texts(index)
+                                rowsCard(index, current: current).padding(.top, 18)
+                            }
+                            .frame(width: textColumnWidth)
+                        }
+                        .padding(.horizontal, 32)
+                    } else {
+                        VStack(spacing: 0) {
+                            art(index, current: current)
+                            texts(index)
+                                .padding(.horizontal, 28)
+                                .padding(.top, 12)
+                            rowsCard(index, current: current)
+                                .padding(.horizontal, 24)
+                                .padding(.top, short ? 14 : 22)
+                        }
                     }
                 }
-                .frame(height: artHeight)
-                .frame(maxWidth: .infinity)
-                .id("art-\(index)-\(current)") // vuelve a animar cada vez que la página se muestra
-                VStack(spacing: 10) {
-                    Text(titles[index])
-                        .font(.largeTitle.bold())
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(subtitles[index])
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: 480)
-                .padding(.horizontal, 28)
-                .padding(.top, 12)
-                VStack(alignment: .leading, spacing: 14) {
-                    ForEach(Array(rows[index].enumerated()), id: \.element.text) { offset, row in
-                        WelcomeFeatureRow(symbol: row.symbol, color: row.color, text: row.text,
-                                          bounce: current)
-                            .opacity(current || reduceMotion ? 1 : 0)
-                            .offset(y: current || reduceMotion ? 0 : 14)
-                            .animation(.spring(response: 0.5, dampingFraction: 0.8)
-                                .delay(current ? 0.35 + 0.12 * Double(offset) : 0), value: current)
-                    }
-                }
-                .padding(18)
-                .frame(maxWidth: 480)
-                .background(Color(.secondarySystemGroupedBackground).opacity(0.7), in: .rect(cornerRadius: 22))
-                .padding(.horizontal, 24)
-                .padding(.top, 22)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, minHeight: geo.size.height)
             }
-            .padding(.bottom, 12)
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .scrollBounceBehavior(.basedOnSize)
     }
 
-    private var artHeight: CGFloat { 240 * artScale }
+    @ViewBuilder
+    private func art(_ index: Int, current: Bool) -> some View {
+        Group {
+            switch index {
+            // La S del logo, en un marco más estrecho que la página: sus extremos ya no se cortan.
+            case 0: OrbitMark(height: artHeight, animated: true)
+                    .frame(width: artHeight * 1.25)
+            case 1: TrailArt(points: WelcomeTrails.plan, milestones: [0.2, 0.75],
+                             adjusts: (from: 0.42, to: 0.52), sphereAt: 1)
+            default: resumeArt(current: current)
+            }
+        }
+        .frame(height: artHeight)
+        .frame(maxWidth: 420)
+        .frame(maxWidth: .infinity)
+        .id("art-\(index)-\(current)") // vuelve a animar cada vez que la página se muestra
+    }
+
+    /// Título y texto de la página encima de los tres textos invisibles: ocupa siempre
+    /// la altura del más largo.
+    private func texts(_ index: Int) -> some View {
+        ZStack(alignment: .top) {
+            ForEach(0..<3, id: \.self) { textBlock($0).hidden() }
+            textBlock(index)
+        }
+        .frame(maxWidth: 480)
+    }
+
+    private func textBlock(_ index: Int) -> some View {
+        VStack(spacing: 10) {
+            Text(titles[index])
+                .font(short ? .title.bold() : .largeTitle.bold())
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(subtitles[index])
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func rowsCard(_ index: Int, current: Bool) -> some View {
+        VStack(alignment: .leading, spacing: short ? 10 : 14) {
+            ForEach(Array(rows[index].enumerated()), id: \.element.text) { offset, row in
+                WelcomeFeatureRow(symbol: row.symbol, color: row.color, text: row.text,
+                                  bounce: current)
+                    .opacity(current || reduceMotion ? 1 : 0)
+                    .offset(y: current || reduceMotion ? 0 : 14)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8)
+                        .delay(current ? 0.35 + 0.12 * Double(offset) : 0), value: current)
+            }
+        }
+        .padding(short ? 14 : 18)
+        .frame(maxWidth: 480)
+        .background(Color(.secondarySystemGroupedBackground).opacity(0.7), in: .rect(cornerRadius: 22))
+    }
+
+    /// Ilustración a la izquierda en pantallas anchas y en horizontal bajo (Duo cerrado, iPhone).
+    private var wide: Bool {
+        TwoColumnLayout.fits(size) || (size.width > size.height && size.height < 500)
+    }
+
+    /// Pantallas bajas (exterior del iPhone Duo): título más pequeño para que quepa todo.
+    private var short: Bool { size.height < 720 }
+
+    /// La ilustración se adapta al alto y, en dos columnas, al ancho que le queda.
+    private var artHeight: CGFloat {
+        if wide {
+            let column = size.width - 64 - 32 - textColumnWidth
+            return max(110, min(240, size.height * 0.45, column / 1.45))
+        }
+        return max(130, min(240, size.height * 0.27))
+    }
+
+    private var textColumnWidth: CGFloat { min(440, size.width * 0.5) }
 
     private struct Row { let symbol: String; let color: Color; let text: String }
 
@@ -139,7 +201,7 @@ struct WelcomeView: View {
 
     private func resumeArt(current: Bool) -> some View {
         ZStack {
-            OrbitMark(height: artHeight, animated: true)
+            TrailArt(points: WelcomeTrails.loop, sphereAt: 0.93)
             HStack(spacing: 10) {
                 IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
                 Text(String(localized: "Dos imágenes listas.\nFaltan material y permisos.")).font(.footnote)
@@ -147,7 +209,10 @@ struct WelcomeView: View {
             .padding(12)
             .background(.regularMaterial, in: .rect(cornerRadius: 16))
             .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
-            .offset(x: 30, y: artHeight * 0.38)
+            // Con la ilustración pequeña (Duo cerrado) la nota encoge con ella y no tapa el bucle.
+            .scaleEffect(min(1, artHeight / 230), anchor: .topTrailing)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.trailing, 8)
             .scaleEffect(current || reduceMotion ? 1 : 0.85)
             .opacity(current || reduceMotion ? 1 : 0)
             .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(current ? 1.0 : 0), value: current)

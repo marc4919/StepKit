@@ -32,10 +32,9 @@ struct ResultReviewView: View {
             if kit.resultConfirmedAt != nil {
                 ResultConfirmedContent(kit: kit, summary: summary) { dismiss() } onReopen: { setConfirmed(false) }
             } else {
-                review
+                review.readableContentWidth()
             }
         }
-        .readableContentWidth()
         .navigationTitle(kit.title)
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
@@ -118,47 +117,59 @@ struct ResultReviewView: View {
     }
 }
 
+/// «Kit está listo». En vertical, una columna; en pantallas anchas y apaisadas (Duo abierto,
+/// iPhone en horizontal), la celebración a la izquierda y el recorrido a la derecha. Los botones
+/// van sobre una barra para que el título nunca quede debajo de ellos.
 private struct ResultConfirmedContent: View {
     let kit: GoalEntity
     let summary: JourneySummary
     let onDone: () -> Void
     let onReopen: () -> Void
+    @State private var size = CGSize(width: 390, height: 800)
+
+    private var sideBySide: Bool {
+        TwoColumnLayout.fits(size) || (size.width > size.height && size.height < 500)
+    }
+
+    /// La ilustración se adapta a la altura: en el exterior del Duo o en horizontal es más baja.
+    private var artHeight: CGFloat {
+        sideBySide ? min(200, max(100, size.height * 0.28)) : min(200, max(120, size.height * 0.24))
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ZStack {
-                    OrbitMark(height: 220).padding(.horizontal, 24)
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.white, .green)
-                        .offset(x: 95, y: -30)
-                        .accessibilityHidden(true)
-                }
-                .padding(.top, 24)
-                Text(String(localized: "\(kit.title)\nestá listo"))
-                    .font(.largeTitle.bold())
-                    .multilineTextAlignment(.center)
-                    .accessibilityAddTraits(.isHeader)
-                Text("Has confirmado el resultado.").foregroundStyle(.secondary)
-                PlainCard {
-                    Label(kit.kpi.isEmpty ? kit.title : kit.kpi, systemImage: "checkmark.circle.fill")
-                        .symbolRenderingMode(.multicolor)
-                    if let date = kit.resultConfirmedAt {
-                        Text(String(localized: "Confirmado por ti · \(date.formatted(.dateTime.day().month(.abbreviated))) · \(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+        Group {
+            if sideBySide {
+                HStack(alignment: .center, spacing: 32) {
+                    ScrollView {
+                        hero
+                            .frame(maxWidth: .infinity, minHeight: size.height * 0.7)
                     }
+                    .scrollBounceBehavior(.basedOnSize)
+                    ScrollView {
+                        details.padding(.vertical, 20)
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
+                    .frame(maxWidth: 460)
                 }
-                .padding(.horizontal)
-                JourneyCard(summary: summary)
+                .padding(.horizontal, 24)
+            } else {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        hero
+                        details
+                    }
                     .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 20)
+                    .frame(maxWidth: 600)
+                    .frame(maxWidth: .infinity)
+                }
             }
-            .padding(.bottom, 20)
         }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .background { EntryBackground() }
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Button(action: onDone) {
                     Text("Volver a Mis Kits").frame(maxWidth: .infinity)
                 }
@@ -167,8 +178,50 @@ private struct ResultConfirmedContent: View {
                 Button("Reabrir resultado", action: onReopen)
                     .font(.subheadline)
             }
+            .frame(maxWidth: 460)
             .padding(.horizontal)
-            .padding(.bottom, 8)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
+            .frame(maxWidth: .infinity)
+            .background(.bar)
+        }
+    }
+
+    private var hero: some View {
+        VStack(spacing: 10) {
+            OrbitMark(height: artHeight)
+                .frame(width: artHeight * 1.3)
+                .overlay(alignment: .topTrailing) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: artHeight * 0.2))
+                        .foregroundStyle(.white, .green)
+                        .accessibilityHidden(true)
+                }
+                .padding(.bottom, 4)
+            Text(String(localized: "\(kit.title)\nestá listo"))
+                .font(size.height < 720 ? .title.bold() : .largeTitle.bold())
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text("Has confirmado el resultado.")
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var details: some View {
+        VStack(spacing: 16) {
+            PlainCard {
+                Label(kit.kpi.isEmpty ? kit.title : kit.kpi, systemImage: "checkmark.circle.fill")
+                    .symbolRenderingMode(.multicolor)
+                if let date = kit.resultConfirmedAt {
+                    Text(String(localized: "Confirmado por ti · \(date.formatted(.dateTime.day().month(.abbreviated))) · \(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            JourneyCard(summary: summary)
         }
     }
 }

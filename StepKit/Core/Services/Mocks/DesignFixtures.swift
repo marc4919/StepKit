@@ -32,6 +32,7 @@ enum DesignFixtureScenario: String {
     case careful       // preparando un Kit delicado: pantalla de cuidado y reinicio con «Ajustando tu plan…»
     case signIn        // acceso
     case profile       // pestaña Perfil
+    case ready         // «Kit está listo» con un título largo
 
     static let argument = "-StepKitDesignFixtures"
 
@@ -108,7 +109,14 @@ struct DesignFixtureRoot: View {
 
     var body: some View {
         if scenario == .welcome {
-            WelcomeView {}
+            // `-StepKitWelcomePage 2`: abre directamente la tercera página.
+            let args = ProcessInfo.processInfo.arguments
+            let page = args.firstIndex(of: "-StepKitWelcomePage").flatMap { args.indices.contains($0 + 1) ? Int(args[$0 + 1]) : nil } ?? 0
+            WelcomeView(onFinish: {}, page: page)
+        } else if scenario == .ready, let kit = readyKit {
+            NavigationStack { ResultReviewView(kit: kit) }
+                .modelContainer(container)
+                .environment(authManager)
         } else if scenario == .signIn {
             SignInView().environment(authManager)
         } else if scenario == .careful || scenario == .questions {
@@ -155,6 +163,10 @@ struct DesignFixtureRoot: View {
         .modelContainer(container)
         .environment(authManager)
         .environment(AIConsentManager())
+    }
+
+    private var readyKit: GoalEntity? {
+        ((try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []).first { $0.resultConfirmedAt != nil }
     }
 
     private var portfolioStep3: StepEntity? {
@@ -304,6 +316,10 @@ enum DesignFixtureData {
             insertSessions(into: context)
         case .completed:
             insert(kit("Mi portfolio", done: 7, of: 7, next: "", inDays: 20, ago: 1), into: context)
+        case .ready:
+            let done = kit("Aprender a tocar la guitarra acústica", done: 6, of: 6, next: "", inDays: 30, ago: 12)
+            done.0.resultConfirmedAt = .now.addingTimeInterval(-86_400)
+            insert(done, into: context)
         case .confirmed:
             insert(kit("Mi portfolio", done: 7, of: 7, next: "", inDays: 20, ago: 1), into: context)
             let done = kit("Huerto en el balcón", done: 5, of: 5, next: "", inDays: 10, ago: 9)
