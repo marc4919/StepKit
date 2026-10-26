@@ -82,6 +82,7 @@ struct KitDetailView: View {
             .padding(.horizontal)
             .padding(.bottom, 30)
         }
+        .balancedHorizontalSafeArea()
         .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { wideLayout = $0 }
         .onChange(of: allStepsDone) { _, done in
             guard done else { return }

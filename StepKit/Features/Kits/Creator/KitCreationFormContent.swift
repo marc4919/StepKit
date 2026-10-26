@@ -37,9 +37,7 @@ struct KitCreationFormContent: View {
                 VStack(spacing: 0) {
                     headerContent.padding(.top, 8)
                     // Columnas con aire entre ellas y un ancho total contenido, sin pegarse ni estirarse.
-                    // Cada columna conserva sus márgenes de formulario: nada se recorta ni se pega.
-                    // Como en el calendario: dos listas con un hueco claro entre ellas.
-                    // Márgenes explícitos: 24 pt a los lados y 40 pt entre columnas, sin recortar las tarjetas.
+                    // 24 pt a los lados y 40 pt entre columnas, sin recortar las tarjetas.
                     HStack(alignment: .top, spacing: 24) {
                         Form { goalSection }
                         Form {
@@ -52,6 +50,7 @@ struct KitCreationFormContent: View {
                     .padding(.horizontal, 16)
                     .frame(maxWidth: 1100)
                 }
+                .balancedHorizontalSafeArea()
                 .background(Color(.systemGroupedBackground))
             } else {
                 Form {

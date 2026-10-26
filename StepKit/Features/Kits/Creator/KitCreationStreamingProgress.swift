@@ -106,6 +106,7 @@ struct KitCreationStreamingProgress: View {
                     .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, 24)
+                .balancedHorizontalSafeArea()
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
@@ -408,6 +409,7 @@ struct KitCreationStreamingProgress: View {
             }
             .padding()
         }
+        .balancedHorizontalSafeArea()
         .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { reviewWide = $0 }
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))

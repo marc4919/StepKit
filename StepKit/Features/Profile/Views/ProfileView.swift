@@ -123,6 +123,7 @@ struct ProfileView: View {
                     }
                     .frame(maxWidth: 1100)
                     .frame(maxWidth: .infinity)
+                    .balancedHorizontalSafeArea()
                 } else {
                     List {
                         headerSection

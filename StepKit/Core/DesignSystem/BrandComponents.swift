@@ -502,3 +502,25 @@ enum TwoColumnLayout {
         size.width >= 700 && size.width > size.height
     }
 }
+
+// MARK: - Márgenes equilibrados
+
+/// En el iPhone Duo abierto en horizontal, la hora y las pestañas ocupan una franja a la derecha.
+/// Ese hueco solo existe en un lado, así que el contenido se veía desplazado a la izquierda.
+/// Este modificador añade al lado contrario el mismo margen para que el bloque quede centrado en la pantalla.
+struct BalancedHorizontalSafeArea: ViewModifier {
+    @State private var insets = EdgeInsets()
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.leading, max(0, insets.trailing - insets.leading))
+            .padding(.trailing, max(0, insets.leading - insets.trailing))
+            .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
+    }
+}
+
+extension View {
+    func balancedHorizontalSafeArea() -> some View {
+        modifier(BalancedHorizontalSafeArea())
+    }
+}

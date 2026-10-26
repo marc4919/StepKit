@@ -189,6 +189,7 @@ struct CalendarPlusView: View {
                     upcomingSection
                 }
             }
+            .balancedHorizontalSafeArea()
             .scrollContentBackground(.hidden)
             .background(alignment: .top) { BrandGlow() }
             .background(Color(.systemGroupedBackground))
