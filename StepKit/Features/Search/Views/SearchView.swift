@@ -64,6 +64,10 @@ struct SearchView: View {
                         Text("Busca por nombre de Kit, paso o nota.")
                     }
                     .modifier(SearchEmptyPlacement())
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(.rect)
+                    // Tocar fuera del campo sin haber buscado cierra el teclado y deja salir.
+                    .onTapGesture { isSearchFocused = false }
                     .background(alignment: .top) { BrandGlow() }
                 } else if matchingKits.isEmpty && matchingSteps.isEmpty && matchingEntries.isEmpty {
                     ContentUnavailableView {
