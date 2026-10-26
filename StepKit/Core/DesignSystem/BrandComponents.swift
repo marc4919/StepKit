@@ -513,9 +513,12 @@ struct BalancedHorizontalSafeArea: ViewModifier {
     @State private var landscape = false
 
     func body(content: Content) -> some View {
-        // Solo en horizontal: en vertical (iPhone o Duo cerrado) no se toca el ancho.
-        let extraLeading = landscape ? max(0, insets.trailing - insets.leading) : 0
-        let extraTrailing = landscape ? max(0, insets.leading - insets.trailing) : 0
+        // Solo en horizontal y solo para la franja del sistema (unos 60–90 pt). En una columna de
+        // detalle junto al panel lateral la diferencia puede ser enorme y aplastaba el contenido.
+        let difference = insets.trailing - insets.leading
+        let applies = landscape && abs(difference) <= 120
+        let extraLeading = applies ? max(0, difference) : 0
+        let extraTrailing = applies ? max(0, -difference) : 0
         content
             .padding(.leading, extraLeading)
             .padding(.trailing, extraTrailing)

@@ -60,6 +60,9 @@ struct StepKitApp: App {
                 appContent
                 #endif
             }
+            // La ventana es negra por defecto: al abrir, girar o desplegar el iPhone Duo se veía
+            // un instante en negro antes de pintar. Se le da el fondo de la app.
+            .background(WindowBackgroundSetter())
             .task {
                 #if DEBUG
                 guard DesignFixtureScenario.current == nil else { return }
@@ -224,5 +227,19 @@ private struct SessionRestoreView: View {
             try? await Task.sleep(for: .seconds(1))
             withAnimation(.smooth) { showsSpinner = true }
         }
+    }
+}
+
+/// Pone a la ventana el mismo fondo que la app, para que nunca asome el negro de UIKit.
+private struct WindowBackgroundSetter: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        DispatchQueue.main.async { view.window?.backgroundColor = .systemBackground }
+        return view
+    }
+
+    func updateUIView(_ view: UIView, context: Context) {
+        view.window?.backgroundColor = .systemBackground
     }
 }

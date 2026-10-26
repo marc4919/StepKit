@@ -4412,12 +4412,12 @@
         }
       }
     },
-    "No tienes sesiones reservadas": {
+    "No tienes nada reservado": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You have no booked sessions"
+            "value": "You have nothing booked"
           }
         }
       }
@@ -5250,26 +5250,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Try another Kit, step or note."
-          }
-        }
-      }
-    },
-    "Próximas sesiones": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Upcoming sessions"
-          }
-        }
-      }
-    },
-    "Próximas sesiones (%lld)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Upcoming sessions (%lld)"
           }
         }
       }
@@ -6332,6 +6312,16 @@
         }
       }
     },
+    "Tiempo reservado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Booked time"
+          }
+        }
+      }
+    },
     "Tipo de objetivo": {
       "localizations": {
         "en": {
@@ -6408,6 +6398,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Double-tap to see the Kit's details"
+          }
+        }
+      }
+    },
+    "Todo lo reservado (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything booked (%lld)"
           }
         }
       }

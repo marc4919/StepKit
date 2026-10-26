@@ -218,7 +218,7 @@ struct CalendarPlusView: View {
             Section {
                 NavigationLink(value: CalendarRoute.upcomingSessions) {
                     Label {
-                        Text(String(localized: "Próximas sesiones (\(upcomingSessions.count))"))
+                        Text(String(localized: "Todo lo reservado (\(upcomingSessions.count))"))
                     } icon: {
                         Image(systemName: Symbols.session).foregroundStyle(.tint)
                     }
