@@ -29,6 +29,7 @@ struct StepDetailView: View {
     /// Aviso breve tras completar el paso: qué viene después.
     @State private var celebration: Celebration?
     @State private var wideLayout = false
+    @State private var sideControls = false
     /// Siguiente paso abierto desde el aviso de completado.
     @State private var openedNextStep: StepEntity?
 
@@ -83,7 +84,7 @@ struct StepDetailView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(stepEntity.goal?.title ?? "")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
+        .hidesTabBarSmoothly()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Ayúdame con este paso", systemImage: Symbols.assistant) {
@@ -102,10 +103,35 @@ struct StepDetailView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            if !wideLayout {
+            if !wideLayout && !sideControls {
                 stepActions
             }
         }
+        // Pantalla casi cuadrada (iPhone Duo cerrado): las tres acciones van como controles laterales,
+        // en columna junto al borde, y el contenido conserva toda la altura.
+        .safeAreaInset(edge: .trailing, spacing: 0) {
+            if sideControls && !wideLayout {
+                VStack(spacing: 10) {
+                    Spacer(minLength: 0)
+                    sideActions
+                }
+                .padding(.trailing, 10)
+                .padding(.bottom, 12)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            // Con controles laterales, el aviso de completado flota abajo sin desplazar nada.
+            if sideControls && !wideLayout, let celebration {
+                CompletionBanner(celebration: celebration) { openNextStep() }
+                    .padding(.bottom, 12)
+                    .padding(.trailing, 70)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .onGeometryChange(for: Bool.self) { geo in
+            let size = geo.size
+            return size.width < 700 && size.height < 760 && size.width / max(size.height, 1) > 0.6
+        } action: { sideControls = $0 }
         .sensoryFeedback(.success, trigger: celebration)
         .navigationDestination(item: $openedNextStep) { step in
             StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? stepNumber + 1)
@@ -473,6 +499,52 @@ struct StepDetailView: View {
         .controlSize(compactHeight ? .regular : .large)
         .padding(.horizontal, wideLayout ? 0 : 16)
         .padding(.vertical, compactHeight ? 6 : 10)
+    }
+
+    /// Columna de controles laterales (Duo cerrado): solo los botones, sin barra.
+    @ViewBuilder private var sideActions: some View {
+        switch state {
+        case .done:
+            completionButton.buttonStyle(.glass).labelStyle(.iconOnly).controlSize(.large)
+        case .blocked:
+            resolveBlockMenu.controlSize(.large)
+                .frame(width: 64)
+        case .pending, .inProgress:
+            GlassEffectContainer(spacing: 10) {
+                VStack(spacing: 10) {
+                    sideTile(String(localized: "Avance"), symbol: Symbols.note, identifier: "step.saveProgress",
+                             accessibilityLabel: String(localized: "Guardar avance")) {
+                        savingBlocked = false
+                        showingSaveProgress = true
+                    }
+                    sideTile(String(localized: "Atasco"), symbol: "hand.raised", identifier: "step.reportBlock",
+                             accessibilityLabel: String(localized: "Me he atascado")) {
+                        savingBlocked = true
+                        showingSaveProgress = true
+                    }
+                    sideTile(String(localized: "Completar"), symbol: "checkmark", prominent: true,
+                             identifier: "step.toggleCompletion",
+                             accessibilityLabel: String(localized: "Marcar como completado")) {
+                        withAnimation(.smooth) { toggleStepCompletion() }
+                    }
+                }
+            }
+        }
+    }
+
+    private func sideTile(_ title: String, symbol: String, prominent: Bool = false, identifier: String,
+                          accessibilityLabel: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 3) {
+                Image(systemName: symbol).font(.title3.weight(.semibold))
+                Text(title).font(.caption2.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.7)
+            }
+            .frame(width: 58, height: 52)
+        }
+        .buttonStyle(prominent ? AnyPrimitiveButtonStyle(.glassProminent) : AnyPrimitiveButtonStyle(.glass))
+        .buttonBorderShape(.roundedRectangle(radius: 22))
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityIdentifier(identifier)
     }
 
     private func actionTile(_ title: String, symbol: String, prominent: Bool = false, identifier: String,

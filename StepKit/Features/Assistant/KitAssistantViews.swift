@@ -199,7 +199,7 @@ struct KitAssistantChatView: View {
         .readableContentWidth(720)
         .navigationTitle(step == nil ? conversation.title : String(localized: "Ayuda del paso"))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
+        .hidesTabBarSmoothly()
         .onAppear {
             // Conversación libre y vacía: el teclado ya listo para escribir.
             if initialIntent == nil, vm.messages.isEmpty, conversation.proposals.isEmpty {

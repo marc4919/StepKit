@@ -567,3 +567,62 @@ struct DelayedReveal<Content: View>: View {
         }
     }
 }
+
+// MARK: - Barra de pestañas oculta con transición
+
+/// Oculta la barra de pestañas mientras la pantalla está a la vista y la devuelve animada
+/// en cuanto empieza a cerrarse (al volver atrás). Con `.toolbar(.hidden, for: .tabBar)`
+/// la barra reaparecía de golpe al terminar la transición.
+struct HidesTabBarSmoothly: ViewModifier {
+    @State private var hidden = false
+
+    func body(content: Content) -> some View {
+        content
+            .toolbarVisibility(hidden ? .hidden : .visible, for: .tabBar)
+            .background(ViewControllerLifecycle(
+                willAppear: { withAnimation(.smooth(duration: 0.3)) { hidden = true } },
+                willDisappear: { withAnimation(.smooth(duration: 0.3)) { hidden = false } }))
+    }
+}
+
+extension View {
+    func hidesTabBarSmoothly() -> some View { modifier(HidesTabBarSmoothly()) }
+}
+
+/// Avisa de `viewWillAppear`/`viewWillDisappear`, que SwiftUI no expone: llegan antes de la transición.
+private struct ViewControllerLifecycle: UIViewControllerRepresentable {
+    let willAppear: () -> Void
+    let willDisappear: () -> Void
+
+    func makeUIViewController(context: Context) -> Controller {
+        Controller(willAppear: willAppear, willDisappear: willDisappear)
+    }
+
+    func updateUIViewController(_ controller: Controller, context: Context) {
+        controller.willAppearAction = willAppear
+        controller.willDisappearAction = willDisappear
+    }
+
+    final class Controller: UIViewController {
+        var willAppearAction: () -> Void
+        var willDisappearAction: () -> Void
+
+        init(willAppear: @escaping () -> Void, willDisappear: @escaping () -> Void) {
+            willAppearAction = willAppear
+            willDisappearAction = willDisappear
+            super.init(nibName: nil, bundle: nil)
+        }
+
+        required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            willAppearAction()
+        }
+
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            willDisappearAction()
+        }
+    }
+}

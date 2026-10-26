@@ -38,7 +38,7 @@ struct ResultReviewView: View {
         .readableContentWidth()
         .navigationTitle(kit.title)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
+        .hidesTabBarSmoothly()
         .alert("No se pudo guardar", isPresented: $saveFailed) {
             Button("Aceptar", role: .cancel) {}
         }
