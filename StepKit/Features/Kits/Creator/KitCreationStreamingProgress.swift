@@ -380,26 +380,20 @@ struct KitCreationStreamingProgress: View {
                 if reviewWide {
                     // Pantalla ancha (iPhone Duo abierto, iPad): resumen a la izquierda, «A tener en cuenta» a la derecha.
                     reviewHeader
-                    if streamingState.risks.isEmpty {
-                        // Sin «A tener en cuenta»: meta y primer paso lado a lado; la nota debajo.
-                        HStack(alignment: .top, spacing: 24) {
-                            reviewKPI.frame(maxWidth: .infinity, alignment: .leading)
-                            reviewFirstStep.frame(maxWidth: .infinity, alignment: .leading)
+                    // Izquierda: meta y primer paso. Derecha: «A tener en cuenta», la nota y los botones,
+                    // siempre a la vista sin tapar la lista de pasos.
+                    HStack(alignment: .top, spacing: 24) {
+                        VStack(alignment: .leading, spacing: 18) {
+                            reviewKPI
+                            reviewFirstStep
                         }
-                        reviewNote
-                    } else {
-                        HStack(alignment: .top, spacing: 24) {
-                            VStack(alignment: .leading, spacing: 18) {
-                                reviewKPI
-                                reviewFirstStep
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(alignment: .leading, spacing: 18) {
-                                reviewRisks
-                                reviewNote
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 18) {
+                            reviewRisks
+                            reviewNote
+                            reviewActions
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     // Los pasos, debajo y a todo lo ancho.
                     reviewStepsList
@@ -418,26 +412,32 @@ struct KitCreationStreamingProgress: View {
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 8) {
-                Button(action: onSave) {
-                    Label("Aceptar y empezar", systemImage: "chevron.right")
-                        .labelStyle(TrailingIconLabelStyle())
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("kitCreator.save")
-                Button("Descartar y volver a mi idea", role: .destructive, action: onDiscard)
-                    .font(.subheadline)
-                    .accessibilityIdentifier("kitCreator.discard")
+            if !reviewWide {
+                reviewActions
+                    .padding(.horizontal)
+                    .padding(.vertical, 10)
+                    .background(.bar)
             }
-            .controlSize(.large)
-            .frame(maxWidth: 520)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal)
-            .padding(.vertical, 10)
-            .background(.bar)
-            .modifier(Reveal(shown: contentRevealed, order: 3))
         }
+    }
+
+    private var reviewActions: some View {
+        VStack(spacing: 8) {
+            Button(action: onSave) {
+                Label("Aceptar y empezar", systemImage: "chevron.right")
+                    .labelStyle(TrailingIconLabelStyle())
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("kitCreator.save")
+            Button("Descartar y volver a mi idea", role: .destructive, action: onDiscard)
+                .font(.subheadline)
+                .accessibilityIdentifier("kitCreator.discard")
+        }
+        .controlSize(.large)
+        .frame(maxWidth: 520)
+        .frame(maxWidth: .infinity)
+        .modifier(Reveal(shown: contentRevealed, order: 3))
     }
 
     @ViewBuilder private var reviewHeader: some View {
