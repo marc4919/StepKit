@@ -64,7 +64,12 @@ struct KitCreationFormContent: View {
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { width = $0.width; height = $0.height }
         .scrollDismissesKeyboard(.interactively)
+        // Al tocar un interruptor, un selector o la fecha, el teclado se retira: ya no estás escribiendo.
+        .onChange(of: sessionsPerWeek) { _, _ in dismissKeyboard() }
+        .onChange(of: sessionMinutes) { _, _ in dismissKeyboard() }
+        .onChange(of: dueDate) { _, _ in dismissKeyboard() }
         .onChange(of: oneSitting) { _, _ in
+            dismissKeyboard()
             // Se mantiene el tiempo elegido; si no existe en la otra lista, el más cercano (sin saltos bruscos).
             if !durations.contains(sessionMinutes),
                let nearest = durations.min(by: { abs($0 - sessionMinutes) < abs($1 - sessionMinutes) }) {
@@ -124,6 +129,7 @@ struct KitCreationFormContent: View {
                 }
             }
             .accessibilityIdentifier("kitCreator.oneSitting")
+            .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
             if !oneSitting {
                 Stepper(value: $sessionsPerWeek, in: 1...14) {
                     Label {
@@ -132,6 +138,7 @@ struct KitCreationFormContent: View {
                         IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                     }
                 }
+                .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
             }
             Picker(selection: $sessionMinutes) {
                 ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
@@ -140,15 +147,22 @@ struct KitCreationFormContent: View {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
                 }
             }
+            .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
             DatePicker(selection: $dueDate, in: todayStart..., displayedComponents: .date) {
                 Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
             }
             .accessibilityIdentifier("kitCreator.dueDate")
+            .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
         } header: {
             Text("Tu tiempo")
         } footer: {
             Text("La fecha es orientativa. Podrás ajustar el plan y tu tiempo después.")
         }
+    }
+
+    /// Tocar un control que no es de texto retira el teclado, para que no tape el formulario.
+    private func dismissKeyboard() {
+        focusedField.wrappedValue = nil
     }
 
     @ViewBuilder private var createSection: some View {
