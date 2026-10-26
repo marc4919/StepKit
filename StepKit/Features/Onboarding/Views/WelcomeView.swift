@@ -23,12 +23,15 @@ struct WelcomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text("StepKit")
-                .font(.title.bold())
-                .foregroundStyle(.tint)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 8)
-                .accessibilityAddTraits(.isHeader)
+            // En horizontal muy bajo (Duo cerrado, iPhone) el nombre cede su sitio al contenido.
+            if !(wide && size.height < 450) {
+                Text("StepKit")
+                    .font(.title.bold())
+                    .foregroundStyle(.tint)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 8)
+                    .accessibilityAddTraits(.isHeader)
+            }
             TabView(selection: $page) {
                 ForEach(0..<3, id: \.self) { index in
                     pageContent(index).tag(index)
@@ -137,7 +140,7 @@ struct WelcomeView: View {
     private func textBlock(_ index: Int) -> some View {
         VStack(spacing: 10) {
             Text(titles[index])
-                .font(short ? .title.bold() : .largeTitle.bold())
+                .font(size.height < 400 ? .title2.bold() : short ? .title.bold() : .largeTitle.bold())
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             Text(subtitles[index])
@@ -166,7 +169,7 @@ struct WelcomeView: View {
 
     /// Ilustración a la izquierda en pantallas anchas y en horizontal bajo (Duo cerrado, iPhone).
     private var wide: Bool {
-        TwoColumnLayout.fits(size) || (size.width > size.height && size.height < 500)
+        TwoColumnLayout.fits(size) || (size.width > size.height * 1.3 && size.height < 500)
     }
 
     /// Pantallas bajas (exterior del iPhone Duo): título más pequeño para que quepa todo.
@@ -178,7 +181,7 @@ struct WelcomeView: View {
             let column = size.width - 64 - 32 - textColumnWidth
             return max(110, min(240, size.height * 0.45, column / 1.45))
         }
-        return max(130, min(240, size.height * 0.27))
+        return max(120, min(240, size.height * (size.height < 640 ? 0.22 : 0.27)))
     }
 
     private var textColumnWidth: CGFloat { min(440, size.width * 0.5) }

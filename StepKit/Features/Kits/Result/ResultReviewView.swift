@@ -127,8 +127,10 @@ private struct ResultConfirmedContent: View {
     let onReopen: () -> Void
     @State private var size = CGSize(width: 390, height: 800)
 
+    /// El alto medido ya descuenta la barra de navegación y los botones: solo se pasa a dos
+    /// columnas cuando la pantalla es claramente más ancha que alta.
     private var sideBySide: Bool {
-        TwoColumnLayout.fits(size) || (size.width > size.height && size.height < 500)
+        TwoColumnLayout.fits(size) || (size.width > size.height * 1.3 && size.height < 500)
     }
 
     /// La ilustración se adapta a la altura: en el exterior del Duo o en horizontal es más baja.
@@ -146,7 +148,9 @@ private struct ResultConfirmedContent: View {
                     }
                     .scrollBounceBehavior(.basedOnSize)
                     ScrollView {
-                        details.padding(.vertical, 20)
+                        details
+                            .padding(.vertical, 20)
+                            .frame(minHeight: size.height * 0.7)
                     }
                     .scrollBounceBehavior(.basedOnSize)
                     .frame(maxWidth: 460)
@@ -199,7 +203,7 @@ private struct ResultConfirmedContent: View {
                 }
                 .padding(.bottom, 4)
             Text(String(localized: "\(kit.title)\nestá listo"))
-                .font(size.height < 720 ? .title.bold() : .largeTitle.bold())
+                .font(size.height < 400 ? .title2.bold() : size.height < 720 ? .title.bold() : .largeTitle.bold())
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
