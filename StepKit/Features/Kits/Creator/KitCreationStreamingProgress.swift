@@ -18,6 +18,7 @@ struct KitCreationStreamingProgress: View {
     @State private var shownProgress: Double = 0
     /// Se pasa a «Tu plan» cuando la barra y el recorrido han terminado de verse.
     @State private var showReview = false
+    @State private var reviewMounted = false
     @State private var liftOff = false
     @State private var stepsChecked = false
     @State private var reviewChecked = false
@@ -57,12 +58,19 @@ struct KitCreationStreamingProgress: View {
             Group {
                 if streamingState.hasError {
                     errorView
-                } else if showReview {
-                    reviewView
-                        .transition(.opacity)
                 } else {
-                    preparingView
-                        .transition(.opacity)
+                    // La revisión se monta oculta antes del vuelo de la esfera: así su maquetación no
+                    // coincide con el primer fotograma de la animación (evita el tirón al arrancar).
+                    if reviewMounted {
+                        reviewView
+                            .opacity(showReview ? 1 : 0)
+                            .allowsHitTesting(showReview)
+                            .accessibilityHidden(!showReview)
+                    }
+                    if !showReview {
+                        preparingView
+                            .transition(.opacity)
+                    }
                 }
             }
             if sphereInFlight && !sphereLanded {
@@ -78,6 +86,13 @@ struct KitCreationStreamingProgress: View {
         }
         .onChange(of: streamingState.isComplete) { _, complete in
             if complete { scheduleReview() }
+        }
+        // En cuanto llega el primer paso, la revisión se monta oculta: su coste no coincide con ninguna animación.
+        .onChange(of: streamingState.steps.isEmpty) { _, empty in
+            if !empty, !streamingState.isRestarting { reviewMounted = true }
+        }
+        .onChange(of: streamingState.isRestarting) { _, restarting in
+            if restarting { reviewMounted = false }
         }
         .onAppear {
             if streamingState.isComplete { scheduleReview() }
@@ -233,6 +248,7 @@ struct KitCreationStreamingProgress: View {
     private func scheduleReview() {
         Task {
             guard !reduceMotion else {
+                reviewMounted = true
                 stepsChecked = true
                 finalFill = true
                 shownProgress = 1
@@ -242,6 +258,10 @@ struct KitCreationStreamingProgress: View {
                 ringDrawn = 1
                 contentRevealed = true
                 return
+            }
+            if !reviewMounted {
+                reviewMounted = true
+                try? await Task.sleep(for: .milliseconds(150))
             }
             // Primero se completan los checks y la barra; luego la esfera viaja al anillo de
             // «Tu plan», el anillo se dibuja a su alrededor y el resto aparece en cascada.

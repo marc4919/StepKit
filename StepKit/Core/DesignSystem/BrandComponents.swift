@@ -510,12 +510,17 @@ enum TwoColumnLayout {
 /// Este modificador añade al lado contrario el mismo margen para que el bloque quede centrado en la pantalla.
 struct BalancedHorizontalSafeArea: ViewModifier {
     @State private var insets = EdgeInsets()
+    @State private var landscape = false
 
     func body(content: Content) -> some View {
+        // Solo en horizontal: en vertical (iPhone o Duo cerrado) no se toca el ancho.
+        let extraLeading = landscape ? max(0, insets.trailing - insets.leading) : 0
+        let extraTrailing = landscape ? max(0, insets.leading - insets.trailing) : 0
         content
-            .padding(.leading, max(0, insets.trailing - insets.leading))
-            .padding(.trailing, max(0, insets.leading - insets.trailing))
+            .padding(.leading, extraLeading)
+            .padding(.trailing, extraTrailing)
             .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
+            .onGeometryChange(for: Bool.self) { $0.size.width > $0.size.height } action: { landscape = $0 }
     }
 }
 

@@ -104,8 +104,9 @@ private struct ConversationRow: View {
                             .padding(.vertical, 2)
                             .background(Color.purple.opacity(0.12), in: .capsule)
                     }
-                    if conversation.proposals.contains(where: { $0.state == .pending }) {
-                        Text("Propuesta pendiente")
+                    if conversation.pendingProposalCount > 0 {
+                        Text(conversation.pendingProposalCount == 1 ? String(localized: "Propuesta pendiente")
+                             : String(localized: "\(conversation.pendingProposalCount) propuestas pendientes"))
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.orange)
                             .padding(.horizontal, 8)
@@ -165,7 +166,14 @@ struct KitAssistantChatView: View {
                 ? String(localized: "Las propuestas que cambien el plan las revisas tú antes de aplicarlas.")
                 : String(localized: "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes."),
             context: step.map { String(localized: "Paso \(kit.position(of: $0)) · \($0.stepTitle)") } ?? kit.title,
-            accessory: AnyView(accessory)
+            accessory: AnyView(accessory),
+            afterMessage: { message in
+                let anchored = conversation.proposals.filter { $0.anchorMessageID == message.id }
+                guard !anchored.isEmpty else { return nil }
+                return AnyView(VStack(alignment: .leading, spacing: 14) {
+                    ForEach(anchored) { proposalCard($0) }
+                })
+            }
         )
         .readableContentWidth(720)
         .navigationTitle(step == nil ? conversation.title : String(localized: "Ayuda del paso"))
@@ -179,15 +187,21 @@ struct KitAssistantChatView: View {
         }
     }
 
+    private func proposalCard(_ proposal: PlanProposal) -> some View {
+        ProposalCard(proposal: proposal) {
+            proposal.accept(in: kit, context: modelContext)
+            syncManager?.handleDataChange()
+        } onDiscard: {
+            proposal.state = .discarded
+        }
+    }
+
     @ViewBuilder private var accessory: some View {
         VStack(alignment: .leading, spacing: 14) {
-            ForEach(conversation.proposals) { proposal in
-                ProposalCard(proposal: proposal) {
-                    proposal.accept(in: kit, context: modelContext)
-                    syncManager?.handleDataChange()
-                } onDiscard: {
-                    proposal.state = .discarded
-                }
+            // Solo las propuestas sin mensaje de referencia (p. ej. de ejemplo) van al final.
+            let messageIDs = Set(conversation.viewModel.messages.map(\.id))
+            ForEach(conversation.proposals.filter { $0.anchorMessageID.map { !messageIDs.contains($0) } ?? true }) {
+                proposalCard($0)
             }
             if let step, step.isBlocked,
                conversation.viewModel.messages.contains(where: { $0.text == String(localized: "Me falta algo") }) {
@@ -233,11 +247,11 @@ struct KitAssistantChatView: View {
             switch intent.id {
             case "not-fitting":
                 if let step, let proposal = PlanProposalBuilder.moveStep(step, in: kit) {
-                    conversation.proposals.append(proposal)
+                    conversation.add(proposal)
                 }
             case "change-date":
                 if let proposal = PlanProposalBuilder.shiftTarget(of: kit) {
-                    conversation.proposals.append(proposal)
+                    conversation.add(proposal)
                 }
             default:
                 break
@@ -263,11 +277,16 @@ struct ProposalCard: View {
                     Label("Aplicada", systemImage: "checkmark.circle.fill").font(.caption.weight(.semibold)).foregroundStyle(.green)
                 case .discarded:
                     Label("Descartada", systemImage: "xmark.circle").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                case .superseded:
+                    Label("Sustituida por otra más reciente", systemImage: "arrow.uturn.down.circle")
+                        .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 case .pending:
                     EmptyView()
                 }
             }
             Text(proposal.title).font(.headline)
+            // Las propuestas ya decididas o sustituidas se pliegan para que la conversación se lea bien.
+            if proposal.state == .pending {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(proposal.changes) { change in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -301,6 +320,7 @@ struct ProposalCard: View {
             Label(proposal.impact, systemImage: "info.circle")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+            }
             if proposal.state == .pending {
                 HStack(spacing: 10) {
                     Button(action: onAccept) {
@@ -323,8 +343,8 @@ struct ProposalCard: View {
             }
         }
         .padding(16)
-        .background(Color.orange.opacity(0.08), in: .rect(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.orange.opacity(0.25)))
+        .background(Color.orange.opacity(proposal.state == .pending ? 0.08 : 0.04), in: .rect(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.orange.opacity(proposal.state == .pending ? 0.25 : 0.12)))
         .animation(.default, value: proposal.state)
     }
 }

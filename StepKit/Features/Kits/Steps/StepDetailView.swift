@@ -49,9 +49,10 @@ struct StepDetailView: View {
     private var lastProgress: ProgressEntryEntity? { progressNotes.first }
 
     /// El asistente ha dejado una propuesta para este paso (tras un bloqueo, un cambio…).
-    private var stepHasProposal: Bool {
+    private var stepPendingProposals: Int {
         KitAssistantStore.shared.conversations(for: stepEntity.goal?.id ?? UUID())
-            .contains { $0.stepID == stepEntity.id && $0.proposals.contains { $0.state == .pending } }
+            .filter { $0.stepID == stepEntity.id }
+            .reduce(0) { $0 + $1.pendingProposalCount }
     }
 
     /// Días con la sesión del hábito hecha.
@@ -88,9 +89,9 @@ struct StepDetailView: View {
                 Button("Ayúdame con este paso", systemImage: Symbols.assistant) {
                     assistantLaunch = AssistantLaunch(intent: nil)
                 }
-                .badge(stepHasProposal ? 1 : 0)
+                .badge(stepPendingProposals)
                 .accessibilityIdentifier("step.assistant")
-                .accessibilityValue(stepHasProposal ? String(localized: "Propuesta pendiente") : "")
+                .accessibilityValue(stepPendingProposals == 0 ? "" : stepPendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(stepPendingProposals) propuestas pendientes"))
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Editar paso", systemImage: "pencil") {
@@ -425,7 +426,7 @@ struct StepDetailView: View {
                 try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
                 syncManager?.handleDataChange()
             }
-            Button("Guardar avance", systemImage: Symbols.note) { showingSaveProgress = true }
+            Button("Guardar avance", systemImage: Symbols.note) { savingBlocked = false; showingSaveProgress = true }
         } label: {
             Text("Resolver bloqueo").frame(maxWidth: .infinity)
         }

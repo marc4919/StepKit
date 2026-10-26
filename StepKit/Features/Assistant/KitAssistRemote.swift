@@ -360,7 +360,7 @@ enum KitAssistant {
                                                text: text.isEmpty ? String(localized: "Te propongo un ajuste del plan.") : text,
                                                fromServer: true))
             }
-            if let proposal { conversation.proposals.append(proposal) }
+            if let proposal { conversation.add(proposal) }
             return true
         } catch KitAssistClient.Failure.unavailable {
             return false

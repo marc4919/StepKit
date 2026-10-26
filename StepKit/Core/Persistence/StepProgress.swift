@@ -67,9 +67,22 @@ enum ProgressLog {
         note: String,
         blockedReason: String?,
         context: ModelContext,
-        now: Date = Date()
+        now: Date = Date(),
+        keepsBlockState: Bool = false
     ) throws {
         guard let kit = step.goal else { return }
+        // Solo una nota de avance: el estado del paso (bloqueado o no) no cambia.
+        if keepsBlockState {
+            let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            context.insert(ProgressEntryEntity(
+                ownerID: step.ownerID, kitID: kit.id, stepID: step.id, kind: .progress,
+                note: trimmed, notedAt: now, createdAt: now, updatedAt: now
+            ))
+            step.markModified(at: now)
+            try context.save()
+            return
+        }
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
         let reason = blockedReason?.trimmingCharacters(in: .whitespacesAndNewlines)
 

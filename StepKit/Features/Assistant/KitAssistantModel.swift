@@ -32,6 +32,17 @@ final class KitConversation: Identifiable {
     }
 
     var lastActivity: Date { viewModel.messages.last?.timestamp ?? createdAt }
+
+    /// Propuestas pendientes de decidir en esta conversación.
+    var pendingProposalCount: Int { proposals.filter { $0.state == .pending }.count }
+
+    /// Añade una propuesta en su sitio de la conversación (tras el mensaje que la acompaña).
+    /// Una propuesta nueva sustituye a las pendientes anteriores: así no se solapan cambios contradictorios.
+    func add(_ proposal: PlanProposal) {
+        for old in proposals where old.state == .pending { old.state = .superseded }
+        proposal.anchorMessageID = viewModel.messages.last?.id
+        proposals.append(proposal)
+    }
     var preview: String? { viewModel.messages.last(where: { $0.sender == .assistant && !$0.isError })?.text }
 }
 
@@ -85,7 +96,7 @@ struct ProposedStepChange: Identifiable, Hashable {
 @MainActor
 @Observable
 final class PlanProposal: Identifiable {
-    enum State { case pending, accepted, discarded }
+    enum State { case pending, accepted, discarded, superseded }
 
     enum Action {
         case setDate(stepID: UUID, date: Date)
@@ -104,6 +115,8 @@ final class PlanProposal: Identifiable {
     let impact: String
     let actions: [Action]
     var state: State = .pending
+    /// Mensaje tras el que se muestra la propuesta dentro de la conversación.
+    var anchorMessageID: UUID?
 
     init(title: String, changes: [ProposedStepChange], impact: String, actions: [Action]? = nil) {
         self.title = title

@@ -94,6 +94,8 @@ struct AssistantHomeView: View {
     var context: String?
     /// Contenido propio tras los mensajes: propuestas, acciones del paso…
     var accessory: AnyView?
+    /// Contenido que va justo después de un mensaje concreto (p. ej. la propuesta que lo acompaña).
+    var afterMessage: ((ChatMessage) -> AnyView?)? = nil
 
     private var lastIntentRetry: (() -> Void)? { isResponding ? nil : onRetry }
 
@@ -161,6 +163,7 @@ struct AssistantHomeView: View {
                 case .assistant:
                     AssistantAnswer(message: message)
                 }
+                if let extra = afterMessage?(message) { extra }
             }
             if isTyping {
                 HStack(spacing: 8) {

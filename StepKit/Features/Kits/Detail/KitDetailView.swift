@@ -102,9 +102,9 @@ struct KitDetailView: View {
                 } label: {
                     Label("Asistente", systemImage: Symbols.assistant)
                 }
-                .badge(hasPendingProposal ? 1 : 0)
+                .badge(pendingProposals)
                 .accessibilityIdentifier("kit.assistant")
-                .accessibilityValue(hasPendingProposal ? String(localized: "Propuesta pendiente") : "")
+                .accessibilityValue(pendingProposals == 0 ? "" : pendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(pendingProposals) propuestas pendientes"))
                 Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
                     .accessibilityIdentifier("kit.info")
                     .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
@@ -220,9 +220,9 @@ struct KitDetailView: View {
         .accessibilityIdentifier("kit.reviewResult")
     }
 
-    private var hasPendingProposal: Bool {
-        KitAssistantStore.shared.conversations(for: kitEntity.id)
-            .contains { $0.proposals.contains { $0.state == .pending } }
+    /// Propuestas pendientes en todas las conversaciones del Kit (la insignia muestra cuántas).
+    private var pendingProposals: Int {
+        KitAssistantStore.shared.conversations(for: kitEntity.id).reduce(0) { $0 + $1.pendingProposalCount }
     }
 
     // MARK: - Plan
