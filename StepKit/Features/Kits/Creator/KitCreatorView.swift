@@ -126,8 +126,12 @@ struct KitCreatorView: View {
         }
         // Una sola hoja para el formulario: dos .sheet en la misma jerarquía no conviven.
         .sheet(item: Binding(
-            get: { vm.showingDateSheet ? CreatorSheet.date : (showAIConsent ? CreatorSheet.aiConsent : nil) },
-            set: { if $0 == nil { vm.showingDateSheet = false; showAIConsent = false } }
+            get: {
+                if vm.showingDateSheet { return CreatorSheet.date }
+                if showAIConsent { return CreatorSheet.aiConsent }
+                return vm.planLimit.map { CreatorSheet.subscription($0) }
+            },
+            set: { if $0 == nil { vm.showingDateSheet = false; showAIConsent = false; vm.planLimit = nil } }
         )) { sheet in
             switch sheet {
             case .date:
@@ -143,6 +147,10 @@ struct KitCreatorView: View {
                     }
                 }
                 .interactiveDismissDisabled()
+            case .subscription(let reason):
+                NavigationStack {
+                    SubscriptionView(reason: reason)
+                }
             }
         }
         .alert("Error", isPresented: $vm.showingError) {
@@ -207,7 +215,14 @@ struct KitCreatorView: View {
 }
 #endif
 
-private enum CreatorSheet: String, Identifiable {
+private enum CreatorSheet: Identifiable {
     case date, aiConsent
-    var id: String { rawValue }
+    case subscription(PlanLimitReason)
+    var id: String {
+        switch self {
+        case .date: "date"
+        case .aiConsent: "aiConsent"
+        case .subscription(let reason): "subscription.\(reason.rawValue)"
+        }
+    }
 }

@@ -32,6 +32,8 @@ final class KitCreatorViewModel {
     var viewState: ViewState = .form
     var errorMessage: String?
     var showingError: Bool = false
+    /// Límite del plan gratuito alcanzado: se ofrece StepKit Pro en lugar de un error.
+    var planLimit: PlanLimitReason?
     var showingDateSheet: Bool = false
     var sheetDetent: PresentationDetent = .fraction(0.7)
     
@@ -348,6 +350,16 @@ final class KitCreatorViewModel {
     // MARK: - Private Helpers
     
     private func handleError(_ error: Any) {
+        switch error as? APIError {
+        case .premiumRequired?:
+            planLimit = .activeKits
+            return
+        case .quotaExceeded?:
+            planLimit = .cloudAI
+            return
+        default:
+            break
+        }
         if let str = error as? String {
             errorMessage = mapErrorMessage(str)
         } else if let err = error as? Error {

@@ -213,16 +213,11 @@ enum StoreKitError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .productUnavailable:
-            return "Producto no disponible"
-        case .userCancelled:
-            return "La compra fue cancelada"
-        case .pending:
-            return "La compra esta pendiente de aprobacion"
-        case .verificationFailed:
-            return "No se pudo verificar la compra"
-        case .unknown:
-            return "Error desconocido en la compra"
+        case .productUnavailable: SubscriptionText.string("paywall.error.unavailable")
+        case .userCancelled: SubscriptionText.string("paywall.error.cancelled")
+        case .pending: SubscriptionText.string("paywall.error.pending")
+        case .verificationFailed: SubscriptionText.string("paywall.error.verification")
+        case .unknown: SubscriptionText.string("paywall.error.unknown")
         }
     }
 }

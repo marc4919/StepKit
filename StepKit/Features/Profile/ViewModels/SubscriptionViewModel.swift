@@ -41,11 +41,11 @@ final class SubscriptionViewModel {
     func subscribeToPlan(storeKitManager: any SubscriptionPurchasing, apiClient: any APIClientProtocol, authManager: any AuthManaging) async {
         guard !isLoading, !Task.isCancelled else { return }
         guard storeKitManager.isProductAvailable(for: selectedPlan) else {
-            errorMessage = "Producto no disponible"
+            errorMessage = SubscriptionText.string("paywall.error.unavailable")
             return
         }
         guard let session = Session(authManager) else {
-            errorMessage = "Necesitas una sesión válida para suscribirte"
+            errorMessage = SubscriptionText.string("paywall.error.session")
             return
         }
 
@@ -72,7 +72,7 @@ final class SubscriptionViewModel {
         guard !isLoading, !Task.isCancelled else { return }
         // Capture before AppStore.sync; never adopt a new login midway through a restore.
         guard let session = Session(authManager) else {
-            errorMessage = "Necesitas una sesión válida para restaurar compras"
+            errorMessage = SubscriptionText.string("paywall.error.session")
             return
         }
 
@@ -84,13 +84,13 @@ final class SubscriptionViewModel {
         await storeKitManager.restorePurchases()
         guard session.isCurrent(authManager), !Task.isCancelled else { return }
         guard storeKitManager.hasActiveSubscription else {
-            errorMessage = "No se encontraron compras anteriores"
+            errorMessage = SubscriptionText.string("paywall.error.nothingToRestore")
             return
         }
         let transactionID = await storeKitManager.getOriginalTransactionId()
         guard session.isCurrent(authManager), !Task.isCancelled else { return }
         guard let transactionID else {
-            errorMessage = "No se encontraron compras anteriores"
+            errorMessage = SubscriptionText.string("paywall.error.nothingToRestore")
             return
         }
 
@@ -98,8 +98,17 @@ final class SubscriptionViewModel {
             try await verifyAndRefresh(transactionID: transactionID, session: session, apiClient: apiClient, authManager: authManager)
         } catch {
             guard session.isCurrent(authManager), !Task.isCancelled else { return }
-            errorMessage = "Error al verificar la suscripcion: \(error.localizedDescription)"
+            errorMessage = SubscriptionText.string("paywall.error.verify")
         }
+    }
+
+    /// Trae del servidor el uso de este mes (Kits activos e IA) para mostrarlo al día.
+    func refreshUsage(apiClient: any APIClientProtocol, authManager: any AuthManaging) async {
+        guard let session = Session(authManager),
+              let user = try? await apiClient.getUserProfile(token: session.token),
+              session.isCurrent(authManager), !Task.isCancelled,
+              user.uuid == session.userID else { return }
+        authManager.updateUser(user)
     }
 
     private func verifyAndRefresh(transactionID: String, session: Session, apiClient: any APIClientProtocol, authManager: any AuthManaging) async throws {

@@ -222,7 +222,7 @@ struct ProfileView: View {
     }
 
     private var displayTier: String {
-        authManager.currentUser?.tier == "premium" ? "Premium" : "Gratuita"
+        authManager.currentUser?.isPremium == true ? "Pro" : SubscriptionText.string("paywall.compare.free")
     }
 }
 

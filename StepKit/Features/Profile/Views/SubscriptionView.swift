@@ -1,603 +1,644 @@
-
 //
 //  SubscriptionView.swift
 //  StepKit
 //
 //  Created by Marc Garcia Teodoro on 14/10/25.
 //
+//  StepKit Pro v4.4: qué incluye cada plan, cuánto has usado este mes y la compra.
+//  Precio, periodo y prueba gratuita salen siempre de la App Store, nunca del código.
+//
 
 import SwiftUI
 import StoreKit
-import Combine
 
 struct SubscriptionView: View {
+    /// Límite del plan gratuito que ha llevado hasta aquí; nil cuando se abre desde Perfil.
+    var reason: PlanLimitReason?
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.storeKitManager) private var storeKitManager
     @Environment(AuthManager.self) private var authManager
     @Environment(\.apiClient) private var apiClient
 
     @State private var viewModel = SubscriptionViewModel()
+    /// Ofertas de introducción a las que esta cuenta todavía tiene derecho, por plan.
+    @State private var introOffers: [SubscriptionPlan: Product.SubscriptionOffer] = [:]
+    @State private var renewalDate: Date?
+    @State private var showingManage = false
+    @State private var showingOfferCode = false
     @State private var showingTermsOfService = false
     @State private var showingPrivacyPolicy = false
 
+    init(reason: PlanLimitReason? = nil) {
+        self.reason = reason
+    }
+
+    private var isPro: Bool {
+        storeKitManager.hasActiveSubscription || authManager.currentUser?.isPremium == true
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Header con icono premium
-                headerSection
-
-                // Error message
-                if let error = viewModel.errorMessage {
-                    errorBanner(error)
-                }
-
-                // Beneficios
-                benefitsSection
-
-                // Planes de suscripcion
-                plansSection
-
-                // Boton de suscripcion
-                subscribeButton
-
-                // Restaurar compras
-                restoreButton
-
-                // Texto legal
-                legalText
-
-                Spacer(minLength: 20)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
+        List {
+            headerSection
+            if let reason, !isPro { limitSection(reason) }
+            if !isPro { usageSection }
+            compareSection
+            if isPro { manageSection } else { plansSection }
+            linksSection
         }
+        .readableContentWidth()
+        .scrollContentBackground(.hidden)
+        .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Suscripcion")
+        .navigationTitle("StepKit Pro")
         .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            if !isPro { purchaseBar }
+        }
+        .toolbar {
+            if reason != nil {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(SubscriptionText.string("paywall.close")) { dismiss() }
+                }
+            }
+        }
         .task {
             await storeKitManager.loadProducts()
+            await loadOffersAndRenewal()
+            await viewModel.refreshUsage(apiClient: apiClient, authManager: authManager)
         }
-        .alert("Suscripcion activada", isPresented: $viewModel.showSuccessAlert) {
-            Button("Continuar") {
-                dismiss()
-            }
+        .onChange(of: storeKitManager.hasActiveSubscription) {
+            Task { await loadOffersAndRenewal() }
+        }
+        .alert(SubscriptionText.string("paywall.success.title"), isPresented: $viewModel.showSuccessAlert) {
+            Button(SubscriptionText.string("paywall.success.continue")) { dismiss() }
         } message: {
-            Text("Tu suscripcion a StepKit Pro esta activa. Disfruta de todas las funciones premium.")
+            Text(SubscriptionText.string("paywall.success.message"))
         }
-        .sheet(isPresented: $showingTermsOfService) {
-            TermsOfServiceView()
+        .alert(SubscriptionText.string("paywall.error.title"), isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
-        .sheet(isPresented: $showingPrivacyPolicy) {
-            PrivacyPolicyView()
-        }
+        .manageSubscriptionsSheet(isPresented: $showingManage)
+        .offerCodeRedemption(isPresented: $showingOfferCode)
+        .sheet(isPresented: $showingTermsOfService) { TermsOfServiceView() }
+        .sheet(isPresented: $showingPrivacyPolicy) { PrivacyPolicyView() }
     }
 
-    // MARK: - Error Banner
-    private func errorBanner(_ message: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.orange)
-                .accessibilityHidden(true)
+    // MARK: - Cabecera
 
-            Text(message)
-                .font(.subheadline)
-                .foregroundColor(.primary)
-
-            Spacer()
-
-            Button {
-                viewModel.errorMessage = nil
-            } label: {
-                Image(systemName: "xmark")
-                    .foregroundColor(.secondary)
-            }
-            .accessibilityAddTraits(.isButton)
-            .accessibilityLabel("Cerrar mensaje de error")
-            .accessibilityHint("Oculta este mensaje de error")
-        }
-        .padding()
-        .background(Color.orange.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Error: \(message)")
-        .accessibilityAddTraits(.updatesFrequently)
-    }
-
-    // MARK: - Header Section
     private var headerSection: some View {
-        VStack(spacing: 16) {
-            // Icono premium con glow
-            ZStack {
-                // Glow exterior
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.accentHighlight.opacity(0.3), Color.accentColor.opacity(0.1), .clear],
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 70
-                        )
-                    )
-                    .frame(width: 120, height: 120)
-
-                // Circulo de fondo
-                Circle()
-                    .fill(LinearGradient.accentWithOpacity( 0.2))
-                    .frame(width: 88, height: 88)
-
-                // Corona
-                Image(systemName: "crown.fill")
-                    .font(.system(size: 40))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.yellow, Color.orange],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .shadow(color: Color.orange.opacity(0.5), radius: 8, x: 0, y: 4)
-                    .accessibilityHidden(true)
+        Section {
+            VStack(alignment: .leading, spacing: 10) {
+                BrandSphere(size: 56)
+                Eyebrow(text: "StepKit Pro")
+                Text(SubscriptionText.string(isPro ? "paywall.header.pro.title" : "paywall.header.title"))
+                    .font(.largeTitle.bold())
+                Text(headerSubtitle).foregroundStyle(.secondary)
             }
-
-            VStack(spacing: 6) {
-                Text("StepKit Pro")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-
-                Text("Desbloquea todo el potencial")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
+            .padding(.top, 8)
+            .listRowBackground(Color.clear)
+            .accessibilityElement(children: .combine)
         }
-        .padding(.vertical, 16)
     }
 
-    // MARK: - Benefits Section
-    private var benefitsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "star.fill")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundColor(.accentColor)
-                    .accessibilityHidden(true)
-
-                Text("Beneficios Premium")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-            }
-
-            VStack(spacing: 0) {
-                FeatureRow(
-                    icon: "infinity",
-                    iconColor: .accentColor,
-                    title: "Objetivos ilimitados",
-                    description: "Crea tantos objetivos como quieras",
-                    showDivider: true
-                )
-
-                FeatureRow(
-                    icon: "sparkles",
-                    iconColor: .purple,
-                    title: "IA sin limites",
-                    description: "Genera planes con IA de forma ilimitada",
-                    showDivider: true
-                )
-
-                FeatureRow(
-                    icon: "icloud",
-                    iconColor: .accentHighlight,
-                    title: "Sincronizacion en la nube",
-                    description: "Accede desde cualquier dispositivo",
-                    showDivider: true
-                )
-
-                FeatureRow(
-                    icon: "bell.badge",
-                    iconColor: .orange,
-                    title: "Recordatorios personalizados",
-                    description: "Notificaciones inteligentes adaptadas",
-                    showDivider: true
-                )
-
-                FeatureRow(
-                    icon: "chart.line.uptrend.xyaxis",
-                    iconColor: .green,
-                    title: "Analisis avanzado",
-                    description: "Estadisticas detalladas de tu progreso",
-                    showDivider: false
-                )
-            }
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    private var headerSubtitle: String {
+        guard isPro else { return SubscriptionText.string("paywall.header.subtitle") }
+        if let renewalDate {
+            let date = renewalDate.formatted(.dateTime.day().month(.wide).year().locale(SubscriptionText.locale))
+            return SubscriptionText.string("paywall.header.pro.renews \(date)")
         }
-        .padding(20)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        return SubscriptionText.string("paywall.header.pro.subtitle")
     }
 
-    // MARK: - Plans Section
+    // MARK: - Límite alcanzado
+
+    private func limitSection(_ reason: PlanLimitReason) -> some View {
+        Section {
+            Label {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(reason.title(limit: limit(for: reason))).font(.headline)
+                    Text(reason.message).font(.subheadline).foregroundStyle(.secondary)
+                }
+            } icon: {
+                IconChip(symbol: reason.symbol, color: .orange, size: 34)
+            }
+            .padding(.vertical, 4)
+            .listRowBackground(Color.orange.opacity(0.12))
+        }
+    }
+
+    private func limit(for reason: PlanLimitReason) -> Int {
+        switch reason {
+        case .activeKits: PlanLimits.freeActiveKits
+        case .cloudAI: authManager.currentUser?.monthlyAICallsQuota ?? PlanLimits.freeCloudAIPerMonth
+        }
+    }
+
+    // MARK: - Uso de este mes
+
+    @ViewBuilder private var usageSection: some View {
+        let user = authManager.currentUser
+        if user?.activeKitsCount != nil || user?.monthlyAICalls != nil {
+            Section {
+                if let used = user?.activeKitsCount {
+                    UsageRow(title: SubscriptionText.string("paywall.usage.kits"),
+                             symbol: Symbols.kits, color: .accentColor,
+                             used: used, limit: PlanLimits.freeActiveKits)
+                }
+                if let used = user?.monthlyAICalls {
+                    UsageRow(title: SubscriptionText.string("paywall.usage.ai"),
+                             symbol: "sparkles", color: .purple,
+                             used: used, limit: user?.monthlyAICallsQuota ?? PlanLimits.freeCloudAIPerMonth)
+                }
+            } header: {
+                Text(SubscriptionText.string("paywall.usage.header"))
+            } footer: {
+                Text(SubscriptionText.string("paywall.usage.footer"))
+            }
+        }
+    }
+
+    // MARK: - Comparación
+
+    private var compareSection: some View {
+        Section {
+            Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 14) {
+                GridRow {
+                    Color.clear.gridCellUnsizedAxes([.horizontal, .vertical])
+                    Text(SubscriptionText.string("paywall.compare.free"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(minWidth: 56)
+                    Text("Pro")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Color.accentColor)
+                        .frame(minWidth: 56)
+                }
+                .accessibilityHidden(true)
+                ForEach(PlanFeature.all) { feature in
+                    GridRow {
+                        Label {
+                            Text(feature.title).font(.subheadline)
+                        } icon: {
+                            IconChip(symbol: feature.symbol, color: feature.color, size: 28)
+                        }
+                        PlanValueView(value: feature.free)
+                        PlanValueView(value: feature.pro, emphasized: true)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(feature.title)
+                    .accessibilityValue(feature.accessibilityValue)
+                }
+            }
+            .padding(.vertical, 6)
+        } header: {
+            Text(SubscriptionText.string("paywall.compare.header"))
+        } footer: {
+            Text(SubscriptionText.string("paywall.compare.footer"))
+        }
+    }
+
+    // MARK: - Planes
+
     private var plansSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "creditcard")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundColor(.accentColor)
-                    .accessibilityHidden(true)
-
-                Text("Elige tu plan")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-            }
-
-            if storeKitManager.isLoading {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                        .padding()
-                    Spacer()
+        Section {
+            if storeKitManager.isLoading && storeKitManager.products.isEmpty {
+                HStack { Spacer(); ProgressView(); Spacer() }
+                    .accessibilityLabel(SubscriptionText.string("paywall.plans.loading"))
+            } else if storeKitManager.products.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(SubscriptionText.string("paywall.plans.unavailable"))
+                        .foregroundStyle(.secondary)
+                    Button(SubscriptionText.string("paywall.plans.retry")) {
+                        Task {
+                            await storeKitManager.loadProducts()
+                            await loadOffersAndRenewal()
+                        }
+                    }
                 }
-                .accessibilityLabel("Cargando planes de suscripción")
-                .accessibilityAddTraits(.updatesFrequently)
             } else {
-                VStack(spacing: 12) {
-                    // Plan anual (recomendado)
-                    PlanCard(
-                        plan: .yearly,
-                        product: storeKitManager.yearlyProduct,
-                        isSelected: viewModel.selectedPlan == .yearly
-                    ) {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            viewModel.selectedPlan = .yearly
-                        }
-                    }
-
-                    // Plan mensual
-                    PlanCard(
-                        plan: .monthly,
-                        product: storeKitManager.monthlyProduct,
-                        isSelected: viewModel.selectedPlan == .monthly
-                    ) {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            viewModel.selectedPlan = .monthly
+                ForEach([SubscriptionPlan.yearly, .monthly], id: \.self) { plan in
+                    if let product = product(for: plan) {
+                        PlanRow(plan: plan,
+                                product: product,
+                                savingsPercent: plan == .yearly ? yearlySavingsPercent : nil,
+                                trial: introOffers[plan].map { SubscriptionText.trialText($0) },
+                                isSelected: viewModel.selectedPlan == plan) {
+                            withAnimation(.snappy) { viewModel.selectedPlan = plan }
                         }
                     }
                 }
             }
+        } header: {
+            Text(SubscriptionText.string("paywall.plans.header"))
+        } footer: {
+            Text(SubscriptionText.string("paywall.plans.legal"))
         }
-        .padding(20)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    // MARK: - Subscribe Button
-    private var subscribeButton: some View {
-        Button {
-            Task {
-                await viewModel.subscribeToPlan(
-                    storeKitManager: storeKitManager,
-                    apiClient: apiClient,
-                    authManager: authManager
-                )
-            }
-        } label: {
-            HStack(spacing: 8) {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        .scaleEffect(0.8)
-                } else {
-                    Image(systemName: "sparkles")
-                        .font(.body.weight(.semibold))
+    // MARK: - Gestión (Pro)
+
+    private var manageSection: some View {
+        Section {
+            Button {
+                showingManage = true
+            } label: {
+                Label {
+                    Text(SubscriptionText.string("paywall.manage")).foregroundStyle(.primary)
+                } icon: {
+                    IconChip(symbol: "creditcard.fill", color: .accentColor, size: 28)
                 }
-
-                Text(viewModel.isLoading ? "Procesando..." : "Comenzar prueba gratuita")
-                    .font(.body.weight(.semibold))
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                viewModel.isLoading
-                    ? LinearGradient.disabledGradient
-                    : LinearGradient.accentGradient
-            )
-            .foregroundColor(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .shadow(color: viewModel.isLoading ? .clear : Color.glowColor.opacity(0.4), radius: 12, x: 0, y: 6)
+        } footer: {
+            Text(SubscriptionText.string("paywall.manage.footer"))
         }
-        .accessibilityAddTraits(.isButton)
-        .accessibilityLabel(viewModel.isLoading ? "Procesando suscripción" : "Comenzar prueba gratuita")
-        .accessibilityValue(viewModel.isLoading ? "Procesando" : selectedProduct == nil ? "No disponible" : "")
-        .accessibilityHint("Inicia el proceso de suscripción al plan seleccionado")
-        .disabled(viewModel.isLoading || selectedProduct == nil)
     }
 
-    // MARK: - Restore Button
-    private var restoreButton: some View {
-        Button {
-            Task {
-                await viewModel.restorePurchases(
-                    storeKitManager: storeKitManager,
-                    apiClient: apiClient,
-                    authManager: authManager
-                )
+    // MARK: - Enlaces
+
+    private var linksSection: some View {
+        Section {
+            Button(SubscriptionText.string("paywall.restore")) {
+                Task {
+                    await viewModel.restorePurchases(storeKitManager: storeKitManager,
+                                                     apiClient: apiClient,
+                                                     authManager: authManager)
+                }
             }
-        } label: {
-            Text("Restaurar compras")
-                .font(.subheadline)
-                .foregroundColor(.accentColor)
+            .disabled(viewModel.isLoading)
+            if !isPro {
+                Button(SubscriptionText.string("paywall.offerCode")) { showingOfferCode = true }
+            }
+            Button(SubscriptionText.string("paywall.terms")) { showingTermsOfService = true }
+            Button(SubscriptionText.string("paywall.privacy")) { showingPrivacyPolicy = true }
         }
-        .accessibilityAddTraits(.isButton)
-        .accessibilityLabel("Restaurar compras")
-        .accessibilityHint("Restaura las compras anteriores realizadas desde este dispositivo")
-        .disabled(viewModel.isLoading)
     }
 
-    // MARK: - Legal Text
-    private var legalText: some View {
+    // MARK: - Barra de compra
+
+    private var purchaseBar: some View {
         VStack(spacing: 8) {
-            Text("7 dias gratis, despues \(viewModel.selectedPlan.displayPrice(from: selectedProduct))")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.primary)
-            
-            Text("Cancela en cualquier momento desde la App Store")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-            
-            HStack(spacing: 4) {
-                Button("Términos de uso") {
-                    showingTermsOfService = true
+            Button {
+                Task {
+                    await viewModel.subscribeToPlan(storeKitManager: storeKitManager,
+                                                    apiClient: apiClient,
+                                                    authManager: authManager)
                 }
-                .font(.caption)
-                .foregroundColor(.accentColor)
-                .accessibilityAddTraits(.isButton)
-                .accessibilityHint("Abre los términos de uso")
-                
-                Text("y")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Button("Política de privacidad") {
-                    showingPrivacyPolicy = true
+            } label: {
+                Group {
+                    if viewModel.isLoading {
+                        ProgressView().tint(.white)
+                    } else {
+                        Text(ctaTitle).font(.headline)
+                    }
                 }
-                .font(.caption)
-                .foregroundColor(.accentColor)
-                .accessibilityAddTraits(.isButton)
-                .accessibilityHint("Abre la política de privacidad")
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 30)
             }
-            .padding(.top, 4)
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .disabled(viewModel.isLoading || selectedProduct == nil)
+            .accessibilityIdentifier("subscription.subscribe")
+
+            if let caption = ctaCaption {
+                Text(caption)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
+        .padding(.bottom, 6)
+        .frame(maxWidth: 680)
+        .frame(maxWidth: .infinity)
+        .background(.bar)
+    }
+
+    private var ctaTitle: String {
+        if let offer = introOffers[viewModel.selectedPlan], offer.paymentMode == .freeTrial {
+            return SubscriptionText.string("paywall.cta.trial \(SubscriptionText.duration(offer.period))")
+        }
+        return SubscriptionText.string("paywall.cta.subscribe")
+    }
+
+    /// Lo que se pagará después: obligatorio junto al botón según las normas de la App Store.
+    private var ctaCaption: String? {
+        guard let product = selectedProduct else { return nil }
+        let price = SubscriptionText.pricePerPeriod(product)
+        if introOffers[viewModel.selectedPlan]?.paymentMode == .freeTrial {
+            return SubscriptionText.string("paywall.cta.caption.trial \(price)")
+        }
+        return SubscriptionText.string("paywall.cta.caption \(price)")
+    }
+
+    // MARK: - Datos
+
+    private var selectedProduct: Product? { product(for: viewModel.selectedPlan) }
+
+    private func product(for plan: SubscriptionPlan) -> Product? {
+        switch plan {
+        case .monthly: storeKitManager.monthlyProduct
+        case .yearly: storeKitManager.yearlyProduct
         }
     }
 
-    // MARK: - Helpers
+    /// Ahorro real del plan anual frente a doce meses del mensual, con los precios de la tienda.
+    private var yearlySavingsPercent: Int? {
+        guard let monthly = storeKitManager.monthlyProduct?.price,
+              let yearly = storeKitManager.yearlyProduct?.price, monthly > 0 else { return nil }
+        let ratio = NSDecimalNumber(decimal: yearly / (monthly * 12)).doubleValue
+        let percent = Int(((1 - ratio) * 100).rounded())
+        return percent >= 5 ? percent : nil
+    }
 
-    private var selectedProduct: Product? {
-        switch viewModel.selectedPlan {
-        case .monthly:
-            return storeKitManager.monthlyProduct
-        case .yearly:
-            return storeKitManager.yearlyProduct
+    private func loadOffersAndRenewal() async {
+        var offers: [SubscriptionPlan: Product.SubscriptionOffer] = [:]
+        for plan in SubscriptionPlan.allCases {
+            guard let subscription = product(for: plan)?.subscription,
+                  let offer = subscription.introductoryOffer,
+                  await subscription.isEligibleForIntroOffer else { continue }
+            offers[plan] = offer
         }
+        introOffers = offers
+        renewalDate = await storeKitManager.getSubscriptionStatus()?.expirationDate
     }
 }
 
-// MARK: - Subscription Plan
+// MARK: - Plan
+
 enum SubscriptionPlan: CaseIterable {
     case monthly
     case yearly
 
     var title: String {
         switch self {
-        case .monthly:
-            return "Mensual"
-        case .yearly:
-            return "Anual"
+        case .monthly: SubscriptionText.string("paywall.plan.monthly")
+        case .yearly: SubscriptionText.string("paywall.plan.yearly")
         }
     }
 
     var productId: String {
         switch self {
-        case .monthly:
-            return StoreKitManager.monthlyProductId
-        case .yearly:
-            return StoreKitManager.yearlyProductId
+        case .monthly: StoreKitManager.monthlyProductId
+        case .yearly: StoreKitManager.yearlyProductId
         }
-    }
-
-    func displayPrice(from product: Product?) -> String {
-        guard let product = product else {
-            return self == .monthly ? "4,99/mes" : "3,33/mes"
-        }
-        if self == .yearly {
-            // Calculate monthly price for yearly
-            let monthlyPrice = product.price / 12
-            let currencyCode = Locale.current.currency?.identifier ?? "EUR"
-            return "\(monthlyPrice.formatted(.currency(code: currencyCode)))/mes"
-        }
-        return "\(product.displayPrice)/mes"
-    }
-
-    func billingInfo(from product: Product?) -> String {
-        guard let product = product else {
-            return self == .monthly ? "Facturado mensualmente" : "39,99 facturado anualmente"
-        }
-        switch self {
-        case .monthly:
-            return "Facturado mensualmente"
-        case .yearly:
-            return "\(product.displayPrice) facturado anualmente"
-        }
-    }
-
-    var savings: String? {
-        switch self {
-        case .monthly:
-            return nil
-        case .yearly:
-            return "Ahorra 33%"
-        }
-    }
-
-    var isPopular: Bool {
-        self == .yearly
     }
 }
 
-// MARK: - Feature Row
-struct FeatureRow: View {
-    let icon: String
-    let iconColor: Color
+// MARK: - Límites del plan gratuito
+
+/// Límites del plan gratuito. El servidor los aplica; la app solo los explica.
+enum PlanLimits {
+    static let freeActiveKits = 3
+    /// Valor por defecto si el perfil aún no ha llegado; manda `monthlyAICallsQuota` del servidor.
+    static let freeCloudAIPerMonth = 20
+}
+
+/// Límite que se ha tocado al intentar algo con el plan gratuito.
+enum PlanLimitReason: String, Identifiable {
+    case activeKits
+    case cloudAI
+
+    var id: String { rawValue }
+
+    var symbol: String {
+        switch self {
+        case .activeKits: Symbols.kits
+        case .cloudAI: "sparkles"
+        }
+    }
+
+    func title(limit: Int) -> String {
+        switch self {
+        case .activeKits: SubscriptionText.string("paywall.limit.kits.title \(String(limit))")
+        case .cloudAI: SubscriptionText.string("paywall.limit.ai.title \(String(limit))")
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .activeKits: SubscriptionText.string("paywall.limit.kits.message")
+        case .cloudAI: SubscriptionText.string("paywall.limit.ai.message")
+        }
+    }
+}
+
+// MARK: - Comparación
+
+private struct PlanFeature: Identifiable {
+    enum Value {
+        case included
+        case count(Int)
+        case unlimited
+    }
+
+    let id: String
     let title: String
-    let description: String
-    let showDivider: Bool
+    let symbol: String
+    let color: Color
+    let free: Value
+    let pro: Value
+
+    var accessibilityValue: String {
+        SubscriptionText.string("paywall.compare.a11y \(Self.describe(free)) \(Self.describe(pro))")
+    }
+
+    private static func describe(_ value: Value) -> String {
+        switch value {
+        case .included: SubscriptionText.string("paywall.compare.included")
+        case .count(let n): String(n)
+        case .unlimited: SubscriptionText.string("paywall.compare.unlimited")
+        }
+    }
+
+    static var all: [PlanFeature] {
+        [
+            PlanFeature(id: "kits", title: SubscriptionText.string("paywall.feature.kits"),
+                        symbol: Symbols.kits, color: .accentColor,
+                        free: .count(PlanLimits.freeActiveKits), pro: .unlimited),
+            PlanFeature(id: "ai", title: SubscriptionText.string("paywall.feature.ai"),
+                        symbol: "sparkles", color: .purple,
+                        free: .count(PlanLimits.freeCloudAIPerMonth), pro: .unlimited),
+            PlanFeature(id: "assistant", title: SubscriptionText.string("paywall.feature.assistant"),
+                        symbol: Symbols.assistant, color: .blue, free: .included, pro: .included),
+            PlanFeature(id: "calendar", title: SubscriptionText.string("paywall.feature.calendar"),
+                        symbol: Symbols.session, color: .orange, free: .included, pro: .included),
+            PlanFeature(id: "reminders", title: SubscriptionText.string("paywall.feature.reminders"),
+                        symbol: "bell.fill", color: .red, free: .included, pro: .included),
+            PlanFeature(id: "sync", title: SubscriptionText.string("paywall.feature.sync"),
+                        symbol: "arrow.triangle.2.circlepath", color: .green, free: .included, pro: .included)
+        ]
+    }
+}
+
+private struct PlanValueView: View {
+    let value: PlanFeature.Value
+    var emphasized = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(iconColor.opacity(0.1))
-                        .frame(width: 36, height: 36)
-
-                    Image(systemName: icon)
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(iconColor)
-                        .accessibilityHidden(true)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
-
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(title). \(description)")
-
-                Spacer()
-
-                Image(systemName: "checkmark")
-                    .font(.caption.weight(.bold))
-                    .foregroundColor(.green)
-                    .accessibilityHidden(true)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-
-            if showDivider {
-                Divider()
-                    .padding(.leading, 62)
+        Group {
+            switch value {
+            case .included:
+                Image(systemName: "checkmark").fontWeight(.semibold)
+                    .foregroundStyle(emphasized ? Color.accentColor : Color.secondary)
+            case .count(let n):
+                Text(String(n)).monospacedDigit().fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+            case .unlimited:
+                Image(systemName: "infinity").fontWeight(.bold)
+                    .foregroundStyle(Color.accentColor)
             }
         }
+        .font(.subheadline)
+        .frame(minWidth: 56)
     }
 }
 
-// MARK: - Plan Card
-struct PlanCard: View {
+// MARK: - Filas
+
+private struct UsageRow: View {
+    let title: String
+    let symbol: String
+    let color: Color
+    let used: Int
+    let limit: Int
+
+    private var reached: Bool { used >= limit }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            LabeledContent {
+                Text(SubscriptionText.string("paywall.usage.value \(String(min(used, limit))) \(String(limit))"))
+                    .monospacedDigit()
+                    .foregroundStyle(reached ? Color.orange : Color.secondary)
+            } label: {
+                Label { Text(title) } icon: { IconChip(symbol: symbol, color: color, size: 28) }
+            }
+            ProgressView(value: Double(min(used, limit)), total: Double(max(limit, 1)))
+                .tint(reached ? .orange : color)
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(SubscriptionText.string("paywall.usage.value \(String(min(used, limit))) \(String(limit))"))
+    }
+}
+
+private struct PlanRow: View {
     let plan: SubscriptionPlan
-    let product: Product?
+    let product: Product
+    let savingsPercent: Int?
+    let trial: String?
     let isSelected: Bool
     let action: () -> Void
-
-    private var planAccessibilityLabel: String {
-        var label = "Plan \(plan.title)"
-        if plan.isPopular {
-            label += ", Popular"
-        }
-        label += ", \(plan.billingInfo(from: product))"
-        label += ", \(plan.displayPrice(from: product))"
-        if let savings = plan.savings {
-            label += ", \(savings)"
-        }
-        if isSelected {
-            label += ", Seleccionado"
-        }
-        return label
-    }
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                // Radio button
-                ZStack {
-                    Circle()
-                        .stroke(isSelected ? Color.accentColor : Color(.systemGray4), lineWidth: 2)
-                        .frame(width: 24, height: 24)
-
-                    if isSelected {
-                        Circle()
-                            .fill(LinearGradient.accentGradient)
-                            .frame(width: 14, height: 14)
-                    }
-                }
-                .accessibilityHidden(true)
-
-                VStack(alignment: .leading, spacing: 4) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundStyle(isSelected ? Color.accentColor : Color(.tertiaryLabel))
+                    .contentTransition(.symbolEffect(.replace))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
-                        Text(plan.title)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
-
-                        if plan.isPopular {
-                            Text("POPULAR")
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                                .padding(.horizontal, 6)
+                        Text(plan.title).font(.headline)
+                        if let savingsPercent {
+                            Text(SubscriptionText.string("paywall.plan.savings \(String(savingsPercent))"))
+                                .font(.caption.weight(.bold))
+                                .padding(.horizontal, 7)
                                 .padding(.vertical, 2)
-                                .background(LinearGradient.accentGradient)
-                                .foregroundColor(.white)
-                                .clipShape(Capsule())
+                                .foregroundStyle(.white)
+                                .background(Color.accentColor, in: .capsule)
                         }
                     }
-
-                    Text(plan.billingInfo(from: product))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(plan.displayPrice(from: product))
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-
-                    if let savings = plan.savings {
-                        Text(savings)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.green)
+                    if let detail {
+                        Text(detail).font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
+                Spacer(minLength: 8)
+                Text(SubscriptionText.pricePerPeriod(product))
+                    .font(.subheadline.weight(.semibold))
+                    .multilineTextAlignment(.trailing)
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(.systemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(
-                        isSelected
-                            ? LinearGradient.accentGradient
-                            : LinearGradient.disabledGradient,
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            )
-            .accessibilityElement(children: .ignore)
+            .contentShape(.rect)
+            .padding(.vertical, 4)
         }
         .buttonStyle(.plain)
+        .listRowBackground(isSelected ? Color.accentColor.opacity(0.10) : Color(.secondarySystemGroupedBackground))
+        .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .accessibilityLabel(planAccessibilityLabel)
-        .accessibilityHint("Toca dos veces para seleccionar este plan de suscripción")
+        .accessibilityIdentifier("subscription.plan.\(plan == .yearly ? "yearly" : "monthly")")
+    }
+
+    /// «Equivale a 3,33 €/mes · 7 días gratis».
+    private var detail: String? {
+        var parts: [String] = []
+        if plan == .yearly {
+            let monthly = (product.price / 12).formatted(product.priceFormatStyle)
+            parts.append(SubscriptionText.string("paywall.plan.yearly.perMonth \(monthly)"))
+        }
+        if let trial { parts.append(trial) }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+}
+
+// MARK: - Textos (español e inglés)
+
+/// Textos de la suscripción en la tabla `Subscription` (español e inglés).
+enum SubscriptionText {
+    static func string(_ key: String.LocalizationValue) -> String {
+        String(localized: key, table: "Subscription")
+    }
+
+    /// Idioma en el que se muestra la app, para fechas y periodos.
+    static var locale: Locale {
+        Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en")
+    }
+
+    /// «7 días», «1 semana», «1 mes»…
+    static func duration(_ period: Product.SubscriptionPeriod) -> String {
+        var components = DateComponents()
+        switch period.unit {
+        case .day: components.day = period.value
+        case .week: components.weekOfMonth = period.value
+        case .month: components.month = period.value
+        case .year: components.year = period.value
+        @unknown default: components.day = period.value
+        }
+        let formatter = DateComponentsFormatter()
+        var calendar = Calendar.current
+        calendar.locale = locale
+        formatter.calendar = calendar
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.day, .weekOfMonth, .month, .year]
+        return formatter.string(from: components) ?? ""
+    }
+
+    /// «4,99 €/mes» o «39,99 €/año».
+    static func pricePerPeriod(_ product: Product) -> String {
+        let price = product.displayPrice
+        guard let period = product.subscription?.subscriptionPeriod else { return price }
+        switch (period.unit, period.value) {
+        case (.month, 1): return string("paywall.price.month \(price)")
+        case (.year, 1): return string("paywall.price.year \(price)")
+        default: return "\(price) / \(duration(period))"
+        }
+    }
+
+    /// «7 días gratis» o el precio de la oferta de introducción.
+    static func trialText(_ offer: Product.SubscriptionOffer) -> String {
+        let length = duration(offer.period)
+        switch offer.paymentMode {
+        case .freeTrial: return string("paywall.offer.free \(length)")
+        default: return string("paywall.offer.paid \(offer.displayPrice) \(length)")
+        }
     }
 }
 

@@ -210,7 +210,9 @@ enum KitAssistClient {
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         guard let http = response as? HTTPURLResponse else { throw Failure.unavailable }
         guard (200...299).contains(http.statusCode) else {
-            throw http.statusCode == 404 ? Failure.unavailable : Failure.server(http.statusCode)
+            // 404: servidor sin asistente. 429: cupo de IA del plan gratuito agotado.
+            // En ambos casos responde el modelo del dispositivo, que no tiene cupo.
+            throw [404, 429].contains(http.statusCode) ? Failure.unavailable : Failure.server(http.statusCode)
         }
         return try JSONDecoder().decode(AssistResponse.self, from: data)
     }
