@@ -483,6 +483,7 @@ struct KitsEmptyView: View {
         }
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
+        .frame(maxWidth: 420)
         .padding(.horizontal, 30)
         .padding(.top, 8)
         .accessibilityIdentifier("emptyState.primaryAction")

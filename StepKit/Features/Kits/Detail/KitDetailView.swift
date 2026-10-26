@@ -25,6 +25,7 @@ struct KitDetailView: View {
     @Environment(AuthManager.self) private var authManager
     @State private var presentedSheet: PresentedSheet?
     @State private var segment = 0
+    @State private var wideLayout = false
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var editingEntry: ProgressEntryEntity?
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
@@ -46,23 +47,38 @@ struct KitDetailView: View {
                                 .animation(.spring(response: 0.55, dampingFraction: 0.75).delay(0.45)),
                             removal: .opacity))
                 }
-                Picker("Vista", selection: $segment) {
-                    Text("Plan").tag(0)
-                    Text("Registro").tag(1)
-                }
-                .pickerStyle(.segmented)
-                .accessibilityIdentifier("kit.segment")
-                if segment == 0 {
-                    stepsSection
+                if wideLayout {
+                    // Pantalla ancha (iPhone Duo abierto, iPad): plan y registro a la vez, sin conmutador.
+                    HStack(alignment: .top, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Plan").font(.title3.bold())
+                            stepsSection
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Registro").font(.title3.bold())
+                            logSection
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 } else {
-                    KitLogView(kit: kitEntity, entries: kitEntries,
-                               onEdit: { editingEntry = $0 },
-                               onAddNote: { presentedSheet = .annotations })
+                    Picker("Vista", selection: $segment) {
+                        Text("Plan").tag(0)
+                        Text("Registro").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("kit.segment")
+                    if segment == 0 {
+                        stepsSection
+                    } else {
+                        logSection
+                    }
                 }
             }
             .padding(.horizontal)
             .padding(.bottom, 30)
         }
+        .onGeometryChange(for: Bool.self) { $0.size.width >= 640 } action: { wideLayout = $0 }
         .onChange(of: allStepsDone) { _, done in
             guard done else { return }
             // Al completar el último paso: subir arriba y que aparezca el resultado.
@@ -106,6 +122,12 @@ struct KitDetailView: View {
             EditProgressEntrySheet(entry: entry,
                                    stepLabel: step.map { "\(kitEntity.position(of: $0)) · \($0.stepTitle)" })
         }
+    }
+
+    private var logSection: some View {
+        KitLogView(kit: kitEntity, entries: kitEntries,
+                   onEdit: { editingEntry = $0 },
+                   onAddNote: { presentedSheet = .annotations })
     }
 
     private var header: some View {

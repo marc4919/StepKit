@@ -28,6 +28,7 @@ struct StepDetailView: View {
     @State private var showingAllProgress = false
     /// Aviso breve tras completar el paso: qué viene después.
     @State private var celebration: Celebration?
+    @State private var wideLayout = false
 
     private struct AssistantLaunch: Identifiable {
         let id = UUID()
@@ -105,6 +106,9 @@ struct StepDetailView: View {
                 }
                 bottomActions
             }
+            // En pantallas anchas los botones no se estiran de borde a borde.
+            .frame(maxWidth: 600)
+            .frame(maxWidth: .infinity)
         }
         .sensoryFeedback(.success, trigger: celebration)
         .sheet(isPresented: $showingEditor) {
@@ -135,69 +139,106 @@ struct StepDetailView: View {
     private var stepScroll: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Eyebrow(text: "Paso \(stepNumber) · \(state.label)",
-                            color: state == .pending ? .accentColor : state.tint)
-                    Text(stepEntity.stepTitle)
-                        .font(.largeTitle.bold())
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityAddTraits(.isHeader)
-                }
-                if !stepEntity.descriptionShort.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Al terminar").font(.headline)
-                        Text(stepEntity.descriptionShort).foregroundStyle(.secondary)
-                    }
-                }
-                FlowLayout(spacing: 8) { chips }
-                if stepEntity.repetition != nil, !stepEntity.sessionDates.isEmpty {
-                    HabitSessionsCard(step: stepEntity, doneDays: doneSessionDays) { day in
-                        withAnimation(.snappy) {
-                            try? ProgressLog.toggleSession(of: stepEntity, on: day, context: modelContext)
+                stepHeader
+                if wideLayout {
+                    // Interior del iPhone Duo o iPad: qué hacer a la izquierda; tu avance y el recordatorio a la derecha.
+                    HStack(alignment: .top, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 18) {
+                            stepWhatToDo
+                            stepDetails
                         }
-                        syncManager?.handleDataChange()
-                    } onCompleteStep: {
-                        withAnimation { toggleStepCompletion() }
-                    }
-                }
-                if let reason = stepEntity.blockedReason {
-                    blockedCards(reason: reason)
-                } else if !progressNotes.isEmpty {
-                    progressHistoryCard
-                }
-                if !stepEntity.descriptionLong.isEmpty, stepEntity.descriptionLong != stepEntity.descriptionShort {
-                    PlainCard {
-                        Eyebrow(text: "Descripción", color: .secondary)
-                        ParagraphText(text: stepEntity.descriptionLong)
-                    }
-                }
-                if !stepEntity.adaptsTo.isEmpty {
-                    TintCard {
-                        HStack(alignment: .top, spacing: 12) {
-                            NextMark().padding(.top, 2)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Eyebrow(text: "Planificación recomendada")
-                                Text(stepEntity.adaptsTo).font(.headline)
-                            }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 18) {
+                            stepProgress
+                            stepReminder
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                }
-                PlainCard {
-                    Toggle(isOn: Binding(
-                        get: { stepEntity.notificationEnabled },
-                        set: { _ in toggleStepNotification() }
-                    )) {
-                        Label {
-                            Text("Recordatorio")
-                        } icon: {
-                            IconChip(symbol: "bell.fill", color: .red, size: 28)
-                        }
-                    }
-                    .accessibilityHint("Activa o desactiva el recordatorio de este paso")
+                } else {
+                    stepWhatToDo
+                    stepProgress
+                    stepDetails
+                    stepReminder
                 }
             }
             .padding(.horizontal)
             .padding(.bottom, 20)
+        }
+        .onGeometryChange(for: Bool.self) { $0.size.width >= 640 } action: { wideLayout = $0 }
+    }
+
+    private var stepHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Eyebrow(text: "Paso \(stepNumber) · \(state.label)",
+                    color: state == .pending ? .accentColor : state.tint)
+            Text(stepEntity.stepTitle)
+                .font(.largeTitle.bold())
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+        }
+    }
+
+    @ViewBuilder private var stepWhatToDo: some View {
+        if !stepEntity.descriptionShort.isEmpty {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Al terminar").font(.headline)
+                Text(stepEntity.descriptionShort).foregroundStyle(.secondary)
+            }
+        }
+        FlowLayout(spacing: 8) { chips }
+        if stepEntity.repetition != nil, !stepEntity.sessionDates.isEmpty {
+            HabitSessionsCard(step: stepEntity, doneDays: doneSessionDays) { day in
+                withAnimation(.snappy) {
+                    try? ProgressLog.toggleSession(of: stepEntity, on: day, context: modelContext)
+                }
+                syncManager?.handleDataChange()
+            } onCompleteStep: {
+                withAnimation { toggleStepCompletion() }
+            }
+        }
+    }
+
+    @ViewBuilder private var stepProgress: some View {
+        if let reason = stepEntity.blockedReason {
+            blockedCards(reason: reason)
+        } else if !progressNotes.isEmpty {
+            progressHistoryCard
+        }
+    }
+
+    @ViewBuilder private var stepDetails: some View {
+        if !stepEntity.descriptionLong.isEmpty, stepEntity.descriptionLong != stepEntity.descriptionShort {
+            PlainCard {
+                Eyebrow(text: "Descripción", color: .secondary)
+                ParagraphText(text: stepEntity.descriptionLong)
+            }
+        }
+        if !stepEntity.adaptsTo.isEmpty {
+            TintCard {
+                HStack(alignment: .top, spacing: 12) {
+                    NextMark().padding(.top, 2)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Eyebrow(text: "Planificación recomendada")
+                        Text(stepEntity.adaptsTo).font(.headline)
+                    }
+                }
+            }
+        }
+    }
+
+    private var stepReminder: some View {
+        PlainCard {
+            Toggle(isOn: Binding(
+                get: { stepEntity.notificationEnabled },
+                set: { _ in toggleStepNotification() }
+            )) {
+                Label {
+                    Text("Recordatorio")
+                } icon: {
+                    IconChip(symbol: "bell.fill", color: .red, size: 28)
+                }
+            }
+            .accessibilityHint("Activa o desactiva el recordatorio de este paso")
         }
     }
 
@@ -424,7 +465,12 @@ struct StepDetailView: View {
         Button(action: action) {
             VStack(spacing: 3) {
                 Image(systemName: symbol).font(.title3.weight(.semibold))
-                Text(title).font(.subheadline.weight(.semibold))
+                // En pantallas estrechas (iPhone Duo cerrado) el texto se ajusta antes que partirse.
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .allowsTightening(true)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)

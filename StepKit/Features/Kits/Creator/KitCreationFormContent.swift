@@ -24,86 +24,36 @@ struct KitCreationFormContent: View {
     let isFormValid: Bool
     let onCreate: () -> Void
 
+    @State private var width: CGFloat = 0
+    /// Interior del iPhone Duo, iPad o iPhone en horizontal: dos columnas en vez de una tira estirada.
+    private var twoColumns: Bool { width >= 640 }
+
     var body: some View {
-        Form {
-            Section {
-                VStack(spacing: 8) {
-                    OrbitMark(height: 86).frame(maxWidth: 240)
-                    Text("¿Qué quieres conseguir?")
-                        .font(.title2.bold())
-                        .multilineTextAlignment(.center)
-                    Text("Revisarás el plan antes de aceptarlo.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                .listRowBackground(Color.clear)
-            }
-            Section {
-                field("target", .accentColor, "Resultado", placeholder: "Ej.: Correr 5 km sin parar",
-                      text: $description, focus: .description, identifier: "kitCreator.description")
-                field("checklist", .green, "Cómo sabré que está listo (opcional)",
-                      placeholder: "Ej.: Los corro en menos de 35 min", text: $doneWhen, focus: .doneWhen)
-                field("flag.fill", .pink, "Punto de partida (opcional)",
-                      placeholder: "Ej.: Ahora aguanto 10 min seguidos", text: $startingPoint, focus: .startingPoint)
-                field(Symbols.risk, .orange, "Qué te puede frenar (opcional)",
-                      placeholder: "Ej.: Trabajo a turnos, me duele la rodilla", text: $inconveniences, focus: .obstacles)
-            }
-            Section {
-                Toggle(isOn: $oneSitting.animation(.smooth)) {
-                    Label {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("En una sola sesión")
-                            Text("Para algo que harás de una vez, como una receta o un montaje.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    } icon: {
-                        IconChip(symbol: "bolt.fill", color: .orange, size: 28)
-                    }
-                }
-                .accessibilityIdentifier("kitCreator.oneSitting")
-                if !oneSitting {
-                    Stepper(value: $sessionsPerWeek, in: 1...14) {
-                        Label {
-                            Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
-                        } icon: {
-                            IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
+        Group {
+            if twoColumns {
+                // El título abarca las dos columnas; debajo, el objetivo y el tiempo lado a lado.
+                VStack(spacing: 0) {
+                    headerContent.padding(.top, 8)
+                    HStack(alignment: .top, spacing: 0) {
+                        Form { goalSection }
+                        Form {
+                            timeSection
+                            createSection
                         }
                     }
+                    .scrollContentBackground(.hidden)
                 }
-                Picker(selection: $sessionMinutes) {
-                    ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
-                } label: {
-                    Label { Text(oneSitting ? "Tiempo disponible" : "Cada sesión") } icon: {
-                        IconChip(symbol: "timer", color: MetaTint.time, size: 28)
-                    }
+                .background(Color(.systemGroupedBackground))
+            } else {
+                Form {
+                    headerSection
+                    goalSection
+                    timeSection
+                    createSection
                 }
-                DatePicker(selection: $dueDate, in: todayStart..., displayedComponents: .date) {
-                    Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
-                }
-                .accessibilityIdentifier("kitCreator.dueDate")
-            } header: {
-                Text("Tu tiempo")
-            } footer: {
-                Text("La fecha es orientativa. Podrás ajustar el plan y tu tiempo después.")
-            }
-            Section {
-                Button {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    onCreate()
-                } label: {
-                    Text("Preparar plan").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(!isFormValid)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
-                .accessibilityIdentifier("kitCreator.create")
             }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .scrollDismissesKeyboard(.interactively)
         .onChange(of: oneSitting) { _, _ in
             // Se mantiene el tiempo elegido; si no existe en la otra lista, el más cercano (sin saltos bruscos).
@@ -112,6 +62,101 @@ struct KitCreationFormContent: View {
                 sessionMinutes = nearest
             }
         }
+    }
+
+    @ViewBuilder private var headerSection: some View {
+        Section {
+            headerContent.listRowBackground(Color.clear)
+        }
+    }
+
+    private var headerContent: some View {
+        VStack(spacing: 8) {
+            OrbitMark(height: 86).frame(maxWidth: 240)
+            Text("¿Qué quieres conseguir?")
+                .font(.title2.bold())
+                .multilineTextAlignment(.center)
+            Text("Revisarás el plan antes de aceptarlo.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder private var goalSection: some View {
+        Section {
+            field("target", .accentColor, "Resultado", placeholder: "Ej.: Correr 5 km sin parar",
+                  text: $description, focus: .description, identifier: "kitCreator.description")
+            field("checklist", .green, "Cómo sabré que está listo (opcional)",
+                  placeholder: "Ej.: Los corro en menos de 35 min", text: $doneWhen, focus: .doneWhen)
+            field("flag.fill", .pink, "Punto de partida (opcional)",
+                  placeholder: "Ej.: Ahora aguanto 10 min seguidos", text: $startingPoint, focus: .startingPoint)
+            field(Symbols.risk, .orange, "Qué te puede frenar (opcional)",
+                  placeholder: "Ej.: Trabajo a turnos, me duele la rodilla", text: $inconveniences, focus: .obstacles)
+        } header: {
+            Text("Tu objetivo")
+        }
+    }
+
+    @ViewBuilder private var timeSection: some View {
+        Section {
+            Toggle(isOn: $oneSitting.animation(.smooth)) {
+                Label {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("En una sola sesión")
+                        Text("Para algo que harás de una vez, como una receta o un montaje.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    IconChip(symbol: "bolt.fill", color: .orange, size: 28)
+                }
+            }
+            .accessibilityIdentifier("kitCreator.oneSitting")
+            if !oneSitting {
+                Stepper(value: $sessionsPerWeek, in: 1...14) {
+                    Label {
+                        Text(sessionsPerWeek == 1 ? "1 sesión por semana" : "\(sessionsPerWeek) sesiones por semana")
+                    } icon: {
+                        IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
+                    }
+                }
+            }
+            Picker(selection: $sessionMinutes) {
+                ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
+            } label: {
+                Label { Text(oneSitting ? "Tiempo disponible" : "Cada sesión") } icon: {
+                    IconChip(symbol: "timer", color: MetaTint.time, size: 28)
+                }
+            }
+            DatePicker(selection: $dueDate, in: todayStart..., displayedComponents: .date) {
+                Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+            }
+            .accessibilityIdentifier("kitCreator.dueDate")
+        } header: {
+            Text("Tu tiempo")
+        } footer: {
+            Text("La fecha es orientativa. Podrás ajustar el plan y tu tiempo después.")
+        }
+    }
+
+    @ViewBuilder private var createSection: some View {
+        Section {
+            Button {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                onCreate()
+            } label: {
+                Text("Preparar plan").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!isFormValid)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
+            .accessibilityIdentifier("kitCreator.create")
+        }
+    
     }
 
     /// Desde ratos cortos hasta una mañana entera.
