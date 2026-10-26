@@ -106,13 +106,17 @@ struct KitCreationFormContent: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .onChange(of: oneSitting) { _, _ in
-            if !durations.contains(sessionMinutes) { sessionMinutes = oneSitting ? 60 : 30 }
+            // Se mantiene el tiempo elegido; si no existe en la otra lista, el más cercano (sin saltos bruscos).
+            if !durations.contains(sessionMinutes),
+               let nearest = durations.min(by: { abs($0 - sessionMinutes) < abs($1 - sessionMinutes) }) {
+                sessionMinutes = nearest
+            }
         }
     }
 
     /// Desde ratos cortos hasta una mañana entera.
     private var durations: [Int] {
-        oneSitting ? [15, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
+        oneSitting ? [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
     }
 
     private func field(

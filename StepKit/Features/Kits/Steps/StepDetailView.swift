@@ -26,6 +26,8 @@ struct StepDetailView: View {
     @State private var hingePartiallyOpen = false
     @State private var assistantLaunch: AssistantLaunch?
     @State private var showingAllProgress = false
+    /// Aviso breve tras completar el paso: qué viene después.
+    @State private var celebration: Celebration?
 
     private struct AssistantLaunch: Identifiable {
         let id = UUID()
@@ -95,7 +97,16 @@ struct StepDetailView: View {
                 .accessibilityHint("Permite cambiar el título y las descripciones del paso")
             }
         }
-        .safeAreaInset(edge: .bottom) { bottomActions }
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 10) {
+                if let celebration {
+                    CompletionBanner(celebration: celebration)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+                bottomActions
+            }
+        }
+        .sensoryFeedback(.success, trigger: celebration)
         .sheet(isPresented: $showingEditor) {
             StepEditSheetView(stepEntity: stepEntity)
         }
@@ -335,7 +346,6 @@ struct StepDetailView: View {
     private var completionButton: some View {
         Button {
             withAnimation { toggleStepCompletion() }
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         } label: {
             Label(stepEntity.isCompleted ? "Marcar como pendiente" : "Marcar como completado",
                   systemImage: stepEntity.isCompleted ? "arrow.uturn.backward" : "checkmark")
@@ -364,7 +374,7 @@ struct StepDetailView: View {
         } label: {
             Text("Resolver bloqueo").frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.glassProminent)
         .accessibilityIdentifier("step.resolveBlock")
     }
 
@@ -374,7 +384,7 @@ struct StepDetailView: View {
         layout {
             switch state {
             case .done:
-                completionButton.buttonStyle(.bordered)
+                completionButton.buttonStyle(.glass)
             case .blocked:
                 resolveBlockMenu
                 if !compactHeight {
@@ -383,7 +393,8 @@ struct StepDetailView: View {
                         .foregroundStyle(.secondary)
                 }
             case .pending, .inProgress:
-                // Tres acciones a la vista, una al lado de otra.
+                // Tres acciones a la vista, una al lado de otra, como controles de Liquid Glass.
+                GlassEffectContainer(spacing: 8) {
                 HStack(spacing: 8) {
                     actionTile("Avance", symbol: Symbols.note, identifier: "step.saveProgress",
                                accessibilityLabel: "Guardar avance") {
@@ -397,29 +408,28 @@ struct StepDetailView: View {
                     }
                     actionTile("Completar", symbol: "checkmark", prominent: true, identifier: "step.toggleCompletion",
                                accessibilityLabel: "Marcar como completado") {
-                        withAnimation { toggleStepCompletion() }
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        withAnimation(.smooth) { toggleStepCompletion() }
                     }
+                }
                 }
             }
         }
         .controlSize(compactHeight ? .regular : .large)
         .padding(.horizontal)
         .padding(.vertical, compactHeight ? 6 : 10)
-        .background(.bar)
     }
 
     private func actionTile(_ title: String, symbol: String, prominent: Bool = false, identifier: String,
                             accessibilityLabel: String? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 Image(systemName: symbol).font(.title3.weight(.semibold))
                 Text(title).font(.subheadline.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 4)
+            .padding(.vertical, 6)
         }
-        .buttonStyle(prominent ? AnyPrimitiveButtonStyle(.borderedProminent) : AnyPrimitiveButtonStyle(.bordered))
+        .buttonStyle(prominent ? AnyPrimitiveButtonStyle(.glassProminent) : AnyPrimitiveButtonStyle(.glass))
         .accessibilityLabel(accessibilityLabel ?? title)
         .accessibilityIdentifier(identifier)
     }
@@ -450,8 +460,21 @@ struct StepDetailView: View {
 
     // MARK: - Actions
     private func toggleStepCompletion() {
+        let completing = !stepEntity.isCompleted
         try? ProgressLog.toggleCompletion(of: stepEntity, context: modelContext)
         syncManager?.handleDataChange()
+        guard completing else {
+            celebration = nil
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            return
+        }
+        let next = stepEntity.goal?.orderedActiveSteps.first { !$0.isCompleted }
+        let shown = Celebration(nextTitle: next?.stepTitle)
+        celebration = shown
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3.5))
+            if celebration == shown { withAnimation(.smooth) { celebration = nil } }
+        }
     }
 }
 
@@ -635,4 +658,40 @@ struct AnyPrimitiveButtonStyle: PrimitiveButtonStyle {
     }
 
     func makeBody(configuration: Configuration) -> some View { make(configuration) }
+}
+
+// MARK: - Aviso al completar
+
+struct Celebration: Equatable {
+    let id = UUID()
+    let nextTitle: String?
+}
+
+/// Confirmación breve y visible al completar: el check se anima y dice qué viene después.
+private struct CompletionBanner: View {
+    let celebration: Celebration
+    @State private var appeared = false
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.title)
+                .foregroundStyle(.green)
+                .symbolEffect(.bounce, value: appeared)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("¡Paso completado!").font(.headline)
+                Text(celebration.nextTitle.map { "Siguiente: \($0)" } ?? "Era el último paso del Kit.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 22))
+        .padding(.horizontal)
+        .onAppear { appeared = true }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isStaticText)
+    }
 }

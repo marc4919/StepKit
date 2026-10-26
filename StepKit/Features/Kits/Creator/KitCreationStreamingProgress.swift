@@ -302,6 +302,15 @@ struct KitCreationStreamingProgress: View {
         }
     }
 
+    /// «lun, 3 nov» a partir de la fecha del servidor (yyyy-MM-dd).
+    private static func stepDay(_ text: String) -> String? {
+        let parser = DateFormatter()
+        parser.calendar = Calendar(identifier: .gregorian)
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.dateFormat = "yyyy-MM-dd"
+        return parser.date(from: text)?.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+    }
+
     private var stepsDetail: String {
         if let total = streamingState.totalSteps {
             return "\(streamingState.steps.count) de \(total) listos"
@@ -378,9 +387,15 @@ struct KitCreationStreamingProgress: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Eyebrow(text: "Tu primer paso")
                                 Text(first.stepTitle).font(.title3.bold())
-                                Label("\(first.estimateMinutes) min orientativos", systemImage: Symbols.time)
-                                    .font(.subheadline)
-                                    .foregroundStyle(MetaTint.time)
+                                HStack(spacing: 10) {
+                                    if let day = Self.stepDay(first.suggestedDeadline) {
+                                        Label(day, systemImage: Symbols.calendar)
+                                            .foregroundStyle(MetaTint.date)
+                                    }
+                                    Label("\(first.estimateMinutes) min orientativos", systemImage: Symbols.time)
+                                        .foregroundStyle(MetaTint.time)
+                                }
+                                .font(.subheadline)
                             }
                         }
                     }
@@ -397,6 +412,10 @@ struct KitCreationStreamingProgress: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(step.stepTitle)
                                 HStack(spacing: 10) {
+                                    if let day = Self.stepDay(step.suggestedDeadline) {
+                                        Label(day, systemImage: Symbols.calendar)
+                                            .foregroundStyle(MetaTint.date)
+                                    }
                                     Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
                                         .foregroundStyle(MetaTint.time)
                                     if let repetition = step.repetition?.repetition {
