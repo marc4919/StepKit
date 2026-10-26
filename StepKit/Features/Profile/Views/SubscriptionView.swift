@@ -94,7 +94,8 @@ struct SubscriptionView: View {
     private var headerSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 10) {
-                BrandSphere(size: 56)
+                // Sin halo: la fila lo recortaría en un cuadrado; ya está BrandGlow detrás de la lista.
+                BrandSphere(size: 56, glow: false)
                 Eyebrow(text: "StepKit Pro")
                 Text(SubscriptionText.string(isPro ? "paywall.header.pro.title" : "paywall.header.title"))
                     .font(.largeTitle.bold())
@@ -331,7 +332,9 @@ struct SubscriptionView: View {
 
     /// Lo que se pagará después: obligatorio junto al botón según las normas de la App Store.
     private var ctaCaption: String? {
-        guard let product = selectedProduct else { return nil }
+        guard let product = selectedProduct else {
+            return storeKitManager.isLoading ? nil : SubscriptionText.string("paywall.plans.unavailable")
+        }
         let price = SubscriptionText.pricePerPeriod(product)
         if introOffers[viewModel.selectedPlan]?.paymentMode == .freeTrial {
             return SubscriptionText.string("paywall.cta.caption.trial \(price)")
