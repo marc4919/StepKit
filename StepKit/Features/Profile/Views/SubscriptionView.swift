@@ -173,20 +173,22 @@ struct SubscriptionView: View {
                     Text(SubscriptionText.string("paywall.compare.free"))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                        .frame(minWidth: 56)
+                        .frame(width: 52)
                     Text("Pro")
                         .font(.caption.weight(.bold))
                         .foregroundStyle(Color.accentColor)
-                        .frame(minWidth: 56)
+                        .frame(width: 52)
                 }
                 .accessibilityHidden(true)
                 ForEach(PlanFeature.all) { feature in
                     GridRow {
                         Label {
                             Text(feature.title).font(.subheadline)
+                                .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             IconChip(symbol: feature.symbol, color: feature.color, size: 28)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         PlanValueView(value: feature.free)
                         PlanValueView(value: feature.pro, emphasized: true)
                     }
@@ -496,7 +498,7 @@ private struct PlanValueView: View {
             }
         }
         .font(.subheadline)
-        .frame(minWidth: 56)
+        .frame(width: 52)
     }
 }
 
