@@ -24,7 +24,10 @@ struct KitsListCompactView: View {
             )
             .navigationDestination(for: GoalEntity.ID.self) { kitId in
                 if let kitEntity = kitEntities.first(where: { $0.id == kitId }) {
-                    KitDetailView(kitEntity: kitEntity)
+                    KitDetailView(kitEntity: kitEntity,
+                                  opensResultReview: viewModel.reviewOnOpenKitID == kitId) {
+                        viewModel.reviewOnOpenKitID = nil
+                    }
                 }
             }
         }

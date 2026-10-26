@@ -19,6 +19,10 @@ struct KitDetailView: View {
     }
 
     @Bindable var kitEntity: GoalEntity
+    /// Abre la revisión del resultado encima del plan (desde «Por revisar» en Mis Kits).
+    var opensResultReview = false
+    var onResultReviewOpened: () -> Void = {}
+    @State private var showingResultReview = false
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
     @Environment(\.apiClient) private var apiClient: any APIClientProtocol
@@ -105,7 +109,15 @@ struct KitDetailView: View {
                     .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
             }
         }
+        .navigationDestination(isPresented: $showingResultReview) { ResultReviewView(kit: kitEntity) }
         .onAppear {
+            if opensResultReview {
+                onResultReviewOpened()
+                // Llega con la misma animación que abre el plan; «Volver al plan» será un retroceso normal.
+                var instant = Transaction()
+                instant.disablesAnimations = true
+                withTransaction(instant) { showingResultReview = true }
+            }
             ProgressLog.importLegacyKitNotes(for: kitEntity, context: modelContext)
             reactToOverdueSteps()
         }

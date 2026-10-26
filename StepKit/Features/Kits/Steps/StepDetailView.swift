@@ -29,6 +29,8 @@ struct StepDetailView: View {
     /// Aviso breve tras completar el paso: qué viene después.
     @State private var celebration: Celebration?
     @State private var wideLayout = false
+    /// Siguiente paso abierto desde el aviso de completado.
+    @State private var openedNextStep: StepEntity?
 
     private struct AssistantLaunch: Identifiable {
         let id = UUID()
@@ -101,7 +103,7 @@ struct StepDetailView: View {
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 10) {
                 if let celebration {
-                    CompletionBanner(celebration: celebration)
+                    CompletionBanner(celebration: celebration) { openNextStep() }
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
                 bottomActions
@@ -111,6 +113,9 @@ struct StepDetailView: View {
             .frame(maxWidth: .infinity)
         }
         .sensoryFeedback(.success, trigger: celebration)
+        .navigationDestination(item: $openedNextStep) { step in
+            StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? stepNumber + 1)
+        }
         .sheet(isPresented: $showingEditor) {
             StepEditSheetView(stepEntity: stepEntity)
         }
@@ -505,6 +510,13 @@ struct StepDetailView: View {
     }
 
     // MARK: - Actions
+    private func openNextStep() {
+        guard let id = celebration?.nextStepID,
+              let next = stepEntity.goal?.orderedActiveSteps.first(where: { $0.id == id }) else { return }
+        withAnimation(.smooth) { celebration = nil }
+        openedNextStep = next
+    }
+
     private func toggleStepCompletion() {
         let completing = !stepEntity.isCompleted
         try? ProgressLog.toggleCompletion(of: stepEntity, context: modelContext)
@@ -515,10 +527,11 @@ struct StepDetailView: View {
             return
         }
         let next = stepEntity.goal?.orderedActiveSteps.first { !$0.isCompleted }
-        let shown = Celebration(nextTitle: next?.stepTitle)
+        let shown = Celebration(nextStepID: next?.id, nextTitle: next?.stepTitle)
         celebration = shown
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(3.5))
+            // Tiempo suficiente para tocar «Siguiente» sin que el aviso estorbe.
+            try? await Task.sleep(for: .seconds(6))
             if celebration == shown { withAnimation(.smooth) { celebration = nil } }
         }
     }
@@ -710,15 +723,28 @@ struct AnyPrimitiveButtonStyle: PrimitiveButtonStyle {
 
 struct Celebration: Equatable {
     let id = UUID()
+    let nextStepID: UUID?
     let nextTitle: String?
 }
 
 /// Confirmación breve y visible al completar: el check se anima y dice qué viene después.
 private struct CompletionBanner: View {
     let celebration: Celebration
+    let onOpenNext: () -> Void
     @State private var appeared = false
 
     var body: some View {
+        if celebration.nextStepID != nil {
+            Button(action: onOpenNext) { content(showsChevron: true) }
+                .buttonStyle(.plain)
+                .accessibilityHint("Abre el siguiente paso")
+                .accessibilityIdentifier("step.openNext")
+        } else {
+            content(showsChevron: false)
+        }
+    }
+
+    private func content(showsChevron: Bool) -> some View {
         HStack(spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.title)
@@ -732,9 +758,15 @@ private struct CompletionBanner: View {
                     .lineLimit(2)
             }
             Spacer(minLength: 0)
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
         }
         .padding(14)
-        .glassEffect(.regular, in: .rect(cornerRadius: 22))
+        .contentShape(.rect(cornerRadius: 22))
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 22))
         .padding(.horizontal)
         .onAppear { appeared = true }
         .accessibilityElement(children: .combine)

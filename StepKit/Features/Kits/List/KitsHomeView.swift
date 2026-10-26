@@ -68,7 +68,7 @@ struct KitsHomeView: View {
                         // Discretos: una fila con la bandera, sin tarjeta grande ni todo en verde.
                         Section {
                             ForEach(pendingResultKits) { kit in
-                                Button { reviewingKit = kit } label: { PendingResultRow(kit: kit) }
+                                Button { startReview(of: kit) } label: { PendingResultRow(kit: kit) }
                                     .buttonStyle(.plain)
                                     .accessibilityIdentifier("kit.row")
                                     .accessibilityLabel("Kit: \(kit.title)")
@@ -163,6 +163,13 @@ struct KitsHomeView: View {
         } else {
             viewModel.selectKit(kit)
         }
+    }
+
+    /// En iPhone, la revisión se abre encima del plan del Kit para que «Volver al plan» sea un simple retroceso.
+    private func startReview(of kit: GoalEntity) {
+        guard isCompact else { reviewingKit = kit; return }
+        viewModel.reviewOnOpenKitID = kit.id
+        viewModel.navigationPath.append(kit.id)
     }
 
     private func openCreator() {

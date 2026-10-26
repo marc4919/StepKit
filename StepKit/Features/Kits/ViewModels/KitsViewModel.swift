@@ -17,6 +17,8 @@ final class KitsViewModel {
     var leavingKitIDs: Set<UUID> = []
     var selectedStepEntity: StepEntity?
     var navigationPath: [UUID] = []
+    /// Kit cuya revisión del resultado se abre encima de su plan al navegar a él.
+    var reviewOnOpenKitID: UUID?
     
     // MARK: - UI State
     var showingKitCreator = false
