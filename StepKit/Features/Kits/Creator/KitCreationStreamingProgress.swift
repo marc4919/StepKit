@@ -275,8 +275,10 @@ struct KitCreationStreamingProgress: View {
     /// El aviso de cuidado se ve al menos ~2,5 s (los motivos entran y se leen) y luego
     /// se recoge hacia arriba para dar paso a las preguntas.
     private func revealQuestions() async {
-        if !reduceMotion {
-            let shown = carefulShownAt.map { Date.now.timeIntervalSince($0) } ?? 0
+        // Solo se espera si hay aviso de cuidado que leer; con un objetivo ambiguo (modo normal)
+        // las preguntas salen enseguida.
+        if !reduceMotion, let carefulShownAt {
+            let shown = Date.now.timeIntervalSince(carefulShownAt)
             if shown < 2.5 { try? await Task.sleep(for: .seconds(2.5 - shown)) }
         }
         guard !streamingState.pendingQuestions.isEmpty else { return }
