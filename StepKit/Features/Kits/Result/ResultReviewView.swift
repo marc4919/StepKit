@@ -35,6 +35,7 @@ struct ResultReviewView: View {
                 review
             }
         }
+        .readableContentWidth()
         .navigationTitle(kit.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)

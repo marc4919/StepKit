@@ -82,6 +82,7 @@ struct ProfileView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .readableContentWidth()
             .background(alignment: .top) { BrandGlow() }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Perfil")

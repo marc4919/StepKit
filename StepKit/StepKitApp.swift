@@ -52,7 +52,7 @@ struct StepKitApp: App {
             Group {
                 #if DEBUG
                 if let fixture = DesignFixtureScenario.current {
-                    DesignFixtureRoot(scenario: fixture)
+                    DesignFixtureRoot(scenario: fixture).modifier(DesignCanvas())
                 } else {
                     appContent
                 }
@@ -113,9 +113,7 @@ struct StepKitApp: App {
             // La bienvenida va antes del acceso y no pide ningún permiso.
             WelcomeView { hasCompletedOnboarding = true }
         } else if authManager.isRestoringSession {
-            ProgressView("Validando sesión…")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background { EntryBackground() }
+            SessionRestoreView()
         } else if authManager.isAuthenticated {
             ContentView()
                 .task {
@@ -208,5 +206,25 @@ struct StepKitApp: App {
         #else
         true
         #endif
+    }
+}
+
+/// Mientras se comprueba la sesión al abrir: solo el fondo. El indicador aparece si tarda,
+/// para que una comprobación rápida no se vea como una pantalla distinta que parpadea.
+private struct SessionRestoreView: View {
+    @State private var showsSpinner = false
+
+    var body: some View {
+        ZStack {
+            if showsSpinner {
+                ProgressView("Validando sesión…").transition(.opacity)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background { EntryBackground() }
+        .task {
+            try? await Task.sleep(for: .seconds(1))
+            withAnimation(.smooth) { showsSpinner = true }
+        }
     }
 }

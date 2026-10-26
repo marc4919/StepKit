@@ -46,6 +46,30 @@ enum DesignFixtureScenario: String {
     }
 }
 
+/// `-StepKitCanvas 951x669`: dibuja la app en un marco de ese tamaño (p. ej. el iPhone Duo abierto
+/// en horizontal) dentro de un simulador más grande, para revisar la maquetación sin girar el dispositivo.
+struct DesignCanvas: ViewModifier {
+    private let size: CGSize? = {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-StepKitCanvas"), args.indices.contains(i + 1) else { return nil }
+        let parts = args[i + 1].split(separator: "x").compactMap { Double($0) }
+        return parts.count == 2 ? CGSize(width: parts[0], height: parts[1]) : nil
+    }()
+
+    func body(content: Content) -> some View {
+        if let size {
+            content
+                .frame(width: size.width, height: size.height)
+                .clipShape(.rect(cornerRadius: 24))
+                .overlay { RoundedRectangle(cornerRadius: 24).stroke(.black, lineWidth: 6) }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.gray.opacity(0.3))
+        } else {
+            content
+        }
+    }
+}
+
 struct DesignFixtureRoot: View {
     let scenario: DesignFixtureScenario
     @MainActor private static var sharedContainer: ModelContainer?

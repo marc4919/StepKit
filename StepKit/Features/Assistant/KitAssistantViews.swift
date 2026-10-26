@@ -72,6 +72,7 @@ struct KitAssistantHubView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .readableContentWidth()
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(kit.title)
@@ -166,6 +167,7 @@ struct KitAssistantChatView: View {
             context: step.map { "Paso \(kit.position(of: $0)) · \($0.stepTitle)" } ?? kit.title,
             accessory: AnyView(accessory)
         )
+        .readableContentWidth(720)
         .navigationTitle(step == nil ? conversation.title : "Ayuda del paso")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)

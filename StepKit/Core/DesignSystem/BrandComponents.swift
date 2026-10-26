@@ -465,3 +465,24 @@ struct FlowLayout: Layout {
         }
     }
 }
+
+// MARK: - Ancho de lectura
+
+/// En pantallas anchas (iPhone Duo abierto, iPad) el contenido de una sola columna no se estira:
+/// se centra con un ancho cómodo de lectura. En iPhone no cambia nada.
+struct ReadableContentWidth: ViewModifier {
+    var maxWidth: CGFloat = 680
+    @State private var width: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        content
+            .contentMargins(.horizontal, max(0, (width - maxWidth) / 2), for: .scrollContent)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+    }
+}
+
+extension View {
+    func readableContentWidth(_ maxWidth: CGFloat = 680) -> some View {
+        modifier(ReadableContentWidth(maxWidth: maxWidth))
+    }
+}

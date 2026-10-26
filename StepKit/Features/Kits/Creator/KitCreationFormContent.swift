@@ -27,6 +27,8 @@ struct KitCreationFormContent: View {
     @State private var width: CGFloat = 0
     /// Interior del iPhone Duo, iPad o iPhone en horizontal: dos columnas en vez de una tira estirada.
     private var twoColumns: Bool { width >= 640 }
+    @State private var height: CGFloat = 0
+    private var landscape: Bool { width > height }
 
     var body: some View {
         Group {
@@ -34,14 +36,18 @@ struct KitCreationFormContent: View {
                 // El título abarca las dos columnas; debajo, el objetivo y el tiempo lado a lado.
                 VStack(spacing: 0) {
                     headerContent.padding(.top, 8)
-                    HStack(alignment: .top, spacing: 0) {
+                    // Columnas con aire entre ellas y un ancho total contenido, sin pegarse ni estirarse.
+                    HStack(alignment: .top, spacing: 24) {
                         Form { goalSection }
                         Form {
                             timeSection
                             createSection
                         }
                     }
+                    .contentMargins(.horizontal, 0, for: .scrollContent)
                     .scrollContentBackground(.hidden)
+                    .frame(maxWidth: 1000)
+                    .padding(.horizontal, 24)
                 }
                 .background(Color(.systemGroupedBackground))
             } else {
@@ -53,7 +59,7 @@ struct KitCreationFormContent: View {
                 }
             }
         }
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { width = $0.width; height = $0.height }
         .scrollDismissesKeyboard(.interactively)
         .onChange(of: oneSitting) { _, _ in
             // Se mantiene el tiempo elegido; si no existe en la otra lista, el más cercano (sin saltos bruscos).
@@ -72,7 +78,8 @@ struct KitCreationFormContent: View {
 
     private var headerContent: some View {
         VStack(spacing: 8) {
-            OrbitMark(height: 86).frame(maxWidth: 240)
+            // En horizontal la pantalla es baja: el dibujo se reduce para dejar sitio al formulario.
+            if !landscape { OrbitMark(height: 86).frame(maxWidth: 240) }
             Text("¿Qué quieres conseguir?")
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)

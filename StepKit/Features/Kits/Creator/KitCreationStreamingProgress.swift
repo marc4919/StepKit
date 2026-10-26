@@ -33,6 +33,7 @@ struct KitCreationStreamingProgress: View {
     @State private var carefulShownAt: Date?
     /// Las preguntas entran después de que el aviso de cuidado se haya visto con calma.
     @State private var questionsVisible = false
+    @State private var reviewWide = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Progreso de la preparación: arranque, resultado recibido y pasos llegando.
@@ -341,118 +342,32 @@ struct KitCreationStreamingProgress: View {
     private var reviewView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                HStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .trim(from: 0, to: ringDrawn)
-                            .stroke(Color.accentColor.opacity(0.25),
-                                    style: StrokeStyle(lineWidth: 70 * 0.11, lineCap: .round))
-                            .rotationEffect(.degrees(-90))
-                        Color.clear
-                            .frame(width: 34, height: 34)
-                            .matchedGeometryEffect(id: "sphere", in: sphereSpace, isSource: showReview)
-                        if sphereLanded {
-                            BrandSphere(size: 34, glow: false)
+                if reviewWide {
+                    // Pantalla ancha (iPhone Duo abierto, iPad): el resumen a la izquierda y los pasos a la derecha.
+                    reviewHeader
+                    HStack(alignment: .top, spacing: 24) {
+                        VStack(alignment: .leading, spacing: 18) {
+                            reviewKPI
+                            reviewNote
+                            reviewFirstStep
+                            reviewRisks
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        reviewStepsList
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(width: 70, height: 70)
-                    .accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(streamingState.kitTitle ?? "Tu plan")
-                            .font(.title2.bold())
-                            .fixedSize(horizontal: false, vertical: true)
-                        HStack(spacing: 6) {
-                            MetaChip(symbol: "list.bullet", text: "\(streamingState.steps.count) pasos", color: .accentColor)
-                            if let days = streamingState.horizonDays {
-                                MetaChip(symbol: Symbols.wantedDate, text: "\(days) días", color: MetaTint.date)
-                            }
-                        }
-                    }
-                    .modifier(Reveal(shown: contentRevealed, order: 0))
-                }
-                if let kpi = streamingState.kpi, !kpi.isEmpty {
-                    PlainCard {
-                        Eyebrow(text: "Sabrás que está listo cuando", color: .secondary)
-                        Text(kpi)
-                    }
-                    .modifier(Reveal(shown: contentRevealed, order: 1))
-                }
-                Text("Revisa el plan antes de empezar. Podrás editar los pasos después.")
-                    .foregroundStyle(.secondary)
-                    .modifier(Reveal(shown: contentRevealed, order: 2))
-                if let first = streamingState.steps.first {
-                    TintCard {
-                        HStack(alignment: .top, spacing: 12) {
-                            NextMark()
-                            VStack(alignment: .leading, spacing: 3) {
-                                Eyebrow(text: "Tu primer paso")
-                                Text(first.stepTitle).font(.title3.bold())
-                                HStack(spacing: 10) {
-                                    if let day = Self.stepDay(first.suggestedDeadline) {
-                                        Label(day, systemImage: Symbols.calendar)
-                                            .foregroundStyle(MetaTint.date)
-                                    }
-                                    Label("\(first.estimateMinutes) min orientativos", systemImage: Symbols.time)
-                                        .foregroundStyle(MetaTint.time)
-                                }
-                                .font(.subheadline)
-                            }
-                        }
-                    }
-                    .modifier(Reveal(shown: contentRevealed, order: 3))
-                }
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(streamingState.steps.enumerated()), id: \.offset) { index, step in
-                        HStack(alignment: .top, spacing: 12) {
-                            Text("\(index + 1)")
-                                .font(.subheadline.bold().monospacedDigit())
-                                .foregroundStyle(.tint)
-                                .frame(width: 28, height: 28)
-                                .background(Color.accentColor.opacity(0.12), in: .circle)
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(step.stepTitle)
-                                HStack(spacing: 10) {
-                                    if let day = Self.stepDay(step.suggestedDeadline) {
-                                        Label(day, systemImage: Symbols.calendar)
-                                            .foregroundStyle(MetaTint.date)
-                                    }
-                                    Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
-                                        .foregroundStyle(MetaTint.time)
-                                    if let repetition = step.repetition?.repetition {
-                                        Label(repetition.label, systemImage: "repeat")
-                                            .foregroundStyle(MetaTint.repeatTint)
-                                    }
-                                }
-                                .font(.caption.weight(.medium))
-                            }
-                            Spacer(minLength: 0)
-                        }
-                        .padding(12)
-                        .accessibilityElement(children: .combine)
-                        if index < streamingState.steps.count - 1 {
-                            Divider().padding(.leading, 52)
-                        }
-                    }
-                }
-                .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
-                .modifier(Reveal(shown: contentRevealed, order: 4))
-                if !streamingState.risks.isEmpty {
-                    PlainCard {
-                        Eyebrow(text: "A tener en cuenta", color: .secondary)
-                        ForEach(streamingState.risks, id: \.self) { risk in
-                            let topic = RiskTopic(risk)
-                            Label {
-                                Text(risk).foregroundStyle(.secondary)
-                            } icon: {
-                                Image(systemName: topic.symbol).foregroundStyle(topic.tint)
-                            }
-                        }
-                    }
-                    .modifier(Reveal(shown: contentRevealed, order: 5))
+                } else {
+                    reviewHeader
+                    reviewKPI
+                    reviewNote
+                    reviewFirstStep
+                    reviewStepsList
+                    reviewRisks
                 }
             }
             .padding()
         }
+        .onGeometryChange(for: Bool.self) { $0.size.width >= 640 } action: { reviewWide = $0 }
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
         .safeAreaInset(edge: .bottom) {
@@ -469,10 +384,139 @@ struct KitCreationStreamingProgress: View {
                     .accessibilityIdentifier("kitCreator.discard")
             }
             .controlSize(.large)
+            .frame(maxWidth: 520)
+            .frame(maxWidth: .infinity)
             .padding(.horizontal)
             .padding(.vertical, 10)
             .background(.bar)
             .modifier(Reveal(shown: contentRevealed, order: 3))
+        }
+    }
+
+    @ViewBuilder private var reviewHeader: some View {
+        HStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .trim(from: 0, to: ringDrawn)
+                    .stroke(Color.accentColor.opacity(0.25),
+                            style: StrokeStyle(lineWidth: 70 * 0.11, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Color.clear
+                    .frame(width: 34, height: 34)
+                    .matchedGeometryEffect(id: "sphere", in: sphereSpace, isSource: showReview)
+                if sphereLanded {
+                    BrandSphere(size: 34, glow: false)
+                }
+            }
+            .frame(width: 70, height: 70)
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(streamingState.kitTitle ?? "Tu plan")
+                    .font(.title2.bold())
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 6) {
+                    MetaChip(symbol: "list.bullet", text: "\(streamingState.steps.count) pasos", color: .accentColor)
+                    if let days = streamingState.horizonDays {
+                        MetaChip(symbol: Symbols.wantedDate, text: "\(days) días", color: MetaTint.date)
+                    }
+                }
+            }
+            .modifier(Reveal(shown: contentRevealed, order: 0))
+        }
+    }
+
+    @ViewBuilder private var reviewKPI: some View {
+        if let kpi = streamingState.kpi, !kpi.isEmpty {
+            PlainCard {
+                Eyebrow(text: "Sabrás que está listo cuando", color: .secondary)
+                Text(kpi)
+            }
+            .modifier(Reveal(shown: contentRevealed, order: 1))
+        }
+    }
+
+    @ViewBuilder private var reviewNote: some View {
+        Text("Revisa el plan antes de empezar. Podrás editar los pasos después.")
+            .foregroundStyle(.secondary)
+            .modifier(Reveal(shown: contentRevealed, order: 2))
+    }
+
+    @ViewBuilder private var reviewFirstStep: some View {
+        if let first = streamingState.steps.first {
+            TintCard {
+                HStack(alignment: .top, spacing: 12) {
+                    NextMark()
+                    VStack(alignment: .leading, spacing: 3) {
+                        Eyebrow(text: "Tu primer paso")
+                        Text(first.stepTitle).font(.title3.bold())
+                        HStack(spacing: 10) {
+                            if let day = Self.stepDay(first.suggestedDeadline) {
+                                Label(day, systemImage: Symbols.calendar)
+                                    .foregroundStyle(MetaTint.date)
+                            }
+                            Label("\(first.estimateMinutes) min orientativos", systemImage: Symbols.time)
+                                .foregroundStyle(MetaTint.time)
+                        }
+                        .font(.subheadline)
+                    }
+                }
+            }
+            .modifier(Reveal(shown: contentRevealed, order: 3))
+        }
+    }
+
+    @ViewBuilder private var reviewStepsList: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(streamingState.steps.enumerated()), id: \.offset) { index, step in
+                HStack(alignment: .top, spacing: 12) {
+                    Text("\(index + 1)")
+                        .font(.subheadline.bold().monospacedDigit())
+                        .foregroundStyle(.tint)
+                        .frame(width: 28, height: 28)
+                        .background(Color.accentColor.opacity(0.12), in: .circle)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(step.stepTitle)
+                        HStack(spacing: 10) {
+                            if let day = Self.stepDay(step.suggestedDeadline) {
+                                Label(day, systemImage: Symbols.calendar)
+                                    .foregroundStyle(MetaTint.date)
+                            }
+                            Label("\(step.estimateMinutes) min", systemImage: Symbols.time)
+                                .foregroundStyle(MetaTint.time)
+                            if let repetition = step.repetition?.repetition {
+                                Label(repetition.label, systemImage: "repeat")
+                                    .foregroundStyle(MetaTint.repeatTint)
+                            }
+                        }
+                        .font(.caption.weight(.medium))
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(12)
+                .accessibilityElement(children: .combine)
+                if index < streamingState.steps.count - 1 {
+                    Divider().padding(.leading, 52)
+                }
+            }
+        }
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
+        .modifier(Reveal(shown: contentRevealed, order: 4))
+    }
+
+    @ViewBuilder private var reviewRisks: some View {
+        if !streamingState.risks.isEmpty {
+            PlainCard {
+                Eyebrow(text: "A tener en cuenta", color: .secondary)
+                ForEach(streamingState.risks, id: \.self) { risk in
+                    let topic = RiskTopic(risk)
+                    Label {
+                        Text(risk).foregroundStyle(.secondary)
+                    } icon: {
+                        Image(systemName: topic.symbol).foregroundStyle(topic.tint)
+                    }
+                }
+            }
+            .modifier(Reveal(shown: contentRevealed, order: 5))
         }
     }
 

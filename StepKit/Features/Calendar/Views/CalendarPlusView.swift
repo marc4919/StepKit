@@ -29,6 +29,7 @@ struct CalendarPlusView: View {
 
     @State private var selectedDate: Date = Date()
     @State private var detailToken = 0
+    @State private var sideBySide = false
     @State private var revealToken = 0
     @State private var dayVisible = true
     @State private var showingKitCreator = false
@@ -169,26 +170,57 @@ struct CalendarPlusView: View {
         }
     }
 
-    private var calendarList: some View {
+    @ViewBuilder private var calendarList: some View {
+        if sideBySide {
+            // Pantalla ancha y baja (iPhone Duo abierto en horizontal, iPad): el mes a la izquierda
+            // y el día elegido a la derecha, a la vista sin desplazarse.
+            HStack(alignment: .top, spacing: 0) {
+                List { monthSection }
+                    .frame(maxWidth: 520)
+                List {
+                    daySection
+                    upcomingSection
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(alignment: .top) { BrandGlow() }
+            .background(Color(.systemGroupedBackground))
+            .onGeometryChange(for: Bool.self, of: isSideBySide) { sideBySide = $0 }
+        } else {
+            stackedList
+        }
+    }
+
+    /// Ancho y bajo: el calendario y su detalle no caben uno sobre otro.
+    private func isSideBySide(_ proxy: GeometryProxy) -> Bool {
+        proxy.size.width >= 760 && proxy.size.width > proxy.size.height
+    }
+
+    @ViewBuilder private var upcomingSection: some View {
+        if !upcomingSessions.isEmpty {
+            Section {
+                NavigationLink(value: CalendarRoute.upcomingSessions) {
+                    Label {
+                        Text("Próximas sesiones (\(upcomingSessions.count))")
+                    } icon: {
+                        Image(systemName: Symbols.session).foregroundStyle(.tint)
+                    }
+                }
+                .accessibilityIdentifier("calendar.upcomingSessions")
+            }
+        }
+    }
+
+    private var stackedList: some View {
         List {
             monthSection
             daySection
-            if !upcomingSessions.isEmpty {
-                Section {
-                    NavigationLink(value: CalendarRoute.upcomingSessions) {
-                        Label {
-                            Text("Próximas sesiones (\(upcomingSessions.count))")
-                        } icon: {
-                            Image(systemName: Symbols.session).foregroundStyle(.tint)
-                        }
-                    }
-                    .accessibilityIdentifier("calendar.upcomingSessions")
-                }
-            }
+            upcomingSection
         }
         .scrollContentBackground(.hidden)
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
+        .onGeometryChange(for: Bool.self, of: isSideBySide) { sideBySide = $0 }
         .onChange(of: selectedDate) { _, _ in
             // Al tocar un día con cosas que hacer, la lista baja con suavidad hasta su detalle.
             guard !(sessionsForSelectedDate.isEmpty && stepsForSelectedDate.isEmpty && goalsForSelectedDate.isEmpty)

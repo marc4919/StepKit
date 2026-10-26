@@ -15,6 +15,7 @@ struct KitsListRegularView: View {
     
     @Environment(\.syncManager) private var syncManager
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var presentedOnce = false
     
     var body: some View {
         Group {
@@ -24,10 +25,13 @@ struct KitsListRegularView: View {
                 NavigationStack {
                     KitsHomeView(activeKits: [], completedKits: [], viewModel: viewModel, isCompact: false)
                 }
+                .transition(.opacity)
             } else {
-                splitView
+                splitView.transition(.opacity)
             }
         }
+        // Al borrar el último Kit, de dos columnas a pantalla única con un fundido suave.
+        .animation(.smooth(duration: 0.5), value: kitEntities.isEmpty)
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
             KitCreatorView { newKit in
                 // Buscar el GoalEntity correspondiente
@@ -112,11 +116,18 @@ struct KitsListRegularView: View {
             // En vertical (iPad o interior del iPhone Duo) el detalle ocupa toda la pantalla
             // y Mis Kits queda a un toque con el botón de barra lateral.
             let target: NavigationSplitViewVisibility = width < 900 ? .detailOnly : .all
-            // Diferido: durante su primera presentación el split vuelve a mostrar la barra
-            // lateral y descarta un cambio inmediato (observado en iOS 27.1, iPhone Duo).
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(300))
+            guard target != columnVisibility else { return }
+            // Diferido solo la primera vez: durante su primera presentación el split vuelve a mostrar
+            // la barra lateral y descarta un cambio inmediato (iOS 27.1, iPhone Duo). Después, al
+            // plegar o girar, el cambio es inmediato para que no aparezca la barra un instante.
+            if presentedOnce {
                 columnVisibility = target
+            } else {
+                presentedOnce = true
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(300))
+                    columnVisibility = target
+                }
             }
         }
     }

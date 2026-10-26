@@ -57,10 +57,13 @@ struct KitsHomeView: View {
             .sorted { $0.lastActivity > $1.lastActivity }
     }
 
+    private var isEmpty: Bool { activeKits.isEmpty && completedKits.isEmpty }
+
     var body: some View {
         Group {
-            if activeKits.isEmpty && completedKits.isEmpty {
+            if isEmpty {
                 KitsEmptyView { openCreator() }
+                    .transition(.opacity)
             } else {
                 // List para conservar el gesto clásico de deslizar para eliminar.
                 List {
@@ -110,8 +113,11 @@ struct KitsHomeView: View {
                 .scrollContentBackground(.hidden)
                 .background(alignment: .top) { BrandGlow() }
                 .background(Color(.systemGroupedBackground))
+                .transition(.opacity)
             }
         }
+        // Al borrar el último Kit, la lista da paso al estado vacío con un fundido, sin saltos.
+        .animation(.smooth(duration: 0.5), value: isEmpty)
         .navigationTitle("Mis Kits")
         .onAppear {
             // iPad: el detalle empieza mostrando el Kit que avanzaste por última vez.
