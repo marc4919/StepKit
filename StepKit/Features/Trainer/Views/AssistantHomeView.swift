@@ -201,17 +201,19 @@ struct AssistantHomeView: View {
 
     private var composer: some View {
         HStack(spacing: 8) {
-            Menu {
-                ForEach(intents) { intent in
-                    Button(intent.title, systemImage: intent.symbol) { onIntent(intent) }
+            if !intents.isEmpty {
+                Menu {
+                    ForEach(intents) { intent in
+                        Button(intent.title, systemImage: intent.symbol) { onIntent(intent) }
+                    }
+                } label: {
+                    Label("Sugerencias", systemImage: "list.bullet")
                 }
-            } label: {
-                Label("Sugerencias", systemImage: "list.bullet")
+                .labelStyle(.iconOnly)
+                .buttonStyle(.glass)
+                .controlSize(.large)
+                .disabled(isResponding)
             }
-            .labelStyle(.iconOnly)
-            .buttonStyle(.glass)
-            .controlSize(.large)
-            .disabled(isResponding)
 
             TextField("¿Qué necesitas ahora?", text: $draft, axis: .vertical)
                 .lineLimit(1...5)

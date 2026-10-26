@@ -2900,6 +2900,16 @@
         }
       }
     },
+    "Escribe abajo lo que necesites. Si algo cambia el plan, te llega como propuesta y decides tú.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write below whatever you need. Anything that changes the plan comes as a proposal, and you decide."
+          }
+        }
+      }
+    },
     "Escribir al asistente": {
       "localizations": {
         "en": {

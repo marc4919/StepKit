@@ -178,10 +178,11 @@ struct KitAssistantChatView: View {
             onSend: { sendDraft() },
             onIntent: send,
             onRetry: { vm.retryLast(goals: [kit]) },
-            intents: intents,
+            // En el Kit las opciones ya están en la pantalla anterior; aquí solo se escribe.
+            intents: step == nil ? [] : intents,
             startTitle: step == nil ? String(localized: "¿En qué te ayudo con el Kit?") : String(localized: "¿Qué te ayudaría con este paso?"),
             startSubtitle: step == nil
-                ? String(localized: "Las propuestas que cambien el plan las revisas tú antes de aplicarlas.")
+                ? String(localized: "Escribe abajo lo que necesites. Si algo cambia el plan, te llega como propuesta y decides tú.")
                 : String(localized: "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes."),
             context: step.map { String(localized: "Paso \(kit.position(of: $0)) · \($0.stepTitle)") } ?? kit.title,
             accessory: AnyView(accessory),
