@@ -30,6 +30,8 @@ struct StepDetailView: View {
     @State private var celebration: Celebration?
     @State private var wideLayout = false
     @State private var sideControls = false
+    /// Acciones dentro de la barra de herramientas (Duo cerrado) en vez de botones grandes.
+    private var actionsInToolbar: Bool { Self.forcesSideControls || (sideControls && !wideLayout) }
     /// Siguiente paso abierto desde el aviso de completado.
     @State private var openedNextStep: StepEntity?
 
@@ -103,28 +105,26 @@ struct StepDetailView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            if !wideLayout && !sideControls {
+            if !wideLayout && !actionsInToolbar {
                 stepActions
             }
         }
         // Pantalla casi cuadrada (iPhone Duo cerrado): las tres acciones van como controles laterales,
         // en columna junto al borde, y el contenido conserva toda la altura.
-        .safeAreaInset(edge: .trailing, spacing: 0) {
-            if sideControls && !wideLayout {
-                VStack(spacing: 10) {
-                    Spacer(minLength: 0)
-                    sideActions
+        // Pantalla casi cuadrada (iPhone Duo cerrado): las acciones van en la barra de herramientas,
+        // que el sistema dibuja en vertical junto al borde, en su parte de abajo (hoy vacía).
+        .toolbar {
+            if actionsInToolbar {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    sideToolbarActions
                 }
-                .padding(.trailing, 10)
-                .padding(.bottom, 12)
             }
         }
         .overlay(alignment: .bottom) {
-            // Con controles laterales, el aviso de completado flota abajo sin desplazar nada.
-            if sideControls && !wideLayout, let celebration {
+            // Con las acciones en la barra, el aviso de completado flota abajo sin desplazar nada.
+            if actionsInToolbar, let celebration {
                 CompletionBanner(celebration: celebration) { openNextStep() }
                     .padding(.bottom, 12)
-                    .padding(.trailing, 70)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
@@ -177,7 +177,7 @@ struct StepDetailView: View {
                             stepProgress
                             stepReminder
                             // Con dos columnas, las acciones van aquí, bajo el recordatorio, y no en una barra abajo.
-                            stepActions
+                            if !actionsInToolbar { stepActions }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -501,50 +501,48 @@ struct StepDetailView: View {
         .padding(.vertical, compactHeight ? 6 : 10)
     }
 
-    /// Columna de controles laterales (Duo cerrado): solo los botones, sin barra.
-    @ViewBuilder private var sideActions: some View {
+    #if DEBUG
+    /// `-StepKitSideControls`: fuerza las acciones en la barra para revisarlas en el simulador.
+    static let forcesSideControls = ProcessInfo.processInfo.arguments.contains("-StepKitSideControls")
+    #else
+    static let forcesSideControls = false
+    #endif
+
+    /// Acciones como botones de la barra de herramientas (icono y nombre accesible).
+    @ViewBuilder private var sideToolbarActions: some View {
         switch state {
         case .done:
-            completionButton.buttonStyle(.glass).labelStyle(.iconOnly).controlSize(.large)
+            Button(String(localized: "Marcar como pendiente"), systemImage: "arrow.uturn.backward") {
+                withAnimation(.smooth) { toggleStepCompletion() }
+            }
+            .accessibilityIdentifier("step.toggleCompletion")
         case .blocked:
-            resolveBlockMenu.controlSize(.large)
-                .frame(width: 64)
+            Button(String(localized: "Ya está resuelto"), systemImage: "checkmark.circle") {
+                try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
+                syncManager?.handleDataChange()
+            }
+            .accessibilityIdentifier("step.resolveBlock")
+            Button(String(localized: "Guardar avance"), systemImage: Symbols.note) {
+                savingBlocked = false
+                showingSaveProgress = true
+            }
         case .pending, .inProgress:
-            GlassEffectContainer(spacing: 10) {
-                VStack(spacing: 10) {
-                    sideTile(String(localized: "Avance"), symbol: Symbols.note, identifier: "step.saveProgress",
-                             accessibilityLabel: String(localized: "Guardar avance")) {
-                        savingBlocked = false
-                        showingSaveProgress = true
-                    }
-                    sideTile(String(localized: "Atasco"), symbol: "hand.raised", identifier: "step.reportBlock",
-                             accessibilityLabel: String(localized: "Me he atascado")) {
-                        savingBlocked = true
-                        showingSaveProgress = true
-                    }
-                    sideTile(String(localized: "Completar"), symbol: "checkmark", prominent: true,
-                             identifier: "step.toggleCompletion",
-                             accessibilityLabel: String(localized: "Marcar como completado")) {
-                        withAnimation(.smooth) { toggleStepCompletion() }
-                    }
-                }
+            Button(String(localized: "Guardar avance"), systemImage: Symbols.note) {
+                savingBlocked = false
+                showingSaveProgress = true
             }
-        }
-    }
-
-    private func sideTile(_ title: String, symbol: String, prominent: Bool = false, identifier: String,
-                          accessibilityLabel: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 3) {
-                Image(systemName: symbol).font(.title3.weight(.semibold))
-                Text(title).font(.caption2.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.7)
+            .accessibilityIdentifier("step.saveProgress")
+            Button(String(localized: "Me he atascado"), systemImage: "hand.raised") {
+                savingBlocked = true
+                showingSaveProgress = true
             }
-            .frame(width: 58, height: 52)
+            .accessibilityIdentifier("step.reportBlock")
+            Button(String(localized: "Marcar como completado"), systemImage: "checkmark") {
+                withAnimation(.smooth) { toggleStepCompletion() }
+            }
+            .buttonStyle(.glassProminent)
+            .accessibilityIdentifier("step.toggleCompletion")
         }
-        .buttonStyle(prominent ? AnyPrimitiveButtonStyle(.glassProminent) : AnyPrimitiveButtonStyle(.glass))
-        .buttonBorderShape(.roundedRectangle(radius: 22))
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityIdentifier(identifier)
     }
 
     private func actionTile(_ title: String, symbol: String, prominent: Bool = false, identifier: String,
