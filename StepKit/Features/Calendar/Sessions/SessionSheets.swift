@@ -99,7 +99,6 @@ struct BookFreeSessionSheet: View {
     @State private var saveFailed = false
     @FocusState private var titleFocused: Bool
 
-    private static let ideas = ["Gimnasio", "Leer", "Llamada", "Recados", "Estudiar", "Paseo"]
     private var trimmedTitle: String { title.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     var body: some View {
@@ -111,22 +110,10 @@ struct BookFreeSessionSheet: View {
                         .focused($titleFocused)
                         .submitLabel(.done)
                         .accessibilityIdentifier("session.freeTitle")
-                    FlowLayout(spacing: 8) {
-                        ForEach(Self.ideas, id: \.self) { idea in
-                            Button(idea) { withAnimation(.smooth) { title = idea } }
-                                .buttonStyle(.bordered)
-                                .buttonBorderShape(.capsule)
-                                .controlSize(.small)
-                                .tint(title == idea ? .accentColor : .secondary)
-                        }
-                    }
-                    .listRowSeparator(.hidden)
-                } header: {
-                    Text("Algo propio")
                 } footer: {
                     Text("Un rato para ti que no forma parte de ningún Kit.")
                 }
-                SessionWhenSection(date: $date, minutes: $minutes, suggested: nil)
+                SessionWhenSection(date: $date, minutes: $minutes, suggested: nil, allowsLongSessions: true)
                 Section {
                     Toggle("Recordármelo", isOn: $remind)
                 }
@@ -137,7 +124,7 @@ struct BookFreeSessionSheet: View {
                 }
             }
             .animation(.smooth, value: trimmedTitle.isEmpty)
-            .navigationTitle("Reservar algo propio")
+            .navigationTitle("Algo propio")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
@@ -331,6 +318,10 @@ private struct SessionWhenSection: View {
     @Binding var date: Date
     @Binding var minutes: Int
     let suggested: Int?
+    /// Algo propio puede durar mucho más que un paso: de 5 min a 8 h, en un selector.
+    var allowsLongSessions = false
+
+    private static let longOptions = [5, 10, 15, 20, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 420, 480]
 
     private var options: [Int] {
         var values = [15, 30, 45, 60, 90]
@@ -343,6 +334,14 @@ private struct SessionWhenSection: View {
             DatePicker(selection: $date, in: Calendar.current.startOfDay(for: .now)...) {
                 Label { Text("Empieza") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
             }
+            if allowsLongSessions {
+                Picker(selection: $minutes) {
+                    ForEach(Self.longOptions, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
+                } label: {
+                    Label { Text("Duración") } icon: { IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28) }
+                }
+                .accessibilityIdentifier("session.duration")
+            } else {
             VStack(alignment: .leading, spacing: 10) {
                 Label { Text("Duración") } icon: { IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28) }
                 FlowLayout(spacing: 8) {
@@ -361,6 +360,7 @@ private struct SessionWhenSection: View {
                 }
             }
             .padding(.vertical, 4)
+            }
         }
     }
 }
