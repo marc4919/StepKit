@@ -74,6 +74,9 @@ struct AssistResponse: Decodable {
         let newTitles: [String]?
         let newMinutes: Int?
         let reason: String?
+        /// add_step: qué queda hecho al terminar y cómo hacerlo. `reason` es por qué se propone, no el contenido del paso.
+        let newOutcome: String?
+        let newDescription: String?
     }
 
     struct Proposal: Decodable {
@@ -288,7 +291,7 @@ enum RemoteProposalBuilder {
                 // stepNumber = paso tras el que se inserta; 0 = al principio.
                 actions.append(.add(afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0,
                                     title: title, minutes: change.newMinutes ?? 20, date: date(change.newDate),
-                                    reason: change.reason))
+                                    outcome: change.newOutcome, description: change.newDescription))
             case "remove_step":
                 guard let target = step(change.stepNumber) else { continue }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,

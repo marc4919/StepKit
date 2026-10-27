@@ -103,7 +103,7 @@ final class PlanProposal: Identifiable {
         case edit(stepID: UUID, title: String?, minutes: Int?)
         case split(stepID: UUID, titles: [String], minutes: Int?)
         /// `afterStepID` nil y `atStart` true: al principio; nil y false: al final.
-        case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?, reason: String?)
+        case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?, outcome: String?, description: String?)
         case remove(stepID: UUID)
         case block(stepID: UUID, reason: String)
         case changeKPI(String)
@@ -180,9 +180,9 @@ final class PlanProposal: Identifiable {
                            long: original)
                     if let added = kit.orderedActiveSteps.first(where: { $0.order == anchor.order + 1 }) { anchor = added }
                 }
-            case .add(let afterID, let atStart, let title, let minutes, let date, let reason):
+            case .add(let afterID, let atStart, let title, let minutes, let date, let outcome, let description):
                 insert(title, minutes: minutes, date: date, after: afterID.flatMap(step), atStart: atStart,
-                       short: reason ?? "", long: reason ?? "")
+                       short: outcome ?? "", long: description ?? "")
             case .remove(let id):
                 guard let target = step(id) else { continue }
                 target.deletedAt = now
