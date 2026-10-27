@@ -38,11 +38,12 @@ struct KitsHomeView: View {
         completedKits.filter { $0.resultConfirmedAt != nil }
     }
 
-    /// Última nota de avance del Kit (no bloqueos, no vacías).
+    /// Última nota de avance del Kit (no bloqueos, no vacías). Los cambios del asistente no son
+    /// avance de la persona: se quedan en el Registro del Kit y no ocupan «Dónde lo dejaste».
     private func lastProgress(of kit: GoalEntity) -> ProgressEntryEntity? {
         allEntries.first {
             $0.kitID == kit.id && $0.ownerID == kit.ownerID && $0.deletedAt == nil
-                && $0.kind == .progress && !$0.note.isEmpty
+                && $0.kind == .progress && !$0.note.isEmpty && !ProgressLog.isAssistantChange($0)
         }
     }
 
@@ -208,7 +209,7 @@ private struct ContinueCard: View {
                     IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Dónde lo dejaste").font(.headline)
-                        Text(entry.note).foregroundStyle(.secondary)
+                        Text(entry.note).foregroundStyle(.secondary).lineLimit(3)
                         Label(String(localized: "Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))"),
                               systemImage: Symbols.calendar)
                             .font(.caption)
