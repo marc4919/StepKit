@@ -1250,12 +1250,12 @@
         }
       }
     },
-    "Ayúdame a dividir %@ de %@ en tres o cuatro tramos pequeños y concretos.": {
+    "Ayúdame a dividir %@ de %@ en dos o tres tramos pequeños y concretos.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Help me split %@ of %@ into three or four small, concrete chunks."
+            "value": "Help me split %@ of %@ into two or three small, concrete chunks."
           }
         },
         "es": {

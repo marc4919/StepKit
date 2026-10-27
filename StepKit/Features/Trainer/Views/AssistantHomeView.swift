@@ -61,7 +61,7 @@ struct AssistantIntent: Identifiable {
             let reason = step?.blockedReason.map { " Me frena: \($0)." } ?? ""
             return String(localized: "Me falta algo para avanzar en \(stepText) de \(kitName).\(reason) ¿Cómo puedo seguir sin perder lo hecho?")
         case "split":
-            return String(localized: "Ayúdame a dividir \(stepText) de \(kitName) en tres o cuatro tramos pequeños y concretos.")
+            return String(localized: "Ayúdame a dividir \(stepText) de \(kitName) en dos o tres tramos pequeños y concretos.")
         case "fifteen":
             return String(localized: "Tengo 15 minutos. ¿Qué avance concreto puedo hacer ahora en \(stepText) de \(kitName)?")
         case "reduce-scope":
