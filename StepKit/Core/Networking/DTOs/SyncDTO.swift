@@ -81,6 +81,7 @@ struct StepSyncDTO: Codable {
     let blockedAt: Date?
     var repeatEvery: String? = nil
     var repeatTimes: Int? = nil
+    var completedAt: Date? = nil
     let createdAt: Date?
     let updatedAt: Date?
     let deletedAt: Date?
@@ -93,7 +94,7 @@ struct StepSyncDTO: Codable {
         case id, kitId, title, descriptionShort, descriptionLong
         case estimateMinutes, suggestedDeadline, effortLevel, adaptsTo
         case blockedByPremium, order, completed, blockedReason, blockedAt
-        case repeatEvery, repeatTimes
+        case repeatEvery, repeatTimes, completedAt
         case createdAt, updatedAt, deletedAt
     }
 }

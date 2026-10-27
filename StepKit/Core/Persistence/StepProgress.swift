@@ -185,6 +185,7 @@ enum ProgressLog {
     /// Marca el paso como hecho o pendiente y actualiza el progreso del Kit.
     static func toggleCompletion(of step: StepEntity, context: ModelContext) throws {
         step.isCompleted.toggle()
+        step.completedAt = step.isCompleted ? Date() : nil
         step.markModified()
         if let kit = step.goal {
             kit.progress = kit.computedProgress

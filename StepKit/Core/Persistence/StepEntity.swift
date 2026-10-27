@@ -29,6 +29,8 @@ final class StepEntity {
     /// Motivo del bloqueo actual; `nil` si el paso no está bloqueado.
     var blockedReason: String?
     var blockedAt: Date?
+    /// Momento en que se completó; `nil` si está pendiente o se completó antes de guardarlo.
+    var completedAt: Date?
     /// Paso que se repite: "day" o "week", y cuántas sesiones. `nil` si es puntual.
     /// `suggestedDeadline` es la primera sesión y `estimateMinutes`, lo que dura cada una.
     var repeatEvery: String?
@@ -149,6 +151,7 @@ final class StepEntity {
             blockedAt: blockedAt,
             repeatEvery: repeatEvery,
             repeatTimes: repeatTimes,
+            completedAt: completedAt,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt
@@ -167,6 +170,8 @@ final class StepEntity {
         blockedByPremium = dto.blockedByPremium
         order = dto.order
         isCompleted = dto.completed
+        // El servidor aún puede no guardar la hora: si no la manda, se conserva la local.
+        completedAt = dto.completed ? (dto.completedAt ?? completedAt) : nil
         blockedReason = dto.blockedReason
         blockedAt = dto.blockedAt
         repeatEvery = dto.repeatEvery
@@ -198,6 +203,7 @@ final class StepEntity {
         self.goal = goal
         self.blockedReason = dto.blockedReason
         self.blockedAt = dto.blockedAt
+        self.completedAt = dto.completed ? dto.completedAt : nil
         self.repeatEvery = dto.repeatEvery
         self.repeatTimes = dto.repeatTimes
     }

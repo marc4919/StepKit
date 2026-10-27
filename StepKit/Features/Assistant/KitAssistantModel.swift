@@ -100,7 +100,7 @@ final class PlanProposal: Identifiable {
 
     enum Action {
         case setDate(stepID: UUID, date: Date)
-        case edit(stepID: UUID, title: String?, minutes: Int?)
+        case edit(stepID: UUID, title: String?, minutes: Int?, outcome: String? = nil, description: String? = nil)
         case split(stepID: UUID, titles: [String], minutes: Int?)
         /// `afterStepID` nil y `atStart` true: al principio; nil y false: al final.
         case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?, outcome: String?, description: String?)
@@ -154,10 +154,13 @@ final class PlanProposal: Identifiable {
             case .setDate(let id, let date):
                 step(id)?.suggestedDeadline = date
                 step(id)?.markModified(at: now)
-            case .edit(let id, let title, let minutes):
+            case .edit(let id, let title, let minutes, let outcome, let description):
                 guard let target = step(id) else { continue }
                 if let title { target.stepTitle = title }
                 if let minutes { target.estimateMinutes = minutes }
+                // Si cambia de qué va el paso, también su «Al terminar» y su descripción.
+                if let outcome, !outcome.isEmpty { target.descriptionShort = outcome }
+                if let description, !description.isEmpty { target.descriptionLong = description }
                 target.markModified(at: now)
             case .split(let id, let titles, let minutes):
                 guard let target = step(id), let first = titles.first else { continue }

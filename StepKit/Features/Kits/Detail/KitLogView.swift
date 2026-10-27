@@ -23,7 +23,7 @@ struct KitLogView: View {
         let text: String
         var stepNumber: Int?
         var entry: ProgressEntryEntity?
-        /// Con hora salvo cuando no se conoce el momento exacto (pasos completados).
+        /// Con hora salvo cuando no se conoce el momento exacto (pasos completados antes de guardarla).
         var showsTime = true
     }
 
@@ -47,12 +47,12 @@ struct KitLogView: View {
                 entry: assistant ? nil : entry
             )
         }
-        // La fecha exacta de completado no se guarda: se usa el último cambio del paso.
+        // Pasos completados antes de guardar la hora: se usa el último cambio del paso, solo con la fecha.
         for step in kit.orderedActiveSteps where step.isCompleted {
             result.append(Item(
-                id: "done-\(step.id)", date: step.updatedAt, symbol: "checkmark.circle.fill",
+                id: "done-\(step.id)", date: step.completedAt ?? step.updatedAt, symbol: "checkmark.circle.fill",
                 color: MetaTint.done, title: step.stepTitle, text: String(localized: "Paso completado."),
-                stepNumber: kit.position(of: step), showsTime: false
+                stepNumber: kit.position(of: step), showsTime: step.completedAt != nil
             ))
         }
         if let confirmed = kit.resultConfirmedAt {

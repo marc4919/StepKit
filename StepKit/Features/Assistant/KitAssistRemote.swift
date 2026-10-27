@@ -74,7 +74,7 @@ struct AssistResponse: Decodable {
         let newTitles: [String]?
         let newMinutes: Int?
         let reason: String?
-        /// add_step: qué queda hecho al terminar y cómo hacerlo. `reason` es por qué se propone, no el contenido del paso.
+        /// add_step y edit_step: qué queda hecho al terminar y cómo hacerlo. `reason` es por qué se propone, no el contenido del paso.
         let newOutcome: String?
         let newDescription: String?
     }
@@ -271,7 +271,8 @@ enum RemoteProposalBuilder {
                                                            change.newMinutes.map { String(localized: "\($0) min") }]
                                                     .compactMap { $0 }.joined(separator: " · "),
                                                   symbol: "pencil"))
-                actions.append(.edit(stepID: target.id, title: title, minutes: change.newMinutes))
+                actions.append(.edit(stepID: target.id, title: title, minutes: change.newMinutes,
+                                     outcome: change.newOutcome, description: change.newDescription))
             case "split_step":
                 guard let target = step(change.stepNumber), let titles = change.newTitles, titles.count > 1 else { continue }
                 let days = target.suggestedDeadline.map { first in
