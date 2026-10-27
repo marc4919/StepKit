@@ -338,8 +338,8 @@ struct AIPrivacyView: View {
             Section {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Asistente en tu dispositivo")
-                        Text("Sin el permiso de IA externa, el asistente usa Apple Intelligence y las conversaciones no salen de tu dispositivo.")
+                        Text("Asistente del Kit")
+                        Text("Usa el servicio de IA externo, así que solo funciona con este permiso. Sin él, tus Kits y tu calendario funcionan igual.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

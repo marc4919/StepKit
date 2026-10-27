@@ -2454,12 +2454,32 @@
         }
       }
     },
+    "El asistente necesita este permiso. Sin él puedes seguir usando StepKit y tus Kits como siempre; puedes darlo o retirarlo cuando quieras en Perfil.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The assistant needs this permission. Without it you can keep using StepKit and your Kits as usual; you can give or withdraw it anytime in Profile."
+          }
+        }
+      }
+    },
     "El asistente no está disponible en este momento": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The assistant isn't available right now"
+          }
+        }
+      }
+    },
+    "El asistente usa un servicio de IA externo: te pedirá permiso antes de enviar nada.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The assistant uses an external AI service: it will ask for permission before sending anything."
           }
         }
       }
@@ -7018,6 +7038,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Once a week for %lld weeks"
+          }
+        }
+      }
+    },
+    "Usa el servicio de IA externo, así que solo funciona con este permiso. Sin él, tus Kits y tu calendario funcionan igual.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It uses the external AI service, so it only works with this permission. Without it, your Kits and calendar work the same."
           }
         }
       }

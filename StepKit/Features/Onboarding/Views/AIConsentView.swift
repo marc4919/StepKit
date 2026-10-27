@@ -14,8 +14,6 @@ struct AIConsentView: View {
     enum Purpose { case plan, assistant }
     var purpose: Purpose = .plan
     var onComplete: (Bool) -> Void
-    /// Solo en el asistente: cerrar sin enviar nada (el mensaje vuelve al campo de texto).
-    var onCancel: (() -> Void)?
 
     @Environment(AIConsentManager.self) private var consentManager
     @State private var hasAccepted = false
@@ -53,7 +51,7 @@ struct AIConsentView: View {
                     if purpose == .plan {
                         Text("Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA, y el asistente solo usará tu dispositivo.")
                     } else {
-                        Text("Sin este permiso, el asistente responde con Apple Intelligence en tu dispositivo: es más limitado, pero no sale nada de tu iPhone. Puedes cambiarlo cuando quieras en Perfil.")
+                        Text("El asistente necesita este permiso. Sin él puedes seguir usando StepKit y tus Kits como siempre; puedes darlo o retirarlo cuando quieras en Perfil.")
                     }
                 }
                 Section {
@@ -66,12 +64,8 @@ struct AIConsentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    if purpose == .assistant, let onCancel {
-                        Button("Cancelar", action: onCancel)
-                    } else {
-                        Button("Ahora no") { onComplete(false) }
-                            .accessibilityIdentifier("consent.decline")
-                    }
+                    Button("Ahora no") { onComplete(false) }
+                        .accessibilityIdentifier("consent.decline")
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -86,14 +80,6 @@ struct AIConsentView: View {
                     .controlSize(.large)
                     .disabled(!hasAccepted)
                     .accessibilityIdentifier("consent.continue")
-                    // En el asistente se puede seguir sin IA externa: responde el modelo del dispositivo.
-                    if purpose == .assistant {
-                        Button { onComplete(false) } label: {
-                            Text("Usar solo mi dispositivo").frame(maxWidth: .infinity)
-                        }
-                        .controlSize(.large)
-                        .accessibilityIdentifier("consent.deviceOnly")
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 10)

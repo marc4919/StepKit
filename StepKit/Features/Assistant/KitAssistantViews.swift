@@ -181,9 +181,6 @@ struct KitAssistantChatView: View {
     @State private var didSendInitial = false
     /// Lo que se iba a enviar mientras se pide el permiso de IA externa.
     @State private var pendingSend: PendingSend?
-    /// El aviso sale una sola vez (si no se aceptó ya al crear un Kit). Si elige el dispositivo,
-    /// no se vuelve a preguntar: el permiso se puede dar después en Perfil.
-    @AppStorage("assistantConsentAsked") private var askedConsent = false
 
     private enum PendingSend: Identifiable {
         case draft(String), intent(AssistantIntent)
@@ -211,7 +208,7 @@ struct KitAssistantChatView: View {
             isInputFocused: $inputFocused,
             onSend: { sendDraft() },
             onIntent: send,
-            onRetry: { vm.retryLast(goals: [kit]) },
+            onRetry: { retryLast() },
             // En el Kit las opciones ya están en la pantalla anterior; aquí solo se escribe.
             intents: step == nil ? [] : intents,
             startTitle: step == nil ? String(localized: "¿En qué te ayudo con el Kit?") : String(localized: "¿Qué te ayudaría con este paso?"),
@@ -236,17 +233,15 @@ struct KitAssistantChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
         .sheet(item: $pendingSend) { pending in
-            AIConsentView(purpose: .assistant, onComplete: { _ in
-                askedConsent = true
+            // El asistente necesita la IA externa: sin permiso no se envía nada y lo escrito sigue en el campo.
+            AIConsentView(purpose: .assistant) { granted in
                 pendingSend = nil
+                guard granted else { return }
                 switch pending {
                 case .draft(let text): deliver(text)
                 case .intent(let intent): deliver(intent)
                 }
-            }, onCancel: {
-                // Nada se envía; lo escrito sigue en el campo.
-                pendingSend = nil
-            })
+            }
             .interactiveDismissDisabled()
         }
         .onAppear {
@@ -300,12 +295,12 @@ struct KitAssistantChatView: View {
 
     private var hasConsent: Bool { AIConsentManager().hasConsent }
 
-    /// Mensaje escrito. Sin permiso de IA externa se pide una vez; sin él responde el dispositivo.
+    /// Mensaje escrito. El asistente usa la IA externa: sin permiso, primero se pide.
     private func sendDraft() {
         let vm = conversation.viewModel
         let text = vm.draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !vm.isResponding else { return }
-        guard hasConsent || askedConsent else {
+        guard hasConsent else {
             inputFocused = false
             pendingSend = .draft(text)
             return
@@ -316,68 +311,38 @@ struct KitAssistantChatView: View {
 
     private func send(_ intent: AssistantIntent) {
         guard !conversation.viewModel.isResponding else { return }
-        guard hasConsent || askedConsent else {
+        guard hasConsent else {
             pendingSend = .intent(intent)
             return
         }
         deliver(intent)
     }
 
-    /// Con permiso va al asistente del servidor; si no hay permiso o el servidor no responde, al modelo local.
+    /// Va al asistente del servidor (necesita el permiso de IA externa). Si no responde, se ofrece reintentar.
     private func deliver(_ text: String) {
         let vm = conversation.viewModel
         vm.draft = ""
-        guard hasConsent else {
-            vm.draft = text
-            vm.sendDraft(goals: [kit])
-            return
-        }
+        guard hasConsent else { return }
         vm.messages.append(ChatMessage(sender: .user, text: text))
         Task {
             let handled = await KitAssistant.ask(.message, message: text, kit: kit, step: step,
                                                  conversation: conversation, context: modelContext,
                                                  apiClient: apiClient, token: authManager.token)
             if !handled {
-                vm.messages.removeLast()
-                vm.draft = text
-                vm.sendDraft(goals: [kit])
+                vm.messages.append(ChatMessage(sender: .assistant, text: "assist unavailable", isError: true))
             }
         }
     }
 
-    private func deliver(_ intent: AssistantIntent) {
-        let vm = conversation.viewModel
-        guard hasConsent else {
-            answerLocally(intent)
-            return
-        }
-        vm.messages.append(ChatMessage(sender: .user, text: intent.title))
-        Task {
-            let handled = await KitAssistant.ask(.message, message: intent.title, kit: kit, step: step,
-                                                 conversation: conversation, context: modelContext,
-                                                 apiClient: apiClient, token: authManager.token)
-            guard !handled else { return }
-            vm.messages.removeLast()
-            answerLocally(intent)
-        }
-    }
+    private func deliver(_ intent: AssistantIntent) { deliver(intent.title) }
 
-    /// Sin asistente en el servidor: modelo del dispositivo y propuestas locales.
-    private func answerLocally(_ intent: AssistantIntent) {
+    /// Reintenta el último mensaje con el asistente del servidor.
+    private func retryLast() {
         let vm = conversation.viewModel
-        vm.sendIntent(title: intent.title, prompt: intent.prompt(kit: kit, step: step), goals: [kit])
-        switch intent.id {
-        case "not-fitting":
-            if let step, let proposal = PlanProposalBuilder.moveStep(step, in: kit) {
-                conversation.add(proposal)
-            }
-        case "change-date":
-            if let proposal = PlanProposalBuilder.shiftTarget(of: kit) {
-                conversation.add(proposal)
-            }
-        default:
-            break
-        }
+        guard !vm.isResponding, let index = vm.messages.lastIndex(where: { $0.sender == .user }) else { return }
+        let text = vm.messages[index].text
+        vm.messages.removeSubrange(index...)
+        deliver(text)
     }
 }
 
