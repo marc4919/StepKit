@@ -94,6 +94,8 @@ struct AssistantHomeView: View {
     var context: String?
     /// Contenido propio tras los mensajes: propuestas, acciones del paso…
     var accessory: AnyView?
+    /// Hay una propuesta esperando: el campo invita a responder en vez de solo aceptar o descartar.
+    var hasPendingProposal = false
     /// Contenido que va justo después de un mensaje concreto (p. ej. la propuesta que lo acompaña).
     var afterMessage: ((ChatMessage) -> AnyView?)? = nil
 
@@ -218,7 +220,7 @@ struct AssistantHomeView: View {
                 .disabled(isResponding)
             }
 
-            TextField("¿Qué necesitas ahora?", text: $draft, axis: .vertical)
+            TextField(hasPendingProposal ? LocalizedStringKey("Responde o pide otro cambio…") : LocalizedStringKey("¿Qué necesitas ahora?"), text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 .focused(isInputFocused)
                 .submitLabel(.send)

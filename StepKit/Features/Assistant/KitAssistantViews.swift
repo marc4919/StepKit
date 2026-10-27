@@ -217,6 +217,7 @@ struct KitAssistantChatView: View {
                 : String(localized: "Desde aquí nada cambia el resto del Kit sin una propuesta que tú aceptes."),
             context: step.map { String(localized: "Paso \(kit.position(of: $0)) · \($0.stepTitle)") } ?? kit.title,
             accessory: AnyView(accessory),
+            hasPendingProposal: conversation.pendingProposalCount > 0,
             afterMessage: { message in
                 let anchored = conversation.proposals.filter { $0.anchorMessageID == message.id }
                 guard !anchored.isEmpty else { return nil }
@@ -436,6 +437,10 @@ struct ProposalCard: View {
                      : String(localized: "Solo cambia este paso."))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+                // Aceptar o descartar no son las únicas opciones: también se puede hablar.
+                Label("¿No te convence? Escríbeme abajo y lo ajustamos.", systemImage: "text.bubble")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(16)
@@ -459,7 +464,7 @@ private struct ResolveBlockCard: View {
                 }
             }
             Button(action: onResolve) {
-                Text("Ya está resuelto: resolver bloqueo").frame(maxWidth: .infinity)
+                Text("Ya lo tengo, seguir").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .accessibilityIdentifier("assistant.resolveBlock")

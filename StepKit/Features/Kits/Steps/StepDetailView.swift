@@ -34,6 +34,7 @@ struct StepDetailView: View {
     private var actionsInToolbar: Bool { Self.forcesSideControls || (sideControls && !wideLayout) }
     /// Siguiente paso abierto desde el aviso de completado.
     @State private var openedNextStep: StepEntity?
+    @State private var showingKitResult = false
 
     private struct AssistantLaunch: Identifiable {
         let id = UUID()
@@ -133,6 +134,9 @@ struct StepDetailView: View {
             return size.width < 700 && size.height < 760 && size.width / max(size.height, 1) > 0.6
         } action: { sideControls = $0 }
         .sensoryFeedback(.success, trigger: celebration)
+        .navigationDestination(isPresented: $showingKitResult) {
+            if let kit = stepEntity.goal { ResultReviewView(kit: kit) }
+        }
         .navigationDestination(item: $openedNextStep) { step in
             StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? stepNumber + 1)
         }
@@ -226,7 +230,13 @@ struct StepDetailView: View {
                 Text(stepEntity.descriptionShort).foregroundStyle(.secondary)
             }
         }
-        FlowLayout(spacing: 8) { chips }
+        // En una fila siempre que quepa; si no, «Medio» en vez de «Esfuerzo medio» (Duo cerrado) y solo
+        // entonces, en varias filas.
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 8) { chips(compact: false) }
+            HStack(spacing: 8) { chips(compact: true) }
+            FlowLayout(spacing: 8) { chips(compact: true) }
+        }
         if stepEntity.repetition != nil, !stepEntity.sessionDates.isEmpty {
             HabitSessionsCard(step: stepEntity, doneDays: doneSessionDays) { day in
                 withAnimation(.snappy) {
@@ -382,10 +392,14 @@ struct StepDetailView: View {
                     Text(reason).foregroundStyle(.secondary)
                 }
             }
-            Button("Me falta algo: pedir ayuda", systemImage: Symbols.assistant) {
+            // Botón visible, no un enlace: es lo primero que conviene hacer con un bloqueo.
+            Button(hasBlockHelp ? String(localized: "Ver la ayuda del asistente") : String(localized: "Pedir ayuda al asistente"),
+                   systemImage: Symbols.assistant) {
                 assistantLaunch = AssistantLaunch(intent: "missing")
             }
-            .font(.subheadline)
+            .buttonStyle(.bordered)
+            .tint(.red)
+            .font(.subheadline.weight(.semibold))
             .accessibilityIdentifier("step.blockedHelp")
         }
         if let entry = lastProgress {
@@ -402,14 +416,17 @@ struct StepDetailView: View {
         }
     }
 
-    @ViewBuilder private var chips: some View {
+    @ViewBuilder private func chips(compact: Bool) -> some View {
         MetaChip(symbol: Symbols.time,
                  text: StepDetailHelpers.formatMinutes(stepEntity.estimateMinutes),
                  color: MetaTint.time)
+        let effort = StepDetailHelpers.effortLevelText(for: stepEntity.effortLevel)
+        let effortFull = String(localized: "Esfuerzo \(effort.lowercased())")
         MetaChip(symbol: Symbols.effort,
-                 text: String(localized: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: stepEntity.effortLevel).lowercased())"),
+                 text: compact ? effort : effortFull,
                  color: MetaTint.effort,
                  level: EffortLevel.fill(stepEntity.effortLevel))
+            .accessibilityLabel(effortFull)
         if let deadline = stepEntity.suggestedDeadline {
             if let repetition = stepEntity.repetition, let last = repetition.lastDate(from: deadline) {
                 // Hábito: del primer al último día, y cuántas veces.
@@ -446,15 +463,22 @@ struct StepDetailView: View {
         .accessibilityIdentifier("step.saveProgress")
     }
 
+    /// El asistente ya respondió a este mismo bloqueo: el botón lleva a esa ayuda en vez de pedirla.
+    private var hasBlockHelp: Bool {
+        guard let blockedAt = stepEntity.blockedAt else { return false }
+        return KitAssistantStore.shared.conversations(for: stepEntity.goal?.id ?? UUID())
+            .first { $0.stepID == stepEntity.id }?
+            .viewModel.messages.contains { $0.sender == .assistant && !$0.isError && $0.timestamp >= blockedAt } ?? false
+    }
+
     private var resolveBlockMenu: some View {
-        Menu {
-            Button("Ya está resuelto", systemImage: "checkmark") {
+        Button {
+            withAnimation(.smooth) {
                 try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
-                syncManager?.handleDataChange()
             }
-            Button("Guardar avance", systemImage: Symbols.note) { savingBlocked = false; showingSaveProgress = true }
+            syncManager?.handleDataChange()
         } label: {
-            Text("Resolver bloqueo").frame(maxWidth: .infinity)
+            Text("Ya lo tengo, seguir").frame(maxWidth: .infinity)
         }
         .buttonStyle(.glassProminent)
         .accessibilityIdentifier("step.resolveBlock")
@@ -470,7 +494,7 @@ struct StepDetailView: View {
             case .blocked:
                 resolveBlockMenu
                 if !compactHeight {
-                    Text("Al resolverlo, el paso vuelve a «En curso». Tu avance se conserva.")
+                    Text("Úsalo cuando ya no te frene: el paso vuelve a «En curso» y tu avance se conserva.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -517,7 +541,7 @@ struct StepDetailView: View {
             }
             .accessibilityIdentifier("step.toggleCompletion")
         case .blocked:
-            Button(String(localized: "Ya está resuelto"), systemImage: "checkmark.circle") {
+            Button(String(localized: "Ya lo tengo, seguir"), systemImage: "checkmark.circle") {
                 try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
                 syncManager?.handleDataChange()
             }
@@ -591,6 +615,11 @@ struct StepDetailView: View {
 
     // MARK: - Actions
     private func openNextStep() {
+        if celebration?.kitDone == true, stepEntity.goal != nil {
+            withAnimation(.smooth) { celebration = nil }
+            showingKitResult = true
+            return
+        }
         guard let id = celebration?.nextStepID,
               let next = stepEntity.goal?.orderedActiveSteps.first(where: { $0.id == id }) else { return }
         withAnimation(.smooth) { celebration = nil }
@@ -607,7 +636,7 @@ struct StepDetailView: View {
             return
         }
         let next = stepEntity.goal?.orderedActiveSteps.first { !$0.isCompleted }
-        let shown = Celebration(nextStepID: next?.id, nextTitle: next?.stepTitle)
+        let shown = Celebration(nextStepID: next?.id, nextTitle: next?.stepTitle, kitDone: next == nil)
         celebration = shown
         Task { @MainActor in
             // Tiempo suficiente para tocar «Siguiente» sin que el aviso estorbe.
@@ -810,6 +839,8 @@ struct Celebration: Equatable {
     let id = UUID()
     let nextStepID: UUID?
     let nextTitle: String?
+    /// Era el último pendiente: el aviso lleva a la pantalla de Kit completado.
+    var kitDone = false
 }
 
 /// Confirmación breve y visible al completar: el check se anima y dice qué viene después.
@@ -819,10 +850,10 @@ private struct CompletionBanner: View {
     @State private var appeared = false
 
     var body: some View {
-        if celebration.nextStepID != nil {
+        if celebration.nextStepID != nil || celebration.kitDone {
             Button(action: onOpenNext) { content(showsChevron: true) }
                 .buttonStyle(.plain)
-                .accessibilityHint("Abre el siguiente paso")
+                .accessibilityHint(celebration.kitDone ? String(localized: "Abre el resumen del Kit completado") : String(localized: "Abre el siguiente paso"))
                 .accessibilityIdentifier("step.openNext")
         } else {
             content(showsChevron: false)
@@ -836,8 +867,9 @@ private struct CompletionBanner: View {
                 .foregroundStyle(.green)
                 .symbolEffect(.bounce, value: appeared)
             VStack(alignment: .leading, spacing: 2) {
-                Text("¡Paso completado!").font(.headline)
-                Text(celebration.nextTitle.map { String(localized: "Siguiente: \($0)") } ?? String(localized: "Era el último paso del Kit."))
+                Text(celebration.kitDone ? String(localized: "¡Kit completado!") : String(localized: "¡Paso completado!")).font(.headline)
+                Text(celebration.kitDone ? String(localized: "Era el último paso. Revisa cómo te ha ido.")
+                     : celebration.nextTitle.map { String(localized: "Siguiente: \($0)") } ?? String(localized: "Era el último paso del Kit."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
