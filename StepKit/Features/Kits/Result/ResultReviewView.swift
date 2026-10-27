@@ -48,6 +48,8 @@ struct ResultReviewView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 16) {
                     ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 92)
+                        // El anillo dibuja su trazo por fuera del marco: margen para que no lo corte la barra.
+                        .padding(6)
                     Text(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados.\nEl anillo cuenta pasos, no el resultado."))
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 0)
@@ -68,6 +70,7 @@ struct ResultReviewView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal)
+            .padding(.top, 12)
         }
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
@@ -239,8 +242,6 @@ struct JourneySummary {
     let blocks: Int
     let sessions: Int
     let steps: Int
-    let firstNote: ProgressEntryEntity?
-    let lastNote: ProgressEntryEntity?
 
     init(kit: GoalEntity, entries: [ProgressEntryEntity], sessions: [WorkSessionEntity]) {
         let end = kit.resultConfirmedAt ?? .now
@@ -253,8 +254,6 @@ struct JourneySummary {
         blocks = entries.filter { $0.kind == .blocked }.count
         self.sessions = sessions.count
         steps = kit.completedStepCount
-        firstNote = written.first
-        lastNote = written.count > 1 ? written.last : nil
     }
 
     var timeText: String {
@@ -275,15 +274,7 @@ struct JourneyCard: View {
                     stat(symbol: item.symbol, tint: item.tint, value: item.value, detail: item.detail)
                 }
             }
-            if let first = summary.firstNote {
-                Divider()
-                VStack(alignment: .leading, spacing: 10) {
-                    quote(title: String(localized: "Al empezar"), entry: first)
-                    if let last = summary.lastNote {
-                        quote(title: String(localized: "Tu último avance"), entry: last)
-                    }
-                }
-            }
+
         }
         .accessibilityElement(children: .combine)
     }
@@ -329,16 +320,5 @@ struct JourneyCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
-    private func quote(title: String, entry: ProgressEntryEntity) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Rectangle().fill(Color.accentColor.opacity(0.5)).frame(width: 3).clipShape(.capsule)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(title) · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text(entry.note).font(.subheadline)
-            }
-        }
-    }
 }
+

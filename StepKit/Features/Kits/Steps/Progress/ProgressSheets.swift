@@ -124,7 +124,8 @@ struct SaveProgressSheet: View {
 
 struct EditProgressEntrySheet: View {
     let entry: ProgressEntryEntity
-    let stepLabel: String?
+    /// Paso al que pertenece la nota: número y título.
+    let step: (number: Int, title: String)?
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -136,8 +137,12 @@ struct EditProgressEntrySheet: View {
         NavigationStack {
             Form {
                 Section {
-                    if let stepLabel {
-                        LabeledContent("Paso", value: stepLabel)
+                    if let step {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Paso \(step.number)")
+                            Text(step.title).foregroundStyle(.secondary)
+                        }
+                        .accessibilityElement(children: .combine)
                     }
                     LabeledContent("Fecha", value: entry.notedAt.formatted(date: .abbreviated, time: .omitted))
                 }

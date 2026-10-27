@@ -136,7 +136,7 @@ struct KitDetailView: View {
         .sheet(item: $editingEntry) { entry in
             let step = kitEntity.orderedActiveSteps.first { $0.id == entry.stepID }
             EditProgressEntrySheet(entry: entry,
-                                   stepLabel: step.map { "\(kitEntity.position(of: $0)) · \($0.stepTitle)" })
+                                   step: step.map { (kitEntity.position(of: $0), $0.stepTitle) })
         }
     }
 

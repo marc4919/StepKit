@@ -162,7 +162,7 @@ struct StepDetailView: View {
             }
         }
         .sheet(item: $editingEntry) { entry in
-            EditProgressEntrySheet(entry: entry, stepLabel: "\(stepNumber) · \(stepEntity.stepTitle)")
+            EditProgressEntrySheet(entry: entry, step: (stepNumber, stepEntity.stepTitle))
         }
     }
 
