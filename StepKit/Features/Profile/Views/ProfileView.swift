@@ -17,10 +17,6 @@ struct ProfileView: View {
     @State private var showingTermsOfService = false
     @State private var showingPrivacyPolicy = false
     @State private var showingSignOutAlert = false
-    @State private var showingDeleteAccount = false
-    @State private var deletingAccount = false
-    @State private var deleteAccountError: String?
-    @Environment(\.apiClient) private var apiClient: any APIClientProtocol
     @State private var showingDemoReset = false
     @State private var resettingDemo = false
     @Environment(\.modelContext) private var modelContext
@@ -95,6 +91,14 @@ struct ProfileView: View {
             }
             .disabled(resettingDemo)
             .accessibilityIdentifier("profile.resetDemo")
+            // Unida al botón: el diálogo sale de él (popover en iPad y el Duo abierto, hoja abajo en iPhone).
+            .confirmationDialog("¿Restaurar la demo?", isPresented: $showingDemoReset, titleVisibility: .visible) {
+                Button("Borrar todo y empezar de cero", role: .destructive) {
+                    Task { await resetDemo() }
+                }
+            } message: {
+                Text("Se borrarán tus Kits, avances y sesiones de esta cuenta, aquí y en el servidor de pruebas. Después se cerrará la sesión y verás la bienvenida.")
+            }
         } footer: {
             Text("Solo en versiones de prueba. Borra tus Kits de esta cuenta, cierra la sesión y vuelve a la bienvenida para enseñar la app desde cero.")
         }
@@ -108,17 +112,11 @@ struct ProfileView: View {
                 .accessibilityHint("Cierra la sesión actual y regresa a la pantalla de inicio de sesión")
         }
         Section {
-            Button(role: .destructive) { showingDeleteAccount = true } label: {
-                if deletingAccount {
-                    HStack { ProgressView(); Text("Eliminando cuenta…") }
-                } else {
-                    Text("Eliminar cuenta")
-                }
+            // Como en Ajustes: borrar la cuenta tiene su propia pantalla que explica qué se pierde.
+            NavigationLink { DeleteAccountView() } label: {
+                Text("Eliminar cuenta").foregroundStyle(.red)
             }
-            .disabled(deletingAccount)
             .accessibilityIdentifier("profile.deleteAccount")
-        } footer: {
-            Text("Borra tu cuenta y todos tus Kits, avances y sesiones, aquí y en nuestro servidor. No se puede deshacer.")
         }
     }
 
@@ -165,30 +163,6 @@ struct ProfileView: View {
             } message: {
                 Text("Podrás volver a entrar con tu Apple Account. Tus Kits se conservan.")
             }
-            .confirmationDialog("¿Eliminar tu cuenta?", isPresented: $showingDeleteAccount, titleVisibility: .visible) {
-                Button("Eliminar cuenta y datos", role: .destructive) {
-                    Task { await deleteAccount() }
-                }
-            } message: {
-                Text("Se borrarán tu cuenta y todos tus Kits, avances y sesiones, y StepKit dejará de estar vinculado a tu Apple Account. Te pediremos que lo confirmes con Apple. Si tienes StepKit Pro, cancela la suscripción en Ajustes > Apple Account > Suscripciones: eliminar la cuenta no la cancela.")
-            }
-            .alert("No se ha podido eliminar la cuenta", isPresented: Binding(
-                get: { deleteAccountError != nil },
-                set: { if !$0 { deleteAccountError = nil } }
-            )) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(deleteAccountError ?? "")
-            }
-            #if DEBUG
-            .confirmationDialog("¿Restaurar la demo?", isPresented: $showingDemoReset, titleVisibility: .visible) {
-                Button("Borrar todo y empezar de cero", role: .destructive) {
-                    Task { await resetDemo() }
-                }
-            } message: {
-                Text("Se borrarán tus Kits, avances y sesiones de esta cuenta, aquí y en el servidor de pruebas. Después se cerrará la sesión y verás la bienvenida.")
-            }
-            #endif
         }
     }
 
@@ -223,23 +197,6 @@ struct ProfileView: View {
         if done > 0 {
             MetaChip(symbol: "checkmark.circle", text: done == 1 ? String(localized: "1 terminado") : String(localized: "\(done) terminados"),
                      color: MetaTint.done)
-        }
-    }
-
-    @MainActor
-    private func deleteAccount() async {
-        guard let token = authManager.token else { return }
-        deletingAccount = true
-        defer { deletingAccount = false }
-        do {
-            try await AccountDeletionService.deleteAccount(token: token, apiClient: apiClient,
-                                                           authentication: authManager, syncManager: syncManager)
-        } catch AccountDeletionService.Failure.cancelled {
-            // La persona no ha confirmado con Apple: no se borra nada.
-        } catch AccountDeletionService.Failure.appleFailed {
-            deleteAccountError = String(localized: "Apple no ha podido confirmar tu identidad. Inténtalo de nuevo.")
-        } catch {
-            deleteAccountError = String(localized: "Comprueba tu conexión e inténtalo de nuevo. Tu cuenta no se ha borrado.")
         }
     }
 
