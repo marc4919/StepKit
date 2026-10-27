@@ -29,8 +29,10 @@ struct StepDetailView: View {
     @State private var showingAllProgress = false
     /// Aviso breve tras completar el paso: qué viene después.
     @State private var celebration: Celebration?
-    @State private var wideLayout = false
-    @State private var sideControls = false
+    // Se parte del tamaño de la ventana para que la primera imagen ya tenga la disposición correcta:
+    // si se esperara a medir la vista, en el Duo cerrado se vería el reajuste al entrar.
+    @State private var wideLayout = TwoColumnLayout.fits(StepDetailView.windowSize)
+    @State private var sideControls = StepDetailView.isNearlySquare(StepDetailView.windowSize)
     /// Acciones dentro de la barra de herramientas (Duo cerrado) en vez de botones grandes.
     private var actionsInToolbar: Bool { Self.forcesSideControls || (sideControls && !wideLayout) }
     /// Siguiente paso abierto desde el aviso de completado.
@@ -130,10 +132,7 @@ struct StepDetailView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .onGeometryChange(for: Bool.self) { geo in
-            let size = geo.size
-            return size.width < 700 && size.height < 760 && size.width / max(size.height, 1) > 0.6
-        } action: { sideControls = $0 }
+        .onGeometryChange(for: Bool.self) { Self.isNearlySquare($0.size) } action: { sideControls = $0 }
         .sensoryFeedback(.success, trigger: celebration)
         .navigationDestination(isPresented: $showingKitResult) {
             if let kit = stepEntity.goal { ResultReviewView(kit: kit) }
@@ -526,6 +525,18 @@ struct StepDetailView: View {
         .controlSize(compactHeight ? .regular : .large)
         .padding(.horizontal, wideLayout ? 0 : 16)
         .padding(.vertical, compactHeight ? 6 : 10)
+    }
+
+    /// Pantalla casi cuadrada y pequeña: el iPhone Duo cerrado.
+    static func isNearlySquare(_ size: CGSize) -> Bool {
+        size.width < 700 && size.height < 760 && size.width / max(size.height, 1) > 0.6
+    }
+
+    /// Tamaño de la ventana activa, para decidir la disposición antes de medir.
+    static var windowSize: CGSize {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let window = scenes.flatMap(\.windows).first(where: \.isKeyWindow) ?? scenes.first?.windows.first
+        return window?.bounds.size ?? .zero
     }
 
     #if DEBUG
