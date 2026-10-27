@@ -630,6 +630,16 @@
         }
       }
     },
+    "Abre el resumen del Kit completado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the completed Kit summary"
+          }
+        }
+      }
+    },
     "Abre el siguiente paso": {
       "localizations": {
         "en": {
@@ -1190,6 +1200,16 @@
         }
       }
     },
+    "Avance guarda lo que llevas. Atasco anota qué te frena. Completar cierra el paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress saves where you are. Stuck notes what's holding you back. Complete closes the step."
+          }
+        }
+      }
+    },
     "Avance guardado": {
       "localizations": {
         "en": {
@@ -1676,6 +1696,16 @@
         }
       }
     },
+    "Comprobando que cada paso quepa en tu tiempo…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking each step fits your time…"
+          }
+        }
+      }
+    },
     "Comprueba tu conexión e inténtalo de nuevo. Tu cuenta no se ha borrado.": {
       "localizations": {
         "en": {
@@ -1888,6 +1918,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Create as many goals as you like"
+          }
+        }
+      }
+    },
+    "Crea tu primer Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create your first Kit"
           }
         }
       }
@@ -2890,6 +2930,16 @@
         }
       }
     },
+    "Era el último paso. Revisa cómo te ha ido.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That was the last step. See how it went."
+          }
+        }
+      }
+    },
     "Error": {
       "localizations": {
         "en": {
@@ -3040,6 +3090,16 @@
         }
       }
     },
+    "Escribe una meta y una fecha. La IA te propone los pasos y los revisas antes de empezar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a goal and a date. AI suggests the steps and you review them before you start."
+          }
+        }
+      }
+    },
     "Escribe una nota...": {
       "localizations": {
         "en": {
@@ -3056,6 +3116,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Write a note…"
+          }
+        }
+      }
+    },
+    "Escribiendo qué hacer en cada paso…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing what to do in each step…"
           }
         }
       }
@@ -4014,6 +4084,16 @@
         }
       }
     },
+    "Los planes con más pasos tardan un poco más.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plans with more steps take a little longer."
+          }
+        }
+      }
+    },
     "Mantenerla": {
       "localizations": {
         "en": {
@@ -4262,6 +4342,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Move it"
+          }
+        }
+      }
+    },
+    "Muestra el detalle del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows the step details"
           }
         }
       }
@@ -4732,6 +4822,16 @@
         }
       }
     },
+    "Oculta el detalle del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hides the step details"
+          }
+        }
+      }
+    },
     "Oculta este mensaje de error": {
       "localizations": {
         "en": {
@@ -5058,6 +5158,16 @@
         }
       }
     },
+    "Pedir ayuda al asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask the assistant for help"
+          }
+        }
+      }
+    },
     "Pendiente": {
       "localizations": {
         "en": {
@@ -5284,6 +5394,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ask anything about this Kit"
+          }
+        }
+      }
+    },
+    "Pregúntale cuando no sepas cómo seguir. Si propone cambiar el plan, decides tú.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask it when you're not sure how to go on. If it suggests changing the plan, you decide."
           }
         }
       }
@@ -5830,6 +5950,16 @@
         }
       }
     },
+    "Repartiendo los pasos hasta tu fecha…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spreading the steps up to your date…"
+          }
+        }
+      }
+    },
     "Requiere StepKit Pro": {
       "localizations": {
         "en": {
@@ -5886,6 +6016,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The StepKit assistant answers using an external AI service. Always review what it suggests before changing your plan."
+          }
+        }
+      }
+    },
+    "Responde o pide otro cambio…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reply or ask for another change…"
           }
         }
       }
@@ -6842,6 +6982,26 @@
         }
       }
     },
+    "Tres acciones en cada paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Three actions on every step"
+          }
+        }
+      }
+    },
+    "Tu asistente del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Kit assistant"
+          }
+        }
+      }
+    },
     "Tu avance": {
       "localizations": {
         "en": {
@@ -7322,6 +7482,16 @@
         }
       }
     },
+    "Ver la ayuda del asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See the assistant's help"
+          }
+        }
+      }
+    },
     "Ver menos": {
       "localizations": {
         "en": {
@@ -7448,6 +7618,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "It's resolved: resolve blocker"
+          }
+        }
+      }
+    },
+    "Ya lo tengo, seguir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it, continue"
           }
         }
       }
@@ -7622,6 +7802,16 @@
         }
       }
     },
+    "¡Kit completado!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit completed!"
+          }
+        }
+      }
+    },
     "¡Kit creado!": {
       "localizations": {
         "en": {
@@ -7780,6 +7970,16 @@
         }
       }
     },
+    "¿No te convence? Escríbeme abajo y lo ajustamos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not convinced? Write to me below and we'll adjust it."
+          }
+        }
+      }
+    },
     "¿Por dónde seguimos?": {
       "localizations": {
         "en": {
@@ -7926,6 +8126,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Last progress · %@"
+          }
+        }
+      }
+    },
+    "Úsalo cuando ya no te frene: el paso vuelve a «En curso» y tu avance se conserva.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use it once it's no longer holding you back: the step goes back to «In progress» and your progress is kept."
           }
         }
       }

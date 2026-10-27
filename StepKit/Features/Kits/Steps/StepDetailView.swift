@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 import NaturalLanguage
 
@@ -506,6 +507,7 @@ struct StepDetailView: View {
                                accessibilityLabel: String(localized: "Guardar avance")) {
                         savingBlocked = false
                         showingSaveProgress = true
+                        StepActionsTip().invalidate(reason: .actionPerformed)
                     }
                     actionTile(String(localized: "Atasco"), symbol: "hand.raised", identifier: "step.reportBlock",
                                accessibilityLabel: String(localized: "Me he atascado")) {
@@ -518,6 +520,7 @@ struct StepDetailView: View {
                     }
                 }
                 }
+                .popoverTip(StepActionsTip(), arrowEdge: .bottom)
             }
         }
         .controlSize(compactHeight ? .regular : .large)

@@ -42,6 +42,16 @@ struct StepKitApp: App {
         NetworkDiagnostics.logEnvironment(appEnvironment)
         #endif
 
+        #if DEBUG
+        // Capturas y pruebas sin consejos de primera vez encima.
+        // `-StepKitShowTips`: los muestra desde cero para revisarlos.
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-StepKitShowTips") {
+            try? Tips.resetDatastore()
+        } else if arguments.contains("-StepKitDesignFixtures") {
+            Tips.hideAllTipsForTesting()
+        }
+        #endif
         try? Tips.configure([
             .displayFrequency(.immediate)
         ])

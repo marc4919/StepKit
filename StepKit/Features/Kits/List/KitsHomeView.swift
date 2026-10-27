@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 
 struct KitsHomeView: View {
@@ -137,7 +138,11 @@ struct KitsHomeView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Crear Kit", systemImage: "plus") { openCreator() }
+                Button("Crear Kit", systemImage: "plus") {
+                    CreateKitTip().invalidate(reason: .actionPerformed)
+                    openCreator()
+                }
+                    .popoverTip(CreateKitTip())
                     .accessibilityIdentifier("kit.create")
                     .accessibilityHint("Abre el creador de kits")
             }

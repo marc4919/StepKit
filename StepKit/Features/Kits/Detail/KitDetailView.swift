@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 
 struct KitDetailView: View {
@@ -103,6 +104,8 @@ struct KitDetailView: View {
                     Label("Asistente", systemImage: Symbols.assistant)
                 }
                 .badge(pendingProposals)
+                .popoverTip(KitAssistantTip())
+                .simultaneousGesture(TapGesture().onEnded { KitAssistantTip().invalidate(reason: .actionPerformed) })
                 .accessibilityIdentifier("kit.assistant")
                 .accessibilityValue(pendingProposals == 0 ? "" : pendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(pendingProposals) propuestas pendientes"))
                 Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
