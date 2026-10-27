@@ -454,6 +454,16 @@
         }
       }
     },
+    "%lld → %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld → %2$lld min"
+          }
+        }
+      }
+    },
     "%lld%%": {
       "localizations": {
         "en": {
@@ -4618,6 +4628,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Our app is not directed at children under 13. We don't knowingly collect personal information from children under 13."
+          }
+        }
+      }
+    },
+    "Nueva descripción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New description"
           }
         }
       }

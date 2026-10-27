@@ -245,8 +245,8 @@ struct KitAssistantChatView: View {
             .interactiveDismissDisabled()
         }
         .onAppear {
-            // Conversación libre y vacía: el teclado ya listo para escribir.
-            if initialIntent == nil, vm.messages.isEmpty, conversation.proposals.isEmpty {
+            // Conversación libre del Kit y vacía: el teclado ya listo. En un paso no, que taparía sus opciones.
+            if initialIntent == nil, step == nil, vm.messages.isEmpty, conversation.proposals.isEmpty {
                 Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(450))
                     inputFocused = true
@@ -325,13 +325,15 @@ struct KitAssistantChatView: View {
     }
 
     /// Va al asistente del servidor (necesita el permiso de IA externa). Si no responde, se ofrece reintentar.
-    private func deliver(_ text: String) {
+    /// `sending`: lo que recibe el asistente si es distinto de lo que se ve (las acciones rápidas
+    /// muestran su título pero mandan la petición completa, con el paso y lo que se espera).
+    private func deliver(_ text: String, sending: String? = nil) {
         let vm = conversation.viewModel
         vm.draft = ""
         guard hasConsent else { return }
         vm.messages.append(ChatMessage(sender: .user, text: text))
         Task {
-            let handled = await KitAssistant.ask(.message, message: text, kit: kit, step: step,
+            let handled = await KitAssistant.ask(.message, message: sending ?? text, kit: kit, step: step,
                                                  conversation: conversation, context: modelContext,
                                                  apiClient: apiClient, token: authManager.token)
             if !handled {
@@ -340,7 +342,9 @@ struct KitAssistantChatView: View {
         }
     }
 
-    private func deliver(_ intent: AssistantIntent) { deliver(intent.title) }
+    private func deliver(_ intent: AssistantIntent) {
+        deliver(intent.title, sending: intent.prompt(kit: kit, step: step))
+    }
 
     /// Reintenta el último mensaje con el asistente del servidor.
     private func retryLast() {
@@ -348,7 +352,7 @@ struct KitAssistantChatView: View {
         guard !vm.isResponding, let index = vm.messages.lastIndex(where: { $0.sender == .user }) else { return }
         let text = vm.messages[index].text
         vm.messages.removeSubrange(index...)
-        deliver(text)
+        if let intent = intents.first(where: { $0.title == text }) { deliver(intent) } else { deliver(text) }
     }
 }
 

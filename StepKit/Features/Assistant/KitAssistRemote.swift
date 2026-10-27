@@ -265,13 +265,18 @@ enum RemoteProposalBuilder {
                 }
             case "edit_step":
                 guard let target = step(change.stepNumber) else { continue }
-                let title = change.newTitles?.first
+                // Solo lo que cambia: el título si es otro y los minutos de antes → después.
+                let title = change.newTitles?.first.flatMap { $0 == target.stepTitle ? nil : $0 }
+                let minutes = change.newMinutes.flatMap { $0 == target.estimateMinutes ? nil : $0 }
+                let detail = [title.map { "«\($0)»" },
+                              minutes.map { String(localized: "\(target.estimateMinutes) → \($0) min") },
+                              title == nil && minutes == nil && change.newDescription != nil
+                                ? String(localized: "Nueva descripción") : nil]
+                    .compactMap { $0 }.joined(separator: " · ")
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
-                                                  detail: [title.map { "«\($0)»" },
-                                                           change.newMinutes.map { String(localized: "\($0) min") }]
-                                                    .compactMap { $0 }.joined(separator: " · "),
+                                                  detail: detail,
                                                   symbol: "pencil"))
-                actions.append(.edit(stepID: target.id, title: title, minutes: change.newMinutes,
+                actions.append(.edit(stepID: target.id, title: title, minutes: minutes,
                                      outcome: change.newOutcome, description: change.newDescription))
             case "split_step":
                 guard let target = step(change.stepNumber), let titles = change.newTitles, titles.count > 1 else { continue }
