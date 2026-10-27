@@ -61,14 +61,11 @@ final class AssistantService {
 
         return Instructions {
             """
-            Eres el asistente de StepKit, una app de productividad que ayuda a las personas
-            a alcanzar sus objetivos dividiéndolos en pasos accionables.
+            Eres el asistente de StepKit, una app que ayuda a alcanzar objetivos con planes de pasos.
+            Cada objetivo es un Kit; un Kit tiene pasos con fecha. El título del Kit es el objetivo, no un paso.
 
-            Tu personalidad:
-            - Eres amable, motivador y práctico
-            - Celebras los logros del usuario
-            - Ofreces consejos específicos basados en sus datos
-            - Mantienes un tono positivo pero realista
+            Tono: cercano, práctico y realista. Celebra solo lo que ya está hecho: si no hay pasos
+            completados, no felicites; ayuda a empezar por el próximo paso.
 
             CONTEXTO ACTUAL DEL USUARIO:
             \(contextString)
@@ -77,11 +74,12 @@ final class AssistantService {
 
             REGLAS:
             - Responde siempre en \(AppLanguage.nameInSpanish)
-            - Sé conciso: 2-4 oraciones normalmente, máximo un párrafo corto
-            - Usa los datos del usuario para personalizar cada respuesta
-            - No inventes datos que no tengas
-            - Si el usuario no tiene kits, anímalo a crear uno
-            - Usa emojis con moderación (máximo 1-2 por respuesta)
+            - Responde a lo que te dicen. A un saludo, saluda y ofrece ayuda concreta con el próximo paso.
+            - Sé conciso: 2-4 frases, sin listas largas
+            - Usa solo los datos del contexto; no inventes pasos, fechas ni avances
+            - Nombra los pasos por su título exacto
+            - Sin emojis y sin signos repetidos (nada de «!!!» ni «¡¡¡»)
+            - Si el usuario no tiene Kits, anímalo a crear uno
             """
         }
     }
@@ -120,11 +118,16 @@ final class AssistantService {
             Task {
                 do {
                     // Usar streamResponse para obtener texto en tiempo real
-                    let stream = currentSession.streamResponse(to: message)
+                    // El modelo del dispositivo puede entrar en bucle («¡¡¡¡…»): temperatura baja y un tope de longitud.
+                    let options = GenerationOptions(temperature: 0.4, maximumResponseTokens: 300)
+                    let stream = currentSession.streamResponse(to: message, options: options)
 
                     var lastContent = ""
                     for try await partialResponse in stream {
-                        let currentContent = partialResponse.content
+                        var currentContent = partialResponse.content
+                        // Si empieza a repetir, se corta ahí y no se sigue generando.
+                        let looping = RepetitionGuard.cut(currentContent)
+                        if let looping { currentContent = looping }
 
                         // Foundation Models devuelve contenido acumulado
                         // Emitimos el contenido completo cada vez (la UI lo reemplazará)
@@ -132,6 +135,7 @@ final class AssistantService {
                             continuation.yield(currentContent)
                             lastContent = currentContent
                         }
+                        if looping != nil { break }
                     }
 
                     continuation.finish()
@@ -171,8 +175,9 @@ final class AssistantService {
         messageCount += 1
 
         do {
-            let response = try await session.respond(to: message)
-            return response.content
+            let response = try await session.respond(to: message,
+                                                     options: GenerationOptions(temperature: 0.4, maximumResponseTokens: 300))
+            return RepetitionGuard.cut(response.content) ?? response.content
         } catch let error as LanguageModelSession.GenerationError {
             throw AssistantError.from(generationError: error)
         } catch {
@@ -206,6 +211,40 @@ final class AssistantService {
     /// Útil cuando cambian los datos del usuario durante la conversación
     func updateContext(_ context: AssistantContext, quickAction: QuickActionType? = nil) async {
         await resetConversation(with: context, quickAction: quickAction)
+    }
+}
+
+// MARK: - Repetition Guard
+
+/// Detecta cuando el modelo del dispositivo degenera repitiendo lo mismo y devuelve el texto bueno.
+enum RepetitionGuard {
+    /// Texto hasta antes de la repetición, o nil si la respuesta está bien.
+    static func cut(_ text: String) -> String? {
+        let chars = Array(text)
+        var runStart = 0
+        for i in chars.indices where i > 0 {
+            if chars[i] != chars[i - 1] { runStart = i; continue }
+            let run = i - runStart + 1
+            // «¡¡¡¡», «!!!!», «....»: 4 signos iguales; letras o espacios: 8.
+            let limit = chars[i].isLetter || chars[i].isNumber || chars[i].isWhitespace ? 8 : 4
+            if run >= limit { return clean(String(chars[..<runStart])) }
+        }
+        // La misma frase corta repetida tres veces seguidas.
+        for length in 6...40 where chars.count >= length * 3 {
+            let tail = chars.suffix(length * 3)
+            let a = tail.prefix(length), b = tail.dropFirst(length).prefix(length), c = tail.suffix(length)
+            if Array(a) == Array(b), Array(b) == Array(c) {
+                return clean(String(chars.dropLast(length * 2)))
+            }
+        }
+        return nil
+    }
+
+    private static func clean(_ text: String) -> String {
+        var result = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        while let last = result.last, ",;:¡¿-–".contains(last) { result.removeLast() }
+        if let last = result.last, !".!?…".contains(last) { result += "." }
+        return result
     }
 }
 

@@ -32,9 +32,10 @@ struct AssistantContext {
 
             // Detalle de cada kit
             result += "KITS DEL USUARIO:\n"
-            for (index, kit) in kits.enumerated() {
-                result += "\(index + 1). \"\(kit.title)\"\n"
-                result += "   - Progreso: \(kit.completedSteps)/\(kit.totalSteps) pasos (\(Int(kit.progress * 100))%)\n"
+            for kit in kits {
+                // Sin numerar: el modelo leía «1. Título del Kit» como si fuera el primer paso.
+                result += "- Kit (objetivo): «\(kit.title)»\n"
+                result += "   - Pasos completados: \(kit.completedSteps) de \(kit.totalSteps)\n"
                 if let nextStep = kit.nextStep {
                     result += "   - Próximo paso: \"\(nextStep)\"\n"
                 }
