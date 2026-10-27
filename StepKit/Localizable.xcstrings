@@ -2880,12 +2880,12 @@
         }
       }
     },
-    "Encargados del tratamiento que actúan siguiendo nuestras instrucciones:\n\n• **Railway Corporation:** alojamiento del servidor y de la base de datos [región por confirmar].\n• **OpenRouter, Inc.** y el proveedor del modelo (Google, Amazon o Microsoft): procesan las peticiones de IA cuando das permiso, con retención cero.\n• **Apple:** inicio de sesión, pagos y notificaciones de suscripción.\n\nAlgunos de estos proveedores están en Estados Unidos. Las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en cláusulas contractuales tipo.": {
+    "Encargados del tratamiento que actúan siguiendo nuestras instrucciones:\n\n• **Railway Corporation:** alojamiento del servidor y de la base de datos, en un centro de datos de Ámsterdam (Unión Europea).\n• **OpenRouter, Inc.** y el proveedor del modelo (Google, Amazon o Microsoft): procesan las peticiones de IA cuando das permiso, con retención cero.\n• **Apple:** inicio de sesión, pagos y notificaciones de suscripción.\n\nAlgunos de estos proveedores están en Estados Unidos. Las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en cláusulas contractuales tipo.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Processors acting on our instructions:\n\n• **Railway Corporation:** hosting of the server and database [region to be confirmed].\n• **OpenRouter, Inc.** and the model provider (Google, Amazon or Microsoft): process AI requests when you give permission, with zero retention.\n• **Apple:** sign-in, payments and subscription notifications.\n\nSome of these providers are in the United States. Transfers rely on the EU-US Data Privacy Framework or standard contractual clauses."
+            "value": "Processors acting on our instructions:\n\n• **Railway Corporation:** hosting of the server and database, in a data center in Amsterdam (European Union).\n• **OpenRouter, Inc.** and the model provider (Google, Amazon or Microsoft): process AI requests when you give permission, with zero retention.\n• **Apple:** sign-in, payments and subscription notifications.\n\nSome of these providers are in the United States. Transfers rely on the EU-US Data Privacy Framework or standard contractual clauses."
           }
         }
       }
@@ -4270,12 +4270,12 @@
         }
       }
     },
-    "Mientras tengas cuenta. Si borras un Kit, en el servidor queda marcado como borrado para que no reaparezca en tus otros dispositivos, y desaparece del todo al eliminar la cuenta. Si eliminas tu cuenta, borramos de inmediato todos tus datos del servidor y desvinculamos StepKit de tu Apple Account. Las copias de seguridad se sobrescriben en un máximo de [30] días.": {
+    "Mientras tengas cuenta. Si borras un Kit, en el servidor queda marcado como borrado para que no reaparezca en tus otros dispositivos, y desaparece del todo al eliminar la cuenta. Si eliminas tu cuenta, borramos de inmediato todos tus datos del servidor y desvinculamos StepKit de tu Apple Account.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "As long as you have an account. If you delete a Kit, it stays marked as deleted on the server so it doesn't reappear on your other devices, and it disappears completely when you delete your account. If you delete your account, we immediately delete all your data from the server and unlink StepKit from your Apple Account. Backups are overwritten within [30] days at most."
+            "value": "As long as you have an account. If you delete a Kit, it stays marked as deleted on the server so it doesn't reappear on your other devices, and it disappears completely when you delete your account. If you delete your account, we immediately delete all your data from the server and unlink StepKit from your Apple Account."
           }
         }
       }
@@ -5614,12 +5614,12 @@
         }
       }
     },
-    "Puedes acceder a tus datos, rectificarlos, suprimirlos, oponerte o limitar su tratamiento, y pedir su portabilidad, escribiendo a [correo de contacto]. Para borrar tu cuenta y todos tus datos no hace falta escribirnos: está en **Perfil > Eliminar cuenta**. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).\n\nEliminar la cuenta no cancela una suscripción de StepKit Pro. Para cancelarla, ve a Ajustes > Apple Account > Suscripciones.": {
+    "Puedes acceder a tus datos, rectificarlos, suprimirlos, oponerte o limitar su tratamiento, y pedir su portabilidad, escribiendo a marcgt.dev@icloud.com. Para borrar tu cuenta y todos tus datos no hace falta escribirnos: está en **Perfil > Eliminar cuenta**. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).\n\nEliminar la cuenta no cancela una suscripción de StepKit Pro. Para cancelarla, ve a Ajustes > Apple Account > Suscripciones.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You can access, rectify or erase your data, object to or restrict its processing, and request its portability by writing to [contact email]. To delete your account and all your data you don't need to write to us: it's in **Profile > Delete account**. You can also lodge a complaint with the Spanish Data Protection Agency (aepd.es).\n\nDeleting your account does not cancel a StepKit Pro subscription. To cancel it, go to Settings > Apple Account > Subscriptions."
+            "value": "You can access, rectify or erase your data, object to or restrict its processing, and request its portability by writing to marcgt.dev@icloud.com. To delete your account and all your data you don't need to write to us: it's in **Profile > Delete account**. You can also lodge a complaint with the Spanish Data Protection Agency (aepd.es).\n\nDeleting your account does not cancel a StepKit Pro subscription. To cancel it, go to Settings > Apple Account > Subscriptions."
           }
         }
       }
@@ -6666,12 +6666,12 @@
         }
       }
     },
-    "StepKit es una app de [nombre y apellidos o razón social del titular], con domicilio en [dirección] y NIF [NIF]. Para cualquier cuestión de privacidad, escribe a [correo de contacto].": {
+    "StepKit es una app de Marc García Teodoro. Para cualquier cuestión de privacidad, escribe a marcgt.dev@icloud.com.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "StepKit is an app by [owner's full name or company name], with address at [address] and tax ID [tax ID]. For any privacy question, write to [contact email]."
+            "value": "StepKit is an app by Marc García Teodoro. For any privacy question, write to marcgt.dev@icloud.com."
           }
         }
       }
@@ -8110,12 +8110,12 @@
         }
       }
     },
-    "Última actualización: [fecha de publicación]": {
+    "Última actualización: 28 de octubre de 2026": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Last updated: [publication date]"
+            "value": "Last updated: October 28, 2026"
           }
         }
       }

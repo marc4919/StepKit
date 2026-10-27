@@ -13,7 +13,7 @@ struct PrivacyPolicyView: View {
 
     private let sections: [(title: String, body: String)] = [
         (String(localized: "Quién es el responsable"),
-         String(localized: "StepKit es una app de [nombre y apellidos o razón social del titular], con domicilio en [dirección] y NIF [NIF]. Para cualquier cuestión de privacidad, escribe a [correo de contacto].")),
+         String(localized: "StepKit es una app de Marc García Teodoro. Para cualquier cuestión de privacidad, escribe a marcgt.dev@icloud.com.")),
         (String(localized: "Qué datos tratamos"),
          String(localized: "• **Cuenta.** Inicias sesión con Apple. Nuestro servidor guarda un identificador que Apple genera para StepKit. Si compartes tu nombre o correo con Apple, se quedan en tu dispositivo y nuestro servidor no los guarda.\n• **Tu contenido.** Los Kits, pasos, avances, notas, bloqueos y sesiones que creas. Se guardan en tu dispositivo y en nuestro servidor para sincronizarlos entre tus dispositivos.\n• **Suscripción.** Apple gestiona el pago. Nosotros solo recibimos y guardamos el estado de tu suscripción (producto, vigencia y renovación) para saber si tienes StepKit Pro. Nunca vemos tus datos de pago.\n• **Uso de la IA.** Contamos cuántas veces usas la IA en la nube cada mes y los tokens consumidos, para aplicar los límites del plan gratuito y controlar costes. No guardamos el texto de tus conversaciones con el asistente en el servidor.\n\nNo usamos publicidad, analítica de terceros ni rastreo, y no vendemos datos.")),
         (String(localized: "Inteligencia artificial"),
@@ -21,11 +21,11 @@ struct PrivacyPolicyView: View {
         (String(localized: "Para qué y con qué base legal"),
          String(localized: "• **Prestar el servicio** (cuenta, sincronización y planes): ejecución del contrato (RGPD art. 6.1.b).\n• **Enviar tu contenido a la IA externa:** tu consentimiento (art. 6.1.a), que puedes retirar.\n• **Gestionar la suscripción:** ejecución del contrato (art. 6.1.b).\n• **Límites de uso, seguridad y prevención de abusos:** interés legítimo (art. 6.1.f).")),
         (String(localized: "Quién más trata tus datos"),
-         String(localized: "Encargados del tratamiento que actúan siguiendo nuestras instrucciones:\n\n• **Railway Corporation:** alojamiento del servidor y de la base de datos [región por confirmar].\n• **OpenRouter, Inc.** y el proveedor del modelo (Google, Amazon o Microsoft): procesan las peticiones de IA cuando das permiso, con retención cero.\n• **Apple:** inicio de sesión, pagos y notificaciones de suscripción.\n\nAlgunos de estos proveedores están en Estados Unidos. Las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en cláusulas contractuales tipo.")),
+         String(localized: "Encargados del tratamiento que actúan siguiendo nuestras instrucciones:\n\n• **Railway Corporation:** alojamiento del servidor y de la base de datos, en un centro de datos de Ámsterdam (Unión Europea).\n• **OpenRouter, Inc.** y el proveedor del modelo (Google, Amazon o Microsoft): procesan las peticiones de IA cuando das permiso, con retención cero.\n• **Apple:** inicio de sesión, pagos y notificaciones de suscripción.\n\nAlgunos de estos proveedores están en Estados Unidos. Las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en cláusulas contractuales tipo.")),
         (String(localized: "Cuánto tiempo los guardamos"),
-         String(localized: "Mientras tengas cuenta. Si borras un Kit, en el servidor queda marcado como borrado para que no reaparezca en tus otros dispositivos, y desaparece del todo al eliminar la cuenta. Si eliminas tu cuenta, borramos de inmediato todos tus datos del servidor y desvinculamos StepKit de tu Apple Account. Las copias de seguridad se sobrescriben en un máximo de [30] días.")),
+         String(localized: "Mientras tengas cuenta. Si borras un Kit, en el servidor queda marcado como borrado para que no reaparezca en tus otros dispositivos, y desaparece del todo al eliminar la cuenta. Si eliminas tu cuenta, borramos de inmediato todos tus datos del servidor y desvinculamos StepKit de tu Apple Account.")),
         (String(localized: "Tus derechos"),
-         String(localized: "Puedes acceder a tus datos, rectificarlos, suprimirlos, oponerte o limitar su tratamiento, y pedir su portabilidad, escribiendo a [correo de contacto]. Para borrar tu cuenta y todos tus datos no hace falta escribirnos: está en **Perfil > Eliminar cuenta**. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).\n\nEliminar la cuenta no cancela una suscripción de StepKit Pro. Para cancelarla, ve a Ajustes > Apple Account > Suscripciones.")),
+         String(localized: "Puedes acceder a tus datos, rectificarlos, suprimirlos, oponerte o limitar su tratamiento, y pedir su portabilidad, escribiendo a marcgt.dev@icloud.com. Para borrar tu cuenta y todos tus datos no hace falta escribirnos: está en **Perfil > Eliminar cuenta**. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).\n\nEliminar la cuenta no cancela una suscripción de StepKit Pro. Para cancelarla, ve a Ajustes > Apple Account > Suscripciones.")),
         (String(localized: "Menores"),
          String(localized: "StepKit no está dirigida a menores de 14 años.")),
         (String(localized: "Seguridad"),
@@ -42,7 +42,7 @@ struct PrivacyPolicyView: View {
                         Text("Política de privacidad")
                             .font(.title2)
                             .bold()
-                        Text("Última actualización: [fecha de publicación]")
+                        Text("Última actualización: 28 de octubre de 2026")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
