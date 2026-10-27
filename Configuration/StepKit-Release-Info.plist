@@ -28,7 +28,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>StepKitAPIBaseURL</key>
-	<string>https://stepkitserver-production.up.railway.app</string>
+	<string>https://stepkitserver-production-45b0.up.railway.app</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
