@@ -21,6 +21,8 @@ struct KitCreationStreamingProgress: View {
     @State private var reviewMounted = false
     @State private var liftOff = false
     @State private var stepsChecked = false
+    /// Pasos abiertos en la revisión para ver qué incluyen antes de crear el Kit.
+    @State private var expandedSteps: Set<Int> = []
     @State private var reviewChecked = false
     @State private var finalFill = false
     /// Pantalla de cuidado: visible desde plan_mode «careful» hasta que llega el título (mínimo ~1 s).
@@ -537,32 +539,67 @@ struct KitCreationStreamingProgress: View {
     @ViewBuilder private var reviewStepsList: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(streamingState.steps.enumerated()), id: \.offset) { index, step in
-                HStack(alignment: .top, spacing: 12) {
-                    Text("\(index + 1)")
-                        .font(.subheadline.bold().monospacedDigit())
-                        .foregroundStyle(.tint)
-                        .frame(width: 28, height: 28)
-                        .background(Color.accentColor.opacity(0.12), in: .circle)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(step.stepTitle)
-                        HStack(spacing: 10) {
-                            if let day = Self.stepDay(step.suggestedDeadline) {
-                                Label(day, systemImage: Symbols.calendar)
-                                    .foregroundStyle(MetaTint.date)
+                Button {
+                    withAnimation(.smooth(duration: 0.3)) {
+                        if expandedSteps.contains(index) { expandedSteps.remove(index) } else { expandedSteps.insert(index) }
+                    }
+                } label: {
+                    HStack(alignment: .top, spacing: 12) {
+                        Text("\(index + 1)")
+                            .font(.subheadline.bold().monospacedDigit())
+                            .foregroundStyle(.tint)
+                            .frame(width: 28, height: 28)
+                            .background(Color.accentColor.opacity(0.12), in: .circle)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(step.stepTitle)
+                            HStack(spacing: 10) {
+                                if let day = Self.stepDay(step.suggestedDeadline) {
+                                    Label(day, systemImage: Symbols.calendar)
+                                        .foregroundStyle(MetaTint.date)
+                                }
+                                Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
+                                    .foregroundStyle(MetaTint.time)
+                                if let repetition = step.repetition?.repetition {
+                                    Label(repetition.label, systemImage: "repeat")
+                                        .foregroundStyle(MetaTint.repeatTint)
+                                }
                             }
-                            Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
-                                .foregroundStyle(MetaTint.time)
-                            if let repetition = step.repetition?.repetition {
-                                Label(repetition.label, systemImage: "repeat")
-                                    .foregroundStyle(MetaTint.repeatTint)
+                            .font(.caption.weight(.medium))
+                            if expandedSteps.contains(index) {
+                                // Resumen: qué queda hecho, el esfuerzo y el principio de la descripción.
+                                VStack(alignment: .leading, spacing: 6) {
+                                    if !step.description.short.isEmpty {
+                                        Text("Al terminar").font(.caption.weight(.semibold))
+                                        Text(step.description.short).font(.subheadline)
+                                    }
+                                    Label(String(localized: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: step.effortLevel).lowercased())"),
+                                          systemImage: Symbols.effort)
+                                        .font(.caption.weight(.medium))
+                                        .foregroundStyle(MetaTint.effort)
+                                    if !step.description.long.isEmpty {
+                                        Text(step.description.long)
+                                            .font(.footnote)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(3)
+                                    }
+                                }
+                                .padding(.top, 6)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                         }
-                        .font(.caption.weight(.medium))
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.down")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .rotationEffect(.degrees(expandedSteps.contains(index) ? 180 : 0))
+                            .padding(.top, 6)
                     }
-                    Spacer(minLength: 0)
+                    .padding(12)
+                    .contentShape(.rect)
                 }
-                .padding(12)
+                .buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
+                .accessibilityHint(expandedSteps.contains(index) ? String(localized: "Oculta el detalle del paso") : String(localized: "Muestra el detalle del paso"))
                 if index < streamingState.steps.count - 1 {
                     Divider().padding(.leading, 52)
                 }

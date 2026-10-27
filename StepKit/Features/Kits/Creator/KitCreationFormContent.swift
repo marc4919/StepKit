@@ -112,11 +112,11 @@ struct KitCreationFormContent: View {
     @ViewBuilder private var goalSection: some View {
         Section {
             field("target", .accentColor, String(localized: "Resultado"), placeholder: String(localized: "Ej.: Correr 5 km sin parar"),
-                  text: $description, focus: .description, identifier: "kitCreator.description")
+                  text: $description, focus: .description, next: .doneWhen, identifier: "kitCreator.description")
             field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
-                  placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen)
+                  placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen, next: .startingPoint)
             field("flag.fill", .pink, String(localized: "Punto de partida (opcional)"),
-                  placeholder: String(localized: "Ej.: Ahora aguanto 10 min seguidos"), text: $startingPoint, focus: .startingPoint)
+                  placeholder: String(localized: "Ej.: Ahora aguanto 10 min seguidos"), text: $startingPoint, focus: .startingPoint, next: .obstacles)
             field(Symbols.risk, .orange, String(localized: "Qué te puede frenar (opcional)"),
                   placeholder: String(localized: "Ej.: Trabajo a turnos, me duele la rodilla"), text: $inconveniences, focus: .obstacles)
         } header: {
@@ -209,6 +209,7 @@ struct KitCreationFormContent: View {
         placeholder: String,
         text: Binding<String>,
         focus: KitCreatorField,
+        next: KitCreatorField? = nil,
         identifier: String? = nil
     ) -> some View {
         HStack(alignment: .top, spacing: 12) {
@@ -218,6 +219,13 @@ struct KitCreationFormContent: View {
                 TextField(placeholder, text: text, axis: .vertical)
                     .lineLimit(1...4)
                     .focused(focusedField, equals: focus)
+                    // Intro no hace salto de línea: pasa al campo siguiente (y en el último cierra el teclado).
+                    .submitLabel(next == nil ? .done : .next)
+                    .onChange(of: text.wrappedValue) { _, value in
+                        guard value.contains("\n") else { return }
+                        text.wrappedValue = value.replacingOccurrences(of: "\n", with: "")
+                        withAnimation(.smooth) { focusedField.wrappedValue = next }
+                    }
                     .accessibilityIdentifier(identifier ?? "")
                     .accessibilityLabel(title)
             }
