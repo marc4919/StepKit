@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Response Models
 
 /// Respuesta del endpoint de autenticación
-struct AuthResponse: Codable {
+nonisolated struct AuthResponse: Codable {
     let token: String
     let user: UserInfo
 }
@@ -81,7 +81,7 @@ struct AIUsageMonth: Codable {
 }
 
 /// Respuesta del endpoint de verificación de suscripción
-struct VerifySubscriptionResponse: Codable {
+nonisolated struct VerifySubscriptionResponse: Codable {
     let tier: String
     let expiresAt: Date?
     let status: String?

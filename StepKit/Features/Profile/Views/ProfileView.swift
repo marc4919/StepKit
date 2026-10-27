@@ -377,7 +377,7 @@ struct AboutView: View {
             Section {
                 VStack(spacing: 12) {
                     OrbitMark(height: 170)
-                    (Text("Step").foregroundStyle(.primary) + Text("Kit").foregroundStyle(.tint))
+                    Text("\(Text(verbatim: "Step").foregroundStyle(.primary))\(Text(verbatim: "Kit").foregroundStyle(.tint))")
                         .font(.largeTitle.bold())
                     Text("Un paso claro para volver").font(.title3.bold())
                     Text("Da forma a un objetivo, guarda lo que avanzas y retoma con una acción concreta.")

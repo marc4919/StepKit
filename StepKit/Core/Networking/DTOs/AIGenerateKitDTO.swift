@@ -80,7 +80,7 @@ struct KitAnswer: Codable, Hashable {
 // MARK: - Response
 
 /// Respuesta del endpoint /ai/chat-sync
-struct AIGenerateKitResponse: Codable {
+nonisolated struct AIGenerateKitResponse: Codable {
     let kit: KitDTO?
     let rawResponse: String
     let usage: UsageDTO

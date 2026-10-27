@@ -15,7 +15,7 @@ extension LinearGradient {
 
     /// Primary accent gradient (accentHighlight → accentColor)
     /// Used for buttons, progress indicators, and interactive elements
-    static let accentGradient = LinearGradient(
+    @MainActor static let accentGradient = LinearGradient(
         colors: [Color.accentHighlight, Color.accentColor],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
@@ -24,7 +24,7 @@ extension LinearGradient {
     /// Creates an accent gradient with custom opacity
     /// - Parameter opacity: The opacity value (0.0 to 1.0)
     /// - Returns: A LinearGradient with the specified opacity
-    static func accentWithOpacity(_ opacity: Double) -> LinearGradient {
+    @MainActor static func accentWithOpacity(_ opacity: Double) -> LinearGradient {
         LinearGradient(
             colors: [
                 Color.accentHighlight.opacity(opacity),
@@ -39,14 +39,14 @@ extension LinearGradient {
 
     /// Completed state gradient (green tones)
     /// Used for completed kits and steps
-    static let completedGradient = LinearGradient(
+    @MainActor static let completedGradient = LinearGradient(
         colors: [Color.green, Color.green.opacity(0.8)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     /// Creates a completed gradient with custom opacity
-    static func completedWithOpacity(_ opacity: Double) -> LinearGradient {
+    @MainActor static func completedWithOpacity(_ opacity: Double) -> LinearGradient {
         LinearGradient(
             colors: [
                 Color.green.opacity(opacity),
@@ -59,7 +59,7 @@ extension LinearGradient {
 
     /// Pending/revert state gradient (orange tones)
     /// Used for buttons that revert completed state to pending
-    static let pendingGradient = LinearGradient(
+    @MainActor static let pendingGradient = LinearGradient(
         colors: [Color.orange, Color.orange.opacity(0.8)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
@@ -69,14 +69,14 @@ extension LinearGradient {
 
     /// Premium feature gradient (gold → orange)
     /// Used for premium badges and locked features
-    static let premiumGradient = LinearGradient(
+    @MainActor static let premiumGradient = LinearGradient(
         colors: [Color.premiumGold, Color.premiumOrange],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     /// Creates a premium gradient with custom opacity
-    static func premiumWithOpacity(_ opacity: Double) -> LinearGradient {
+    @MainActor static func premiumWithOpacity(_ opacity: Double) -> LinearGradient {
         LinearGradient(
             colors: [
                 Color.premiumGold.opacity(opacity),
@@ -91,14 +91,14 @@ extension LinearGradient {
 
     /// Warning gradient (orange → red)
     /// Used for warnings and error states
-    static let warningGradient = LinearGradient(
+    @MainActor static let warningGradient = LinearGradient(
         colors: [Color.orange, Color.red.opacity(0.8)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     /// Subtle warning background gradient
-    static func warningWithOpacity(_ opacity: Double) -> LinearGradient {
+    @MainActor static func warningWithOpacity(_ opacity: Double) -> LinearGradient {
         LinearGradient(
             colors: [
                 Color.orange.opacity(opacity),
@@ -112,7 +112,7 @@ extension LinearGradient {
     // MARK: - Disabled State
 
     /// Disabled/inactive gradient (gray tones)
-    static let disabledGradient = LinearGradient(
+    @MainActor static let disabledGradient = LinearGradient(
         colors: [Color(UIColor.systemGray5), Color(UIColor.systemGray5)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
@@ -123,7 +123,7 @@ extension LinearGradient {
 
 extension RadialGradient {
     /// Sphere highlight radial gradient for 3D effects
-    static let sphere3DHighlight = RadialGradient(
+    @MainActor static let sphere3DHighlight = RadialGradient(
         colors: [
             Color.sphereHighlight.opacity(0.9),
             Color.sphereBase.opacity(0.6),
@@ -135,7 +135,7 @@ extension RadialGradient {
     )
 
     /// Glow effect radial gradient
-    static func glow(radius: CGFloat = 50) -> RadialGradient {
+    @MainActor static func glow(radius: CGFloat = 50) -> RadialGradient {
         RadialGradient(
             colors: [
                 Color.glowColor.opacity(0.6),

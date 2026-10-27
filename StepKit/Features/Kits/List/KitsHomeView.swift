@@ -245,8 +245,7 @@ private struct ContinueCard: View {
             : AnyLayout(HStackLayout(alignment: .top))
         return layout {
             VStack(alignment: .leading, spacing: 6) {
-                (Text("CONTINUAR").font(.caption2.weight(.bold)).foregroundStyle(.tint)
-                 + Text("  · último que avanzaste").font(.caption2).foregroundStyle(.secondary))
+                Text("\(Text("CONTINUAR").font(.caption2.weight(.bold)).foregroundStyle(.tint))\(Text("  · último que avanzaste").font(.caption2).foregroundStyle(.secondary))")
                 Text(kit.title)
                     .font(.title.bold())
                     .fixedSize(horizontal: false, vertical: true)

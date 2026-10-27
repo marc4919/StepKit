@@ -18,7 +18,7 @@ struct SyncBatchRequest: Codable {
 }
 
 /// Respuesta del servidor con el estado actual
-struct SyncBatchResponse: Codable {
+nonisolated struct SyncBatchResponse: Codable {
     let kits: [KitSyncDTO]
     let steps: [StepSyncDTO]
     /// Opcional para tolerar un servidor anterior al registro de avance.

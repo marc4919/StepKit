@@ -87,10 +87,11 @@ private final class AppleReauthentication: NSObject, ASAuthorizationControllerDe
     }
 
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-            .first(where: \.isKeyWindow) ?? ASPresentationAnchor()
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        if let key = scenes.flatMap(\.windows).first(where: \.isKeyWindow) { return key }
+        // Sin ventana activa se ancla a la escena: Apple pide una ventana para mostrar su confirmación.
+        guard let scene = scenes.first else { preconditionFailure("No hay escena para mostrar Sign in with Apple") }
+        return ASPresentationAnchor(windowScene: scene)
     }
 
     func authorizationController(controller: ASAuthorizationController,
