@@ -1010,6 +1010,16 @@
         }
       }
     },
+    "Antes de hablar con el asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before you talk to the assistant"
+          }
+        }
+      }
+    },
     "Antes de preparar tu plan": {
       "localizations": {
         "en": {
@@ -4914,6 +4924,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allowed"
+          }
+        }
+      }
+    },
+    "Permitir y enviar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow and send"
           }
         }
       }

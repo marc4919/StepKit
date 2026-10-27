@@ -319,7 +319,9 @@ final class TrainerViewModel {
                     } else if let index = messageIndex {
                         // Actualizar el mensaje existente con el contenido acumulado
                         currentStreamingText = cumulativeContent
+                        // Mismo id: la vista sigue siendo la misma y no vuelve a «escribirse» desde el principio.
                         messages[index] = ChatMessage(
+                            id: streamingMessage!.id,
                             sender: .assistant,
                             text: currentStreamingText,
                             timestamp: streamingMessage!.timestamp

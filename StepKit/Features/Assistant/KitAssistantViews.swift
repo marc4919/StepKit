@@ -160,6 +160,20 @@ struct KitAssistantChatView: View {
     @Environment(AuthManager.self) private var authManager
     @FocusState private var inputFocused: Bool
     @State private var didSendInitial = false
+    /// Lo que se iba a enviar mientras se pide el permiso de IA externa.
+    @State private var pendingSend: PendingSend?
+    /// El permiso se pide una vez por conversación; si dice «Ahora no», responde el dispositivo.
+    @State private var askedConsent = false
+
+    private enum PendingSend: Identifiable {
+        case draft(String), intent(AssistantIntent)
+        var id: String {
+            switch self {
+            case .draft(let text): "draft-\(text)"
+            case .intent(let intent): "intent-\(intent.id)"
+            }
+        }
+    }
 
     private var step: StepEntity? {
         conversation.stepID.flatMap { id in kit.orderedActiveSteps.first { $0.id == id } }
@@ -201,6 +215,17 @@ struct KitAssistantChatView: View {
         .navigationTitle(step == nil ? conversation.title : String(localized: "Ayuda del paso"))
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
+        .sheet(item: $pendingSend) { pending in
+            AIConsentView(purpose: .assistant) { _ in
+                askedConsent = true
+                pendingSend = nil
+                switch pending {
+                case .draft(let text): deliver(text)
+                case .intent(let intent): deliver(intent)
+                }
+            }
+            .interactiveDismissDisabled()
+        }
         .onAppear {
             // Conversación libre y vacía: el teclado ya listo para escribir.
             if initialIntent == nil, vm.messages.isEmpty, conversation.proposals.isEmpty {
@@ -250,13 +275,41 @@ struct KitAssistantChatView: View {
         }
     }
 
-    /// Mensaje escrito: va al asistente del servidor; si no está disponible, al modelo local.
+    private var hasConsent: Bool { AIConsentManager().hasConsent }
+
+    /// Mensaje escrito. Sin permiso de IA externa se pide una vez; sin él responde el dispositivo.
     private func sendDraft() {
         let vm = conversation.viewModel
         let text = vm.draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !vm.isResponding else { return }
-        vm.messages.append(ChatMessage(sender: .user, text: text))
+        guard hasConsent || askedConsent else {
+            inputFocused = false
+            pendingSend = .draft(text)
+            return
+        }
         vm.draft = ""
+        deliver(text)
+    }
+
+    private func send(_ intent: AssistantIntent) {
+        guard !conversation.viewModel.isResponding else { return }
+        guard hasConsent || askedConsent else {
+            pendingSend = .intent(intent)
+            return
+        }
+        deliver(intent)
+    }
+
+    /// Con permiso va al asistente del servidor; si no hay permiso o el servidor no responde, al modelo local.
+    private func deliver(_ text: String) {
+        let vm = conversation.viewModel
+        vm.draft = ""
+        guard hasConsent else {
+            vm.draft = text
+            vm.sendDraft(goals: [kit])
+            return
+        }
+        vm.messages.append(ChatMessage(sender: .user, text: text))
         Task {
             let handled = await KitAssistant.ask(.message, message: text, kit: kit, step: step,
                                                  conversation: conversation, context: modelContext,
@@ -269,30 +322,38 @@ struct KitAssistantChatView: View {
         }
     }
 
-    private func send(_ intent: AssistantIntent) {
+    private func deliver(_ intent: AssistantIntent) {
         let vm = conversation.viewModel
-        guard !vm.isResponding else { return }
+        guard hasConsent else {
+            answerLocally(intent)
+            return
+        }
         vm.messages.append(ChatMessage(sender: .user, text: intent.title))
         Task {
             let handled = await KitAssistant.ask(.message, message: intent.title, kit: kit, step: step,
                                                  conversation: conversation, context: modelContext,
                                                  apiClient: apiClient, token: authManager.token)
             guard !handled else { return }
-            // Sin asistente en el servidor: modelo del dispositivo y propuestas locales.
             vm.messages.removeLast()
-            vm.sendIntent(title: intent.title, prompt: intent.prompt(kit: kit, step: step), goals: [kit])
-            switch intent.id {
-            case "not-fitting":
-                if let step, let proposal = PlanProposalBuilder.moveStep(step, in: kit) {
-                    conversation.add(proposal)
-                }
-            case "change-date":
-                if let proposal = PlanProposalBuilder.shiftTarget(of: kit) {
-                    conversation.add(proposal)
-                }
-            default:
-                break
+            answerLocally(intent)
+        }
+    }
+
+    /// Sin asistente en el servidor: modelo del dispositivo y propuestas locales.
+    private func answerLocally(_ intent: AssistantIntent) {
+        let vm = conversation.viewModel
+        vm.sendIntent(title: intent.title, prompt: intent.prompt(kit: kit, step: step), goals: [kit])
+        switch intent.id {
+        case "not-fitting":
+            if let step, let proposal = PlanProposalBuilder.moveStep(step, in: kit) {
+                conversation.add(proposal)
             }
+        case "change-date":
+            if let proposal = PlanProposalBuilder.shiftTarget(of: kit) {
+                conversation.add(proposal)
+            }
+        default:
+            break
         }
     }
 }

@@ -10,6 +10,9 @@ import SwiftUI
 
 struct AIConsentView: View {
     /// `true` si el usuario dio permiso; `false` si eligió «Ahora no».
+    /// Para qué se pide: crear un plan o hablar con el asistente del Kit.
+    enum Purpose { case plan, assistant }
+    var purpose: Purpose = .plan
     var onComplete: (Bool) -> Void
 
     @Environment(AIConsentManager.self) private var consentManager
@@ -22,7 +25,7 @@ struct AIConsentView: View {
                 Section {
                     VStack(alignment: .leading, spacing: 10) {
                         IconChip(symbol: "sparkles", color: .accentColor, size: 44)
-                        Text("Antes de preparar tu plan")
+                        Text(purpose == .plan ? LocalizedStringKey("Antes de preparar tu plan") : LocalizedStringKey("Antes de hablar con el asistente"))
                             .font(.title2.bold())
                             .accessibilityAddTraits(.isHeader)
                         Text("Para proponerte los pasos y ayudarte a ajustar el plan, StepKit envía lo que escribas sobre tu objetivo, y después tu plan y tus avances, a un servicio de inteligencia artificial de otra empresa, a través de nuestro servidor.")
@@ -66,7 +69,7 @@ struct AIConsentView: View {
                     consentManager.giveConsent()
                     onComplete(true)
                 } label: {
-                    Text("Permitir y preparar el plan").frame(maxWidth: .infinity)
+                    Text(purpose == .plan ? LocalizedStringKey("Permitir y preparar el plan") : LocalizedStringKey("Permitir y enviar")).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
