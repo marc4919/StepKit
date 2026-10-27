@@ -617,7 +617,10 @@ struct KitCreationStreamingProgress: View {
                                     }
                                 }
                                 .padding(.top, 6)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+                                // La fila crece y el texto se funde dentro de ella: nada se desliza desde fuera.
+                                .transition(.asymmetric(
+                                    insertion: .opacity.animation(.easeOut(duration: 0.25).delay(0.12)),
+                                    removal: .opacity.animation(.easeIn(duration: 0.12))))
                             }
                         }
                         Spacer(minLength: 0)
