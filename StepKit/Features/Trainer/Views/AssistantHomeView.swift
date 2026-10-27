@@ -145,7 +145,10 @@ struct AssistantHomeView: View {
                     .disabled(isResponding)
                     .accessibilityIdentifier("assistant.intent.\(intent.id)")
             }
-            Text("Las respuestas se generan en tu dispositivo. Revisa siempre lo que propongan antes de cambiar tu plan.")
+            // Con permiso de IA externa responde el asistente del servidor; sin él, el modelo del dispositivo.
+            Text(AIConsentManager().hasConsent
+                 ? LocalizedStringKey("Responde el asistente de StepKit con un servicio de IA externo. Revisa siempre lo que proponga antes de cambiar tu plan.")
+                 : LocalizedStringKey("Sin el permiso de IA externa, las respuestas se generan en tu dispositivo. Revisa siempre lo que propongan antes de cambiar tu plan."))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.top, 4)

@@ -5690,6 +5690,16 @@
         }
       }
     },
+    "Responde el asistente de StepKit con un servicio de IA externo. Revisa siempre lo que proponga antes de cambiar tu plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The StepKit assistant answers using an external AI service. Always review what it suggests before changing your plan."
+          }
+        }
+      }
+    },
     "Respuesta inválida del servidor": {
       "localizations": {
         "en": {
@@ -6162,6 +6172,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Without external AI permission, the assistant uses Apple Intelligence and conversations stay on your device."
+          }
+        }
+      }
+    },
+    "Sin el permiso de IA externa, las respuestas se generan en tu dispositivo. Revisa siempre lo que propongan antes de cambiar tu plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without external AI permission, replies are generated on your device. Always review what they suggest before changing your plan."
           }
         }
       }
