@@ -74,9 +74,8 @@ final class KitAssistantStore {
         return created
     }
 
-    #if DEBUG
+    /// Al cerrar sesión o borrar la cuenta (y en las demos): no queda ninguna conversación en memoria.
     func removeAll() { conversations.removeAll() }
-    #endif
 }
 
 // MARK: - Propuestas
