@@ -181,8 +181,9 @@ struct KitAssistantChatView: View {
     @State private var didSendInitial = false
     /// Lo que se iba a enviar mientras se pide el permiso de IA externa.
     @State private var pendingSend: PendingSend?
-    /// El permiso se pide una vez por conversación; si dice «Ahora no», responde el dispositivo.
-    @State private var askedConsent = false
+    /// El aviso sale una sola vez (si no se aceptó ya al crear un Kit). Si elige el dispositivo,
+    /// no se vuelve a preguntar: el permiso se puede dar después en Perfil.
+    @AppStorage("assistantConsentAsked") private var askedConsent = false
 
     private enum PendingSend: Identifiable {
         case draft(String), intent(AssistantIntent)
@@ -235,14 +236,17 @@ struct KitAssistantChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
         .sheet(item: $pendingSend) { pending in
-            AIConsentView(purpose: .assistant) { _ in
+            AIConsentView(purpose: .assistant, onComplete: { _ in
                 askedConsent = true
                 pendingSend = nil
                 switch pending {
                 case .draft(let text): deliver(text)
                 case .intent(let intent): deliver(intent)
                 }
-            }
+            }, onCancel: {
+                // Nada se envía; lo escrito sigue en el campo.
+                pendingSend = nil
+            })
             .interactiveDismissDisabled()
         }
         .onAppear {

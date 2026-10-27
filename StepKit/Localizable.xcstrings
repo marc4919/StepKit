@@ -6256,6 +6256,16 @@
         }
       }
     },
+    "Sin este permiso, el asistente responde con Apple Intelligence en tu dispositivo: es más limitado, pero no sale nada de tu iPhone. Puedes cambiarlo cuando quieras en Perfil.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without this permission, the assistant answers with Apple Intelligence on your device: it's more limited, but nothing leaves your iPhone. You can change this anytime in Profile."
+          }
+        }
+      }
+    },
     "Sin nota.": {
       "localizations": {
         "en": {
@@ -7008,6 +7018,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Once a week for %lld weeks"
+          }
+        }
+      }
+    },
+    "Usar solo mi dispositivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use only my device"
           }
         }
       }

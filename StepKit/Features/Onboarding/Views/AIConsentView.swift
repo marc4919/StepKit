@@ -14,6 +14,8 @@ struct AIConsentView: View {
     enum Purpose { case plan, assistant }
     var purpose: Purpose = .plan
     var onComplete: (Bool) -> Void
+    /// Solo en el asistente: cerrar sin enviar nada (el mensaje vuelve al campo de texto).
+    var onCancel: (() -> Void)?
 
     @Environment(AIConsentManager.self) private var consentManager
     @State private var hasAccepted = false
@@ -48,7 +50,11 @@ struct AIConsentView: View {
                 } header: {
                     Text("Tu control")
                 } footer: {
-                    Text("Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA, y el asistente solo usará tu dispositivo.")
+                    if purpose == .plan {
+                        Text("Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA, y el asistente solo usará tu dispositivo.")
+                    } else {
+                        Text("Sin este permiso, el asistente responde con Apple Intelligence en tu dispositivo: es más limitado, pero no sale nada de tu iPhone. Puedes cambiarlo cuando quieras en Perfil.")
+                    }
                 }
                 Section {
                     Toggle("Acepto compartir estos datos con el servicio de IA", isOn: $hasAccepted)
@@ -60,24 +66,38 @@ struct AIConsentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Ahora no") { onComplete(false) }
-                        .accessibilityIdentifier("consent.decline")
+                    if purpose == .assistant, let onCancel {
+                        Button("Cancelar", action: onCancel)
+                    } else {
+                        Button("Ahora no") { onComplete(false) }
+                            .accessibilityIdentifier("consent.decline")
+                    }
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                Button {
-                    consentManager.giveConsent()
-                    onComplete(true)
-                } label: {
-                    Text(purpose == .plan ? LocalizedStringKey("Permitir y preparar el plan") : LocalizedStringKey("Permitir y enviar")).frame(maxWidth: .infinity)
+                VStack(spacing: 4) {
+                    Button {
+                        consentManager.giveConsent()
+                        onComplete(true)
+                    } label: {
+                        Text(purpose == .plan ? LocalizedStringKey("Permitir y preparar el plan") : LocalizedStringKey("Permitir y enviar")).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(!hasAccepted)
+                    .accessibilityIdentifier("consent.continue")
+                    // En el asistente se puede seguir sin IA externa: responde el modelo del dispositivo.
+                    if purpose == .assistant {
+                        Button { onComplete(false) } label: {
+                            Text("Usar solo mi dispositivo").frame(maxWidth: .infinity)
+                        }
+                        .controlSize(.large)
+                        .accessibilityIdentifier("consent.deviceOnly")
+                    }
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(!hasAccepted)
                 .padding(.horizontal)
                 .padding(.vertical, 10)
                 .background(.bar)
-                .accessibilityIdentifier("consent.continue")
             }
             .sheet(isPresented: $showingPrivacyPolicy) {
                 PrivacyPolicyView()
