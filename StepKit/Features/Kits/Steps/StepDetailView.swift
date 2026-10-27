@@ -232,10 +232,19 @@ struct StepDetailView: View {
         }
         // En una fila siempre que quepa; si no, «Medio» en vez de «Esfuerzo medio» (Duo cerrado) y solo
         // entonces, en varias filas.
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 8) { chips(compact: false) }
-            HStack(spacing: 8) { chips(compact: true) }
-            FlowLayout(spacing: 8) { chips(compact: true) }
+        // En el Duo cerrado se usa la versión corta desde el principio: elegirla al medir hacía que,
+        // durante la transición de entrada, se viera «Esfuerzo medio» y luego «Medio».
+        if sideControls {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) { chips(compact: true) }
+                FlowLayout(spacing: 8) { chips(compact: true) }
+            }
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) { chips(compact: false) }
+                HStack(spacing: 8) { chips(compact: true) }
+                FlowLayout(spacing: 8) { chips(compact: true) }
+            }
         }
         if stepEntity.repetition != nil, !stepEntity.sessionDates.isEmpty {
             HabitSessionsCard(step: stepEntity, doneDays: doneSessionDays) { day in
