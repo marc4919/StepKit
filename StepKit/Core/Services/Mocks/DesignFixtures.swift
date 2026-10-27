@@ -32,6 +32,7 @@ enum DesignFixtureScenario: String {
     case careful       // preparando un Kit delicado: pantalla de cuidado y reinicio con «Ajustando tu plan…»
     case signIn        // acceso
     case profile       // pestaña Perfil
+    case paywall       // usuario gratis en Perfil > Suscripción, con la comparativa de planes
     case ready         // «Kit está listo» con un título largo
 
     static let argument = "-StepKitDesignFixtures"
@@ -87,11 +88,11 @@ struct DesignFixtureRoot: View {
         // STEPKIT_FIXTURE_TOKEN: sesión real para que el asistente hable con el servidor local.
         let token = ProcessInfo.processInfo.environment["STEPKIT_FIXTURE_TOKEN"] ?? "design-fixtures"
         auth.saveAuth(token: token,
-                      user: UserInfo(id: DesignFixtureData.owner, tier: "premium",
+                      user: UserInfo(id: DesignFixtureData.owner, tier: scenario == .paywall ? "free" : "premium",
                                      monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
         auth.updateDisplayName("Alex Martín")
         _authManager = State(initialValue: auth)
-        _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : scenario == .profile ? 3 : 0)
+        _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : [.profile, .paywall].contains(scenario) ? 3 : 0)
         // SwiftUI puede repetir este init: el contenedor se crea y se siembra una sola vez,
         // o un Kit borrado reaparece con la siguiente siembra.
         let container = Self.sharedContainer ?? {
@@ -155,7 +156,13 @@ struct DesignFixtureRoot: View {
                 }
             }
             Tab("Calendario", systemImage: Symbols.calendar, value: 1) { CalendarPlusView() }
-            Tab("Perfil", systemImage: Symbols.profile, value: 3) { ProfileView() }
+            Tab("Perfil", systemImage: Symbols.profile, value: 3) {
+                if scenario == .paywall {
+                    NavigationStack { SubscriptionView() }
+                } else {
+                    ProfileView()
+                }
+            }
             Tab(value: 4, role: .search) { SearchView { tab = 0 } }
         }
         .tabViewStyle(.sidebarAdaptable)
@@ -287,7 +294,7 @@ enum DesignFixtureData {
                     note: "Borrador del contexto escrito; falta el resultado.", notedAt: noted,
                     createdAt: noted, updatedAt: noted))
             }
-        case .calendar, .profile:
+        case .calendar, .profile, .paywall:
             insertPortfolio(into: context, blocked: false)
             insert(kit("Taller de fotografía", done: 2, of: 6, next: "Pedir presupuesto de la sala", inDays: 40, ago: 3), into: context)
             insertSessions(into: context)

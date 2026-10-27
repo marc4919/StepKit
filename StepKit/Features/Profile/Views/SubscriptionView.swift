@@ -470,8 +470,6 @@ private struct PlanFeature: Identifiable {
             PlanFeature(id: "ai", title: SubscriptionText.string("paywall.feature.ai"),
                         symbol: "sparkles", color: .purple,
                         free: .count(PlanLimits.freeCloudAIPerMonth), pro: .unlimited),
-            PlanFeature(id: "assistant", title: SubscriptionText.string("paywall.feature.assistant"),
-                        symbol: Symbols.assistant, color: .blue, free: .included, pro: .included),
             PlanFeature(id: "calendar", title: SubscriptionText.string("paywall.feature.calendar"),
                         symbol: Symbols.session, color: .orange, free: .included, pro: .included),
             PlanFeature(id: "reminders", title: SubscriptionText.string("paywall.feature.reminders"),

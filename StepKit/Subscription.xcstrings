@@ -279,13 +279,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Creating a Kit with AI or asking your Kit's assistant a question uses 1 cloud AI use. The on-device assistant, its automatic suggestions and safety guidance never count."
+            "value": "Creating a Kit with AI or asking your Kit's assistant a question uses 1 cloud AI use. The assistant's automatic notices and safety guidance don't count."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Crear un Kit con IA o hacer una pregunta al asistente de tu Kit gasta 1 uso de IA en la nube. El asistente en tu dispositivo, sus avisos automáticos y el modo cuidado nunca cuentan."
+            "value": "Crear un Kit con IA o hacer una pregunta al asistente de tu Kit gasta 1 uso de IA en la nube. Los avisos automáticos del asistente y el modo cuidado no cuentan."
           }
         }
       }
