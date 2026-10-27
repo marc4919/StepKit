@@ -21,6 +21,8 @@ struct KitCreationStreamingProgress: View {
     @State private var reviewMounted = false
     @State private var liftOff = false
     @State private var stepsChecked = false
+    /// Cuándo empezó la preparación: pasado un rato se explica qué se está haciendo.
+    @State private var preparingSince = Date.now
     /// Pasos abiertos en la revisión para ver qué incluyen antes de crear el Kit.
     @State private var expandedSteps: Set<Int> = []
     @State private var reviewChecked = false
@@ -313,6 +315,37 @@ struct KitCreationStreamingProgress: View {
                     .accessibilityElement()
                     .accessibilityLabel("Progreso del plan")
                     .accessibilityValue(Text(shownProgress, format: .percent.precision(.fractionLength(0))))
+                WaitingHints(since: preparingSince, active: !reviewChecked && !streamingState.isRestarting && !questionsVisible)
+                    .padding(.horizontal, 30)
+    }
+
+    /// Si el plan tarda (planes largos, red lenta), frases que cuentan qué se hace, para que no parezca parado.
+    private struct WaitingHints: View {
+        let since: Date
+        let active: Bool
+        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+        private static let hints = [
+            String(localized: "Los planes con más pasos tardan un poco más."),
+            String(localized: "Repartiendo los pasos hasta tu fecha…"),
+            String(localized: "Comprobando que cada paso quepa en tu tiempo…"),
+            String(localized: "Escribiendo qué hacer en cada paso…"),
+        ]
+
+        var body: some View {
+            TimelineView(.periodic(from: since, by: 1)) { context in
+                let elapsed = context.date.timeIntervalSince(since)
+                let hint = active && elapsed >= 10 ? Self.hints[Int((elapsed - 10) / 4) % Self.hints.count] : nil
+                Text(hint ?? " ")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .id(hint)
+                    .transition(.opacity)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.4), value: hint)
+                    .accessibilityHidden(hint == nil)
+            }
+        }
     }
 
     /// Relevo de textos sin solaparse: lo anterior se va antes de que llegue lo nuevo.
