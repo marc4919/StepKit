@@ -546,6 +546,21 @@ struct PressableCardStyle: ButtonStyle {
     }
 }
 
+/// Fila de lista que es un botón: toda la fila responde, se resalta al pulsarla como las del sistema
+/// y vibra al soltar. Usar con `.listRowInsets(EdgeInsets())` para que el resalte llegue a los bordes.
+struct ListRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, 20)
+            .padding(.vertical, 11)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(.rect)
+            .background(configuration.isPressed ? Color(.systemFill) : .clear)
+            .animation(configuration.isPressed ? nil : .easeOut(duration: 0.25), value: configuration.isPressed)
+            .sensoryFeedback(.selection, trigger: configuration.isPressed) { _, pressed in !pressed }
+    }
+}
+
 /// Inserta su contenido tras un retardo (p. ej. una propuesta cuando termina de escribirse la respuesta).
 /// Hasta entonces no ocupa sitio, para que la conversación no salte al final antes de tiempo.
 struct DelayedReveal<Content: View>: View {

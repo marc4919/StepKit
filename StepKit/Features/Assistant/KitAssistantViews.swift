@@ -49,8 +49,10 @@ struct KitAssistantHubView: View {
                     } icon: {
                         IconChip(symbol: "square.and.pencil", color: .accentColor, size: 30)
                     }
+                    .navigationRow()
                 }
-                .buttonStyle(PressableCardStyle())
+                .buttonStyle(ListRowButtonStyle())
+                .listRowInsets(EdgeInsets())
                 .accessibilityIdentifier("kitAssistant.freeChat")
                 ForEach(AssistantIntent.kit) { intent in
                     Button {
@@ -65,9 +67,11 @@ struct KitAssistantHubView: View {
                         } icon: {
                             IconChip(symbol: intent.symbol, color: intent.color, size: 30)
                         }
+                        .navigationRow()
                     }
-                    .buttonStyle(PressableCardStyle())
-                    .accessibilityIdentifier("kitAssistant.intent.\(intent.id)")
+                    .buttonStyle(ListRowButtonStyle())
+                    .listRowInsets(EdgeInsets())
+                        .accessibilityIdentifier("kitAssistant.intent.\(intent.id)")
                 }
             }
             Section("Conversaciones") {
@@ -83,10 +87,11 @@ struct KitAssistantHubView: View {
                     Button {
                         opened = OpenedConversation(conversation: conversation, intent: nil)
                     } label: {
-                        ConversationRow(conversation: conversation)
+                        ConversationRow(conversation: conversation).navigationRow()
                     }
-                    .buttonStyle(PressableCardStyle())
-                }
+                    .buttonStyle(ListRowButtonStyle())
+                    .listRowInsets(EdgeInsets())
+                    }
             }
         }
         .scrollContentBackground(.hidden)
@@ -101,6 +106,20 @@ struct KitAssistantHubView: View {
     }
 }
 
+private extension View {
+    /// Fila que lleva a otra pantalla: toda la fila responde al toque y lleva el chevron de navegación.
+    func navigationRow() -> some View {
+        HStack(spacing: 8) {
+            self.frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+        }
+        .contentShape(.rect)
+    }
+}
+
 private struct ConversationRow: View {
     let conversation: KitConversation
 
@@ -109,7 +128,7 @@ private struct ConversationRow: View {
             IconChip(symbol: conversation.stepID == nil ? Symbols.kits : "list.bullet",
                      color: conversation.stepID == nil ? .accentColor : .purple, size: 30)
             VStack(alignment: .leading, spacing: 3) {
-                Text(conversation.title).font(.headline).lineLimit(1)
+                Text(conversation.title).font(.headline).foregroundStyle(.primary).lineLimit(1)
                 if let preview = conversation.preview {
                     Text(preview).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
                 }
