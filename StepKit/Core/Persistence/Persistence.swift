@@ -93,6 +93,13 @@ struct PersistenceController {
     #if DEBUG
     @MainActor
     func resetLocalDataForE2E() throws {
+        try deleteAllLocalData()
+    }
+    #endif
+
+    /// Borra todos los Kits, pasos, avances y sesiones del dispositivo (borrado de cuenta y reset E2E).
+    @MainActor
+    func deleteAllLocalData() throws {
         let context = container.mainContext
         let steps = try context.fetch(FetchDescriptor<StepEntity>())
         let goals = try context.fetch(FetchDescriptor<GoalEntity>())
@@ -114,7 +121,6 @@ struct PersistenceController {
 
         try context.save()
     }
-    #endif
     
     @MainActor
     static var previewContainer: ModelContainer = {

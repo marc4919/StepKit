@@ -1060,6 +1060,16 @@
         }
       }
     },
+    "Apple no ha podido confirmar tu identidad. Inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple couldn't confirm your identity. Please try again."
+          }
+        }
+      }
+    },
     "Aprendizaje": {
       "localizations": {
         "en": {
@@ -1356,6 +1366,16 @@
         }
       }
     },
+    "Borra tu cuenta y todos tus Kits, avances y sesiones, aquí y en nuestro servidor. No se puede deshacer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deletes your account and all your Kits, progress and sessions, here and on our server. This can't be undone."
+          }
+        }
+      }
+    },
     "Borrar todo y empezar de cero": {
       "localizations": {
         "en": {
@@ -1632,6 +1652,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Complete step"
+          }
+        }
+      }
+    },
+    "Comprueba tu conexión e inténtalo de nuevo. Tu cuenta no se ha borrado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your connection and try again. Your account hasn't been deleted."
           }
         }
       }
@@ -2554,6 +2584,16 @@
         }
       }
     },
+    "Eliminando cuenta…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting account…"
+          }
+        }
+      }
+    },
     "Eliminar": {
       "localizations": {
         "en": {
@@ -2570,6 +2610,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete Kit"
+          }
+        }
+      }
+    },
+    "Eliminar cuenta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account"
+          }
+        }
+      }
+    },
+    "Eliminar cuenta y datos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account and data"
           }
         }
       }
@@ -4286,6 +4346,16 @@
         }
       }
     },
+    "No se ha podido eliminar la cuenta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete your account"
+          }
+        }
+      }
+    },
     "No se pudo completar el inicio de sesión con Apple. Inténtalo de nuevo.": {
       "localizations": {
         "en": {
@@ -5870,6 +5940,16 @@
         }
       }
     },
+    "Se borrarán tu cuenta y todos tus Kits, avances y sesiones, y StepKit dejará de estar vinculado a tu Apple Account. Te pediremos que lo confirmes con Apple. Si tienes StepKit Pro, cancela la suscripción en Ajustes > Apple Account > Suscripciones: eliminar la cuenta no la cancela.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account and all your Kits, progress and sessions will be deleted, and StepKit will be unlinked from your Apple Account. We'll ask you to confirm with Apple. If you have StepKit Pro, cancel the subscription in Settings > Apple Account > Subscriptions: deleting your account doesn't cancel it."
+          }
+        }
+      }
+    },
     "Se borrarán tus Kits, avances y sesiones de esta cuenta, aquí y en el servidor de pruebas. Después se cerrará la sesión y verás la bienvenida.": {
       "localizations": {
         "en": {
@@ -7326,6 +7406,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete this entry?"
+          }
+        }
+      }
+    },
+    "¿Eliminar tu cuenta?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your account?"
           }
         }
       }
