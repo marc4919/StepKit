@@ -23,6 +23,8 @@ struct KitLogView: View {
         let text: String
         var stepNumber: Int?
         var entry: ProgressEntryEntity?
+        /// Con hora salvo cuando no se conoce el momento exacto (pasos completados).
+        var showsTime = true
     }
 
     private var items: [Item] {
@@ -50,7 +52,7 @@ struct KitLogView: View {
             result.append(Item(
                 id: "done-\(step.id)", date: step.updatedAt, symbol: "checkmark.circle.fill",
                 color: MetaTint.done, title: step.stepTitle, text: String(localized: "Paso completado."),
-                stepNumber: kit.position(of: step)
+                stepNumber: kit.position(of: step), showsTime: false
             ))
         }
         if let confirmed = kit.resultConfirmedAt {
@@ -104,9 +106,9 @@ struct KitLogView: View {
                 }
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text([item.entry == nil
-                        ? item.date.formatted(.dateTime.day().month(.abbreviated))
-                        : item.date.formatted(.dateTime.day().month(.abbreviated).hour().minute()),
+                Text([item.showsTime
+                        ? item.date.formatted(.dateTime.day().month(.abbreviated).hour().minute())
+                        : item.date.formatted(.dateTime.day().month(.abbreviated)),
                       item.stepNumber.map { String(localized: "Paso \($0)") }].compactMap { $0 }.joined(separator: " · "))
                     .font(.caption)
                     .foregroundStyle(.secondary)
