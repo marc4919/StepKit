@@ -97,7 +97,9 @@ actor ComplexityRouter {
         obstacles: [String]
     ) async -> ComplexityResult {
         // Verificar disponibilidad del modelo antes de intentar usarlo
-        guard model.availability == .available else {
+        // Sin modelo o sin soporte para el idioma del dispositivo: se usa el modelo ligero, sin avisar,
+        // porque esta estimación no es imprescindible para crear el plan.
+        guard model.availability == .available, model.supportsLocale() else {
             #if DEBUG
             print("⚠️ ComplexityRouter: Foundation Model unavailable → using LIGHTWEIGHT")
             #endif

@@ -2,156 +2,78 @@
 //  PrivacyPolicyView.swift
 //  StepKit
 //
-//  Created by Assistant on 2024-12-13.
+//  Mismo texto que 05_launch/app-store/POLITICA-PRIVACIDAD.md (borrador del 27 oct 2026).
+//  Los datos entre corchetes los completa el titular antes de publicar.
 //
 
 import SwiftUI
 
 struct PrivacyPolicyView: View {
     @Environment(\.dismiss) private var dismiss
-    
+
+    private let sections: [(title: String, body: String)] = [
+        (String(localized: "Quién es el responsable"),
+         String(localized: "StepKit es una app de [nombre y apellidos o razón social del titular], con domicilio en [dirección] y NIF [NIF]. Para cualquier cuestión de privacidad, escribe a [correo de contacto].")),
+        (String(localized: "Qué datos tratamos"),
+         String(localized: "• **Cuenta.** Inicias sesión con Apple. Nuestro servidor guarda un identificador que Apple genera para StepKit. Si compartes tu nombre o correo con Apple, se quedan en tu dispositivo y nuestro servidor no los guarda.\n• **Tu contenido.** Los Kits, pasos, avances, notas, bloqueos y sesiones que creas. Se guardan en tu dispositivo y en nuestro servidor para sincronizarlos entre tus dispositivos.\n• **Suscripción.** Apple gestiona el pago. Nosotros solo recibimos y guardamos el estado de tu suscripción (producto, vigencia y renovación) para saber si tienes StepKit Pro. Nunca vemos tus datos de pago.\n• **Uso de la IA.** Contamos cuántas veces usas la IA en la nube cada mes y los tokens consumidos, para aplicar los límites del plan gratuito y controlar costes. No guardamos el texto de tus conversaciones con el asistente en el servidor.\n\nNo usamos publicidad, analítica de terceros ni rastreo, y no vendemos datos.")),
+        (String(localized: "Inteligencia artificial"),
+         String(localized: "• **IA externa, solo con tu permiso.** Al crear un Kit o al escribir al asistente de un Kit, enviamos a nuestro servidor lo necesario para responderte: tu meta, fechas, tiempo disponible, obstáculos, el estado del plan y de tus avances, y tus mensajes. El servidor lo reenvía a un modelo de IA de terceros a través de OpenRouter, Inc. Usamos solo endpoints de **retención cero**: el proveedor no guarda la petición una vez respondida ni la usa para entrenar modelos. Los modelos actuales se ejecutan en Google Cloud Vertex AI, Amazon Bedrock o Microsoft Azure, preferentemente en centros de datos de la Unión Europea.\n• **En tu dispositivo (Apple Intelligence).** Al crear un Kit, StepKit puede usar el modelo de tu iPhone o iPad para estimar lo complejo que es tu objetivo. Eso no sale del dispositivo.\n\nTe pedimos permiso antes del primer envío. Sin él, el asistente del Kit y la creación de planes con IA no están disponibles. Puedes retirarlo cuando quieras en **Perfil > IA y privacidad**, y desde ese momento no se envía nada más.")),
+        (String(localized: "Para qué y con qué base legal"),
+         String(localized: "• **Prestar el servicio** (cuenta, sincronización y planes): ejecución del contrato (RGPD art. 6.1.b).\n• **Enviar tu contenido a la IA externa:** tu consentimiento (art. 6.1.a), que puedes retirar.\n• **Gestionar la suscripción:** ejecución del contrato (art. 6.1.b).\n• **Límites de uso, seguridad y prevención de abusos:** interés legítimo (art. 6.1.f).")),
+        (String(localized: "Quién más trata tus datos"),
+         String(localized: "Encargados del tratamiento que actúan siguiendo nuestras instrucciones:\n\n• **Railway Corporation:** alojamiento del servidor y de la base de datos [región por confirmar].\n• **OpenRouter, Inc.** y el proveedor del modelo (Google, Amazon o Microsoft): procesan las peticiones de IA cuando das permiso, con retención cero.\n• **Apple:** inicio de sesión, pagos y notificaciones de suscripción.\n\nAlgunos de estos proveedores están en Estados Unidos. Las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en cláusulas contractuales tipo.")),
+        (String(localized: "Cuánto tiempo los guardamos"),
+         String(localized: "Mientras tengas cuenta. Si borras un Kit, en el servidor queda marcado como borrado para que no reaparezca en tus otros dispositivos, y desaparece del todo al eliminar la cuenta. Si eliminas tu cuenta, borramos de inmediato todos tus datos del servidor y desvinculamos StepKit de tu Apple Account. Las copias de seguridad se sobrescriben en un máximo de [30] días.")),
+        (String(localized: "Tus derechos"),
+         String(localized: "Puedes acceder a tus datos, rectificarlos, suprimirlos, oponerte o limitar su tratamiento, y pedir su portabilidad, escribiendo a [correo de contacto]. Para borrar tu cuenta y todos tus datos no hace falta escribirnos: está en **Perfil > Eliminar cuenta**. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).\n\nEliminar la cuenta no cancela una suscripción de StepKit Pro. Para cancelarla, ve a Ajustes > Apple Account > Suscripciones.")),
+        (String(localized: "Menores"),
+         String(localized: "StepKit no está dirigida a menores de 14 años.")),
+        (String(localized: "Seguridad"),
+         String(localized: "Todas las conexiones van cifradas (HTTPS). El acceso al servidor está restringido y las credenciales de los servicios nunca están en la app.")),
+        (String(localized: "Cambios"),
+         String(localized: "Si cambiamos esta política de forma relevante, te avisaremos en la app antes de que el cambio se aplique."))
+    ]
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Header
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Política de Privacidad")
+                        Text("Política de privacidad")
                             .font(.title2)
                             .bold()
-                        
-                        Text("Última actualización: Diciembre 2025")
+                        Text("Última actualización: [fecha de publicación]")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                    
                     VStack(alignment: .leading, spacing: 20) {
-                        policySection(
-                            number: "1",
-                            title: String(localized: "Introducción"),
-                            content: String(localized: "En StepKit, respetamos tu privacidad y nos comprometemos a proteger tus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos y compartimos tu información cuando utilizas nuestra aplicación móvil.")
-                        )
-                        
-                        policySection(
-                            number: "2",
-                            title: String(localized: "Información que Recopilamos"),
-                            content: """
-                            Recopilamos la siguiente información:
-                            
-                            • **Información de Cuenta**: Cuando te registras (por ejemplo, con Apple), podemos recibir tu nombre y correo electrónico si eliges compartirlos.
-                            • **Datos de Uso**: Información sobre cómo interactúas con la app, tus objetivos creados, progreso y preferencias.
-                            • **Información Técnica**: Modelo de dispositivo, versión de sistema operativo e identificadores anónimos para diagnóstico de errores.
-                            • **Datos de Suscripción**: Apple procesa tus pagos y gestiona tu suscripción; nosotros solo recibimos el estado de tu suscripción y la fecha de vencimiento.
-                            """
-                        )
-                        
-                        policySection(
-                            number: "3",
-                            title: String(localized: "Uso de la Información"),
-                            content: """
-                            Utilizamos tu información para:
-                            
-                            • Proporcionar, mantener y mejorar el servicio.
-                            • Sincronizar tus datos entre tus dispositivos.
-                            • Procesar tus solicitudes de generación de contenido mediante IA.
-                            • Comunicarnos contigo sobre actualizaciones o soporte.
-                            • Detectar y prevenir fraudes o abusos.
-                            """
-                        )
-                        
-                        policySection(
-                            number: "4",
-                            title: String(localized: "Compartir Información"),
-                            content: """
-                            No vendemos tu información personal. Podemos compartir información con:
-                            
-                            • **Proveedores de Servicios**: Utilizamos servicios de terceros para el alojamiento de datos (ej. Railway) y procesamiento de IA. Estos proveedores solo tienen acceso a la información necesaria para realizar sus funciones y están obligados a protegerla.
-                            • **Requisitos Legales**: Si es requerido por ley o para proteger nuestros derechos.
-                            """
-                        )
-                        
-                        policySection(
-                            number: "4.1",
-                            title: String(localized: "Uso de Inteligencia Artificial Externa"),
-                            content: """
-                            StepKit utiliza servicios de inteligencia artificial externos para generar planes personalizados de objetivos. Esta sección explica cómo y qué datos compartimos con estos servicios.
-                            
-                            **Datos que Compartimos:**
-                            
-                            • **Descripción de Objetivos**: La descripción detallada de tus objetivos personales que proporcionas al crear un kit.
-                            • **Información Temporal**: Fechas objetivo, disponibilidad diaria de tiempo y zona horaria.
-                            • **Obstáculos e Inconvenientes**: Información sobre obstáculos o inconvenientes que mencionas al crear tus objetivos.
-                            
-                            **Cómo Funciona:**
-                            
-                            Estos datos se envían de forma segura a nuestro servidor, que a su vez los procesa mediante servicios de IA de terceros para generar planes personalizados. Los datos se procesan únicamente para generar tu plan y no se utilizan para entrenar modelos de IA ni para fines publicitarios.
-                            
-                            **Tu Consentimiento:**
-                            
-                            Antes de usar funciones que requieren IA externa, te pedimos tu consentimiento explícito. Puedes revocar este consentimiento en cualquier momento desde la configuración de la aplicación, aunque esto limitará algunas funcionalidades.
-                            
-                            **Seguridad:**
-                            
-                            Todas las comunicaciones con nuestro servidor y los servicios de IA externos se realizan mediante conexiones cifradas (HTTPS). No almacenamos tus datos personales en los servicios de IA externos más allá de lo necesario para procesar tu solicitud.
-                            """
-                        )
-                        
-                        policySection(
-                            number: "5",
-                            title: String(localized: "Seguridad de los Datos"),
-                            content: String(localized: "Implementamos medidas de seguridad técnicas y organizativas para proteger tus datos. Sin embargo, ninguna transmisión por internet es 100% segura, por lo que no podemos garantizar seguridad absoluta.")
-                        )
-                        
-                        policySection(
-                            number: "6",
-                            title: String(localized: "Tus Derechos"),
-                            content: String(localized: "Dependiendo de tu ubicación, puedes tener derecho a acceder, corregir, eliminar o restringir el procesamiento de tus datos personales. Puedes eliminar tu cuenta y todos tus datos directamente desde la configuración de la aplicación.")
-                        )
-                        
-                        policySection(
-                            number: "7",
-                            title: String(localized: "Privacidad de los Niños"),
-                            content: String(localized: "Nuestra aplicación no está dirigida a niños menores de 13 años. No recopilamos conscientemente información personal de niños menores de 13 años.")
-                        )
-                        
-                        policySection(
-                            number: "8",
-                            title: String(localized: "Cambios a esta Política"),
-                            content: String(localized: "Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos sobre cambios significativos a través de la aplicación.")
-                        )
-                        
-                        policySection(
-                            number: "9",
-                            title: String(localized: "Contacto"),
-                            content: String(localized: "Si tienes preguntas sobre esta política, contáctanos en support@stepkit.app.")
-                        )
+                        ForEach(Array(sections.enumerated()), id: \.offset) { index, section in
+                            policySection(number: index + 1, title: section.title, content: section.body)
+                        }
                     }
                 }
                 .padding(20)
                 .padding(.bottom, 20)
+                .readableContentWidth()
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Política de Privacidad")
+            .navigationTitle("Política de privacidad")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Cerrar") {
-                        dismiss()
-                    }
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(Color.accentColor)
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Cerrar") { dismiss() }
                 }
             }
         }
     }
-    
-    private func policySection(number: String, title: String, content: String) -> some View {
+
+    private func policySection(number: Int, title: String, content: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("\(number). \(title)")
                 .font(.headline)
                 .foregroundStyle(.primary)
-            
-            Text(LocalizedStringKey(content)) // Use LocalizedStringKey to support markdown styling in text
+            // Ya traducido: se pasa como Markdown, no como clave de traducción.
+            Text((try? AttributedString(markdown: content, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(content))
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

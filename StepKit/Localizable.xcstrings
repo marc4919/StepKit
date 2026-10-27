@@ -1516,6 +1516,16 @@
         }
       }
     },
+    "Cambios": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes"
+          }
+        }
+      }
+    },
     "Cambios a esta Política": {
       "localizations": {
         "en": {
@@ -2044,6 +2054,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "When the Kit would finish according to its plan."
+          }
+        }
+      }
+    },
+    "Cuánto tiempo los guardamos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How long we keep it"
           }
         }
       }
@@ -2816,6 +2836,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "In a single session"
+          }
+        }
+      }
+    },
+    "Encargados del tratamiento que actúan siguiendo nuestras instrucciones:\n\n• **Railway Corporation:** alojamiento del servidor y de la base de datos [región por confirmar].\n• **OpenRouter, Inc.** y el proveedor del modelo (Google, Amazon o Microsoft): procesan las peticiones de IA cuando das permiso, con retención cero.\n• **Apple:** inicio de sesión, pagos y notificaciones de suscripción.\n\nAlgunos de estos proveedores están en Estados Unidos. Las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en cláusulas contractuales tipo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processors acting on our instructions:\n\n• **Railway Corporation:** hosting of the server and database [region to be confirmed].\n• **OpenRouter, Inc.** and the model provider (Google, Amazon or Microsoft): process AI requests when you give permission, with zero retention.\n• **Apple:** sign-in, payments and subscription notifications.\n\nSome of these providers are in the United States. Transfers rely on the EU-US Data Privacy Framework or standard contractual clauses."
           }
         }
       }
@@ -3628,6 +3658,16 @@
         }
       }
     },
+    "Inteligencia artificial": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artificial intelligence"
+          }
+        }
+      }
+    },
     "Introducción": {
       "localizations": {
         "en": {
@@ -4120,6 +4160,16 @@
         }
       }
     },
+    "Menores": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Children"
+          }
+        }
+      }
+    },
     "Mensual": {
       "localizations": {
         "en": {
@@ -4136,6 +4186,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kit goal"
+          }
+        }
+      }
+    },
+    "Mientras tengas cuenta. Si borras un Kit, en el servidor queda marcado como borrado para que no reaparezca en tus otros dispositivos, y desaparece del todo al eliminar la cuenta. Si eliminas tu cuenta, borramos de inmediato todos tus datos del servidor y desvinculamos StepKit de tu Apple Account. Las copias de seguridad se sobrescriben en un máximo de [30] días.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As long as you have an account. If you delete a Kit, it stays marked as deleted on the server so it doesn't reappear on your other devices, and it disappears completely when you delete your account. If you delete your account, we immediately delete all your data from the server and unlink StepKit from your Apple Account. Backups are overwritten within [30] days at most."
           }
         }
       }
@@ -4798,6 +4858,16 @@
         }
       }
     },
+    "Para qué y con qué base legal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purposes and legal basis"
+          }
+        }
+      }
+    },
     "Parte de «%@». %@": {
       "localizations": {
         "en": {
@@ -5424,6 +5494,16 @@
         }
       }
     },
+    "Puedes acceder a tus datos, rectificarlos, suprimirlos, oponerte o limitar su tratamiento, y pedir su portabilidad, escribiendo a [correo de contacto]. Para borrar tu cuenta y todos tus datos no hace falta escribirnos: está en **Perfil > Eliminar cuenta**. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).\n\nEliminar la cuenta no cancela una suscripción de StepKit Pro. Para cancelarla, ve a Ajustes > Apple Account > Suscripciones.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can access, rectify or erase your data, object to or restrict its processing, and request its portability by writing to [contact email]. To delete your account and all your data you don't need to write to us: it's in **Profile > Delete account**. You can also lodge a complaint with the Spanish Data Protection Agency (aepd.es).\n\nDeleting your account does not cancel a StepKit Pro subscription. To cancel it, go to Settings > Apple Account > Subscriptions."
+          }
+        }
+      }
+    },
     "Puedes cancelar: tu idea se conserva en el formulario.": {
       "localizations": {
         "en": {
@@ -5546,6 +5626,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drop or merge steps without losing the result"
+          }
+        }
+      }
+    },
+    "Quién es el responsable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who is responsible"
+          }
+        }
+      }
+    },
+    "Quién más trata tus datos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who else processes your data"
+          }
+        }
+      }
+    },
+    "Qué datos tratamos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What data we process"
           }
         }
       }
@@ -6110,6 +6220,16 @@
         }
       }
     },
+    "Seguridad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        }
+      }
+    },
     "Seguridad de los Datos": {
       "localizations": {
         "en": {
@@ -6202,6 +6322,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Own session"
+          }
+        }
+      }
+    },
+    "Si cambiamos esta política de forma relevante, te avisaremos en la app antes de que el cambio se aplique.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If we make relevant changes to this policy, we will let you know in the app before the change applies."
           }
         }
       }
@@ -6396,12 +6526,32 @@
         }
       }
     },
+    "StepKit es una app de [nombre y apellidos o razón social del titular], con domicilio en [dirección] y NIF [NIF]. Para cualquier cuestión de privacidad, escribe a [correo de contacto].": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit is an app by [owner's full name or company name], with address at [address] and tax ID [tax ID]. For any privacy question, write to [contact email]."
+          }
+        }
+      }
+    },
     "StepKit es una herramienta diseñada para ayudarte a definir, gestionar y alcanzar tus objetivos personales mediante el desglose de tareas paso a paso. La Aplicación puede utilizar inteligencia artificial (IA) para generar sugerencias y planes. Estas sugerencias son generadas automáticamente y deben ser evaluadas por ti antes de seguirlas. StepKit no ofrece asesoramiento profesional (médico, legal, financiero, etc.).": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "StepKit is a tool designed to help you define, manage and reach your personal goals by breaking them down step by step. The App may use artificial intelligence (AI) to generate suggestions and plans. These suggestions are generated automatically and you should evaluate them before following them. StepKit does not provide professional advice (medical, legal, financial, etc.)."
+          }
+        }
+      }
+    },
+    "StepKit no está dirigida a menores de 14 años.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit is not intended for children under 14."
           }
         }
       }
@@ -6662,6 +6812,16 @@
         }
       }
     },
+    "Todas las conexiones van cifradas (HTTPS). El acceso al servidor está restringido y las credenciales de los servicios nunca están en la app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All connections are encrypted (HTTPS). Access to the server is restricted and service credentials are never in the app."
+          }
+        }
+      }
+    },
     "Todo lo reservado (%lld)": {
       "localizations": {
         "en": {
@@ -6888,6 +7048,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your progress"
+          }
+        }
+      }
+    },
+    "Tus derechos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your rights"
           }
         }
       }
@@ -7740,6 +7910,16 @@
         }
       }
     },
+    "Última actualización: [fecha de publicación]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last updated: [publication date]"
+          }
+        }
+      }
+    },
     "Último avance · %@": {
       "localizations": {
         "en": {
@@ -7756,6 +7936,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "•"
+          }
+        }
+      }
+    },
+    "• **Cuenta.** Inicias sesión con Apple. Nuestro servidor guarda un identificador que Apple genera para StepKit. Si compartes tu nombre o correo con Apple, se quedan en tu dispositivo y nuestro servidor no los guarda.\n• **Tu contenido.** Los Kits, pasos, avances, notas, bloqueos y sesiones que creas. Se guardan en tu dispositivo y en nuestro servidor para sincronizarlos entre tus dispositivos.\n• **Suscripción.** Apple gestiona el pago. Nosotros solo recibimos y guardamos el estado de tu suscripción (producto, vigencia y renovación) para saber si tienes StepKit Pro. Nunca vemos tus datos de pago.\n• **Uso de la IA.** Contamos cuántas veces usas la IA en la nube cada mes y los tokens consumidos, para aplicar los límites del plan gratuito y controlar costes. No guardamos el texto de tus conversaciones con el asistente en el servidor.\n\nNo usamos publicidad, analítica de terceros ni rastreo, y no vendemos datos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• **Account.** You sign in with Apple. Our server stores an identifier that Apple generates for StepKit. If you share your name or email with Apple, they stay on your device and our server does not store them.\n• **Your content.** The Kits, steps, progress, notes, blockers and sessions you create. They are stored on your device and on our server to sync them across your devices.\n• **Subscription.** Apple handles payment. We only receive and store your subscription status (product, validity and renewal) to know whether you have StepKit Pro. We never see your payment details.\n• **AI usage.** We count how many times you use cloud AI each month and the tokens used, to apply the free plan limits and control costs. We do not store the text of your conversations with the assistant on the server.\n\nWe do not use advertising, third-party analytics or tracking, and we do not sell data."
+          }
+        }
+      }
+    },
+    "• **IA externa, solo con tu permiso.** Al crear un Kit o al escribir al asistente de un Kit, enviamos a nuestro servidor lo necesario para responderte: tu meta, fechas, tiempo disponible, obstáculos, el estado del plan y de tus avances, y tus mensajes. El servidor lo reenvía a un modelo de IA de terceros a través de OpenRouter, Inc. Usamos solo endpoints de **retención cero**: el proveedor no guarda la petición una vez respondida ni la usa para entrenar modelos. Los modelos actuales se ejecutan en Google Cloud Vertex AI, Amazon Bedrock o Microsoft Azure, preferentemente en centros de datos de la Unión Europea.\n• **En tu dispositivo (Apple Intelligence).** Al crear un Kit, StepKit puede usar el modelo de tu iPhone o iPad para estimar lo complejo que es tu objetivo. Eso no sale del dispositivo.\n\nTe pedimos permiso antes del primer envío. Sin él, el asistente del Kit y la creación de planes con IA no están disponibles. Puedes retirarlo cuando quieras en **Perfil > IA y privacidad**, y desde ese momento no se envía nada más.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• **External AI, only with your permission.** When you create a Kit or write to a Kit's assistant, we send our server what it needs to answer you: your goal, dates, available time, obstacles, the state of your plan and progress, and your messages. The server forwards it to a third-party AI model through OpenRouter, Inc. We only use **zero-retention** endpoints: the provider does not keep the request once answered or use it to train models. The current models run on Google Cloud Vertex AI, Amazon Bedrock or Microsoft Azure, preferably in European Union data centers.\n• **On your device (Apple Intelligence).** When you create a Kit, StepKit may use your iPhone or iPad's model to estimate how complex your goal is. That never leaves the device.\n\nWe ask for permission before the first send. Without it, the Kit assistant and AI plan creation are not available. You can withdraw it anytime in **Profile > AI and privacy**, and from then on nothing else is sent."
+          }
+        }
+      }
+    },
+    "• **Prestar el servicio** (cuenta, sincronización y planes): ejecución del contrato (RGPD art. 6.1.b).\n• **Enviar tu contenido a la IA externa:** tu consentimiento (art. 6.1.a), que puedes retirar.\n• **Gestionar la suscripción:** ejecución del contrato (art. 6.1.b).\n• **Límites de uso, seguridad y prevención de abusos:** interés legítimo (art. 6.1.f).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "• **Providing the service** (account, sync and plans): performance of a contract (GDPR art. 6.1.b).\n• **Sending your content to external AI:** your consent (art. 6.1.a), which you can withdraw.\n• **Managing the subscription:** performance of a contract (art. 6.1.b).\n• **Usage limits, security and abuse prevention:** legitimate interest (art. 6.1.f)."
           }
         }
       }
