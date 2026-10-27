@@ -336,7 +336,8 @@ enum RemoteProposalBuilder {
 @MainActor
 enum KitAssistant {
     /// Pregunta al asistente del servidor y deja la respuesta (y la propuesta, si hay) en la conversación.
-    /// Devuelve false si el servidor no tiene asistente o no hay sesión: la app usa entonces el modelo local.
+    /// Devuelve false si el servidor no tiene asistente, no hay sesión o no hay permiso de IA externa:
+    /// la app usa entonces el modelo local y no sale nada del dispositivo.
     @discardableResult
     static func ask(
         _ trigger: AssistTrigger,
@@ -348,7 +349,7 @@ enum KitAssistant {
         apiClient: any APIClientProtocol,
         token: String?
     ) async -> Bool {
-        guard let token else { return false }
+        guard let token, AIConsentManager().hasConsent else { return false }
         let request = AssistRequestBuilder.build(kit: kit, focus: step, trigger: trigger, message: message,
                                                  conversation: conversation, context: context)
         let vm = conversation.viewModel
@@ -357,6 +358,8 @@ enum KitAssistant {
         defer { if visible { vm.isTyping = false; vm.isResponding = false } }
         do {
             let response = try await KitAssistClient.send(request, apiClient: apiClient, token: token)
+            // Permiso retirado mientras esperábamos: se descarta la respuesta.
+            guard AIConsentManager().hasConsent else { return false }
             conversation.serverSummary = response.summary ?? conversation.serverSummary
             let proposal = response.proposal.flatMap { RemoteProposalBuilder.build($0, kit: kit) }
             let text = response.message.trimmingCharacters(in: .whitespacesAndNewlines)

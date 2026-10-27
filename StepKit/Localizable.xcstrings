@@ -910,12 +910,12 @@
         }
       }
     },
-    "Al crear un Kit, tu objetivo, tu tiempo y los obstáculos que menciones se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.": {
+    "Al crear un Kit o escribir al asistente del Kit, tu objetivo, tu plan, tus avances y lo que escribas se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When you create a Kit, your goal, your time and any obstacles you mention are sent through our server to an AI service run by another company. You can withdraw permission at any time."
+            "value": "When you create a Kit or write to the Kit assistant, your goal, your plan, your progress and what you write are sent through our server to an AI service run by another company. You can withdraw permission at any time."
           }
         }
       }
@@ -2870,6 +2870,16 @@
         }
       }
     },
+    "Escribe abajo lo que necesites. Si algo cambia el plan, te llega como propuesta y decides tú.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write below whatever you need. Anything that changes the plan comes as a proposal, and you decide."
+          }
+        }
+      }
+    },
     "Escribe tu respuesta": {
       "localizations": {
         "en": {
@@ -2896,16 +2906,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Write a note…"
-          }
-        }
-      }
-    },
-    "Escribe abajo lo que necesites. Si algo cambia el plan, te llega como propuesta y decides tú.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Write below whatever you need. Anything that changes the plan comes as a proposal, and you decide."
           }
         }
       }
@@ -3398,12 +3398,12 @@
         }
       }
     },
-    "IA externa para crear planes": {
+    "IA externa para planes y asistente": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "External AI to create plans"
+            "value": "External AI for plans and the assistant"
           }
         }
       }
@@ -4638,12 +4638,12 @@
         }
       }
     },
-    "Para proponerte los pasos, StepKit envía lo que escribas sobre tu objetivo a un servicio de inteligencia artificial de otra empresa, a través de nuestro servidor.": {
+    "Para proponerte los pasos y ayudarte a ajustar el plan, StepKit envía lo que escribas sobre tu objetivo, y después tu plan y tus avances, a un servicio de inteligencia artificial de otra empresa, a través de nuestro servidor.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "To suggest steps, StepKit sends what you write about your goal through our server to an AI service run by another company."
+            "value": "To suggest steps and help you adjust your plan, StepKit sends what you write about your goal, and later your plan and progress, through our server to an AI service run by another company."
           }
         }
       }
@@ -6056,12 +6056,22 @@
         }
       }
     },
-    "Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA.": {
+    "Sin el permiso de IA externa, el asistente usa Apple Intelligence y las conversaciones no salen de tu dispositivo.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Without this permission you can keep using StepKit, but not create plans with AI."
+            "value": "Without external AI permission, the assistant uses Apple Intelligence and conversations stay on your device."
+          }
+        }
+      }
+    },
+    "Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA, y el asistente solo usará tu dispositivo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without this permission you can keep using StepKit, but not create plans with AI, and the assistant will only use your device."
           }
         }
       }
@@ -6532,6 +6542,16 @@
         }
       }
     },
+    "Tu plan, tus avances y lo que escribas al asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your plan, your progress and what you write to the assistant"
+          }
+        }
+      }
+    },
     "Tu primer paso": {
       "localizations": {
         "en": {
@@ -6778,16 +6798,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Once a week for %lld weeks"
-          }
-        }
-      }
-    },
-    "Usa Apple Intelligence. Las conversaciones no salen del iPhone.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uses Apple Intelligence. Conversations never leave your iPhone."
           }
         }
       }

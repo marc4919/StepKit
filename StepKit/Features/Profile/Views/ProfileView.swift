@@ -316,7 +316,7 @@ struct AIPrivacyView: View {
                 )) {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("IA externa para crear planes")
+                            Text("IA externa para planes y asistente")
                             Text(aiConsentGiven ? String(localized: "Permitido") : String(localized: "Se pedirá al crear un Kit"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -327,13 +327,13 @@ struct AIPrivacyView: View {
                 }
                 .accessibilityIdentifier("profile.aiConsent")
             } footer: {
-                Text("Al crear un Kit, tu objetivo, tu tiempo y los obstáculos que menciones se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.")
+                Text("Al crear un Kit o escribir al asistente del Kit, tu objetivo, tu plan, tus avances y lo que escribas se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.")
             }
             Section {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Asistente en tu dispositivo")
-                        Text("Usa Apple Intelligence. Las conversaciones no salen del iPhone.")
+                        Text("Sin el permiso de IA externa, el asistente usa Apple Intelligence y las conversaciones no salen de tu dispositivo.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

@@ -25,7 +25,7 @@ struct AIConsentView: View {
                         Text("Antes de preparar tu plan")
                             .font(.title2.bold())
                             .accessibilityAddTraits(.isHeader)
-                        Text("Para proponerte los pasos, StepKit envía lo que escribas sobre tu objetivo a un servicio de inteligencia artificial de otra empresa, a través de nuestro servidor.")
+                        Text("Para proponerte los pasos y ayudarte a ajustar el plan, StepKit envía lo que escribas sobre tu objetivo, y después tu plan y tus avances, a un servicio de inteligencia artificial de otra empresa, a través de nuestro servidor.")
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -35,6 +35,7 @@ struct AIConsentView: View {
                     Label("Tu objetivo y la fecha que quieres", systemImage: Symbols.kits)
                     Label("El tiempo que tienes disponible", systemImage: Symbols.time)
                     Label("Los obstáculos que menciones", systemImage: Symbols.risk)
+                    Label("Tu plan, tus avances y lo que escribas al asistente", systemImage: Symbols.assistant)
                 }
                 Section {
                     Label("No se usa para publicidad ni se vende", systemImage: "hand.raised")
@@ -44,7 +45,7 @@ struct AIConsentView: View {
                 } header: {
                     Text("Tu control")
                 } footer: {
-                    Text("Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA.")
+                    Text("Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA, y el asistente solo usará tu dispositivo.")
                 }
                 Section {
                     Toggle("Acepto compartir estos datos con el servicio de IA", isOn: $hasAccepted)
