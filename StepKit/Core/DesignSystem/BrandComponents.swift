@@ -168,6 +168,9 @@ struct ProgressRing: View {
             }
         }
         .frame(width: size * min(scale, 1.6), height: size * min(scale, 1.6))
+        // El trazo se dibuja centrado en el borde: la mitad sale del marco. Se le reserva ese sitio
+        // para que no lo corte la barra de navegación ni otra vista pegada.
+        .padding(size * 0.055)
         .accessibilityElement()
         .accessibilityLabel("Progreso")
         .accessibilityValue(String(localized: "\(done) de \(total) pasos completados"))

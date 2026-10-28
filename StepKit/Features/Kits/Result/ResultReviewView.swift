@@ -48,8 +48,6 @@ struct ResultReviewView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 16) {
                     ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 92)
-                        // El anillo dibuja su trazo por fuera del marco: margen para que no lo corte la barra.
-                        .padding(6)
                     Text(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos terminados.\nEl anillo cuenta pasos, no el resultado."))
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 0)
