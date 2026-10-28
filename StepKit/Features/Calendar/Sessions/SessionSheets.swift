@@ -50,8 +50,9 @@ enum SessionLog {
         return session
     }
 
-    static func move(_ session: WorkSessionEntity, to date: Date, context: ModelContext, now: Date = Date()) throws {
+    static func move(_ session: WorkSessionEntity, to date: Date, minutes: Int? = nil, context: ModelContext, now: Date = Date()) throws {
         session.startsAt = date
+        if let minutes { session.durationMinutes = minutes }
         session.markModified(at: now)
         try context.save()
     }
@@ -408,6 +409,15 @@ struct ReviewSessionSheet: View {
     @Environment(\.syncManager) private var syncManager
     @State private var choice: Choice = .move
     @State private var newDate = Date()
+    @State private var newMinutes: Int
+
+    init(session: WorkSessionEntity, kit: GoalEntity?, step: StepEntity?) {
+        self.session = session
+        self.kit = kit
+        self.step = step
+        // La duración de partida es la de la sesión, no un valor por defecto.
+        _newMinutes = State(initialValue: session.durationMinutes)
+    }
 
     var body: some View {
         NavigationStack {
@@ -421,20 +431,19 @@ struct ReviewSessionSheet: View {
                         LabeledContent("Kit", value: kit.title)
                     }
                     LabeledContent("Era", value: String(localized: "\(session.startsAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())) · \(session.durationMinutes) min"))
-                } footer: {
-                    Text("Tu avance y la fecha prevista del Kit se conservan.")
                 }
                 Section("Qué quieres hacer") {
                     Picker("Opción", selection: $choice) {
-                        Text("Moverla").tag(Choice.move)
+                        Text("Cambiar hora o duración").tag(Choice.move)
                         Text(session.startsAt < Date() ? String(localized: "Mantenerla como pasada") : String(localized: "Mantenerla")).tag(Choice.keep)
                         Text("Quitar la sesión").tag(Choice.remove)
                     }
                     .pickerStyle(.inline)
                     .labelsHidden()
-                    if choice == .move {
-                        DatePicker("Nueva hora", selection: $newDate, in: Date()...)
-                    }
+                }
+                if choice == .move {
+                    SessionWhenSection(date: $newDate, minutes: $newMinutes,
+                                       suggested: session.durationMinutes, allowsLongSessions: session.isFree)
                 }
             }
             .navigationTitle("Revisar sesión")
@@ -456,7 +465,7 @@ struct ReviewSessionSheet: View {
     private func confirm() {
         switch choice {
         case .move:
-            try? SessionLog.move(session, to: newDate, context: modelContext)
+            try? SessionLog.move(session, to: newDate, minutes: newMinutes, context: modelContext)
             Task {
                 await NotificationService.shared.scheduleReminder(for: session, kitTitle: kit?.title ?? session.title ?? "StepKit",
                                                                   stepTitle: step?.stepTitle)

@@ -1546,6 +1546,16 @@
         }
       }
     },
+    "Cambiar hora o duración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change time or duration"
+          }
+        }
+      }
+    },
     "Cambios": {
       "localizations": {
         "en": {
