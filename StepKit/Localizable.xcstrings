@@ -760,16 +760,6 @@
         }
       }
     },
-    "Aceptar y reservar cuándo lo haré": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Accept and book when I'll do it"
-          }
-        }
-      }
-    },
     "Acepto compartir estos datos con el servicio de IA": {
       "localizations": {
         "en": {

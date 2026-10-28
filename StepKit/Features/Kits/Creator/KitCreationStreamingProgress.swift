@@ -11,8 +11,6 @@ import SwiftUI
 struct KitCreationStreamingProgress: View {
     @Binding var streamingState: KitStreamingState
     let onSave: () -> Void
-    /// Guardar y reservar ya cuándo hacer el primer paso (solo si toca hoy o mañana).
-    var onSaveAndBook: (() -> Void)? = nil
     let onDiscard: () -> Void
     /// Kit delicado: respuestas a las preguntas del servidor o seguir sin responder.
     var onAnswer: ([KitAnswer]) -> Void = { _ in }
@@ -480,18 +478,6 @@ struct KitCreationStreamingProgress: View {
         }
     }
 
-    /// El primer paso toca hoy o mañana: tiene sentido reservar ya cuándo hacerlo.
-    private var firstStepIsSoon: Bool {
-        guard let text = streamingState.steps.first?.suggestedDeadline else { return false }
-        let parser = DateFormatter()
-        parser.calendar = Calendar(identifier: .gregorian)
-        parser.locale = Locale(identifier: "en_US_POSIX")
-        parser.dateFormat = "yyyy-MM-dd"
-        guard let day = parser.date(from: text) else { return false }
-        let calendar = Calendar.current
-        return calendar.isDateInToday(day) || calendar.isDateInTomorrow(day) || day < .now
-    }
-
     private var reviewActions: some View {
         VStack(spacing: 8) {
             Button(action: onSave) {
@@ -501,15 +487,6 @@ struct KitCreationStreamingProgress: View {
             }
             .buttonStyle(.borderedProminent)
             .accessibilityIdentifier("kitCreator.save")
-            if firstStepIsSoon, let onSaveAndBook {
-                // Los pasos no tienen hora: reservar una sesión es lo que da un aviso a una hora concreta.
-                Button(action: onSaveAndBook) {
-                    Label("Aceptar y reservar cuándo lo haré", systemImage: Symbols.calendar)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("kitCreator.saveAndBook")
-            }
             Button("Descartar y volver a mi idea", role: .destructive, action: onDiscard)
                 .font(.subheadline)
                 .accessibilityIdentifier("kitCreator.discard")
