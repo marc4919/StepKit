@@ -142,6 +142,12 @@ struct StepKitApp: App {
                         service.configure(with: PersistenceController.shared.container.mainContext)
                         syncService = service
 
+                        // Planes que el servidor guardó y la persona no llegó a aceptar (app cerrada en la
+                        // revisión): se descartan antes de sincronizar para que no cuenten como activos.
+                        if let ownerID = authManager.currentUser?.id {
+                            _ = PendingGeneratedKits.discardLeftovers(
+                                ownerID: ownerID, in: PersistenceController.shared.container.mainContext)
+                        }
                         let manager = SyncManager(syncService: service)
                         syncManager = manager
                         manager.startAutoSync()

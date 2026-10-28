@@ -178,6 +178,9 @@ struct KitCreatorView: View {
         // al formulario con lo escrito (cancelGeneration ya pone el estado en .form).
         let wasEditing = vm.viewState == .form
         vm.cancelGeneration(modelContext: modelContext, ownerID: ownerID)
+        // El plan descartado ya estaba guardado en el servidor: se sincroniza enseguida para que
+        // deje de contar como Kit activo.
+        syncManager?.handleDataChange()
         if wasEditing {
             dismiss()
         }
