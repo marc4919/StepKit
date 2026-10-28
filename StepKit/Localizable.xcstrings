@@ -760,6 +760,16 @@
         }
       }
     },
+    "Aceptar y reservar cuándo lo haré": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accept and book when I'll do it"
+          }
+        }
+      }
+    },
     "Acepto compartir estos datos con el servicio de IA": {
       "localizations": {
         "en": {
@@ -1246,6 +1256,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Work through steps, each with its time and date"
+          }
+        }
+      }
+    },
+    "Avisar también la víspera": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Also remind me the day before"
           }
         }
       }
@@ -3566,6 +3586,16 @@
         }
       }
     },
+    "Hora del aviso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder time"
+          }
+        }
+      }
+    },
     "Horizonte": {
       "localizations": {
         "en": {
@@ -3608,6 +3638,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Today · %@"
+          }
+        }
+      }
+    },
+    "Hoy: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today: %@"
+          }
+        }
+      }
+    },
+    "Hoy: %@ y %lld más": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today: %1$@ and %2$lld more"
           }
         }
       }
@@ -4170,6 +4220,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tomorrow: %@"
+          }
+        }
+      }
+    },
+    "Mañana: %lld pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow: %lld steps"
           }
         }
       }
@@ -6350,6 +6410,26 @@
         }
       }
     },
+    "Se quedaron pendientes: %@ y %lld más": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Still pending: %1$@ and %2$lld more"
+          }
+        }
+      }
+    },
+    "Se quedó pendiente: %@. ¿Lo haces hoy o lo mueves?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Still pending: %@. Do it today or move it?"
+          }
+        }
+      }
+    },
     "Se quita del plan": {
       "localizations": {
         "en": {
@@ -7222,6 +7302,16 @@
         }
       }
     },
+    "Tus pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your steps"
+          }
+        }
+      }
+    },
     "Tus sesiones": {
       "localizations": {
         "en": {
@@ -7378,6 +7468,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Time for yourself that isn't part of any Kit."
+          }
+        }
+      }
+    },
+    "Un solo aviso al día por Kit con lo que toca hoy, y al día siguiente si algo se quedó pendiente. Las sesiones que reserves avisan 10 minutos antes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One reminder a day per Kit with what's due today, and the next day if something was left pending. Sessions you book remind you 10 minutes before."
           }
         }
       }
