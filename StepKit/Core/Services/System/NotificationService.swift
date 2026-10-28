@@ -68,89 +68,59 @@ final class NotificationService {
 
     // MARK: - Schedule Notifications
 
-    /// Programa una notificación para un paso específico
-    /// La notificación se enviará 1 día antes del suggestedDeadline a las 9:00 AM
-    func scheduleNotification(for step: StepEntity) async {
-        // Validar condiciones
-        guard let deadline = step.suggestedDeadline,
-              step.notificationEnabled,
-              step.goal?.notificationsEnabled ?? true,
-              !step.isCompleted else {
-            return
-        }
+    // MARK: - Resumen diario de pasos
 
-        // Calcular fecha de notificación (1 día antes)
-        let calendar = Calendar.current
-        guard let notificationDate = calendar.date(byAdding: .day, value: -1, to: deadline),
-              notificationDate > Date() else {
-            // Si la fecha ya pasó o es hoy, no programar
-            return
-        }
+    /// Cuenta cuyos Kits se avisan; sin cuenta no se programa nada.
+    var ownerID: String?
+    private var digestTask: Task<Void, Never>?
 
-        // Configurar componentes de fecha para las 9:00 AM
-        var dateComponents = calendar.dateComponents([.year, .month, .day], from: notificationDate)
-        dateComponents.hour = 9
-        dateComponents.minute = 0
-
-        // Crear contenido de la notificación
-        let content = UNMutableNotificationContent()
-        content.title = step.goal?.planTitle ?? String(localized: "Recordatorio")
-        content.body = String(localized: "Mañana: \(step.stepTitle)")
-        content.sound = .default
-
-        // Crear trigger basado en fecha
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-
-        // Crear request con identificador único
-        let identifier = notificationIdentifier(for: step.id)
-        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-
-        // Programar notificación
-        do {
-            try await center.add(request)
-            #if DEBUG
-            print("✅ NotificationService: scheduled step=\(step.id)")
-            #endif
-        } catch {
-            #if DEBUG
-            print(
-                "❌ NotificationService: scheduling failed, " +
-                "errorType=\(String(describing: type(of: error)))"
-            )
-            #endif
+    /// Rehace los avisos de pasos tras un cambio (completar, editar, sincronizar…), agrupando cambios seguidos.
+    func refreshStepReminders() {
+        digestTask?.cancel()
+        digestTask = Task {
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !Task.isCancelled else { return }
+            await rescheduleStepReminders()
         }
     }
 
-    /// Programa notificaciones para todos los pasos de un kit
-    func scheduleNotifications(for goal: GoalEntity) async {
-        guard goal.notificationsEnabled else { return }
+    /// Un aviso al día por Kit (ver `DailyDigest`). Sustituye a los avisos por paso de versiones anteriores.
+    func rescheduleStepReminders() async {
+        let pending = await center.pendingNotificationRequests()
+        let stale = pending.map(\.identifier).filter { $0.hasPrefix(DailyDigest.identifierPrefix) || $0.hasPrefix("step-") }
+        center.removePendingNotificationRequests(withIdentifiers: stale)
 
-        for step in goal.steps where !step.isCompleted {
-            await scheduleNotification(for: step)
+        let defaults = UserDefaults.standard
+        guard defaults.object(forKey: "globalNotificationsEnabled") as? Bool ?? true,
+              let ownerID, !ownerID.isEmpty else { return }
+        let context = PersistenceController.shared.container.mainContext
+        let kits = ((try? context.fetch(FetchDescriptor<GoalEntity>(predicate: #Predicate { !$0.isDeleted }))) ?? [])
+            .filter { $0.ownerID == ownerID && $0.notificationsEnabled && $0.resultConfirmedAt == nil }
+        let items = DailyDigest.plan(
+            kits: kits.map(DailyDigest.KitInfo.init),
+            now: .now,
+            hour: defaults.object(forKey: DailyDigest.hourKey) as? Int ?? 9,
+            minute: defaults.object(forKey: DailyDigest.minuteKey) as? Int ?? 0,
+            includesDayBefore: defaults.object(forKey: DailyDigest.dayBeforeKey) as? Bool ?? true)
+        for item in items {
+            let content = UNMutableNotificationContent()
+            content.title = item.title
+            content.body = item.body
+            content.sound = .default
+            let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: item.fireDate)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            try? await center.add(UNNotificationRequest(identifier: item.identifier, content: content, trigger: trigger))
         }
-    }
-
-    // MARK: - Cancel Notifications
-
-    /// Cancela la notificación de un paso específico
-    func cancelNotification(for stepId: UUID) {
-        let identifier = notificationIdentifier(for: stepId)
-        center.removePendingNotificationRequests(withIdentifiers: [identifier])
-
         #if DEBUG
-        print("🔕 NotificationService: Notificación cancelada para step \(stepId)")
+        print("🔔 NotificationService: \(items.count) daily reminders scheduled")
         #endif
     }
 
-    /// Cancela todas las notificaciones de un kit
-    func cancelNotifications(for goal: GoalEntity) {
-        let identifiers = goal.steps.map { notificationIdentifier(for: $0.id) }
-        center.removePendingNotificationRequests(withIdentifiers: identifiers)
-
-        #if DEBUG
-        print("🔕 NotificationService: cancelled count=\(identifiers.count)")
-        #endif
-    }
+    /// Compatibilidad con las llamadas de cada pantalla: cualquier cambio rehace el resumen diario.
+    func scheduleNotification(for step: StepEntity) async { await rescheduleStepReminders() }
+    func scheduleNotifications(for goal: GoalEntity) async { await rescheduleStepReminders() }
+    func cancelNotification(for stepId: UUID) { refreshStepReminders() }
+    func cancelNotifications(for goal: GoalEntity) { refreshStepReminders() }
 
     /// Cancela todas las notificaciones pendientes
     func cancelAllNotifications() {
@@ -199,11 +169,6 @@ final class NotificationService {
     }
 
     // MARK: - Helpers
-
-    /// Genera un identificador único para la notificación de un paso
-    private func notificationIdentifier(for stepId: UUID) -> String {
-        "step-\(stepId.uuidString)"
-    }
 
     /// Obtiene las notificaciones pendientes (para debug)
     func getPendingNotifications() async -> [UNNotificationRequest] {

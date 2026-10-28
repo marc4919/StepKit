@@ -82,10 +82,13 @@ struct StepKitApp: App {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
                     syncManager?.handleAppForeground()
+                    // Un nuevo día cambia qué toca hoy y qué quedó pendiente.
+                    NotificationService.shared.refreshStepReminders()
                 }
             }
             .onChange(of: authManager.isAuthenticated) { _, isAuthenticated in
                 if !isAuthenticated {
+                    NotificationService.shared.ownerID = nil
                     // Usuario cerró sesión, detener sync
                     syncManager?.stopAutoSync()
                     syncService = nil
@@ -134,6 +137,9 @@ struct StepKitApp: App {
                     await NotificationService.shared.checkAuthorizationStatus()
 
                     // Inicializar sync si no existe
+                    NotificationService.shared.ownerID = authManager.currentUser?.id
+                    NotificationService.shared.refreshStepReminders()
+
                     if syncService == nil {
                         let service = SyncService(
                             authManager: authManager,

@@ -265,6 +265,19 @@ struct ProfileRow: View {
 
 struct RemindersSettingsView: View {
     @AppStorage("globalNotificationsEnabled") private var globalNotificationsEnabled = true
+    @AppStorage(DailyDigest.hourKey) private var reminderHour = 9
+    @AppStorage(DailyDigest.minuteKey) private var reminderMinute = 0
+    @AppStorage(DailyDigest.dayBeforeKey) private var dayBefore = true
+
+    private var reminderTime: Binding<Date> {
+        Binding {
+            Calendar.current.date(bySettingHour: reminderHour, minute: reminderMinute, second: 0, of: .now) ?? .now
+        } set: { date in
+            let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+            reminderHour = parts.hour ?? 9
+            reminderMinute = parts.minute ?? 0
+        }
+    }
 
     var body: some View {
         Form {
@@ -282,13 +295,29 @@ struct RemindersSettingsView: View {
                 }
                 .onChange(of: globalNotificationsEnabled) { _, enabled in
                     if enabled {
-                        Task { await NotificationService.shared.requestAuthorizationIfNeeded() }
+                        Task {
+                            await NotificationService.shared.requestAuthorizationIfNeeded()
+                            NotificationService.shared.refreshStepReminders()
+                        }
                     } else {
                         NotificationService.shared.cancelAllNotifications()
                     }
                 }
             } footer: {
                 Text("Cada paso puede desactivar su recordatorio. StepKit pide permiso de notificaciones la primera vez que hace falta.")
+            }
+            if globalNotificationsEnabled {
+                Section {
+                    DatePicker("Hora del aviso", selection: reminderTime, displayedComponents: .hourAndMinute)
+                    Toggle("Avisar también la víspera", isOn: $dayBefore)
+                } header: {
+                    Text("Tus pasos")
+                } footer: {
+                    Text("Un solo aviso al día por Kit con lo que toca hoy, y al día siguiente si algo se quedó pendiente. Las sesiones que reserves avisan 10 minutos antes.")
+                }
+                .onChange(of: reminderHour) { NotificationService.shared.refreshStepReminders() }
+                .onChange(of: reminderMinute) { NotificationService.shared.refreshStepReminders() }
+                .onChange(of: dayBefore) { NotificationService.shared.refreshStepReminders() }
             }
         }
         .navigationBarTitleDisplayMode(.inline)

@@ -122,6 +122,7 @@ final class SyncManager {
 
     /// Maneja cambios de datos (llamar después de crear/editar/eliminar)
     func handleDataChange() {
+        NotificationService.shared.refreshStepReminders()
         #if DEBUG
         print("📡 SyncManager: handleDataChange called, triggering sync...")
         #endif
@@ -185,6 +186,8 @@ final class SyncManager {
                 print("🔄 SyncManager: Starting sync...")
                 #endif
                 try await syncService.syncAll()
+                // Lo que llega de otros dispositivos (fechas, pasos completados) cambia los avisos.
+                NotificationService.shared.refreshStepReminders()
                 #if DEBUG
                 completedSyncCount += 1
                 print("✅ SyncManager: Sync completed successfully")
