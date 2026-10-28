@@ -25,11 +25,11 @@ struct DailyDigestTests {
                                      now: date(1, 10), calendar: calendar)
         #expect(items.count == 3)
         #expect(items[0].fireDate == date(2, 9))
-        #expect(items[0].body == "Mañana: 3 pasos")
+        #expect(items[0].body == DailyDigest.body(today: [], overdue: [], tomorrow: ["Reunir", "Triturar", "Servir"]))
         #expect(items[1].fireDate == date(3, 9))
-        #expect(items[1].body == "Hoy: Reunir y 2 más")
+        #expect(items[1].body == DailyDigest.body(today: ["Reunir", "Triturar", "Servir"], overdue: [], tomorrow: []))
         #expect(items[2].fireDate == date(4, 9))
-        #expect(items[2].body.hasPrefix("Se quedaron pendientes: Reunir"))
+        #expect(items[2].body == DailyDigest.body(today: [], overdue: ["Reunir", "Triturar", "Servir"], tomorrow: []))
     }
 
     @Test("A Kit for today created after 9:00 only gets the day-after reminder")
@@ -38,14 +38,14 @@ struct DailyDigestTests {
                                      now: date(1, 18), calendar: calendar)
         #expect(items.count == 1)
         #expect(items[0].fireDate == date(2, 9))
-        #expect(items[0].body.hasPrefix("Se quedó pendiente: Cocer"))
+        #expect(items[0].body == DailyDigest.body(today: [], overdue: ["Cocer"], tomorrow: []))
     }
 
     @Test("The eve is skipped for a Kit created that same day, and can be turned off")
     func eveRules() {
         let createdToday = DailyDigest.plan(kits: [kit(created: date(1, 7), steps: [("Correr", 2)])],
                                             now: date(1, 7), calendar: calendar)
-        #expect(createdToday.first?.body.contains("Mañana") == false)
+        #expect(createdToday.first?.body == DailyDigest.body(today: ["Correr"], overdue: [], tomorrow: []))
         let noEve = DailyDigest.plan(kits: [kit(created: date(1, 7), steps: [("Correr", 4)])],
                                      now: date(1, 10), includesDayBefore: false, calendar: calendar)
         #expect(noEve.map(\.fireDate) == [date(4, 9), date(5, 9)])
