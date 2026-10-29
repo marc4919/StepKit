@@ -28,7 +28,6 @@ struct ProfileView: View {
     }
 
     @State private var twoColumns = false
-    @Environment(\.openURL) private var openURL
 
     @ViewBuilder private var headerSection: some View {
         Section {
@@ -48,16 +47,8 @@ struct ProfileView: View {
                 ProfileRow(title: String(localized: "IA y privacidad"), symbol: "hand.raised.fill", color: .blue)
             }
             .accessibilityIdentifier("profile.aiPrivacy")
-            // El idioma de cada app se elige en Ajustes de iOS (como recomienda Apple); aquí se abre directamente.
-            Button {
-                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
-            } label: {
-                ProfileRow(title: String(localized: "Idioma"), detail: AppLanguage.displayName,
-                           symbol: "globe", color: .indigo)
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint(String(localized: "Abre los ajustes de StepKit para cambiar el idioma"))
-            .accessibilityIdentifier("profile.language")
+            // Sin fila de idioma: la app sigue el idioma del iPhone. La fila llevaba a Ajustes, donde iOS
+            // solo muestra el idioma por app si el iPhone tiene más de un idioma preferido, y confundía.
         }
     }
 
