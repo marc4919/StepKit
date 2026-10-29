@@ -13,6 +13,7 @@ import SwiftData
 
 struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
+    @AppStorage(KitsHomeLayout.focusKey) private var focusLayout = true
     @Query(filter: #Predicate<GoalEntity> { !$0.isDeleted }) private var goalEntities: [GoalEntity]
     @State private var showingTermsOfService = false
     @State private var showingPrivacyPolicy = false
@@ -47,6 +48,19 @@ struct ProfileView: View {
                 ProfileRow(title: String(localized: "IA y privacidad"), symbol: "hand.raised.fill", color: .blue)
             }
             .accessibilityIdentifier("profile.aiPrivacy")
+            Toggle(isOn: $focusLayout) {
+                Label {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Destacar el último Kit")
+                        Text("Mis Kits abre con el que avanzaste")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    IconChip(symbol: "rectangle.topthird.inset.filled", color: .teal, size: 28)
+                }
+            }
+            .accessibilityIdentifier("profile.focusLayout")
             // Sin fila de idioma: la app sigue el idioma del iPhone. La fila llevaba a Ajustes, donde iOS
             // solo muestra el idioma por app si el iPhone tiene más de un idioma preferido, y confundía.
         }

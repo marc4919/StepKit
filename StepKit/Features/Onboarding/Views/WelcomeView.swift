@@ -181,7 +181,7 @@ struct WelcomeView: View {
 
     private var rows: [[Row]] {
         [
-            [Row(symbol: Symbols.kits, color: .accentColor, text: String(localized: "Un plan que puedes ajustar")),
+            [Row(symbol: Symbols.kits, color: .accentColor, text: String(localized: "Un plan hecho a tu medida")),
              Row(symbol: "checkmark", color: .green, text: String(localized: "Avances que quedan guardados")),
              Row(symbol: Symbols.calendar, color: .purple, text: String(localized: "Tiempo que encaja contigo"))],
             [Row(symbol: "1.circle.fill", color: .accentColor, text: String(localized: "Define lo que quieres conseguir")),

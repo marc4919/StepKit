@@ -2448,6 +2448,16 @@
         }
       }
     },
+    "Destacar el último Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Highlight the latest Kit"
+          }
+        }
+      }
+    },
     "Detalles": {
       "localizations": {
         "en": {
@@ -4576,6 +4586,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "My Kits"
+          }
+        }
+      }
+    },
+    "Mis Kits abre con el que avanzaste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My Kits opens with the one you worked on"
           }
         }
       }
@@ -7802,6 +7822,16 @@
         }
       }
     },
+    "Un plan hecho a tu medida": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A plan made for you"
+          }
+        }
+      }
+    },
     "Un plan que puedes ajustar": {
       "localizations": {
         "en": {
@@ -7918,6 +7948,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Overdue by %lld days"
+          }
+        }
+      }
+    },
+    "Ver Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View Kit"
           }
         }
       }

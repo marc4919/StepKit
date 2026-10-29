@@ -50,8 +50,11 @@ struct KitsHomeView: View {
 
     /// Kit que se avanzó por última vez: el cambio más reciente en el Kit o en sus pasos.
     private var continueKit: GoalEntity? {
-        activeKits.max { $0.lastActivity < $1.lastActivity }
+        guard focusLayout else { return nil }
+        return activeKits.max { $0.lastActivity < $1.lastActivity }
     }
+    /// Perfil: destacar el último Kit que avanzaste (tarjeta Continuar) o lista simple.
+    @AppStorage(KitsHomeLayout.focusKey) private var focusLayout = true
 
     private var otherKits: [GoalEntity] {
         activeKits
@@ -189,6 +192,10 @@ struct KitsHomeView: View {
     }
 }
 
+enum KitsHomeLayout {
+    static let focusKey = "kitsHomeFocusLayout"
+}
+
 // MARK: - Tarjeta Continuar
 
 private struct ContinueCard: View {
@@ -255,6 +262,12 @@ private struct ContinueCard: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                // La señal de que la cabecera abre el Kit: antes nada lo indicaba.
+                Label("Ver Kit", systemImage: "chevron.right")
+                    .labelStyle(TrailingIconLabelStyle())
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.tint)
+                    .padding(.top, 2)
             }
             Spacer(minLength: 8)
             if typeSize.isAccessibilitySize {
