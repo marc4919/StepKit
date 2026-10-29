@@ -90,7 +90,8 @@ struct KitsHomeView: View {
                     }
                     if let kit = continueKit {
                         Section {
-                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit)) {
+                            // Dos filas con chevron, como en Salud: el Kit y el siguiente paso, cada uno a su sitio.
+                            ContinueRows(kit: kit, lastProgress: lastProgress(of: kit)) {
                                 if let step = kit.nextStep {
                                     continuingStep = step
                                 } else {
@@ -99,7 +100,8 @@ struct KitsHomeView: View {
                             } onOpenKit: {
                                 open(kit)
                             }
-                            .cardRow()
+                            .listRowInsets(EdgeInsets())
+                            .alignmentGuide(.listRowSeparatorLeading) { _ in 20 }
                             .deletable { viewModel.prepareForDeletion(kit) }
                         }
                     }
@@ -189,9 +191,11 @@ struct KitsHomeView: View {
     }
 }
 
-// MARK: - Tarjeta Continuar
+// MARK: - Continuar: dos filas con chevron
 
-private struct ContinueCard: View {
+/// El Kit que avanzaste por última vez, en filas de lista: arriba el Kit (abre el plan), debajo el
+/// siguiente paso (lo abre). Cada destino lleva su chevron: nada pulsable queda sin señal.
+private struct ContinueRows: View {
     let kit: GoalEntity
     let lastProgress: ProgressEntryEntity?
     let onContinue: () -> Void
@@ -199,110 +203,96 @@ private struct ContinueCard: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Button(action: onOpenKit) { header.contentShape(.rect) }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Kit: \(kit.title)")
-                .accessibilityValue(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
-                .accessibilityHint("Abre el plan del Kit")
-                .accessibilityIdentifier("kit.row")
-            if lastProgress != nil || kit.nextStep != nil {
-                Divider().padding(.top, 6)
-            }
-            if let entry = lastProgress {
-                HStack(alignment: .top, spacing: 12) {
-                    IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Dónde lo dejaste").font(.headline)
-                        Text(entry.note).foregroundStyle(.secondary).lineLimit(3)
-                        Label(String(localized: "Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))"),
-                              systemImage: Symbols.calendar)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .accessibilityElement(children: .combine)
-            }
-            if let step = kit.nextStep {
-                nextStep(step)
-            } else {
-                Button(action: onOpenKit) {
-                    Label("Abrir Kit", systemImage: "chevron.right")
-                        .labelStyle(TrailingIconLabelStyle())
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-            }
-        }
-        .padding(18)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 26))
-    }
-
-    private var header: some View {
-        let layout = typeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 24))
-            : AnyLayout(HStackLayout(alignment: .top))
-        return layout {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("\(Text("CONTINUAR").font(.caption2.weight(.bold)).foregroundStyle(.tint))\(Text("  · último que avanzaste").font(.caption2).foregroundStyle(.secondary))")
-                Text(kit.title)
-                    .font(.title.bold())
-                    .fixedSize(horizontal: false, vertical: true)
-                if let date = kit.dueDate {
-                    Label("Fecha deseada · \(date.formatted(.dateTime.day().month(.abbreviated)))",
-                          systemImage: Symbols.wantedDate)
-                        .font(.subheadline)
+        Button(action: onOpenKit) { kitRow }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Kit: \(kit.title)")
+            .accessibilityValue(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
+            .accessibilityHint("Abre el plan del Kit")
+            .accessibilityIdentifier("kit.row")
+        if let entry = lastProgress {
+            HStack(alignment: .top, spacing: 12) {
+                IconChip(symbol: Symbols.note, color: .accentColor, size: 30)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Dónde lo dejaste").font(.subheadline.weight(.semibold))
+                    Text(entry.note).font(.subheadline).foregroundStyle(.secondary).lineLimit(3)
+                    Text(String(localized: "Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))"))
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
-            Spacer(minLength: 8)
-            if typeSize.isAccessibilitySize {
-                HStack(spacing: 12) {
-                    ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 64)
-                    stepCount.font(.body)
-                }
-            } else {
-                VStack(spacing: 10) {
-                    ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 78)
-                    stepCount.font(.caption2)
-                }
-            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .accessibilityElement(children: .combine)
+        }
+        if let step = kit.nextStep {
+            Button(action: onContinue) { stepRow(step) }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("kit.continue")
+                .accessibilityHint("Abre el siguiente paso de \(kit.title)")
         }
     }
 
-    private var stepCount: some View {
-        Text(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
-            .foregroundStyle(.secondary)
-    }
-
-    private func nextStep(_ step: StepEntity) -> some View {
-        TintCard(strength: 0.10) {
-            HStack(alignment: .top, spacing: 12) {
-                NextMark().padding(.top, 2)
-                VStack(alignment: .leading, spacing: 4) {
-                    Eyebrow(text: String(localized: "Paso \(kit.position(of: step)) · \(step.estimateMinutes) min"))
-                    Text(step.title)
-                        .font(.title3.bold())
+    private var kitRow: some View {
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 16))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 14))
+        return HStack(spacing: 10) {
+            layout {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("\(Text("CONTINUAR").font(.caption2.weight(.bold)).foregroundStyle(.tint))\(Text("  · último que avanzaste").font(.caption2).foregroundStyle(.secondary))")
+                    Text(kit.title)
+                        .font(.title2.bold())
                         .fixedSize(horizontal: false, vertical: true)
-                    if !step.descriptionShort.isEmpty {
-                        Text(step.descriptionShort)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(3)
+                    HStack(spacing: 12) {
+                        Text(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
+                        if let date = kit.dueDate {
+                            Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.wantedDate)
+                        }
                     }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 56)
+            }
+            Chevron()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .contentShape(.rect)
+    }
+
+    private func stepRow(_ step: StepEntity) -> some View {
+        HStack(spacing: 12) {
+            NextMark()
+            VStack(alignment: .leading, spacing: 3) {
+                Eyebrow(text: String(localized: "Paso \(kit.position(of: step)) · \(step.estimateMinutes) min"))
+                Text(step.title)
+                    .font(.headline)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !step.descriptionShort.isEmpty {
+                    Text(step.descriptionShort)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
             }
-            Button(action: onContinue) {
-                Label("Continuar", systemImage: "chevron.right")
-                    .labelStyle(TrailingIconLabelStyle())
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .accessibilityIdentifier("kit.continue")
-            .accessibilityHint("Abre el siguiente paso de \(kit.title)")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Chevron()
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .contentShape(.rect)
+    }
+}
+
+/// Indicador de revelación de una fila: la señal de que al tocarla se entra en algo.
+private struct Chevron: View {
+    var body: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.tertiary)
+            .accessibilityHidden(true)
     }
 }
 
