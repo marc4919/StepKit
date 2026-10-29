@@ -175,6 +175,8 @@ struct KitDetailView: View {
                 withAnimation(.smooth) { firstKitCardSeen = true }
             }
             .buttonStyle(.bordered)
+            // Alineado con el texto, no con el icono: 34 pt de chip + 12 de separación.
+            .padding(.leading, 46)
             .accessibilityIdentifier("kit.firstKitCard.dismiss")
         }
     }
