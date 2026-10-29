@@ -30,6 +30,8 @@ struct KitDetailView: View {
     @Environment(AuthManager.self) private var authManager
     @State private var presentedSheet: PresentedSheet?
     @State private var segment = 0
+    /// Tarjeta de una sola vez al abrir el primer Kit: qué es un paso y por dónde empezar.
+    @AppStorage("firstKitCardSeen") private var firstKitCardSeen = false
     @State private var wideLayout = false
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var editingEntry: ProgressEntryEntity?
@@ -45,6 +47,10 @@ struct KitDetailView: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
                     .id("kit.top")
+                if !firstKitCardSeen && !allStepsDone {
+                    firstKitCard
+                        .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+                }
                 if allStepsDone {
                     resultCard
                         .transition(.asymmetric(
@@ -72,6 +78,10 @@ struct KitDetailView: View {
                         Text("Registro").tag(1)
                     }
                     .pickerStyle(.segmented)
+                    .popoverTip(KitLogTip(), arrowEdge: .top)
+                    .onChange(of: segment) { _, value in
+                        if value == 1 { KitLogTip().invalidate(reason: .actionPerformed) }
+                    }
                     .accessibilityIdentifier("kit.segment")
                     if segment == 0 {
                         stepsSection
@@ -96,6 +106,9 @@ struct KitDetailView: View {
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                HelpButton(title: String(localized: "Qué hay en un Kit"), topics: HelpTopic.kit)
+            }
             // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {
@@ -144,6 +157,26 @@ struct KitDetailView: View {
         KitLogView(kit: kitEntity, entries: kitEntries,
                    onEdit: { editingEntry = $0 },
                    onAddNote: { presentedSheet = .annotations })
+    }
+
+    /// Solo la primera vez que se abre un Kit, encima del plan.
+    private var firstKitCard: some View {
+        PlainCard {
+            HStack(alignment: .top, spacing: 12) {
+                IconChip(symbol: "hand.wave", color: .accentColor)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Tu primer Kit").font(.headline)
+                    Text("Cada paso dice qué hacer y qué día toca. Entra en el primero para empezar; puedes guardar avances aunque no lo termines.")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Button("Entendido") {
+                withAnimation(.smooth) { firstKitCardSeen = true }
+            }
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("kit.firstKitCard.dismiss")
+        }
     }
 
     private var header: some View {

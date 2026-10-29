@@ -71,6 +71,10 @@ struct ProfileView: View {
                 ProfileRow(title: String(localized: "Política de privacidad"), symbol: "lock.fill", color: .green)
             }
             .buttonStyle(.plain)
+            NavigationLink { HowItWorksView() } label: {
+                ProfileRow(title: String(localized: "Cómo funciona StepKit"), symbol: "questionmark.circle.fill", color: .purple)
+            }
+            .accessibilityIdentifier("profile.howItWorks")
             NavigationLink { AboutView() } label: {
                 ProfileRow(title: String(localized: "Acerca de StepKit"), symbol: "info", color: .accentColor)
             }

@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 
 private enum CalendarRoute: Hashable {
@@ -130,6 +131,8 @@ struct CalendarPlusView: View {
                     } label: {
                         Label("Añadir", systemImage: "plus")
                     }
+                    .popoverTip(BookSessionTip())
+                    .simultaneousGesture(TapGesture().onEnded { BookSessionTip().invalidate(reason: .actionPerformed) })
                     .accessibilityIdentifier("calendar.add")
                 }
             }

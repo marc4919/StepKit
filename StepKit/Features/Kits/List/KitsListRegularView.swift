@@ -32,14 +32,6 @@ struct KitsListRegularView: View {
         }
         // Al borrar el último Kit, de dos columnas a pantalla única con un fundido suave.
         .animation(.smooth(duration: 0.6), value: kitEntities.isEmpty)
-        .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
-            KitCreatorView { newKit in
-                // Buscar el GoalEntity correspondiente
-                if let entity = kitEntities.first(where: { $0.id == newKit.id }) {
-                    viewModel.selectedKitEntity = entity
-                }
-            }
-        }
         .sheet(isPresented: $viewModel.showingDeleteConfirmation) {
             DeleteConfirmationSheet(
                 goal: viewModel.kitEntityToDelete,

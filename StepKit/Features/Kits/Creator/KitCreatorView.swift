@@ -111,6 +111,12 @@ struct KitCreatorView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // «Listo» sobre el teclado: la otra salida, además de tocar fuera o deslizar.
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Listo") { focusedField = nil }
+                    .fontWeight(.semibold)
+            }
             ToolbarItem(placement: .principal) {
                 Text(vm.toolbarTitle)
                     .font(.headline)

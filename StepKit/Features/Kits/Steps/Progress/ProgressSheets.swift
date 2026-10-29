@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 
 struct SaveProgressSheet: View {
@@ -108,6 +109,7 @@ struct SaveProgressSheet: View {
             try ProgressLog.saveProgress(for: step, note: note,
                                          blockedReason: reportingBlock ? reason.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
                                          context: modelContext, keepsBlockState: !reportingBlock)
+            TipFlow.firstProgressSaved = true
             syncManager?.handleDataChange()
             // El asistente reacciona: con un bloqueo puede proponer cómo seguir.
             if let kit = step.goal {

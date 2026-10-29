@@ -1020,6 +1020,16 @@
         }
       }
     },
+    "Anota qué te frena. El asistente puede ayudarte a salir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note what's holding you back. The assistant can help you get unstuck."
+          }
+        }
+      }
+    },
     "Anotaciones": {
       "localizations": {
         "en": {
@@ -1116,6 +1126,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Write it down so you can pick up next time without thinking. It's saved with the date and time, and doesn't complete the step."
+          }
+        }
+      }
+    },
+    "Aquí quedan tus avances, notas y bloqueos, en orden. Las notas del Kit también van aquí.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress, notes and blocks stay here, in order. Kit notes go here too."
           }
         }
       }
@@ -1266,6 +1286,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reminders to get back to your steps and booked sessions."
+          }
+        }
+      }
+    },
+    "Ayuda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help"
           }
         }
       }
@@ -1516,6 +1546,16 @@
         }
       }
     },
+    "Cada paso dice qué hacer y qué día toca. Entra en el primero para empezar; puedes guardar avances aunque no lo termines.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each step says what to do and which day it's due. Open the first one to begin; you can save progress even if you don't finish it."
+          }
+        }
+      }
+    },
     "Cada paso puede desactivar su recordatorio. StepKit pide permiso de notificaciones la primera vez que hace falta.": {
       "localizations": {
         "en": {
@@ -1542,6 +1582,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calendar"
+          }
+        }
+      }
+    },
+    "Cambia el título, la descripción, la fecha o el tiempo del paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change the step's title, description, date or time."
           }
         }
       }
@@ -1632,6 +1682,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sign out"
+          }
+        }
+      }
+    },
+    "Cierra el paso y pasa al siguiente.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close the step and move on to the next."
           }
         }
       }
@@ -2068,6 +2128,16 @@
         }
       }
     },
+    "Cuatro ideas y ya está. Lo demás lo descubres usándola.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Four ideas and that's it. You'll discover the rest by using it."
+          }
+        }
+      }
+    },
     "Cuentas de Usuario": {
       "localizations": {
         "en": {
@@ -2124,6 +2194,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "How long we keep it"
+          }
+        }
+      }
+    },
+    "Cómo funciona StepKit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How StepKit works"
           }
         }
       }
@@ -2338,6 +2418,26 @@
         }
       }
     },
+    "Desde el Calendario, elige cuándo harás el paso. Te avisa 10 minutos antes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From the Calendar, pick when you'll do the step. It reminds you 10 minutes before."
+          }
+        }
+      }
+    },
+    "Detalles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details"
+          }
+        }
+      }
+    },
     "Detalles del Kit": {
       "localizations": {
         "en": {
@@ -2534,6 +2634,16 @@
         }
       }
     },
+    "El Calendario es tu tiempo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Calendar is your time"
+          }
+        }
+      }
+    },
     "El asistente está escribiendo": {
       "localizations": {
         "en": {
@@ -2560,6 +2670,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The assistant isn't available right now"
+          }
+        }
+      }
+    },
+    "El asistente te acompaña": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The assistant is with you"
           }
         }
       }
@@ -2670,6 +2790,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The link to your Apple Account"
+          }
+        }
+      }
+    },
+    "Elige día y hora para un paso o para algo propio. Te avisa 10 minutos antes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a day and time for a step or for something of your own. It reminds you 10 minutes before."
           }
         }
       }
@@ -2920,6 +3050,16 @@
         }
       }
     },
+    "Entendido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it"
+          }
+        }
+      }
+    },
     "Enviar": {
       "localizations": {
         "en": {
@@ -3140,6 +3280,16 @@
         }
       }
     },
+    "Escribes qué quieres conseguir y para cuándo. La IA propone los pasos y los revisas antes de aceptar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You write what you want to achieve and by when. The AI proposes the steps and you review them before accepting."
+          }
+        }
+      }
+    },
     "Escribiendo qué hacer en cada paso…": {
       "localizations": {
         "en": {
@@ -3256,6 +3406,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Disclaimer of Warranties"
+          }
+        }
+      }
+    },
+    "Explica qué hace cada cosa de esta pantalla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explains what each thing on this screen does"
           }
         }
       }
@@ -3426,6 +3586,16 @@
         }
       }
     },
+    "Guarda lo que llevas, aunque no hayas terminado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save where you are, even if you're not done."
+          }
+        }
+      }
+    },
     "Guardar": {
       "localizations": {
         "en": {
@@ -3462,6 +3632,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Something unexpected went wrong with Sign in with Apple. Try again later."
+          }
+        }
+      }
+    },
+    "Habla con él desde el Kit o desde un paso. Si algo no encaja, propone cambios y tú decides.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Talk to it from the Kit or from a step. If something doesn't fit, it proposes changes and you decide."
           }
         }
       }
@@ -3944,6 +4124,16 @@
         }
       }
     },
+    "La meta, la fecha y los recordatorios del Kit. Desde ahí se edita.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The goal, the date and the Kit's reminders. Edit it from there."
+          }
+        }
+      }
+    },
     "La respuesta de Apple no ha sido válida. Vuelve a intentarlo en unos minutos.": {
       "localizations": {
         "en": {
@@ -4130,6 +4320,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Any obstacles you mention"
+          }
+        }
+      }
+    },
+    "Los pasos, en orden y con fecha. Toca uno para abrirlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The steps, in order and dated. Tap one to open it."
           }
         }
       }
@@ -5840,6 +6040,36 @@
         }
       }
     },
+    "Qué hay en un Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's in a Kit"
+          }
+        }
+      }
+    },
+    "Qué hay en un paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's in a step"
+          }
+        }
+      }
+    },
+    "Qué queda hecho cuando acabas el paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's done once you finish the step."
+          }
+        }
+      }
+    },
     "Qué quieres hacer": {
       "localizations": {
         "en": {
@@ -6030,6 +6260,26 @@
         }
       }
     },
+    "Reserva cuándo harás un paso o algo propio. Cada mañana, un solo aviso con lo que toca.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Book when you'll do a step or something of your own. Every morning, one reminder with what's due."
+          }
+        }
+      }
+    },
+    "Reserva cuándo lo harás": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Book when you'll do it"
+          }
+        }
+      }
+    },
     "Reservar": {
       "localizations": {
         "en": {
@@ -6046,6 +6296,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Book this day"
+          }
+        }
+      }
+    },
+    "Reservar sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Book a session"
           }
         }
       }
@@ -6952,6 +7212,16 @@
         }
       }
     },
+    "Tiene qué hacer, cuánto tarda y qué día toca. Lo abres y trabajas en él.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It has what to do, how long it takes and which day it's due. You open it and work on it."
+          }
+        }
+      }
+    },
     "Tipo de objetivo": {
       "localizations": {
         "en": {
@@ -7068,6 +7338,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Three actions on every step"
+          }
+        }
+      }
+    },
+    "Tu Registro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Log"
           }
         }
       }
@@ -7192,6 +7472,16 @@
         }
       }
     },
+    "Tu primer Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your first Kit"
+          }
+        }
+      }
+    },
     "Tu primer paso": {
       "localizations": {
         "en": {
@@ -7288,6 +7578,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your progress"
+          }
+        }
+      }
+    },
+    "Tus avances, notas y bloqueos, en orden. Las notas del Kit también van aquí.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your progress, notes and blocks, in order. Kit notes go here too."
           }
         }
       }
@@ -7412,6 +7712,16 @@
         }
       }
     },
+    "Un Kit es una meta con plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Kit is a goal with a plan"
+          }
+        }
+      }
+    },
     "Un avance concreto para ahora": {
       "localizations": {
         "en": {
@@ -7438,6 +7748,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "A clear step to come back to"
+          }
+        }
+      }
+    },
+    "Un paso es una acción concreta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A step is one concrete action"
           }
         }
       }

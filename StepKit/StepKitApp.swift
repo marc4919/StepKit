@@ -73,6 +73,8 @@ struct StepKitApp: App {
             // La ventana es negra por defecto: al abrir, girar o desplegar el iPhone Duo se veía
             // un instante en negro antes de pintar. Se le da el fondo de la app.
             .background(WindowBackgroundSetter())
+            // En toda la app, tocar fuera de un campo de texto cierra el teclado.
+            .dismissesKeyboardOnTap()
             .task {
                 #if DEBUG
                 guard DesignFixtureScenario.current == nil else { return }

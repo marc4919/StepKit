@@ -73,6 +73,17 @@ struct KitsListView: View {
                 )
             }
         }
+        // El creador cuelga de aquí, no de cada disposición: al plegar o desplegar el iPhone Duo
+        // la disposición cambia y, si el creador colgara de ella, se cerraría a medio generar.
+        .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
+            KitCreatorView { newKit in
+                if horizontalSizeClass == .compact {
+                    viewModel.navigationPath.append(newKit.id)
+                } else if let entity = visibleKitEntities.first(where: { $0.id == newKit.id }) {
+                    viewModel.selectedKitEntity = entity
+                }
+            }
+        }
         // iPhone Duo al plegar o desplegar: se pasa de una columna a dos (o al revés).
         // El Kit abierto se conserva en lugar de volver a Mis Kits.
         .onChange(of: horizontalSizeClass) { _, sizeClass in

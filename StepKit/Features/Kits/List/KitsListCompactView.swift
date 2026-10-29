@@ -31,11 +31,6 @@ struct KitsListCompactView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
-            KitCreatorView { newKit in
-                viewModel.navigationPath.append(newKit.id)
-            }
-        }
         .sheet(isPresented: $viewModel.showingDeleteConfirmation) {
             DeleteConfirmationSheet(
                 goal: viewModel.kitEntityToDelete,

@@ -188,7 +188,11 @@ struct DesignFixtureRoot: View {
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 
-    @ViewBuilder private var kits: some View {
+    private var kits: some View {
+        kitsLayout.fullScreenCover(isPresented: $viewModel.showingKitCreator) { KitCreatorView() }
+    }
+
+    @ViewBuilder private var kitsLayout: some View {
         let all = (try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []
         if sizeClass == .regular {
             KitsListRegularView(

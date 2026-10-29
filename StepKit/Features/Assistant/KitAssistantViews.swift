@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import TipKit
 import SwiftData
 
 // MARK: - Lista del Kit
@@ -100,6 +101,7 @@ struct KitAssistantHubView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(kit.title)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { TipFlow.assistantSeen = true }
         .navigationDestination(item: $opened) { item in
             KitAssistantChatView(kit: kit, conversation: item.conversation, initialIntent: item.intent)
         }
