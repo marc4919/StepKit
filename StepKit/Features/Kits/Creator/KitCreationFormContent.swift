@@ -109,19 +109,55 @@ struct KitCreationFormContent: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// Los tres campos opcionales van plegados bajo una fila: la primera pantalla queda con el
+    /// resultado y el tiempo. Si ya hay algo escrito en ellos (al volver de una vista previa), se ven.
+    @State private var showsContext = false
+    private var hasContext: Bool {
+        ![doneWhen, startingPoint, inconveniences].allSatisfy { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
     @ViewBuilder private var goalSection: some View {
         Section {
             field("target", .accentColor, String(localized: "Resultado"), placeholder: String(localized: "Ej.: Correr 5 km sin parar"),
-                  text: $description, focus: .description, next: .doneWhen, identifier: "kitCreator.description")
-            field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
-                  placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen, next: .startingPoint)
-            field("flag.fill", .pink, String(localized: "Punto de partida (opcional)"),
-                  placeholder: String(localized: "Ej.: Ahora aguanto 10 min seguidos"), text: $startingPoint, focus: .startingPoint, next: .obstacles)
-            field(Symbols.risk, .orange, String(localized: "Qué te puede frenar (opcional)"),
-                  placeholder: String(localized: "Ej.: Trabajo a turnos, me duele la rodilla"), text: $inconveniences, focus: .obstacles)
+                  text: $description, focus: .description, next: showsContext ? .doneWhen : nil, identifier: "kitCreator.description")
+            Button {
+                withAnimation(.smooth(duration: 0.4)) { showsContext.toggle() }
+                if !showsContext, [.doneWhen, .startingPoint, .obstacles].contains(focusedField.wrappedValue) {
+                    focusedField.wrappedValue = nil
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    IconChip(symbol: "text.badge.plus", color: .secondary, size: 28)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(showsContext ? String(localized: "Menos contexto") : String(localized: "Añadir contexto (opcional)"))
+                        if !showsContext {
+                            Text("Cómo sabrás que está listo, de dónde partes, qué te puede frenar.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(showsContext ? 180 : 0))
+                }
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("kitCreator.context")
+            if showsContext {
+                field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
+                      placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen, next: .startingPoint)
+                field("flag.fill", .pink, String(localized: "Punto de partida (opcional)"),
+                      placeholder: String(localized: "Ej.: Ahora aguanto 10 min seguidos"), text: $startingPoint, focus: .startingPoint, next: .obstacles)
+                field(Symbols.risk, .orange, String(localized: "Qué te puede frenar (opcional)"),
+                      placeholder: String(localized: "Ej.: Trabajo a turnos, me duele la rodilla"), text: $inconveniences, focus: .obstacles)
+            }
         } header: {
             Text("Tu objetivo")
         }
+        .onAppear { if hasContext { showsContext = true } }
     }
 
     @ViewBuilder private var timeSection: some View {

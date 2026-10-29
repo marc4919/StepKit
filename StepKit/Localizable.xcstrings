@@ -1356,6 +1356,16 @@
         }
       }
     },
+    "Añadir contexto (opcional)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add context (optional)"
+          }
+        }
+      }
+    },
     "Añadir nota": {
       "localizations": {
         "en": {
@@ -2204,6 +2214,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "How StepKit works"
+          }
+        }
+      }
+    },
+    "Cómo sabrás que está listo, de dónde partes, qué te puede frenar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How you'll know it's done, where you start from, what might hold you back."
           }
         }
       }
@@ -4506,6 +4526,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Children"
+          }
+        }
+      }
+    },
+    "Menos contexto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Less context"
           }
         }
       }
