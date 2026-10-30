@@ -134,7 +134,7 @@ struct StepDetailView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .onGeometryChange(for: Bool.self) { Self.isNearlySquare($0.size) } action: { sideControls = $0 }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in sideControls = Self.isNearlySquare(Self.windowSize) }
         .sensoryFeedback(.success, trigger: celebration)
         .navigationDestination(isPresented: $showingKitResult) {
             if let kit = stepEntity.goal { ResultReviewView(kit: kit) }
@@ -195,10 +195,14 @@ struct StepDetailView: View {
                 }
             }
             .padding(.horizontal)
+            // Un respiro bajo la barra: en el Duo cerrado la cabecera rozaba el cristal y se cortaba.
+            .padding(.top, 6)
             .padding(.bottom, 20)
         }
         .balancedHorizontalSafeArea()
-        .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { wideLayout = $0 }
+        // Se decide siempre con el tamaño de la ventana, igual que el valor inicial: medir la vista daba
+        // otro resultado en el primer fotograma (Duo cerrado) y el texto se recolocaba al entrar.
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in wideLayout = TwoColumnLayout.fits(Self.windowSize) }
     }
 
     private var stepActions: some View {

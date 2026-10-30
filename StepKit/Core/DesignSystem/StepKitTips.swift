@@ -139,6 +139,20 @@ struct HelpSheet: View {
     }
 }
 
+/// Botón «?» del Kit: abre la ayuda del Kit y del paso.
+struct HelpButton: View {
+    @State private var showing = false
+
+    var body: some View {
+        Button("Ayuda", systemImage: "questionmark.circle") { showing = true }
+            .sheet(isPresented: $showing) {
+                HelpSheet(title: String(localized: "Qué hay en un Kit y en un paso"), sections: HelpTopic.all)
+            }
+            .accessibilityHint("Explica qué hace cada cosa del Kit y de sus pasos")
+            .accessibilityIdentifier("kit.help")
+    }
+}
+
 // MARK: - Cómo funciona StepKit (Perfil)
 
 struct HowItWorksView: View {

@@ -3470,6 +3470,16 @@
         }
       }
     },
+    "Explica qué hace cada cosa del Kit y de sus pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explains what each thing in the Kit and its steps does"
+          }
+        }
+      }
+    },
     "Facturado mensualmente": {
       "localizations": {
         "en": {

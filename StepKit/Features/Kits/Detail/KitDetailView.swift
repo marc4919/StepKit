@@ -32,6 +32,8 @@ struct KitDetailView: View {
     @State private var segment = 0
     /// Tarjeta de una sola vez al abrir el primer Kit: qué es un paso y por dónde empezar.
     @AppStorage("firstKitCardSeen") private var firstKitCardSeen = false
+    /// La tarjeta se funde con animación propia; el ajuste guardado se escribe al terminar.
+    @State private var firstKitCardDismissed = false
     @State private var wideLayout = false
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var editingEntry: ProgressEntryEntity?
@@ -47,9 +49,10 @@ struct KitDetailView: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
                     .id("kit.top")
-                if !firstKitCardSeen && !allStepsDone {
+                if !firstKitCardSeen && !firstKitCardDismissed && !allStepsDone {
                     firstKitCard
-                        .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+                        .transition(.asymmetric(insertion: .identity,
+                                                removal: .opacity.combined(with: .scale(scale: 0.92, anchor: .top))))
                 }
                 if allStepsDone {
                     resultCard
@@ -106,6 +109,10 @@ struct KitDetailView: View {
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // Un solo «?» en toda la app: explica el Kit y el paso. En el paso no hay otro.
+            ToolbarItem(placement: .topBarLeading) {
+                HelpButton()
+            }
             // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {
@@ -169,7 +176,11 @@ struct KitDetailView: View {
                 }
             }
             Button("Entendido") {
-                withAnimation(.smooth) { firstKitCardSeen = true }
+                withAnimation(.smooth(duration: 0.6)) { firstKitCardDismissed = true }
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(650))
+                    firstKitCardSeen = true
+                }
             }
             .buttonStyle(.bordered)
             // Alineado con el texto, no con el icono: 34 pt de chip + 12 de separación.

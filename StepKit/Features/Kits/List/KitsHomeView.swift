@@ -430,13 +430,20 @@ private struct KitHomeRow: View {
                 }
                 if !kit.isCompleted {
                     HStack(spacing: 8) {
+                        // HStack y no Label: Label separaba el icono del texto más de la cuenta.
                         if let date = kit.dueDate {
-                            Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.wantedDate)
-                                .foregroundStyle(MetaTint.date)
+                            HStack(spacing: 3) {
+                                Image(systemName: Symbols.wantedDate)
+                                Text(date.formatted(.dateTime.day().month(.abbreviated)))
+                            }
+                            .foregroundStyle(MetaTint.date)
                         }
                         if let entry = lastProgress {
-                            Label(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.note)
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 3) {
+                                Image(systemName: Symbols.note)
+                                Text(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))
+                            }
+                            .foregroundStyle(.secondary)
                         }
                     }
                     .font(.caption.weight(.medium))
