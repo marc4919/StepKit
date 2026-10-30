@@ -183,6 +183,7 @@ struct KitAssistantChatView: View {
     @State private var didSendInitial = false
     /// Lo que se iba a enviar mientras se pide el permiso de IA externa.
     @State private var pendingSend: PendingSend?
+    @State private var creatingKit = false
 
     private enum PendingSend: Identifiable {
         case draft(String), intent(AssistantIntent)
@@ -235,6 +236,10 @@ struct KitAssistantChatView: View {
         .navigationTitle(step == nil ? conversation.title : String(localized: "Ayuda del paso"))
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
+        .fullScreenCover(isPresented: $creatingKit) {
+            let suggestion = conversation.newKitSuggestion
+            KitCreatorView(initialGoal: suggestion?.goal ?? suggestion?.title)
+        }
         .sheet(item: $pendingSend) { pending in
             // El asistente necesita la IA externa: sin permiso no se envía nada y lo escrito sigue en el campo.
             AIConsentView(purpose: .assistant) { granted in
@@ -293,6 +298,9 @@ struct KitAssistantChatView: View {
             let messageIDs = Set(conversation.viewModel.messages.map(\.id))
             ForEach(conversation.proposals.filter { $0.anchorMessageID.map { !messageIDs.contains($0) } ?? true }) {
                 proposalCard($0)
+            }
+            if let suggestion = conversation.newKitSuggestion {
+                NewKitCard(suggestion: suggestion) { creatingKit = true }
             }
             if let step, step.isBlocked,
                conversation.viewModel.messages.contains(where: { $0.text == String(localized: "Me falta algo") }) {
@@ -362,6 +370,33 @@ struct KitAssistantChatView: View {
 }
 
 // MARK: - Tarjetas
+
+/// Cambiar de tema no es un ajuste de este Kit: el asistente sugiere crear otro, ya precargado.
+struct NewKitCard: View {
+    let suggestion: AssistResponse.Suggestion
+    let onCreate: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Eyebrow(text: String(localized: "Otro Kit"), color: .accentColor)
+            if let title = suggestion.title, !title.isEmpty {
+                Text(title).font(.headline)
+            }
+            if let reason = suggestion.reason, !reason.isEmpty {
+                Text(reason).font(.footnote).foregroundStyle(.secondary)
+            }
+            Button(action: onCreate) {
+                Label("Crear un Kit nuevo con esta idea", systemImage: "plus.circle").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .accessibilityIdentifier("assistant.createKit")
+        }
+        .padding(16)
+        .background(Color.accentColor.opacity(0.08), in: .rect(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.accentColor.opacity(0.2)))
+    }
+}
 
 struct ProposalCard: View {
     let proposal: PlanProposal

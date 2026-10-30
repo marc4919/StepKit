@@ -32,6 +32,8 @@ struct KitCreatorView: View {
 
     // Fecha inicial opcional (para cuando se abre desde el calendario)
     var initialDate: Date?
+    /// Resultado ya escrito (cuando el asistente propone otro Kit).
+    var initialGoal: String?
 
     // MARK: - ViewModel
     
@@ -44,9 +46,10 @@ struct KitCreatorView: View {
     
     // MARK: - Initialization
     
-    init(onKitCreated: ((Goal) -> Void)? = nil, initialDate: Date? = nil) {
+    init(onKitCreated: ((Goal) -> Void)? = nil, initialDate: Date? = nil, initialGoal: String? = nil) {
         self.onKitCreated = onKitCreated
         self.initialDate = initialDate
+        self.initialGoal = initialGoal
     }
 
     var body: some View {
@@ -59,7 +62,7 @@ struct KitCreatorView: View {
         }
         .task {
             if vm == nil {
-                vm = KitCreatorViewModel(apiClient: apiClient, initialDate: initialDate)
+                vm = KitCreatorViewModel(apiClient: apiClient, initialDate: initialDate, initialGoal: initialGoal)
             }
         }
     }

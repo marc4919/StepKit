@@ -100,10 +100,13 @@ final class KitCreatorViewModel {
     
     // MARK: - Initialization
     
-    init(apiClient: any APIClientProtocol, initialDate: Date? = nil) {
+    init(apiClient: any APIClientProtocol, initialDate: Date? = nil, initialGoal: String? = nil) {
         self.apiClient = apiClient
         if let initialDate {
             self.dueDate = initialDate
+        }
+        if let initialGoal, !initialGoal.isEmpty {
+            self.description = initialGoal
         }
     }
     

@@ -86,9 +86,19 @@ struct AssistResponse: Decodable {
         let changes: [Change]
     }
 
+    /// Lo que el asistente no puede hacer con cambios en este Kit: por ahora, proponer otro Kit
+    /// («new_kit», con título y resultado para precargar el creador). Tipos desconocidos se ignoran.
+    struct Suggestion: Decodable {
+        let type: String
+        let title: String?
+        let goal: String?
+        let reason: String?
+    }
+
     let message: String
     let proposal: Proposal?
     let summary: String?
+    let suggestion: Suggestion?
 }
 
 enum AssistTrigger: String {
@@ -367,6 +377,8 @@ enum KitAssistant {
             // Permiso retirado mientras esperábamos: se descarta la respuesta.
             guard AIConsentManager().hasConsent else { return false }
             conversation.serverSummary = response.summary ?? conversation.serverSummary
+            // Cada respuesta decide si sigue en pie la sugerencia de crear otro Kit.
+            conversation.newKitSuggestion = response.suggestion.flatMap { $0.type == "new_kit" ? $0 : nil }
             let proposal = response.proposal.flatMap { RemoteProposalBuilder.build($0, kit: kit) }
             let text = response.message.trimmingCharacters(in: .whitespacesAndNewlines)
             if !text.isEmpty || proposal != nil {

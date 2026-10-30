@@ -24,6 +24,8 @@ final class KitConversation: Identifiable {
     var proposals: [PlanProposal] = []
     /// Resumen que devuelve el asistente del servidor; se manda en la siguiente llamada.
     var serverSummary: String?
+    /// El asistente propone otro Kit en vez de cambiar este: la conversación ofrece crearlo.
+    var newKitSuggestion: AssistResponse.Suggestion?
 
     init(kitID: UUID, stepID: UUID?, title: String) {
         self.kitID = kitID

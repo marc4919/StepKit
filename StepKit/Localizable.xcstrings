@@ -2202,6 +2202,16 @@
         }
       }
     },
+    "Crear un Kit nuevo con esta idea": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a new Kit with this idea"
+          }
+        }
+      }
+    },
     "Creatividad": {
       "localizations": {
         "en": {
@@ -5378,6 +5388,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Organize your goals"
+          }
+        }
+      }
+    },
+    "Otro Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another Kit"
           }
         }
       }
