@@ -90,30 +90,3 @@ extension View {
 }
 
 
-/// Impide que el controlador de navegación esconda su barra al deslizar, con el teclado o en alto
-/// compacto. SwiftUI no lo expone; en el Duo cerrado, con el teclado abierto, la barra de una hoja
-/// desaparecía al desplazar y con ella «Guardar».
-struct NavigationBarPinned: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UIViewController {
-        let controller = UIViewController()
-        controller.view.isUserInteractionEnabled = false
-        return controller
-    }
-
-    func updateUIViewController(_ controller: UIViewController, context: Context) {
-        DispatchQueue.main.async {
-            var current: UIViewController? = controller
-            while let c = current {
-                if let nav = c as? UINavigationController ?? c.navigationController {
-                    nav.hidesBarsOnSwipe = false
-                    nav.hidesBarsWhenKeyboardAppears = false
-                    nav.hidesBarsWhenVerticallyCompact = false
-                    nav.hidesBarsOnTap = false
-                    nav.setNavigationBarHidden(false, animated: false)
-                    return
-                }
-                current = c.parent
-            }
-        }
-    }
-}
