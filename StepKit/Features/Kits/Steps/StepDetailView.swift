@@ -624,6 +624,9 @@ struct StepDetailView: View {
                 withAnimation(.smooth) { toggleStepCompletion() }
             } label: {
                 toolbarLabel("Completar", symbol: "checkmark", primary: true)
+                    // El estilo destacado pone el texto en seminegrita y parecía más grande que
+                    // «Avance» y «Atasco»: mismo peso; lo distingue el color, no el tamaño.
+                    .fontWeight(.regular)
             }
             .buttonStyle(.glassProminent)
             .accessibilityLabel("Marcar como completado")
