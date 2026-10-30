@@ -37,7 +37,10 @@ struct StepDetailView: View {
     @Environment(\.detailColumnSize) private var detailColumnSize
     private var layoutSize: CGSize { measuredSize ?? detailColumnSize ?? Self.windowSize }
     private var wideLayout: Bool { TwoColumnLayout.fits(layoutSize) }
-    private var sideControls: Bool { Self.isNearlySquare(layoutSize) }
+    /// Con el tamaño de la ventana, nunca con el medido: la barra de acciones propia resta altura a la
+    /// vista, y en un iPhone eso la volvía «casi cuadrada», se quitaba la barra, volvía a crecer, y así
+    /// sin fin (pantalla en blanco con la CPU al 100 %).
+    private var sideControls: Bool { Self.isNearlySquare(Self.windowSize) }
     /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
     /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
     @State private var insets = EdgeInsets()
