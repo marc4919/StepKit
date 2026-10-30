@@ -30,6 +30,8 @@ struct KitDetailView: View {
     @Environment(AuthManager.self) private var authManager
     @State private var presentedSheet: PresentedSheet?
     @State private var segment = 0
+    @State private var headerHeight: CGFloat = 0
+    @State private var barTitleShown = false
     /// Tarjeta de una sola vez al abrir el primer Kit: qué es un paso y por dónde empezar.
     @AppStorage("firstKitCardSeen") private var firstKitCardSeen = false
     /// La tarjeta se funde con animación propia; el ajuste guardado se escribe al terminar.
@@ -49,6 +51,7 @@ struct KitDetailView: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
                     .id("kit.top")
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headerHeight = $0 }
                 if !firstKitCardSeen && !firstKitCardDismissed && !allStepsDone {
                     firstKitCard
                         .transition(.asymmetric(insertion: .identity,
@@ -108,7 +111,19 @@ struct KitDetailView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
+        // El título vive en la cabecera; en la barra solo aparece cuando la cabecera ya no se ve,
+        // como en Salud, Fitness o Música. Así no se lee dos veces al entrar.
+        .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.contentInsets.top > max(headerHeight - 24, 1) } action: { _, past in
+            withAnimation(.easeInOut(duration: 0.2)) { barTitleShown = past }
+        }
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(kitEntity.title)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .opacity(barTitleShown ? 1 : 0)
+                    .accessibilityHidden(!barTitleShown)
+            }
             // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {
