@@ -415,11 +415,24 @@ struct KitCreationStreamingProgress: View {
 
     private func phase(done: Bool, active: Bool, title: String, detail: String) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: done ? "checkmark.circle.fill" : active ? "circle.dotted" : "circle")
-                .font(.title2)
-                .foregroundStyle(done ? Color.green : active ? Color.accentColor : Color.secondary)
-                .symbolEffect(.pulse, isActive: active)
-                .contentTransition(.symbolEffect(.replace))
+            // Tres símbolos superpuestos que se funden, en vez de reemplazar uno por otro: el reemplazo
+            // de símbolos, con el pulso activo a la vez, dejaba ver el check un instante antes de tiempo.
+            ZStack {
+                Image(systemName: "circle")
+                    .foregroundStyle(Color.secondary)
+                    .opacity(done || active ? 0 : 1)
+                Image(systemName: "circle.dotted")
+                    .foregroundStyle(Color.accentColor)
+                    .symbolEffect(.pulse, isActive: active && !done)
+                    .opacity(active && !done ? 1 : 0)
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(Color.green)
+                    .opacity(done ? 1 : 0)
+                    .scaleEffect(done ? 1 : 0.6)
+            }
+            .font(.title2)
+            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: done)
+            .animation(.easeInOut(duration: 0.25), value: active)
             VStack(alignment: .leading) {
                 Text(title).font(.headline)
                 Text(detail).font(.subheadline).foregroundStyle(.secondary)

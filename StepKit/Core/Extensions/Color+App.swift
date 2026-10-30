@@ -24,6 +24,14 @@ extension Color {
 
     /// App background (grouped style)
     static let appBackground = Color(.systemGroupedBackground)
+    /// Fondo de una hoja igual al de las pantallas: en oscuro, una hoja «eleva» los grises del
+    /// sistema y se veía más claro que el resto. Aquí se fija el nivel base.
+    static let sheetBackground = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? .black : UIColor.systemGroupedBackground.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+    })
+    static let sheetRowBackground = Color(UIColor { tc in
+        tc.userInterfaceStyle == .dark ? UIColor(red: 0.11, green: 0.11, blue: 0.118, alpha: 1) : .white
+    })
 }
 
 // MARK: - UIColor Extension for UIKit compatibility

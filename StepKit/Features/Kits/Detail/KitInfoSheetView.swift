@@ -22,15 +22,18 @@ struct KitInfoSheetView: View {
         NavigationStack {
             List {
                 heroSection
-                goalSection
-                planSection
-                if !goalEntity.risks.isEmpty { risksSection }
-                notificationsSection
-                deleteSection
+                Group {
+                    goalSection
+                    planSection
+                    if !goalEntity.risks.isEmpty { risksSection }
+                    notificationsSection
+                    deleteSection
+                }
+                .listRowBackground(Color.sheetRowBackground)
             }
             .scrollContentBackground(.hidden)
             .background(alignment: .top) { BrandGlow() }
-            .background(Color(.systemGroupedBackground))
+            .background(Color.sheetBackground)
             .navigationTitle("Detalles del Kit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
