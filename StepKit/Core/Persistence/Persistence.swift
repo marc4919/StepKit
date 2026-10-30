@@ -8,22 +8,36 @@
 import SwiftData
 import Foundation
 
+/// Esquema de la 1.0. Coincide con el almacén que ya tienen los usuarios de TestFlight,
+/// así que abrirlo no migra nada. Cualquier cambio de modelo a partir de aquí va en un
+/// `StepKitSchemaV2` con su etapa en `StepKitMigrationPlan`, para que la app no se cierre al abrir.
+enum StepKitSchemaV1: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self]
+    }
+}
+
+enum StepKitMigrationPlan: SchemaMigrationPlan {
+    static var schemas: [any VersionedSchema.Type] { [StepKitSchemaV1.self] }
+    static var stages: [MigrationStage] { [] }
+}
+
 struct PersistenceController {
     static let shared = PersistenceController()
 
     let container: ModelContainer
 
-    init(inMemory: Bool = false) {
-        let schema = Schema([
-            GoalEntity.self,
-            StepEntity.self,
-            ProgressEntryEntity.self,
-            WorkSessionEntity.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
+    /// `storeURL` solo lo usan los tests; la app abre el almacén por defecto.
+    init(inMemory: Bool = false, storeURL: URL? = nil) {
+        let schema = Schema(versionedSchema: StepKitSchemaV1.self)
+        let modelConfiguration = storeURL.map { ModelConfiguration(schema: schema, url: $0) }
+            ?? ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
 
         do {
-            container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            container = try ModelContainer(for: schema,
+                                           migrationPlan: StepKitMigrationPlan.self,
+                                           configurations: [modelConfiguration])
         } catch {
             // Puede aparecer en un crash report de Release: conservar solo el
             // modo técnico, nunca el error subyacente ni rutas del sandbox.
