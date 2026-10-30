@@ -109,10 +109,10 @@ struct KitDetailView: View {
         }
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle(kitEntity.title)
+        // Título vacío hasta que la cabecera se va: un elemento «principal» con opacidad 0 era el
+        // «botón fantasma» del Duo cerrado, que coloca ese elemento en una cápsula abajo, al centro.
+        .navigationTitle(barTitleShown ? kitEntity.title : "")
         .navigationBarTitleDisplayMode(.inline)
-        // El Kit no tiene barra inferior. Al plegar el Duo con un paso abierto, la barra de acciones
-        // del paso podía quedarse como una cápsula vacía encima del Kit: aquí se oculta siempre.
         .toolbarVisibility(.hidden, for: .bottomBar)
         // El título vive en la cabecera; en la barra solo aparece cuando la cabecera ya no se ve,
         // como en Salud, Fitness o Música. Así no se lee dos veces al entrar.
@@ -120,13 +120,6 @@ struct KitDetailView: View {
             withAnimation(.easeInOut(duration: 0.2)) { barTitleShown = past }
         }
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text(kitEntity.title)
-                    .font(.headline)
-                    .lineLimit(1)
-                    .opacity(barTitleShown ? 1 : 0)
-                    .accessibilityHidden(!barTitleShown)
-            }
             // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {

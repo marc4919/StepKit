@@ -338,6 +338,10 @@ struct StepDetailView: View {
                 ))
                 .labelsHidden()
                 .fixedSize()
+                // Al girar o plegar, el interruptor se veía cuadrado un instante: su geometría se fija
+                // antes de la animación del contenedor y no se anima por su cuenta.
+                .geometryGroup()
+                .transaction { $0.animation = nil }
                 .accessibilityHint("Activa o desactiva el recordatorio de este paso")
             }
         }

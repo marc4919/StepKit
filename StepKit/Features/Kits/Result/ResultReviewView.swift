@@ -65,6 +65,8 @@ struct ResultReviewView: View {
                         Toggle(kit.kpi.isEmpty ? kit.title : kit.kpi, isOn: $achieved)
                             .labelsHidden()
                             .fixedSize()
+                            .geometryGroup()
+                            .transaction { $0.animation = nil }
                             .accessibilityIdentifier("result.achieved")
                     }
                 }
