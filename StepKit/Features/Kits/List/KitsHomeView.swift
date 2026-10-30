@@ -222,10 +222,12 @@ private struct ContinueCard: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Dónde lo dejaste").font(.headline)
                         Text(entry.note).foregroundStyle(.secondary).lineLimit(3)
-                        Label(String(localized: "Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))"),
-                              systemImage: Symbols.calendar)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 4) {
+                            Image(systemName: Symbols.calendar)
+                            Text(String(localized: "Último avance · \(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))"))
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     }
                 }
                 .accessibilityElement(children: .combine)
@@ -257,10 +259,12 @@ private struct ContinueCard: View {
                     .font(.title.bold())
                     .fixedSize(horizontal: false, vertical: true)
                 if let date = kit.dueDate {
-                    Label("Fecha deseada · \(date.formatted(.dateTime.day().month(.abbreviated)))",
-                          systemImage: Symbols.wantedDate)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 5) {
+                        Image(systemName: Symbols.wantedDate)
+                        Text("Fecha deseada · \(date.formatted(.dateTime.day().month(.abbreviated)))")
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
                 // La señal de que la cabecera abre el Kit: antes nada lo indicaba.
                 Label("Ver Kit", systemImage: "chevron.right")
