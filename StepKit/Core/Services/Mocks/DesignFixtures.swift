@@ -188,7 +188,7 @@ struct DesignFixtureRoot: View {
 
     private var kits: some View {
         // Como la app: un Kit borrado deja de estar en la lista.
-        let all = ((try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []).filter { !$0.isDeleted }
+        let all = ((try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []).filter { !$0.isRemoved }
         return KitsListRegularView(
             activeKits: all.filter { !$0.isCompleted },
             completedKits: all.filter(\.isCompleted),

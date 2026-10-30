@@ -26,7 +26,7 @@ struct PendingGeneratedKitsTests {
         #expect(changed)
         #expect(PendingGeneratedKits.all.isEmpty)
         let kits = try context.fetch(FetchDescriptor<GoalEntity>())
-        #expect(kits.first { $0.id == abandoned }?.isDeleted == true)
-        #expect(kits.first { $0.id == accepted }?.isDeleted == false)
+        #expect(kits.first { $0.id == abandoned }?.isRemoved == true)
+        #expect(kits.first { $0.id == accepted }?.isRemoved == false)
     }
 }

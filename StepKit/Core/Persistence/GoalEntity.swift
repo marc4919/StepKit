@@ -24,6 +24,9 @@ final class GoalEntity {
     var createdAt: Date
     var updatedAt: Date
     var deletedAt: Date?
+    /// Columna del borrado lógico. Úsala solo en `#Predicate`/`@Query`: leída desde Swift,
+    /// SwiftData devuelve su propio `PersistentModel.isDeleted` (si se borró del contexto),
+    /// que es `false` tras guardar. Para leer el estado usa `isRemoved`.
     var isDeleted: Bool
     var notificationsEnabled: Bool
     /// El usuario confirmó el resultado; independiente de completar todos los pasos.
@@ -63,7 +66,7 @@ final class GoalEntity {
         self.sourceModel = sourceModel
         self.createdAt = createdAt
         self.updatedAt = updatedAt
-        self.deletedAt = deletedAt
+        self.deletedAt = deletedAt ?? (isDeleted ? updatedAt : nil)
         self.isDeleted = isDeleted
         self.notificationsEnabled = notificationsEnabled
     }
@@ -133,6 +136,9 @@ final class GoalEntity {
         version += 1
     }
 
+    /// Borrado lógico, leído de forma fiable: siempre que se marca `isDeleted` se fija `deletedAt`.
+    var isRemoved: Bool { deletedAt != nil }
+
     /// Marca la entidad como eliminada (soft delete)
     func markAsDeleted(at date: Date = Date()) {
         let deletionDate = max(date, updatedAt.addingTimeInterval(0.001))
@@ -161,7 +167,7 @@ final class GoalEntity {
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
-            deleted: isDeleted,
+            deleted: isRemoved,
             resultConfirmedAt: resultConfirmedAt,
             steps: nil  // Steps se envían por separado
         )
@@ -180,7 +186,7 @@ final class GoalEntity {
         sourceModel = dto.sourceModel
         createdAt = dto.createdAt ?? createdAt
         updatedAt = dto.updatedAt
-        deletedAt = dto.deletedAt
+        deletedAt = dto.deletedAt ?? (dto.deleted ? dto.updatedAt : nil)
         isDeleted = dto.deleted
         resultConfirmedAt = dto.resultConfirmedAt
     }

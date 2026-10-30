@@ -60,7 +60,7 @@ struct KitEditDraft: Equatable {
         guard !expectedOwnerID.isEmpty, kit.ownerID == expectedOwnerID else {
             throw ContentEditingError.ownerMismatch
         }
-        guard !kit.isDeleted, kit.deletedAt == nil else {
+        guard !kit.isRemoved else {
             throw ContentEditingError.deletedContent
         }
         if let baselineVersion, let baselineUpdatedAt {
@@ -148,7 +148,7 @@ struct StepEditDraft: Equatable {
         guard parentKit.ownerID == expectedOwnerID else {
             throw ContentEditingError.ownerMismatch
         }
-        guard !parentKit.isDeleted, parentKit.deletedAt == nil else {
+        guard !parentKit.isRemoved else {
             throw ContentEditingError.deletedContent
         }
         if let baselineUpdatedAt {

@@ -31,7 +31,7 @@ struct KitsListView: View {
     private var visibleKitEntities: [GoalEntity] {
         guard let currentOwnerID else { return [] }
         // También en memoria: @Query puede tardar en reflejar un borrado recién hecho.
-        return kitEntities.filter { $0.ownerID == currentOwnerID && !$0.isDeleted }
+        return kitEntities.filter { $0.ownerID == currentOwnerID && !$0.isRemoved }
     }
     
     // Checksum de steps completados para forzar re-render cuando cambia
