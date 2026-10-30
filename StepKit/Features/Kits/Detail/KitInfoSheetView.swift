@@ -44,6 +44,9 @@ struct KitInfoSheetView: View {
                     // Notificaciones del kit
                     notificationsSection
 
+                    // Qué hace cada cosa de un Kit y de un paso (la ayuda vive aquí, no en las barras).
+                    helpSection
+
                     // Botón eliminar
                     deleteSection
                 }
@@ -147,6 +150,34 @@ struct KitInfoSheetView: View {
         }
 
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    // MARK: - Help
+    @State private var showingHelp = false
+    private var helpSection: some View {
+        Button { showingHelp = true } label: {
+            HStack(spacing: 12) {
+                IconChip(symbol: "questionmark.circle.fill", color: .purple, size: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Qué hay en un Kit y en un paso").font(.subheadline.weight(.semibold))
+                    Text("Plan, Registro, asistente y las acciones de cada paso.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .foregroundStyle(.primary)
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("kitInfo.help")
+        .sheet(isPresented: $showingHelp) { HelpSheet(title: String(localized: "Qué hay en un Kit y en un paso"), sections: HelpTopic.all) }
     }
 
     // MARK: - Delete Section

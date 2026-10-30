@@ -91,23 +91,43 @@ struct HelpTopic: Identifiable {
     ]
 }
 
-struct HelpSheet: View {
+/// Un bloque de la hoja de ayuda: el Kit, el paso.
+struct HelpSection: Identifiable {
     let title: String
     let topics: [HelpTopic]
+    var id: String { title }
+}
+
+extension HelpTopic {
+    static let all: [HelpSection] = [
+        HelpSection(title: String(localized: "En el Kit"), topics: kit),
+        HelpSection(title: String(localized: "En cada paso"), topics: step),
+    ]
+}
+
+struct HelpSheet: View {
+    let title: String
+    let sections: [HelpSection]
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-            List(topics) { topic in
-                Label {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(topic.title)
-                        Text(topic.detail).font(.subheadline).foregroundStyle(.secondary)
+            List {
+                ForEach(sections) { section in
+                    Section(section.title) {
+                        ForEach(section.topics) { topic in
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(topic.title)
+                                    Text(topic.detail).font(.subheadline).foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                IconChip(symbol: topic.symbol, color: topic.color, size: 30)
+                            }
+                            .padding(.vertical, 2)
+                        }
                     }
-                } icon: {
-                    IconChip(symbol: topic.symbol, color: topic.color, size: 30)
                 }
-                .padding(.vertical, 2)
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -116,19 +136,6 @@ struct HelpSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-    }
-}
-
-/// Botón «?» de una pantalla: abre la ayuda de esa pantalla.
-struct HelpButton: View {
-    let title: String
-    let topics: [HelpTopic]
-    @State private var showing = false
-
-    var body: some View {
-        Button("Ayuda", systemImage: "questionmark.circle") { showing = true }
-            .sheet(isPresented: $showing) { HelpSheet(title: title, topics: topics) }
-            .accessibilityHint("Explica qué hace cada cosa de esta pantalla")
     }
 }
 

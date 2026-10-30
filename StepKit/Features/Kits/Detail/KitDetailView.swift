@@ -106,9 +106,6 @@ struct KitDetailView: View {
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                HelpButton(title: String(localized: "Qué hay en un Kit"), topics: HelpTopic.kit)
-            }
             // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {

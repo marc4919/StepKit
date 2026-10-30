@@ -3020,12 +3020,32 @@
         }
       }
     },
+    "En cada paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In each step"
+          }
+        }
+      }
+    },
     "En curso": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "In progress"
+          }
+        }
+      }
+    },
+    "En el Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the Kit"
           }
         }
       }
@@ -5608,6 +5628,16 @@
         }
       }
     },
+    "Plan, Registro, asistente y las acciones de cada paso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan, Log, assistant and each step's actions."
+          }
+        }
+      }
+    },
     "Planificación": {
       "localizations": {
         "en": {
@@ -6096,6 +6126,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "What's in a Kit"
+          }
+        }
+      }
+    },
+    "Qué hay en un Kit y en un paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's in a Kit and in a step"
           }
         }
       }

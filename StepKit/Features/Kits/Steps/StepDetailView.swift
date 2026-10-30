@@ -94,9 +94,6 @@ struct StepDetailView: View {
         // Con el paso abierto ya se ha podido ver el consejo de las acciones: el siguiente puede salir.
         .onAppear { TipFlow.stepActionsSeen = true }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                HelpButton(title: String(localized: "Qué hay en un paso"), topics: HelpTopic.step)
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Ayúdame con este paso", systemImage: Symbols.assistant) {
                     assistantLaunch = AssistantLaunch(intent: nil)
