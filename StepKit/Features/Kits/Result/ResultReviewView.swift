@@ -207,14 +207,17 @@ private struct ResultConfirmedContent: View {
                         .accessibilityHidden(true)
                 }
                 .padding(.bottom, 4)
-            Text(String(localized: "\(kit.title)\nestá listo"))
-                .font(size.height < 400 ? .title2.bold() : size.height < 720 ? .title.bold() : .largeTitle.bold())
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityAddTraits(.isHeader)
-            Text("Has confirmado el resultado.")
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            // El título del Kit tal cual, alineado a la izquierda como en el resto de pantallas; lo de
+            // «listo» ya lo dicen el check y la frase de debajo.
+            VStack(alignment: .leading, spacing: 6) {
+                Text(kit.title)
+                    .font(size.height < 400 ? .title2.bold() : size.height < 720 ? .title.bold() : .largeTitle.bold())
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
+                Text("Has confirmado el resultado.")
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity)
     }

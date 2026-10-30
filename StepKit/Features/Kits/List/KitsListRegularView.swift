@@ -127,9 +127,11 @@ struct KitsListRegularView: View {
             // La columna publica su tamaño: el paso lo usa como primera estimación de su disposición.
             .onGeometryChange(for: CGSize.self) { $0.size } action: { detailSize = $0 }
             .environment(\.detailColumnSize, detailSize)
-            .environment(\.returnToKits, { viewModel.clearSelection() })
         }
         .navigationSplitViewStyle(.balanced)
+        // En toda la vista dividida, no en la columna de detalle: puesto allí, las pantallas apiladas
+        // (resultado, paso) no lo heredaban y «Volver a Mis Kits» solo retrocedía una pantalla.
+        .environment(\.returnToKits, { viewModel.clearSelection() })
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
             // Por debajo de 1100 pt (iPad en vertical, iPhone Duo abierto en vertical u horizontal) el detalle
             // ocupa toda la pantalla y Mis Kits queda a un toque. Con el Duo en horizontal no caben las dos
