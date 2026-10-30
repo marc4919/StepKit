@@ -131,6 +131,12 @@ struct HelpSheet: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             // Sin «Listo»: la hoja se cierra deslizando, como las demás hojas de ayuda.
+            // El título como elemento principal: en el Duo cerrado el sistema lo pega a la izquierda.
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(title).font(.headline)
+                }
+            }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
