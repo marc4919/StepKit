@@ -411,6 +411,11 @@ private struct PlanStepRow: View {
                             .strikethrough(state == .done, color: .secondary)
                             .multilineTextAlignment(.leading)
                         HStack(spacing: 8) {
+                            meta
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            // Recién tocado por el asistente: solo una chip junto al tiempo, unos
+                            // segundos, que se apaga sola (ver ChangeHighlights.fade). Sin tintar la fila.
                             if highlight != nil {
                                 Text(highlightLabel)
                                     .font(.caption.weight(.semibold))
@@ -418,11 +423,8 @@ private struct PlanStepRow: View {
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 2)
                                     .background(highlightColor.opacity(0.14), in: .capsule)
-                                    .transition(.scale.combined(with: .opacity))
+                                    .transition(.opacity)
                             }
-                            meta
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
                             if state == .blocked {
                                 Text(state.label)
                                     .font(.caption.weight(.semibold))
@@ -450,9 +452,7 @@ private struct PlanStepRow: View {
             .accessibilityHint("Toca dos veces para abrir los detalles del paso")
             .accessibilityIdentifier("step.row")
         }
-        // Recién tocado por el asistente: un tinte suave que se apaga solo (ver ChangeHighlights.fade).
-        .background(highlightColor.opacity(highlight == nil ? 0 : 0.12))
-        .animation(.smooth(duration: 0.5), value: highlight)
+        .animation(.easeInOut(duration: 0.6), value: highlight)
     }
 }
 

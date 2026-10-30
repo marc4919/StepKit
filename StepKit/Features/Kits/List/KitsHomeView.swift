@@ -546,8 +546,11 @@ struct KitsEmptyView: View {
 
 extension GoalEntity {
     /// Pasos visibles (sin borrar), en orden.
+    /// Con el mismo `order` (puede pasar tras un sync o una inserción), decide la fecha de creación: así
+    /// la numeración que se manda al asistente y la que resuelve su propuesta son siempre la misma.
     var orderedActiveSteps: [StepEntity] {
-        steps.filter { $0.deletedAt == nil }.sorted { $0.order < $1.order }
+        steps.filter { $0.deletedAt == nil }
+            .sorted { ($0.order, $0.createdAt) < ($1.order, $1.createdAt) }
     }
 
     var activeStepCount: Int { orderedActiveSteps.count }
