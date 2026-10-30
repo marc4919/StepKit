@@ -279,29 +279,84 @@ struct KitDetailView: View {
 
     // MARK: - Plan
 
+    /// Un tramo del plan: los pasos seguidos que caen el mismo día, en el orden del plan.
+    private struct PlanDayGroup: Identifiable {
+        let day: Date?
+        let rows: [(index: Int, step: StepEntity)]
+        var id: String { "\(rows.first?.index ?? 0)" }
+    }
+
+    /// Fechas de las filas: si todo el plan cae el mismo día, la fecha ya la da el chip de arriba y
+    /// repetirla en cada fila es ruido; con varios días, cabeceras por día y tampoco fecha por fila.
+    private var planSpansSeveralDays: Bool {
+        let calendar = Calendar.current
+        let days = Set(kitEntity.orderedActiveSteps.compactMap { $0.suggestedDeadline.map { calendar.startOfDay(for: $0) } })
+        return days.count > 1
+    }
+
+    private var planGroups: [PlanDayGroup] {
+        let calendar = Calendar.current
+        var groups: [PlanDayGroup] = []
+        for (index, step) in kitEntity.orderedActiveSteps.enumerated() {
+            let day = step.suggestedDeadline.map { calendar.startOfDay(for: $0) }
+            if let last = groups.last, last.day == day {
+                groups[groups.count - 1] = PlanDayGroup(day: day, rows: last.rows + [(index, step)])
+            } else {
+                groups.append(PlanDayGroup(day: day, rows: [(index, step)]))
+            }
+        }
+        return groups
+    }
+
+    private static func dayLabel(_ day: Date?) -> String {
+        guard let day else { return String(localized: "Sin fecha") }
+        let calendar = Calendar.current
+        if calendar.isDateInToday(day) { return String(localized: "Hoy") }
+        if calendar.isDateInTomorrow(day) { return String(localized: "Mañana") }
+        if calendar.isDateInYesterday(day) { return String(localized: "Ayer") }
+        return day.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+    }
+
     private var stepsSection: some View {
         Group {
             if kitEntity.orderedActiveSteps.isEmpty {
                 emptyStepsView
-            } else {
-                VStack(spacing: 0) {
-                    let steps = kitEntity.orderedActiveSteps
-                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                        PlanStepRow(step: step, number: index + 1,
-                                    state: step.progressState(hasEntries: kitEntries.contains { $0.stepID == step.id })) {
-                            withAnimation(.snappy) {
-                                try? ProgressLog.toggleCompletion(of: step, context: modelContext)
-                            }
-                            syncManager?.handleDataChange()
-                        }
-                        if index < steps.count - 1 {
-                            Divider().padding(.leading, 52)
+            } else if planSpansSeveralDays {
+                // Como Recordatorios o Calendario: una cabecera pequeña por día, sin fecha en las filas.
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(planGroups) { group in
+                        let overdue = group.day.map { $0 < Calendar.current.startOfDay(for: .now) } ?? false
+                        let pending = group.rows.contains { !$0.step.isCompleted }
+                        VStack(alignment: .leading, spacing: 6) {
+                            Eyebrow(text: Self.dayLabel(group.day), color: overdue && pending ? .red : .secondary)
+                                .padding(.leading, 16)
+                                .accessibilityAddTraits(.isHeader)
+                            stepsCard(group.rows)
                         }
                     }
                 }
-                .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
+            } else {
+                stepsCard(Array(kitEntity.orderedActiveSteps.enumerated()).map { (index: $0.offset, step: $0.element) })
             }
         }
+    }
+
+    private func stepsCard(_ rows: [(index: Int, step: StepEntity)]) -> some View {
+        VStack(spacing: 0) {
+            ForEach(Array(rows.enumerated()), id: \.element.step.id) { position, row in
+                PlanStepRow(step: row.step, number: row.index + 1,
+                            state: row.step.progressState(hasEntries: kitEntries.contains { $0.stepID == row.step.id })) {
+                    withAnimation(.snappy) {
+                        try? ProgressLog.toggleCompletion(of: row.step, context: modelContext)
+                    }
+                    syncManager?.handleDataChange()
+                }
+                if position < rows.count - 1 {
+                    Divider().padding(.leading, 52)
+                }
+            }
+        }
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
     }
 
     // MARK: - Empty Steps View
@@ -330,12 +385,9 @@ private struct PlanStepRow: View {
     let state: StepProgressState
 
     @ViewBuilder private var meta: some View {
+        // Sin fecha: la lleva la cabecera del día o, si todo cae el mismo día, el chip del Kit.
         Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
             .foregroundStyle(MetaTint.time)
-        if let date = step.suggestedDeadline {
-            Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
-                .foregroundStyle(MetaTint.date)
-        }
         if let repetition = step.repetition {
             Label(repetition.label, systemImage: "repeat")
                 .foregroundStyle(MetaTint.repeatTint)
@@ -395,6 +447,7 @@ private struct PlanStepRow: View {
             .buttonStyle(.plain)
             .accessibilityElement(children: .combine)
             .accessibilityLabel(String(localized: "Paso \(number): \(step.stepTitle). \(state.label)"))
+            .accessibilityValue(step.suggestedDeadline.map { $0.formatted(.dateTime.weekday(.wide).day().month(.wide)) } ?? "")
             .accessibilityHint("Toca dos veces para abrir los detalles del paso")
             .accessibilityIdentifier("step.row")
         }

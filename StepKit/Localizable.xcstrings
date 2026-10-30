@@ -1310,6 +1310,16 @@
         }
       }
     },
+    "Ayer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
+          }
+        }
+      }
+    },
     "Ayuda": {
       "localizations": {
         "en": {
@@ -4514,6 +4524,16 @@
         }
       }
     },
+    "Mañana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
     "Mañana · %@": {
       "localizations": {
         "en": {
@@ -7082,6 +7102,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Without this permission, the assistant answers with Apple Intelligence on your device: it's more limited, but nothing leaves your iPhone. You can change this anytime in Profile."
+          }
+        }
+      }
+    },
+    "Sin fecha": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No date"
           }
         }
       }
