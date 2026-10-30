@@ -29,25 +29,10 @@ struct SaveProgressSheet: View {
     private var reportingBlock: Bool { startsBlocked }
 
     var body: some View {
-        // Barra propia, fija: en el Duo cerrado, con el teclado abierto, el sistema escondía la
-        // barra de navegación al desplazar y «Guardar» desaparecía. Mismo aspecto, pero no se mueve.
-        VStack(spacing: 0) {
-            SheetBar(title: reportingBlock ? String(localized: "Me he atascado") : String(localized: "Guardar avance"),
-                     canSave: canSave, onCancel: { dismiss() }, onSave: { save() })
+        NavigationStack {
+            // Sin tarjeta del paso: el paso va como subtítulo de la barra. Así, en el Duo cerrado con
+            // el teclado abierto, la hoja cabe sin desplazarse y el sistema no esconde la barra.
             Form {
-                Section {
-                    HStack(spacing: 12) {
-                        if let kit = step.goal {
-                            ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount,
-                                         size: 40, showsLabel: false)
-                        }
-                        VStack(alignment: .leading, spacing: 2) {
-                            Eyebrow(text: String(localized: "\(step.goal?.title ?? "") · Paso \(stepNumber)"))
-                            Text(step.stepTitle).font(.headline)
-                        }
-                    }
-                    .accessibilityElement(children: .combine)
-                }
                 if reportingBlock {
                     Section {
                         TextField("Ej.: «Me falta el permiso del cliente»", text: $reason, axis: .vertical)
@@ -80,11 +65,25 @@ struct SaveProgressSheet: View {
                     }
                 }
             }
+            // Sin rebote ni desplazamiento cuando el contenido cabe.
+            .scrollBounceBehavior(.basedOnSize)
+            .navigationTitle(reportingBlock ? String(localized: "Me he atascado") : String(localized: "Guardar avance"))
+            .navigationSubtitle(String(localized: "Paso \(stepNumber) · \(step.stepTitle)"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Guardar") { save() }
+                        .disabled(!canSave)
+                        .accessibilityIdentifier("progress.save")
+                }
+            }
             .alert("No se pudo guardar el avance", isPresented: $saveFailed) {
                 Button("Aceptar", role: .cancel) {}
             }
         }
-        .background(Color(.systemGroupedBackground))
         .onAppear {
             if reportingBlock { reason = step.blockedReason ?? "" }
             focused = reportingBlock ? .reason : .note
@@ -228,33 +227,3 @@ struct KitNoteSheet: View {
     }
 }
 
-/// Barra de una hoja de edición que no se esconde nunca: Cancelar, título y la acción principal,
-/// con el aspecto de la barra del sistema.
-struct SheetBar: View {
-    let title: String
-    let canSave: Bool
-    let onCancel: () -> Void
-    let onSave: () -> Void
-
-    var body: some View {
-        ZStack {
-            Text(title)
-                .font(.headline)
-                .lineLimit(1)
-                .accessibilityAddTraits(.isHeader)
-            HStack {
-                Button("Cancelar", action: onCancel)
-                    .buttonStyle(.glass)
-                Spacer()
-                Button("Guardar", action: onSave)
-                    .buttonStyle(.glass)
-                    .fontWeight(.semibold)
-                    .disabled(!canSave)
-                    .accessibilityIdentifier("progress.save")
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 14)
-        .padding(.bottom, 8)
-    }
-}
