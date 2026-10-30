@@ -498,6 +498,20 @@ extension View {
 
 // MARK: - Dos columnas
 
+/// Modelo del dispositivo, para lo poco que depende de él (la barra vertical del iPhone Duo).
+enum DeviceKind {
+    static let modelIdentifier: String = {
+        if let simulated = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] { return simulated }
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        return withUnsafePointer(to: &systemInfo.machine) {
+            $0.withMemoryRebound(to: CChar.self, capacity: 1) { String(validatingCString: $0) ?? "" }
+        }
+    }()
+    /// iPhone Duo (plegable): iPhone19,4.
+    static let isDuo = modelIdentifier == "iPhone19,4"
+}
+
 enum TwoColumnLayout {
     /// Dos columnas solo en pantallas anchas y apaisadas (iPhone Duo abierto en horizontal, iPad en horizontal).
     /// Con el Duo abierto en vertical la pantalla es casi cuadrada y una sola columna, como cerrado, se lee mejor.

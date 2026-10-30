@@ -36,9 +36,13 @@ struct StepDetailView: View {
     /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
     /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
     @State private var insets = EdgeInsets()
-    /// Lo que ocupan la barra superior y la columna de botones en el Duo cerrado (medido).
+    @State private var landscape = StepDetailView.windowSize.width > StepDetailView.windowSize.height
+    /// Lo que ocupan la barra superior y la columna de botones en el Duo (medido).
     private static let foldedTopInset: CGFloat = 82
     private static let foldedTrailingInset: CGFloat = 84
+    /// En el iPhone Duo (cerrado, o abierto en horizontal) la barra de botones va en vertical junto al
+    /// borde derecho y su zona segura llega después del primer fotograma: se reserva a mano.
+    private var reservesSideColumn: Bool { DeviceKind.isDuo && (sideControls || landscape) }
     /// Acciones dentro de la barra de herramientas (Duo cerrado) en vez de botones grandes.
     private var actionsInToolbar: Bool { Self.forcesSideControls || (sideControls && !wideLayout) }
     /// Siguiente paso abierto desde el aviso de completado.
@@ -140,7 +144,7 @@ struct StepDetailView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in sideControls = Self.isNearlySquare(Self.windowSize) }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size in sideControls = Self.isNearlySquare(size); landscape = size.width > size.height }
         .sensoryFeedback(.success, trigger: celebration)
         .navigationDestination(isPresented: $showingKitResult) {
             if let kit = stepEntity.goal { ResultReviewView(kit: kit) }
@@ -207,15 +211,15 @@ struct StepDetailView: View {
             // Duo cerrado: la columna de botones del borde derecho se reserva siempre a mano y se
             // ignora la zona segura que el sistema aplica después. Así el ancho del texto es el
             // mismo en el primer fotograma de la entrada y en los siguientes, y nada se recoloca.
-            .padding(.trailing, sideControls ? Self.foldedTrailingInset : 0)
+            .padding(.trailing, reservesSideColumn ? Self.foldedTrailingInset : 0)
             .padding(.top, sideControls && insets.top == 0 ? Self.foldedTopInset : 0)
         }
-        .ignoresSafeArea(.container, edges: sideControls ? .trailing : [])
+        .ignoresSafeArea(.container, edges: reservesSideColumn ? .trailing : [])
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
         .balancedHorizontalSafeArea()
-        // Se decide siempre con el tamaño de la ventana, igual que el valor inicial: medir la vista daba
-        // otro resultado en el primer fotograma (Duo cerrado) y el texto se recolocaba al entrar.
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in wideLayout = TwoColumnLayout.fits(Self.windowSize) }
+        // Con el tamaño de la vista, no de la ventana: en el Duo abierto la columna de detalle es
+        // estrecha aunque la ventana sea ancha, y con la ventana salían dos columnas apretadas.
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { wideLayout = TwoColumnLayout.fits($0) }
     }
 
     private var stepActions: some View {
