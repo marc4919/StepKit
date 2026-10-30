@@ -49,7 +49,7 @@ struct AIConsentView: View {
                     Text("Tu control")
                 } footer: {
                     if purpose == .plan {
-                        Text("Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA, y el asistente solo usará tu dispositivo.")
+                        Text("Sin este permiso puedes seguir usando StepKit y tus Kits, pero no crear planes con IA ni usar el asistente.")
                     } else {
                         Text("El asistente necesita este permiso. Sin él puedes seguir usando StepKit y tus Kits como siempre; puedes darlo o retirarlo cuando quieras en Perfil.")
                     }

@@ -20,7 +20,7 @@ struct TermsOfServiceView: View {
                             .font(.title2)
                             .bold()
                         
-                        Text("Última actualización: Diciembre 2025")
+                        Text("Última actualización: 30 de octubre de 2026")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -41,14 +41,7 @@ struct TermsOfServiceView: View {
                         termSection(
                             number: "3",
                             title: String(localized: "Suscripciones y Pagos"),
-                            content: """
-                            StepKit ofrece una versión gratuita y una suscripción 'Premium' con funciones adicionales.
-                            
-                            • **Prueba Gratuita**: Podemos ofrecer un período de prueba gratuito. Si no cancelas al menos 24 horas antes de que finalice la prueba, se te cobrará automáticamente el precio de la suscripción seleccionada.
-                            • **Renovación Automática**: Las suscripciones se renuevan automáticamente a menos que desactives la renovación automática al menos 24 horas antes del final del período actual.
-                            • **Cancelación**: Puedes gestionar y cancelar tus suscripciones en cualquier momento desde la configuración de tu cuenta de Apple ID en la App Store. La cancelación surtirá efecto al final del período de facturación actual.
-                            • **Reembolsos**: Todas las compras son finales y gestionadas directamente por Apple. Para solicitar un reembolso, debes contactar con el soporte de Apple.
-                            """
+                            content: String(localized: "StepKit se puede usar gratis con hasta 2 Kits activos y 10 usos de la IA al mes. La suscripción StepKit Pro, mensual o anual, quita esos límites.\n\n• **Prueba gratuita**: si la suscripción incluye un periodo de prueba, se cobrará automáticamente al terminar salvo que la canceles al menos 24 horas antes.\n• **Precio y renovación**: el precio y la duración se muestran antes de suscribirte, y Apple los cobra a tu cuenta. La suscripción se renueva sola salvo que desactives la renovación al menos 24 horas antes del final del periodo actual.\n• **Cancelación**: puedes gestionarla o cancelarla en los ajustes de tu cuenta de Apple. La cancelación surte efecto al final del periodo pagado.\n• **Reembolsos**: los gestiona Apple. Para solicitar uno, contacta con el soporte de Apple.\n\nEstos Términos se aplican junto con el Acuerdo de licencia de usuario final estándar de Apple (EULA).")
                         )
                         
                         termSection(
@@ -90,7 +83,7 @@ struct TermsOfServiceView: View {
                         termSection(
                             number: "10",
                             title: String(localized: "Contacto"),
-                            content: String(localized: "Si tienes preguntas sobre estos Términos, contáctanos en support@stepkit.app.")
+                            content: String(localized: "Si tienes preguntas sobre estos Términos, contáctanos en marcgt.dev@icloud.com.")
                         )
                     }
                 }

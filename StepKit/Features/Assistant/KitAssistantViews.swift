@@ -350,7 +350,7 @@ struct KitAssistantChatView: View {
                                                  conversation: conversation, context: modelContext,
                                                  apiClient: apiClient, token: authManager.token)
             if !handled {
-                vm.messages.append(ChatMessage(sender: .assistant, text: "assist unavailable", isError: true))
+                vm.messages.append(ChatMessage(sender: .assistant, text: String(localized: "La ayuda no está disponible ahora"), isError: true))
             }
         }
     }

@@ -7151,17 +7151,17 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "If you have questions about this policy, contact us at support@stepkit.app."
+            "value": "If you have questions about this policy, contact us at marcgt.dev@icloud.com."
           }
         }
       }
     },
-    "Si tienes preguntas sobre estos Términos, contáctanos en support@stepkit.app.": {
+    "Si tienes preguntas sobre estos Términos, contáctanos en marcgt.dev@icloud.com.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "If you have questions about these Terms, contact us at support@stepkit.app."
+            "value": "If you have questions about these Terms, contact us at marcgt.dev@icloud.com."
           }
         }
       }
@@ -7216,12 +7216,12 @@
         }
       }
     },
-    "Sin este permiso puedes seguir usando StepKit, pero no crear planes con IA, y el asistente solo usará tu dispositivo.": {
+    "Sin este permiso puedes seguir usando StepKit y tus Kits, pero no crear planes con IA ni usar el asistente.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Without this permission you can keep using StepKit, but not create plans with AI, and the assistant will only use your device."
+            "value": "Without this permission you can keep using StepKit and your Kits, but not create plans with AI or use the assistant."
           }
         }
       }
@@ -7402,6 +7402,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subscription active"
+          }
+        }
+      }
+    },
+    "StepKit se puede usar gratis con hasta 2 Kits activos y 10 usos de la IA al mes. La suscripción StepKit Pro, mensual o anual, quita esos límites.\n\n• **Prueba gratuita**: si la suscripción incluye un periodo de prueba, se cobrará automáticamente al terminar salvo que la canceles al menos 24 horas antes.\n• **Precio y renovación**: el precio y la duración se muestran antes de suscribirte, y Apple los cobra a tu cuenta. La suscripción se renueva sola salvo que desactives la renovación al menos 24 horas antes del final del periodo actual.\n• **Cancelación**: puedes gestionarla o cancelarla en los ajustes de tu cuenta de Apple. La cancelación surte efecto al final del periodo pagado.\n• **Reembolsos**: los gestiona Apple. Para solicitar uno, contacta con el soporte de Apple.\n\nEstos Términos se aplican junto con el Acuerdo de licencia de usuario final estándar de Apple (EULA).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can use StepKit for free with up to 2 active Kits and 10 AI uses per month. The StepKit Pro subscription, monthly or yearly, removes those limits.\n\n• **Free trial**: if the subscription includes a trial period, you will be charged automatically when it ends unless you cancel at least 24 hours before.\n• **Price and renewal**: the price and duration are shown before you subscribe, and Apple charges them to your account. The subscription renews automatically unless you turn off renewal at least 24 hours before the end of the current period.\n• **Cancellation**: you can manage or cancel it in your Apple account settings. Cancellation takes effect at the end of the paid period.\n• **Refunds**: Apple handles them. To request one, contact Apple Support.\n\nThese Terms apply together with Apple's standard End User License Agreement (EULA)."
           }
         }
       }
@@ -8926,6 +8936,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Last updated: December 2025"
+          }
+        }
+      }
+    },
+    "Última actualización: 30 de octubre de 2026": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last updated: October 30, 2026"
           }
         }
       }
