@@ -37,15 +37,14 @@ struct StepDetailView: View {
     private var wideLayout: Bool { TwoColumnLayout.fits(layoutSize) }
     /// Si el sistema dibuja las barras en vertical (iPhone Duo cerrado, y abierto en horizontal), lo dice
     /// `toolbarVerticalEdge` (iOS 27.1). Sin ese dato, se estima con el tamaño de la ventana, nunca con
-    /// el medido: la barra de acciones propia resta altura a la vista y en un iPhone eso la volvía
-    /// «casi cuadrada» en un bucle sin fin.
+    /// el medido: decidir con el tamaño de la vista algo que cambia ese mismo tamaño acababa en un
+    /// bucle sin fin con la pantalla en blanco.
     @State private var toolbarIsVertical: Bool?
+    private var verticalBars: Bool { toolbarIsVertical ?? Self.isNearlySquare(Self.windowSize) }
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     /// Disposición del Duo cerrado (chips cortos, márgenes de la franja lateral): ancho compacto con
     /// las barras en vertical.
-    private var sideControls: Bool {
-        horizontalSizeClass == .compact && (toolbarIsVertical ?? Self.isNearlySquare(Self.windowSize))
-    }
+    private var sideControls: Bool { horizontalSizeClass == .compact && verticalBars }
     /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
     /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
     @State private var insets = EdgeInsets()
@@ -131,6 +130,15 @@ struct StepDetailView: View {
                 .accessibilityIdentifier("step.edit")
                 .accessibilityHint("Permite cambiar el título, las descripciones, la fecha y el tiempo del paso")
             }
+            // Las tres acciones van en la barra inferior del sistema, como en Mail o Notas: flota sobre
+            // el contenido, que se desvanece bajo ella, y en el Duo cerrado (o abierto en horizontal)
+            // pasa a la franja lateral. Al cambiar el modo de etiqueta (girar, plegar) los botones se
+            // rehacen sin animación: transformarlos dejaba cápsulas vacías o «Completar» duplicado.
+            ToolbarItemGroup(placement: .bottomBar) {
+                sideToolbarActions
+                    .id(toolbarLabelMode)
+                    .transaction { $0.animation = nil }
+            }
         }
         .background {
             if #available(iOS 27.1, *) {
@@ -193,16 +201,13 @@ struct StepDetailView: View {
             .padding(.top, sideControls && insets.top == 0 ? Self.foldedTopInset : 0)
         }
         .ignoresSafeArea(.container, edges: reservesSideColumn ? .trailing : [])
-        // La barra de acciones propia (botones de cristal del sistema) va pegada al propio paso, no a la
-        // pantalla: con el Duo entreabierto el paso ocupa una mitad y la barra se quedaba cruzando el
-        // pliegue y tapando el final del contenido. Aquí reserva su sitio al final del scroll.
-        // Las tres acciones van siempre en una barra propia de cristal al pie del contenido, también
-        // con el Duo cerrado: en la franja vertical del sistema quitaban sitio a Atrás y a la barra de
-        // pestañas, y al volver al Kit la franja se quedaba vacía medio segundo.
-        .safeAreaInset(edge: .bottom) {
-            // Duo entreabierto: las acciones van en la otra mitad, con el recorrido; aquí solo contenido.
-            if !hingePartiallyOpen {
-                bottomActionBar
+        // Con las acciones en la barra del sistema, el aviso de completado flota al pie del contenido,
+        // justo sobre la barra, sin desplazar nada.
+        .overlay(alignment: .bottom) {
+            if let celebration {
+                CompletionBanner(celebration: celebration) { openNextStep() }
+                    .padding(.bottom, 12)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
@@ -326,9 +331,7 @@ struct StepDetailView: View {
             }
             .padding()
         }
-        // Como pide Apple para el pliegue: contenido en una mitad, controles en la otra. Las tres
-        // acciones viven aquí, al pie, en vez de cruzar el pliegue o tapar el texto del paso.
-        .safeAreaInset(edge: .bottom) { bottomActionBar }
+        // Las acciones del paso siguen en la franja lateral del sistema; aquí solo el recorrido.
         .background(Color(.systemGroupedBackground))
     }
 
@@ -499,13 +502,6 @@ struct StepDetailView: View {
         return window?.bounds.size ?? .zero
     }
 
-    #if DEBUG
-    /// `-StepKitSideControls`: fuerza las acciones en la barra para revisarlas en el simulador.
-    static let forcesSideControls = ProcessInfo.processInfo.arguments.contains("-StepKitSideControls")
-    #else
-    static let forcesSideControls = false
-    #endif
-
     /// Acciones como botones de la barra de herramientas (icono y nombre accesible).
     @ViewBuilder private var sideToolbarActions: some View {
         switch state {
@@ -555,42 +551,16 @@ struct StepDetailView: View {
         }
     }
 
-    /// Barra de acciones propia (iPhone, Duo abierto, iPad): botones de cristal flotando abajo, centrados.
-    private var bottomActionBar: some View {
-        GlassEffectContainer(spacing: 10) {
-            HStack(spacing: 10) {
-                sideToolbarActions
-            }
-            .buttonStyle(.glass)
-            .controlSize(.large)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 6)
-        .overlay(alignment: .bottom) {
-            if let celebration {
-                CompletionBanner(celebration: celebration) { openNextStep() }
-                    .padding(.bottom, 64)
-                    .padding(.horizontal, 16)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-    }
-
-    /// Botón de la barra inferior: icono y texto en línea; solo icono cuando la barra va en vertical
-    /// (Duo cerrado), donde el texto no cabe. La barra ignora `labelStyle`, de ahí la vista propia.
-    /// Cómo van las etiquetas de la barra inferior: 0 solo iconos (vertical), 1 secundarios con icono,
-    /// 2 todo con texto. Al girar o plegar cambia, y la barra se rehace entera en vez de transformar
-    /// los botones: transformarlos dejaba cápsulas vacías o «Completar» duplicado detrás de «Atasco».
+    /// Cómo van las etiquetas de la barra inferior: 0 solo iconos (barras en vertical: Duo cerrado o
+    /// abierto en horizontal, donde el texto no cabe), 1 secundarios solo con icono y «Completar» con
+    /// texto (iPhone), 2 todo con texto (ancho). La barra ignora `labelStyle`, de ahí la vista propia.
     private var toolbarLabelMode: Int {
-        if sideControls { return 0 }
+        if verticalBars { return 0 }
         return layoutSize.width < 500 ? 1 : 2
     }
 
     @ViewBuilder private func toolbarLabel(_ title: LocalizedStringKey, symbol: String, primary: Bool = false) -> some View {
-        // En un ancho estrecho (iPhone, Duo cerrado), texto solo en «Completar»: tres botones con
-        // texto no caben en la barra.
-        if !primary && layoutSize.width < 500 {
+        if toolbarLabelMode == 0 || (!primary && toolbarLabelMode == 1) {
             Image(systemName: symbol)
         } else {
             HStack(spacing: 6) {

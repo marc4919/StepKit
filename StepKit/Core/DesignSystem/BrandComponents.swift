@@ -621,34 +621,14 @@ struct DelayedReveal<Content: View>: View {
 /// Es estado de navegación de SwiftUI, no del ciclo de vida de UIKit: plegar o desplegar el iPhone Duo
 /// recoloca la vista pero no la saca de la pila, así que no la confunde (la variante con contador y
 /// viewWillAppear/viewWillDisappear sí perdía la cuenta y dejaba la barra sobre el paso).
+/// También se oculta con las barras en vertical (Duo cerrado, o abierto en horizontal): las acciones
+/// del paso van en esa franja y con las pestañas no cabían. Ahí el sistema anima la franja por fases
+/// y, al volver al Kit, el hueco de las pestañas tarda medio segundo en llenarse; es su comportamiento.
 struct HidesTabBarSmoothly: ViewModifier {
     @Environment(\.isPresented) private var isPresented
 
     func body(content: Content) -> some View {
-        if #available(iOS 27.1, *) {
-            VerticalBarAwareTabBarHiding(isPresented: isPresented) { content }
-        } else {
-            content.toolbarVisibility(isPresented ? .hidden : .visible, for: .tabBar)
-        }
-    }
-}
-
-/// Con las barras en vertical (iPhone Duo cerrado, o abierto en horizontal) la barra de pestañas no se
-/// oculta: va en la franja lateral y no quita sitio al contenido, y ocultarla hacía que el sistema
-/// animase la franja por fases y, al volver al Kit, dejase el hueco de la barra vacío medio segundo.
-/// Comprimirla (`toolbarVerticalCompressionBehavior`) tampoco servía: el sistema sacrificaba Atrás.
-@available(iOS 27.1, *)
-private struct VerticalBarAwareTabBarHiding<Content: View>: View {
-    @Environment(\.toolbarVerticalEdge) private var verticalEdge
-    let isPresented: Bool
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        if verticalEdge != nil {
-            content()
-        } else {
-            content().toolbarVisibility(isPresented ? .hidden : .visible, for: .tabBar)
-        }
+        content.toolbarVisibility(isPresented ? .hidden : .visible, for: .tabBar)
     }
 }
 
