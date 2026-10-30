@@ -396,11 +396,15 @@ struct KitCreationStreamingProgress: View {
 
     /// «lun, 3 nov» a partir de la fecha del servidor (yyyy-MM-dd).
     private static func stepDay(_ text: String) -> String? {
+        stepDate(text)?.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+    }
+
+    private static func stepDate(_ text: String) -> Date? {
         let parser = DateFormatter()
         parser.calendar = Calendar(identifier: .gregorian)
         parser.locale = Locale(identifier: "en_US_POSIX")
         parser.dateFormat = "yyyy-MM-dd"
-        return parser.date(from: text)?.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+        return parser.date(from: text)
     }
 
     private var stepsDetail: String {
@@ -582,80 +586,119 @@ struct KitCreationStreamingProgress: View {
         }
     }
 
+    /// Arriba, el total (pasos, semanas y horas con las repeticiones); debajo, las mismas cabeceras por
+    /// semana que el plan del Kit (`PlanGrouping`) y filas con título, día y repetición abreviada. Los
+    /// minutos de cada paso están en su detalle desplegable.
     @ViewBuilder private var reviewStepsList: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(streamingState.steps.enumerated()), id: \.offset) { index, step in
-                Button {
-                    withAnimation(.smooth(duration: 0.3)) {
-                        if expandedSteps.contains(index) { expandedSteps.remove(index) } else { expandedSteps.insert(index) }
+        let steps = Array(streamingState.steps.enumerated())
+        let groups = PlanGrouping.groups(steps) { Self.stepDate($0.element.suggestedDeadline) }
+        VStack(alignment: .leading, spacing: 14) {
+            Text(PlanGrouping.summary(
+                stepCount: steps.count,
+                dates: steps.compactMap { Self.stepDate($0.element.suggestedDeadline) },
+                totalMinutes: steps.reduce(0) { $0 + $1.element.estimateMinutes * ($1.element.repetition?.repetition?.times ?? 1) }))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("review.summary")
+            ForEach(groups, id: \.key) { group in
+                VStack(alignment: .leading, spacing: 6) {
+                    if !group.title.isEmpty {
+                        Text(group.title)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                            .padding(.leading, 12)
+                            .accessibilityAddTraits(.isHeader)
                     }
-                } label: {
-                    HStack(alignment: .top, spacing: 12) {
-                        Text("\(index + 1)")
-                            .font(.subheadline.bold().monospacedDigit())
-                            .foregroundStyle(.tint)
-                            .frame(width: 28, height: 28)
-                            .background(Color.accentColor.opacity(0.12), in: .circle)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(step.stepTitle)
-                            HStack(spacing: 10) {
-                                if let day = Self.stepDay(step.suggestedDeadline) {
-                                    Label(day, systemImage: Symbols.calendar)
-                                        .foregroundStyle(MetaTint.date)
-                                }
-                                Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
-                                    .foregroundStyle(MetaTint.time)
-                                if let repetition = step.repetition?.repetition {
-                                    Label(repetition.label, systemImage: "repeat")
-                                        .foregroundStyle(MetaTint.repeatTint)
-                                }
-                            }
-                            .font(.caption.weight(.medium))
-                            if expandedSteps.contains(index) {
-                                // Resumen: qué queda hecho, el esfuerzo y el principio de la descripción.
-                                VStack(alignment: .leading, spacing: 6) {
-                                    if !step.description.short.isEmpty {
-                                        Text("Al terminar").font(.caption.weight(.semibold))
-                                        Text(step.description.short).font(.subheadline)
-                                    }
-                                    Label(String(localized: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: step.effortLevel).lowercased())"),
-                                          systemImage: Symbols.effort)
-                                        .font(.caption.weight(.medium))
-                                        .foregroundStyle(MetaTint.effort)
-                                    if !step.description.long.isEmpty {
-                                        Text(step.description.long)
-                                            .font(.footnote)
-                                            .foregroundStyle(.secondary)
-                                            .lineLimit(3)
-                                    }
-                                }
-                                .padding(.top, 6)
-                                // La fila crece y el texto se funde dentro de ella: nada se desliza desde fuera.
-                                .transition(.asymmetric(
-                                    insertion: .opacity.animation(.easeOut(duration: 0.25).delay(0.12)),
-                                    removal: .opacity.animation(.easeIn(duration: 0.12))))
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(group.items, id: \.offset) { index, step in
+                            reviewStepRow(index: index, step: step, showsDate: !group.byDay)
+                            if index != group.items.last?.offset {
+                                Divider().padding(.leading, 52)
                             }
                         }
-                        Spacer(minLength: 0)
-                        Image(systemName: "chevron.down")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                            .rotationEffect(.degrees(expandedSteps.contains(index) ? 180 : 0))
-                            .padding(.top, 6)
                     }
-                    .padding(12)
-                    .contentShape(.rect)
-                }
-                .buttonStyle(.plain)
-                .accessibilityElement(children: .combine)
-                .accessibilityHint(expandedSteps.contains(index) ? String(localized: "Oculta el detalle del paso") : String(localized: "Muestra el detalle del paso"))
-                if index < streamingState.steps.count - 1 {
-                    Divider().padding(.leading, 52)
+                    .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
                 }
             }
         }
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
         .modifier(Reveal(shown: contentRevealed, order: 4))
+    }
+
+    private func reviewStepRow(index: Int, step: StreamStepOutput, showsDate: Bool) -> some View {
+        Button {
+            withAnimation(.smooth(duration: 0.3)) {
+                if expandedSteps.contains(index) { expandedSteps.remove(index) } else { expandedSteps.insert(index) }
+            }
+        } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Text("\(index + 1)")
+                    .font(.subheadline.bold().monospacedDigit())
+                    .foregroundStyle(.tint)
+                    .frame(width: 28, height: 28)
+                    .background(Color.accentColor.opacity(0.12), in: .circle)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(step.stepTitle)
+                    if let meta = reviewMeta(step, showsDate: showsDate) {
+                        meta
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    if expandedSteps.contains(index) {
+                        // Resumen: qué queda hecho, el tiempo, el esfuerzo y el principio de la descripción.
+                        VStack(alignment: .leading, spacing: 6) {
+                            if !step.description.short.isEmpty {
+                                Text("Al terminar").font(.caption.weight(.semibold))
+                                Text(step.description.short).font(.subheadline)
+                            }
+                            Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(MetaTint.time)
+                            Label(String(localized: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: step.effortLevel).lowercased())"),
+                                  systemImage: Symbols.effort)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(MetaTint.effort)
+                            if !step.description.long.isEmpty {
+                                Text(step.description.long)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(3)
+                            }
+                        }
+                        .padding(.top, 6)
+                        // La fila crece y el texto se funde dentro de ella: nada se desliza desde fuera.
+                        .transition(.asymmetric(
+                            insertion: .opacity.animation(.easeOut(duration: 0.25).delay(0.12)),
+                            removal: .opacity.animation(.easeIn(duration: 0.12))))
+                    }
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.down")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .rotationEffect(.degrees(expandedSteps.contains(index) ? 180 : 0))
+                    .padding(.top, 6)
+            }
+            .padding(12)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(expandedSteps.contains(index) ? String(localized: "Oculta el detalle del paso") : String(localized: "Muestra el detalle del paso"))
+    }
+
+    /// «Hoy · cada día, 3 días» o «mié 4»; nada en un grupo diario sin repetición.
+    private func reviewMeta(_ step: StreamStepOutput, showsDate: Bool) -> Text? {
+        var parts: [Text] = []
+        if showsDate, let date = Self.stepDate(step.suggestedDeadline) {
+            let day = PlanGrouping.rowDate(date)
+            parts.append(day.isToday ? Text(day.text).foregroundStyle(.tint).fontWeight(.semibold) : Text(day.text))
+        }
+        if let repetition = step.repetition?.repetition {
+            parts.append(Text(repetition.shortLabel))
+        }
+        guard let first = parts.first else { return nil }
+        return parts.dropFirst().reduce(first) { $0 + Text(" · ") + $1 }
     }
 
     @ViewBuilder private var reviewRisks: some View {

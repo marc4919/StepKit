@@ -424,6 +424,16 @@
         }
       }
     },
+    "%lld semanas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld weeks"
+          }
+        }
+      }
+    },
     "%lld sesiones": {
       "localizations": {
         "en": {
@@ -530,6 +540,16 @@
         }
       }
     },
+    "1 paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 step"
+          }
+        }
+      }
+    },
     "1 paso listo": {
       "localizations": {
         "en": {
@@ -546,6 +566,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 suggested step"
+          }
+        }
+      }
+    },
+    "1 semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 week"
           }
         }
       }
@@ -6936,6 +6966,16 @@
         }
       }
     },
+    "Semana %lld · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week %lld · %@"
+          }
+        }
+      }
+    },
     "Sesiones cumplidas": {
       "localizations": {
         "en": {
@@ -8332,6 +8372,46 @@
         }
       }
     },
+    "cada día, %lld días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "every day, %lld days"
+          }
+        }
+      }
+    },
+    "cada día, %lld sem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "every day, %lld wks"
+          }
+        }
+      }
+    },
+    "cada día, 1 sem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "every day, 1 wk"
+          }
+        }
+      }
+    },
+    "cada semana, %lld sem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "every week, %lld wks"
+          }
+        }
+      }
+    },
     "de %lld previstos": {
       "localizations": {
         "en": {
@@ -8826,6 +8906,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "• **Providing the service** (account, sync and plans): performance of a contract (GDPR art. 6.1.b).\n• **Sending your content to external AI:** your consent (art. 6.1.a), which you can withdraw.\n• **Managing the subscription:** performance of a contract (art. 6.1.b).\n• **Usage limits, security and abuse prevention:** legitimate interest (art. 6.1.f)."
+          }
+        }
+      }
+    },
+    "≈ %@ en total": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %@ in total"
           }
         }
       }

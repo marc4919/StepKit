@@ -279,48 +279,45 @@ struct KitDetailView: View {
 
     // MARK: - Plan
 
-    /// Fechas de las filas: si todo el plan cae el mismo día, la fecha ya la da el chip de arriba y
-    /// repetirla en cada fila es ruido. Con varios días, la fecha va solo en el primer paso de cada
-    /// día (los siguientes del mismo día van justo debajo, en la misma tarjeta, y se leen como ese
-    /// día). Una sola tarjeta continua: las cabeceras por día, con un paso por día, alargaban la lista.
-    private var stepsShowingDate: Set<UUID> {
-        let calendar = Calendar.current
-        let steps = kitEntity.orderedActiveSteps
-        let days = Set(steps.compactMap { $0.suggestedDeadline.map { calendar.startOfDay(for: $0) } })
-        guard days.count > 1 else { return [] }
-        var shown: Set<UUID> = []
-        var previous: Date?
-        for step in steps {
-            let day = step.suggestedDeadline.map { calendar.startOfDay(for: $0) }
-            if let day, day != previous { shown.insert(step.id) }
-            previous = day
-        }
-        return shown
-    }
-
+    /// Cabeceras de sección por semana (por día si el Kit cabe en dos semanas), como las listas agrupadas
+    /// de iOS, con la regla que comparte con la vista previa al crear (`PlanGrouping`).
     private var stepsSection: some View {
         Group {
             if kitEntity.orderedActiveSteps.isEmpty {
                 emptyStepsView
             } else {
-                let steps = kitEntity.orderedActiveSteps
-                let dated = stepsShowingDate
-                VStack(spacing: 0) {
-                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                        PlanStepRow(step: step, number: index + 1,
-                                    state: step.progressState(hasEntries: kitEntries.contains { $0.stepID == step.id }),
-                                    showsDate: dated.contains(step.id)) {
-                            withAnimation(.snappy) {
-                                try? ProgressLog.toggleCompletion(of: step, context: modelContext)
+                let steps = Array(kitEntity.orderedActiveSteps.enumerated())
+                let groups = PlanGrouping.groups(steps) { $0.element.suggestedDeadline }
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(groups, id: \.key) { group in
+                        VStack(alignment: .leading, spacing: 6) {
+                            if !group.title.isEmpty {
+                                Text(group.title)
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .textCase(.uppercase)
+                                    .padding(.leading, 12)
+                                    .accessibilityAddTraits(.isHeader)
                             }
-                            syncManager?.handleDataChange()
-                        }
-                        if index < steps.count - 1 {
-                            Divider().padding(.leading, 52)
+                            VStack(spacing: 0) {
+                                ForEach(group.items, id: \.element.id) { index, step in
+                                    PlanStepRow(step: step, number: index + 1,
+                                                state: step.progressState(hasEntries: kitEntries.contains { $0.stepID == step.id }),
+                                                showsDate: !group.byDay) {
+                                        withAnimation(.snappy) {
+                                            try? ProgressLog.toggleCompletion(of: step, context: modelContext)
+                                        }
+                                        syncManager?.handleDataChange()
+                                    }
+                                    if step.id != group.items.last?.element.id {
+                                        Divider().padding(.leading, 52)
+                                    }
+                                }
+                            }
+                            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
                         }
                     }
                 }
-                .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
             }
         }
     }
@@ -349,28 +346,22 @@ private struct PlanStepRow: View {
     let step: StepEntity
     let number: Int
     let state: StepProgressState
-    /// Solo el primer paso de cada día lleva fecha (ver `stepsShowingDate`).
+    /// En las secciones por semana cada fila lleva su día; en las diarias lo dice la cabecera.
     let showsDate: Bool
 
-    @ViewBuilder private var meta: some View {
-        Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
-            .foregroundStyle(MetaTint.time)
+    /// Una línea gris con el día («Hoy» en el color de la app), los minutos y la repetición abreviada.
+    /// Sin chips ni etiqueta «En curso»: el estado ya lo dice el icono.
+    private var meta: Text {
+        var parts: [Text] = []
         if showsDate, let date = step.suggestedDeadline {
-            Label(date.formatted(.dateTime.day().month(.abbreviated)), systemImage: Symbols.calendar)
-                .foregroundStyle(MetaTint.date)
+            let day = PlanGrouping.rowDate(date)
+            parts.append(day.isToday ? Text(day.text).foregroundStyle(.tint).fontWeight(.semibold) : Text(day.text))
         }
+        parts.append(Text(String(localized: "\(step.estimateMinutes) min")))
         if let repetition = step.repetition {
-            Label(repetition.label, systemImage: "repeat")
-                .foregroundStyle(MetaTint.repeatTint)
+            parts.append(Text(repetition.shortLabel))
         }
-        if state == .inProgress || state == .blocked {
-            Text(state.label)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(state == .blocked ? .red : .orange)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background((state == .blocked ? Color.red : .orange).opacity(0.14), in: .capsule)
-        }
+        return parts.dropFirst().reduce(parts[0]) { $0 + Text(" · ") + $1 }
     }
 
     let onToggle: () -> Void
@@ -402,8 +393,19 @@ private struct PlanStepRow: View {
                             .foregroundStyle(state == .done ? .secondary : .primary)
                             .strikethrough(state == .done, color: .secondary)
                             .multilineTextAlignment(.leading)
-                        FlowLayout(spacing: 10) { meta }
-                            .font(.caption.weight(.medium))
+                        HStack(spacing: 8) {
+                            meta
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            if state == .blocked {
+                                Text(state.label)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.red)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(Color.red.opacity(0.14), in: .capsule)
+                            }
+                        }
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right")

@@ -249,6 +249,19 @@ struct StepRepetition: Hashable {
         }
     }
 
+    /// Abreviada, para la línea secundaria de una fila: «cada día, 5 días», «cada día, 2 sem», «cada semana, 4 sem».
+    var shortLabel: String {
+        switch every {
+        case .day where times % 7 == 0:
+            let weeks = times / 7
+            return weeks == 1 ? String(localized: "cada día, 1 sem") : String(localized: "cada día, \(weeks) sem")
+        case .day:
+            return String(localized: "cada día, \(times) días")
+        case .week:
+            return String(localized: "cada semana, \(times) sem")
+        }
+    }
+
     /// «Día 3 de 14» o «Semana 2 de 4».
     func sessionName(_ index: Int) -> String {
         every == .day ? String(localized: "Día \(index + 1) de \(times)") : String(localized: "Semana \(index + 1) de \(times)")
