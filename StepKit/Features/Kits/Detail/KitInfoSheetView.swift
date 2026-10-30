@@ -108,20 +108,36 @@ struct KitInfoSheetView: View {
 
     private var planSection: some View {
         Section("Planificación") {
-            if let dueDate = goalEntity.dueDate {
-                infoRow(symbol: Symbols.wantedDate, color: MetaTint.date, title: String(localized: "Fecha deseada"),
-                        value: dueDate.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).year()))
-                if !goalEntity.isCompleted {
-                    let remaining = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now),
-                                                                    to: Calendar.current.startOfDay(for: dueDate)).day ?? 0
-                    infoRow(symbol: "clock.badge.checkmark", color: remaining < 0 ? .red : .green, title: String(localized: "Días restantes"),
-                            value: remaining < 0 ? String(localized: "Vencido hace \(abs(remaining)) días") : String(localized: "\(remaining) días"))
+            // Cuatro datos en una cuadrícula de dos por dos: la misma información en una sola fila.
+            LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                      alignment: .leading, spacing: 14) {
+                if let dueDate = goalEntity.dueDate {
+                    planCell(symbol: Symbols.wantedDate, color: MetaTint.date, title: String(localized: "Fecha deseada"),
+                             value: dueDate.formatted(.dateTime.day().month(.abbreviated).year()))
+                    if !goalEntity.isCompleted {
+                        let remaining = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now),
+                                                                        to: Calendar.current.startOfDay(for: dueDate)).day ?? 0
+                        planCell(symbol: "clock.badge.checkmark", color: remaining < 0 ? .red : .green, title: String(localized: "Días restantes"),
+                                 value: remaining < 0 ? String(localized: "Vencido hace \(abs(remaining)) días") : String(localized: "\(remaining) días"))
+                    }
                 }
+                planCell(symbol: "hourglass", color: MetaTint.time, title: String(localized: "Horizonte"), value: String(localized: "\(goalEntity.horizonDays) días"))
+                planCell(symbol: Symbols.calendar, color: .secondary, title: String(localized: "Creado"),
+                         value: goalEntity.createdAt.formatted(.dateTime.day().month(.abbreviated).year()))
             }
-            infoRow(symbol: "hourglass", color: MetaTint.time, title: String(localized: "Horizonte"), value: String(localized: "\(goalEntity.horizonDays) días"))
-            infoRow(symbol: Symbols.calendar, color: .secondary, title: String(localized: "Creado"),
-                    value: goalEntity.createdAt.formatted(.dateTime.day().month(.abbreviated).year()))
+            .padding(.vertical, 4)
         }
+    }
+
+    private func planCell(symbol: String, color: Color, title: String, value: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            IconChip(symbol: symbol, color: color, size: 26)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.caption).foregroundStyle(.secondary)
+                Text(value).font(.subheadline.weight(.medium)).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: - A tener en cuenta
