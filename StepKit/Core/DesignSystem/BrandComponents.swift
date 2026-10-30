@@ -615,74 +615,10 @@ struct DelayedReveal<Content: View>: View {
 
 // MARK: - Barra de pestañas oculta con transición
 
-/// Oculta la barra de pestañas mientras la pantalla está a la vista y la devuelve animada
-/// en cuanto empieza a cerrarse (al volver atrás). Con `.toolbar(.hidden, for: .tabBar)`
-/// la barra reaparecía de golpe al terminar la transición.
-struct HidesTabBarSmoothly: ViewModifier {
-    @State private var counted = false
-
-    func body(content: Content) -> some View {
-        content
-            .toolbarVisibility(TabBarHiders.shared.count > 0 ? .hidden : .visible, for: .tabBar)
-            .background(ViewControllerLifecycle(
-                willAppear: { setCounted(true) },
-                willDisappear: { setCounted(false) }))
-    }
-
-    private func setCounted(_ value: Bool) {
-        guard counted != value else { return }
-        counted = value
-        withAnimation(.smooth(duration: 0.3)) { TabBarHiders.shared.count += value ? 1 : -1 }
-    }
-}
-
-/// Pantallas visibles que ocultan la barra de pestañas. Al pasar de un paso al siguiente,
-/// el nuevo aparece antes de que el anterior desaparezca: con un contador la barra no vuelve.
-@MainActor @Observable
-final class TabBarHiders {
-    static let shared = TabBarHiders()
-    var count = 0
-}
-
+/// Pantallas que ocultan la barra de pestañas (paso, asistente, resultado). Visibilidad fija: la
+/// variante con contador y viewWillAppear/viewWillDisappear perdía la cuenta cuando el sistema
+/// reubicaba la vista al plegar el iPhone Duo, y la barra reaparecía sobre el paso.
 extension View {
-    func hidesTabBarSmoothly() -> some View { modifier(HidesTabBarSmoothly()) }
-}
-
-/// Avisa de `viewWillAppear`/`viewWillDisappear`, que SwiftUI no expone: llegan antes de la transición.
-private struct ViewControllerLifecycle: UIViewControllerRepresentable {
-    let willAppear: () -> Void
-    let willDisappear: () -> Void
-
-    func makeUIViewController(context: Context) -> Controller {
-        Controller(willAppear: willAppear, willDisappear: willDisappear)
-    }
-
-    func updateUIViewController(_ controller: Controller, context: Context) {
-        controller.willAppearAction = willAppear
-        controller.willDisappearAction = willDisappear
-    }
-
-    final class Controller: UIViewController {
-        var willAppearAction: () -> Void
-        var willDisappearAction: () -> Void
-
-        init(willAppear: @escaping () -> Void, willDisappear: @escaping () -> Void) {
-            willAppearAction = willAppear
-            willDisappearAction = willDisappear
-            super.init(nibName: nil, bundle: nil)
-        }
-
-        required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-
-        override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            willAppearAction()
-        }
-
-        override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-            willDisappearAction()
-        }
-    }
+    func hidesTabBarSmoothly() -> some View { toolbarVisibility(.hidden, for: .tabBar) }
 }
 

@@ -42,7 +42,12 @@ struct StepDetailView: View {
     /// se estima con el tamaño de la ventana, nunca con el medido: la barra de acciones propia resta
     /// altura a la vista y en un iPhone eso la volvía «casi cuadrada» en un bucle sin fin.
     @State private var toolbarIsVertical: Bool?
-    private var sideControls: Bool { toolbarIsVertical ?? Self.isNearlySquare(Self.windowSize) }
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// Solo en ancho compacto (Duo cerrado): abierto en horizontal las barras también van en vertical,
+    /// pero con las acciones dentro se desbordaban en un menú «…»; ahí se queda la barra propia abajo.
+    private var sideControls: Bool {
+        horizontalSizeClass == .compact && (toolbarIsVertical ?? Self.isNearlySquare(Self.windowSize))
+    }
     /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
     /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
     @State private var insets = EdgeInsets()
