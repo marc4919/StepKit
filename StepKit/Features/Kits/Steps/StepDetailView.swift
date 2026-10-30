@@ -49,7 +49,9 @@ struct StepDetailView: View {
     /// borde derecho y su zona segura llega después del primer fotograma: se reserva a mano.
     private var reservesSideColumn: Bool { DeviceKind.isDuo && (sideControls || landscape) }
     /// Acciones dentro de la barra de herramientas (Duo cerrado) en vez de botones grandes.
-    private var actionsInToolbar: Bool { Self.forcesSideControls || (sideControls && !wideLayout) }
+    /// Las acciones del paso van siempre en la barra inferior del sistema (botones de cristal con
+    /// icono y texto, «Completar» destacado): en el Duo cerrado el sistema la pinta en vertical.
+    private var actionsInToolbar: Bool { true }
     /// Siguiente paso abierto desde el aviso de completado.
     @State private var openedNextStep: StepEntity?
     @State private var showingKitResult = false
@@ -602,21 +604,45 @@ struct StepDetailView: View {
                 showingSaveProgress = true
             }
         case .pending, .inProgress:
-            Button(String(localized: "Guardar avance"), systemImage: Symbols.note) {
+            Button {
                 savingBlocked = false
                 showingSaveProgress = true
+            } label: {
+                toolbarLabel("Avance", symbol: Symbols.note)
             }
+            .accessibilityLabel("Guardar avance")
             .accessibilityIdentifier("step.saveProgress")
-            Button(String(localized: "Me he atascado"), systemImage: "hand.raised") {
+            Button {
                 savingBlocked = true
                 showingSaveProgress = true
+            } label: {
+                toolbarLabel("Atasco", symbol: "hand.raised")
             }
+            .accessibilityLabel("Me he atascado")
             .accessibilityIdentifier("step.reportBlock")
-            Button(String(localized: "Marcar como completado"), systemImage: "checkmark") {
+            Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
+            } label: {
+                toolbarLabel("Completar", symbol: "checkmark", primary: true)
             }
             .buttonStyle(.glassProminent)
+            .accessibilityLabel("Marcar como completado")
             .accessibilityIdentifier("step.toggleCompletion")
+        }
+    }
+
+    /// Botón de la barra inferior: icono y texto en línea; solo icono cuando la barra va en vertical
+    /// (Duo cerrado), donde el texto no cabe. La barra ignora `labelStyle`, de ahí la vista propia.
+    @ViewBuilder private func toolbarLabel(_ title: LocalizedStringKey, symbol: String, primary: Bool = false) -> some View {
+        // En vertical (Duo cerrado) solo icono; en un iPhone estrecho, texto solo en «Completar»
+        // (tres botones con texto no caben y el sistema los plegaba en un menú «…»).
+        if sideControls || (!primary && layoutSize.width < 500) {
+            Image(systemName: symbol)
+        } else {
+            HStack(spacing: 6) {
+                Image(systemName: symbol)
+                Text(title)
+            }
         }
     }
 
