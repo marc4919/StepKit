@@ -113,13 +113,9 @@ struct KitCreatorView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        // Sin «Listo» sobre el teclado: la tecla de retorno ya cierra, igual que tocar fuera o deslizar,
+        // y al volver a abrir el creador la cápsula aparecía a veces suelta sobre el formulario.
         .toolbar {
-            // «Listo» sobre el teclado: la otra salida, además de tocar fuera o deslizar.
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Listo") { focusedField = nil }
-                    .fontWeight(.semibold)
-            }
             ToolbarItem(placement: .principal) {
                 Text(vm.toolbarTitle)
                     .font(.headline)
