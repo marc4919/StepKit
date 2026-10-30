@@ -34,16 +34,11 @@ struct StepDetailView: View {
     @Environment(\.detailColumnSize) private var detailColumnSize
     private var layoutSize: CGSize { measuredSize ?? detailColumnSize ?? Self.windowSize }
     private var wideLayout: Bool { TwoColumnLayout.fits(layoutSize) }
-    /// Si el sistema dibuja las barras en vertical (iPhone Duo cerrado, y abierto en horizontal), lo dice
-    /// `toolbarVerticalEdge` (iOS 27.1). Sin ese dato, se estima con el tamaño de la ventana, nunca con
-    /// el medido: decidir con el tamaño de la vista algo que cambia ese mismo tamaño acababa en un
-    /// bucle sin fin con la pantalla en blanco.
-    @State private var toolbarIsVertical: Bool?
-    private var verticalBars: Bool { toolbarIsVertical ?? Self.isNearlySquare(Self.windowSize) }
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    /// Disposición del Duo cerrado (chips cortos, márgenes de la franja lateral): ancho compacto con
-    /// las barras en vertical.
-    private var sideControls: Bool { horizontalSizeClass == .compact && verticalBars }
+    /// Disposición del Duo cerrado (chips cortos, márgenes de la franja lateral): ancho compacto en una
+    /// ventana casi cuadrada. Se decide con el tamaño de la ventana, nunca con el medido: decidir con el
+    /// tamaño de la vista algo que cambia ese mismo tamaño acababa en un bucle con la pantalla en blanco.
+    private var sideControls: Bool { horizontalSizeClass == .compact && Self.isNearlySquare(Self.windowSize) }
     /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
     /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
     @State private var insets = EdgeInsets()
@@ -121,18 +116,11 @@ struct StepDetailView: View {
             }
             // Las tres acciones van en la barra inferior del sistema, como en Mail o Notas: flota sobre
             // el contenido, que se desvanece bajo ella, y en el Duo cerrado (o abierto en horizontal)
-            // pasa a la franja lateral. Con cada cambio de postura (girar, plegar, desplegar) los
-            // botones se rehacen sin animación: transformarlos dejaba cápsulas vacías o «Completar»
-            // duplicado, y al recolocar las barras el sistema llegaba a perderlos.
+            // pasa a la franja lateral. Son botones con título e icono, siempre los mismos: el sistema
+            // decide cómo pintarlos en cada postura. Cambiarlos al girar o plegar (texto o solo icono,
+            // identidades nuevas) dejaba cápsulas vacías, botones duplicados o perdidos.
             ToolbarItemGroup(placement: .bottomBar) {
                 sideToolbarActions
-                    .id(toolbarIdentity)
-                    .transaction { $0.animation = nil }
-            }
-        }
-        .background {
-            if #available(iOS 27.1, *) {
-                ToolbarVerticalEdgeProbe { toolbarIsVertical = $0 }
             }
         }
         .sensoryFeedback(.success, trigger: celebration)
@@ -485,79 +473,23 @@ struct StepDetailView: View {
                 showingSaveProgress = true
             }
         case .pending, .inProgress:
-            Button {
+            Button(String(localized: "Guardar avance"), systemImage: Symbols.note) {
                 savingBlocked = false
                 showingSaveProgress = true
-            } label: {
-                toolbarLabel("Avance", symbol: Symbols.note)
             }
-            .accessibilityLabel("Guardar avance")
             .accessibilityIdentifier("step.saveProgress")
-            Button {
+            Button(String(localized: "Me he atascado"), systemImage: "hand.raised") {
                 savingBlocked = true
                 showingSaveProgress = true
-            } label: {
-                toolbarLabel("Atasco", symbol: "hand.raised")
             }
-            .accessibilityLabel("Me he atascado")
             .accessibilityIdentifier("step.reportBlock")
-            Button {
+            // Destacado en el color de la app: es la acción principal del paso.
+            Button(String(localized: "Marcar como completado"), systemImage: "checkmark") {
                 withAnimation(.smooth) { toggleStepCompletion() }
-            } label: {
-                toolbarLabel("Completar", symbol: "checkmark", primary: true)
-                    // El estilo destacado pone el texto en seminegrita y parecía más grande que
-                    // «Avance» y «Atasco»: mismo peso; lo distingue el color, no el tamaño.
-                    .fontWeight(.regular)
             }
             .buttonStyle(.glassProminent)
-            .accessibilityLabel("Marcar como completado")
             .accessibilityIdentifier("step.toggleCompletion")
         }
-    }
-
-    /// Cómo van las etiquetas de la barra inferior: 0 solo iconos (barras en vertical: Duo cerrado o
-    /// abierto en horizontal, donde el texto no cabe), 1 secundarios solo con icono y «Completar» con
-    /// texto (iPhone), 2 todo con texto (ancho). La barra ignora `labelStyle`, de ahí la vista propia.
-    private var toolbarLabelMode: Int {
-        if verticalBars { return 0 }
-        return layoutSize.width < 500 ? 1 : 2
-    }
-
-    /// Cambia con el modo de etiqueta y con la postura (ancho compacto o regular, una o dos columnas),
-    /// nunca con el tamaño exacto: así los botones se rehacen una vez por plegado, no en cada fotograma.
-    private var toolbarIdentity: String {
-        "\(toolbarLabelMode)-\(horizontalSizeClass == .compact ? "c" : "r")-\(wideLayout ? "w" : "n")"
-    }
-
-    @ViewBuilder private func toolbarLabel(_ title: LocalizedStringKey, symbol: String, primary: Bool = false) -> some View {
-        if toolbarLabelMode == 0 || (!primary && toolbarLabelMode == 1) {
-            Image(systemName: symbol)
-        } else {
-            HStack(spacing: 6) {
-                Image(systemName: symbol)
-                Text(title)
-            }
-        }
-    }
-
-    private func actionTile(_ title: String, symbol: String, prominent: Bool = false, identifier: String,
-                            accessibilityLabel: String? = nil, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 3) {
-                Image(systemName: symbol).font(.title3.weight(.semibold))
-                // En pantallas estrechas (iPhone Duo cerrado) el texto se ajusta antes que partirse.
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .allowsTightening(true)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-        }
-        .buttonStyle(prominent ? AnyPrimitiveButtonStyle(.glassProminent) : AnyPrimitiveButtonStyle(.glass))
-        .accessibilityLabel(accessibilityLabel ?? title)
-        .accessibilityIdentifier(identifier)
     }
 
     // MARK: - Step Notification Toggle
@@ -844,19 +776,5 @@ private struct CompletionBanner: View {
         .onAppear { appeared = true }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isStaticText)
-    }
-}
-
-/// Lee si la barra de navegación va en vertical (iPhone Duo) y lo comunica; la propiedad de entorno
-/// solo existe desde iOS 27.1, por eso va en una vista aparte con disponibilidad propia.
-@available(iOS 27.1, *)
-private struct ToolbarVerticalEdgeProbe: View {
-    @Environment(\.toolbarVerticalEdge) private var edge
-    let onChange: (Bool) -> Void
-
-    var body: some View {
-        Color.clear
-            .frame(width: 0, height: 0)
-            .onChange(of: edge != nil, initial: true) { _, vertical in onChange(vertical) }
     }
 }
