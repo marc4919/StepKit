@@ -31,12 +31,17 @@ struct StepDetailView: View {
     @State private var celebration: Celebration?
     // Se parte del tamaño de la ventana para que la primera imagen ya tenga la disposición correcta:
     // si se esperara a medir la vista, en el Duo cerrado se vería el reajuste al entrar.
-    @State private var wideLayout = TwoColumnLayout.fits(StepDetailView.windowSize)
-    @State private var sideControls = StepDetailView.isNearlySquare(StepDetailView.windowSize)
+    /// Tamaño medido de la vista; hasta que llega, la disposición se estima con el de la columna de
+    /// detalle (vista dividida) o el de la ventana. Así el primer fotograma ya es el definitivo.
+    @State private var measuredSize: CGSize?
+    @Environment(\.detailColumnSize) private var detailColumnSize
+    private var layoutSize: CGSize { measuredSize ?? detailColumnSize ?? Self.windowSize }
+    private var wideLayout: Bool { TwoColumnLayout.fits(layoutSize) }
+    private var sideControls: Bool { Self.isNearlySquare(layoutSize) }
     /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
     /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
     @State private var insets = EdgeInsets()
-    @State private var landscape = StepDetailView.windowSize.width > StepDetailView.windowSize.height
+    private var landscape: Bool { Self.windowSize.width > Self.windowSize.height }
     /// Lo que ocupan la barra superior y la columna de botones en el Duo (medido).
     private static let foldedTopInset: CGFloat = 82
     private static let foldedTrailingInset: CGFloat = 84
@@ -144,7 +149,7 @@ struct StepDetailView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { size in sideControls = Self.isNearlySquare(size); landscape = size.width > size.height }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { measuredSize = $0 }
         .sensoryFeedback(.success, trigger: celebration)
         .navigationDestination(isPresented: $showingKitResult) {
             if let kit = stepEntity.goal { ResultReviewView(kit: kit) }
@@ -219,7 +224,7 @@ struct StepDetailView: View {
         .balancedHorizontalSafeArea()
         // Con el tamaño de la vista, no de la ventana: en el Duo abierto la columna de detalle es
         // estrecha aunque la ventana sea ancha, y con la ventana salían dos columnas apretadas.
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { wideLayout = TwoColumnLayout.fits($0) }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { measuredSize = $0 }
     }
 
     private var stepActions: some View {

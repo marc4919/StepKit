@@ -15,6 +15,7 @@ struct KitsListRegularView: View {
     
     @Environment(\.syncManager) private var syncManager
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var detailSize: CGSize?
     @State private var presentedOnce = false
     
     var body: some View {
@@ -107,6 +108,9 @@ struct KitsListRegularView: View {
                     }
                 }
             }
+            // La columna publica su tamaño: el paso lo usa como primera estimación de su disposición.
+            .onGeometryChange(for: CGSize.self) { $0.size } action: { detailSize = $0 }
+            .environment(\.detailColumnSize, detailSize)
         }
         .navigationSplitViewStyle(.balanced)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in

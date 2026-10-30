@@ -512,6 +512,19 @@ enum DeviceKind {
     static let isDuo = modelIdentifier == "iPhone19,4"
 }
 
+/// Tamaño de la columna de detalle de la vista dividida (Duo abierto, iPad): lo publica el contenedor
+/// para que una pantalla recién empujada acierte su disposición en el primer fotograma, antes de medirse.
+struct DetailColumnSizeKey: EnvironmentKey {
+    static let defaultValue: CGSize? = nil
+}
+
+extension EnvironmentValues {
+    var detailColumnSize: CGSize? {
+        get { self[DetailColumnSizeKey.self] }
+        set { self[DetailColumnSizeKey.self] = newValue }
+    }
+}
+
 enum TwoColumnLayout {
     /// Dos columnas solo en pantallas anchas y apaisadas (iPhone Duo abierto en horizontal, iPad en horizontal).
     /// Con el Duo abierto en vertical la pantalla es casi cuadrada y una sola columna, como cerrado, se lee mejor.
