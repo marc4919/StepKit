@@ -395,10 +395,6 @@ struct KitCreationStreamingProgress: View {
     }
 
     /// «lun, 3 nov» a partir de la fecha del servidor (yyyy-MM-dd).
-    private static func stepDay(_ text: String) -> String? {
-        stepDate(text)?.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
-    }
-
     private static func stepDate(_ text: String) -> Date? {
         let parser = DateFormatter()
         parser.calendar = Calendar(identifier: .gregorian)
@@ -458,7 +454,6 @@ struct KitCreationStreamingProgress: View {
                     HStack(alignment: .top, spacing: 24) {
                         VStack(alignment: .leading, spacing: 18) {
                             reviewKPI
-                            reviewFirstStep
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         VStack(alignment: .leading, spacing: 18) {
@@ -474,7 +469,6 @@ struct KitCreationStreamingProgress: View {
                     reviewHeader
                     reviewKPI
                     reviewNote
-                    reviewFirstStep
                     reviewStepsList
                     reviewRisks
                 }
@@ -537,8 +531,11 @@ struct KitCreationStreamingProgress: View {
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 6) {
                     MetaChip(symbol: "list.bullet", text: String(localized: "\(streamingState.steps.count) pasos"), color: .accentColor)
-                    if let days = streamingState.horizonDays {
-                        MetaChip(symbol: Symbols.wantedDate, text: String(localized: "\(days) días"), color: MetaTint.date)
+                    // Un plan para hoy no tiene horizonte que mostrar.
+                    if let days = streamingState.horizonDays, days > 0 {
+                        MetaChip(symbol: Symbols.wantedDate,
+                                 text: days == 1 ? String(localized: "1 día") : String(localized: "\(days) días"),
+                                 color: MetaTint.date)
                     }
                 }
             }
@@ -549,7 +546,7 @@ struct KitCreationStreamingProgress: View {
     @ViewBuilder private var reviewKPI: some View {
         if let kpi = streamingState.kpi, !kpi.isEmpty {
             PlainCard {
-                Eyebrow(text: String(localized: "Sabrás que está listo cuando"), color: .secondary)
+                Eyebrow(text: String(localized: "Resultado"), color: .secondary)
                 Text(kpi)
             }
             .modifier(Reveal(shown: contentRevealed, order: 1))
@@ -560,30 +557,6 @@ struct KitCreationStreamingProgress: View {
         Text("Revisa el plan antes de empezar. Podrás editar los pasos después.")
             .foregroundStyle(.secondary)
             .modifier(Reveal(shown: contentRevealed, order: 2))
-    }
-
-    @ViewBuilder private var reviewFirstStep: some View {
-        if let first = streamingState.steps.first {
-            TintCard {
-                HStack(alignment: .top, spacing: 12) {
-                    NextMark()
-                    VStack(alignment: .leading, spacing: 3) {
-                        Eyebrow(text: String(localized: "Tu primer paso"))
-                        Text(first.stepTitle).font(.title3.bold())
-                        HStack(spacing: 10) {
-                            if let day = Self.stepDay(first.suggestedDeadline) {
-                                Label(day, systemImage: Symbols.calendar)
-                                    .foregroundStyle(MetaTint.date)
-                            }
-                            Label(String(localized: "\(first.estimateMinutes) min orientativos"), systemImage: Symbols.time)
-                                .foregroundStyle(MetaTint.time)
-                        }
-                        .font(.subheadline)
-                    }
-                }
-            }
-            .modifier(Reveal(shown: contentRevealed, order: 3))
-        }
     }
 
     /// Arriba, el total (pasos, semanas y horas con las repeticiones); debajo, las mismas cabeceras por
