@@ -24,7 +24,6 @@ struct StepDetailView: View {
     /// La hoja de avance se abre ya en «Me he atascado» (botón Atasco).
     @State private var savingBlocked = false
     @State private var editingEntry: ProgressEntryEntity?
-    @State private var hingePartiallyOpen = false
     @State private var assistantLaunch: AssistantLaunch?
     @State private var showingAllProgress = false
     /// Aviso breve tras completar el paso: qué viene después.
@@ -93,20 +92,10 @@ struct StepDetailView: View {
     }
 
     var body: some View {
-        Group {
-            if hingePartiallyOpen, #available(iOS 27.1, *) {
-                // iPhone Duo entreabierto: el paso a un lado del pliegue, su recorrido y Guardar avance al otro.
-                ArrangementView {
-                    stepScroll
-                } secondary: {
-                    foldedProgressSide
-                }
-                .arrangementViewStyle(.split)
-            } else {
-                stepScroll
-            }
-        }
-        .modifier(HingeObserver(isPartiallyOpen: $hingePartiallyOpen))
+        // Una sola jerarquía en todas las posturas del iPhone Duo. Cambiarla al entreabrirlo (el paso a
+        // un lado del pliegue y su recorrido al otro) recreaba la vista con sus barras: Atrás se quedaba
+        // en blanco, aparecía una cápsula vacía en la otra mitad y volver al Kit colgaba la app.
+        stepScroll
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(stepEntity.goal?.title ?? "")
@@ -132,11 +121,12 @@ struct StepDetailView: View {
             }
             // Las tres acciones van en la barra inferior del sistema, como en Mail o Notas: flota sobre
             // el contenido, que se desvanece bajo ella, y en el Duo cerrado (o abierto en horizontal)
-            // pasa a la franja lateral. Al cambiar el modo de etiqueta (girar, plegar) los botones se
-            // rehacen sin animación: transformarlos dejaba cápsulas vacías o «Completar» duplicado.
+            // pasa a la franja lateral. Con cada cambio de postura (girar, plegar, desplegar) los
+            // botones se rehacen sin animación: transformarlos dejaba cápsulas vacías o «Completar»
+            // duplicado, y al recolocar las barras el sistema llegaba a perderlos.
             ToolbarItemGroup(placement: .bottomBar) {
                 sideToolbarActions
-                    .id(toolbarLabelMode)
+                    .id(toolbarIdentity)
                     .transaction { $0.animation = nil }
             }
         }
@@ -307,32 +297,6 @@ struct StepDetailView: View {
             }
             .accessibilityHint("Activa o desactiva el recordatorio de este paso")
         }
-    }
-
-    /// Lado secundario en el Duo entreabierto. Plegar no abre ningún formulario.
-    private var foldedProgressSide: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Tu recorrido en este paso").font(.headline)
-                if stepEntries.isEmpty {
-                    Text("Aún no has guardado avances en este paso.").foregroundStyle(.secondary)
-                }
-                ForEach(stepEntries.prefix(4)) { entry in
-                    HStack(alignment: .top, spacing: 12) {
-                        IconChip(symbol: entry.kind == .blocked ? Symbols.blocked : "circle.lefthalf.filled",
-                                 color: entry.kind == .blocked ? .red : .accentColor, size: 30)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(entry.notedAt.formatted(.dateTime.day().month(.abbreviated)))
-                                .font(.caption).foregroundStyle(.secondary)
-                            Text(entry.note.isEmpty ? String(localized: "Avance guardado") : entry.note)
-                        }
-                    }
-                }
-            }
-            .padding()
-        }
-        // Las acciones del paso siguen en la franja lateral del sistema; aquí solo el recorrido.
-        .background(Color(.systemGroupedBackground))
     }
 
     /// Todos los avances del paso: el último destacado y los anteriores debajo.
@@ -559,6 +523,12 @@ struct StepDetailView: View {
         return layoutSize.width < 500 ? 1 : 2
     }
 
+    /// Cambia con el modo de etiqueta y con la postura (ancho compacto o regular, una o dos columnas),
+    /// nunca con el tamaño exacto: así los botones se rehacen una vez por plegado, no en cada fotograma.
+    private var toolbarIdentity: String {
+        "\(toolbarLabelMode)-\(horizontalSizeClass == .compact ? "c" : "r")-\(wideLayout ? "w" : "n")"
+    }
+
     @ViewBuilder private func toolbarLabel(_ title: LocalizedStringKey, symbol: String, primary: Bool = false) -> some View {
         if toolbarLabelMode == 0 || (!primary && toolbarLabelMode == 1) {
             Image(systemName: symbol)
@@ -687,21 +657,6 @@ struct StepDetailView: View {
         StepDetailView(stepEntity: stepEntity, stepNumber: 3)
     }
     .modelContainer(container)
-}
-
-/// Observa la bisagra del iPhone Duo (iOS 27.1+). En otros dispositivos no hace nada.
-struct HingeObserver: ViewModifier {
-    @Binding var isPartiallyOpen: Bool
-
-    func body(content: Content) -> some View {
-        if #available(iOS 27.1, *) {
-            content.onHingeChange { _, context in
-                isPartiallyOpen = context.hinge?.status == .partiallyOpen
-            }
-        } else {
-            content
-        }
-    }
 }
 
 /// Texto largo en párrafos cortos: respeta los saltos que trae y, si no hay, agrupa de dos en dos frases.

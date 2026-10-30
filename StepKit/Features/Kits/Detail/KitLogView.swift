@@ -125,6 +125,10 @@ struct KitLogView: View {
             .padding(.bottom, 18)
             Spacer(minLength: 0)
         }
+        // La línea que une los hitos se estira hasta el final de la fila, pero la fila mide lo que su
+        // texto: sin esto, en dos columnas (Duo abierto, iPad) el registro se repartía toda la altura
+        // del plan y los hitos quedaban separados por huecos enormes.
+        .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .contain)
     }
 }
