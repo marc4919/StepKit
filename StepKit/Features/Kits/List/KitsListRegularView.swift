@@ -18,9 +18,16 @@ struct KitsListRegularView: View {
     @State private var detailSize: CGSize?
     @State private var presentedOnce = false
     
+    /// Sin Kits, o con el último ya saliendo: así el cambio a Mis Kits a pantalla completa se funde a la
+    /// vez que el Kit se va de la lista, en una sola transición. Esperar al borrado real añadía un
+    /// segundo fundido, entre dos estados vacíos iguales, con la animación de entrada repetida.
+    private var showsEmptyHome: Bool {
+        kitEntities.allSatisfy { viewModel.leavingKitIDs.contains($0.id) }
+    }
+
     var body: some View {
         Group {
-            if kitEntities.isEmpty {
+            if showsEmptyHome {
                 // Sin Kits, una barra lateral vacía no aporta: Mis Kits ocupa toda la pantalla
                 // y crear el primero está a un toque (iPad e interior del iPhone Duo).
                 NavigationStack {
@@ -32,7 +39,7 @@ struct KitsListRegularView: View {
             }
         }
         // Al borrar el último Kit, de dos columnas a pantalla única con un fundido suave.
-        .animation(.smooth(duration: 0.6), value: kitEntities.isEmpty)
+        .animation(.smooth(duration: 0.6), value: showsEmptyHome)
         .sheet(isPresented: $viewModel.showingDeleteConfirmation) {
             DeleteConfirmationSheet(
                 goal: viewModel.kitEntityToDelete,
@@ -50,7 +57,9 @@ struct KitsListRegularView: View {
                             _ = viewModel.leavingKitIDs.insert(kit.id)
                             if viewModel.selectedKitId == kit.id { viewModel.clearSelection() }
                         }
-                        try? await Task.sleep(for: .milliseconds(550))
+                        // Tras el fundido entero: borrar antes volvía a pintar la tarjeta que se iba
+                        // («0 de 0 pasos») en sus últimos fotogramas, y se veía como un parpadeo.
+                        try? await Task.sleep(for: .milliseconds(700))
                         withAnimation(.smooth(duration: 0.6)) {
                             viewModel.deleteKit(kit, syncManager: syncManager)
                             viewModel.leavingKitIDs.remove(kit.id)
