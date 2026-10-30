@@ -140,6 +140,8 @@ struct StepDetailView: View {
             if actionsInToolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
                     sideToolbarActions
+                        .id(toolbarLabelMode)
+                        .transaction { $0.animation = nil }
                 }
             }
         }
@@ -643,6 +645,14 @@ struct StepDetailView: View {
 
     /// Botón de la barra inferior: icono y texto en línea; solo icono cuando la barra va en vertical
     /// (Duo cerrado), donde el texto no cabe. La barra ignora `labelStyle`, de ahí la vista propia.
+    /// Cómo van las etiquetas de la barra inferior: 0 solo iconos (vertical), 1 secundarios con icono,
+    /// 2 todo con texto. Al girar o plegar cambia, y la barra se rehace entera en vez de transformar
+    /// los botones: transformarlos dejaba cápsulas vacías o «Completar» duplicado detrás de «Atasco».
+    private var toolbarLabelMode: Int {
+        if sideControls { return 0 }
+        return layoutSize.width < 500 ? 1 : 2
+    }
+
     @ViewBuilder private func toolbarLabel(_ title: LocalizedStringKey, symbol: String, primary: Bool = false) -> some View {
         // En vertical (Duo cerrado) solo icono; en un iPhone estrecho, texto solo en «Completar»
         // (tres botones con texto no caben y el sistema los plegaba en un menú «…»).
