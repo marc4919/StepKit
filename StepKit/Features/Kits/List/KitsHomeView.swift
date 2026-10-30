@@ -549,7 +549,9 @@ extension GoalEntity {
     /// Con el mismo `order` (puede pasar tras un sync o una inserción), decide la fecha de creación: así
     /// la numeración que se manda al asistente y la que resuelve su propuesta son siempre la misma.
     var orderedActiveSteps: [StepEntity] {
-        steps.filter { $0.deletedAt == nil }
+        // Sin repetidos: una relación con inversa puede traer el mismo paso dos veces en memoria.
+        var seen = Set<UUID>()
+        return steps.filter { $0.deletedAt == nil && seen.insert($0.id).inserted }
             .sorted { ($0.order, $0.createdAt) < ($1.order, $1.createdAt) }
     }
 

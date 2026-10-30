@@ -207,8 +207,10 @@ final class PlanProposal: Identifiable {
                 later.order += 1
                 later.markModified(at: now)
             }
-            new.goal = kit
             context.insert(new)
+            // Solo el append: `steps` tiene inversa en `goal`, así que asignar también `new.goal = kit`
+            // dejaba el mismo paso dos veces en la lista (el Kit pasaba de 6 a 7 con un paso repetido,
+            // el asistente veía un duplicado que no podía quitar y «paso 2» apuntaba a otro paso).
             kit.steps.append(new)
             highlights.record(.added, for: new.id)
             return new
