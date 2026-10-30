@@ -58,10 +58,15 @@ struct ResultReviewView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 PlainCard {
                     Eyebrow(text: String(localized: "Lo que querías conseguir"), color: .secondary)
-                    Toggle(isOn: $achieved) {
+                    // Interruptor a su tamaño propio: a todo el ancho se estiraba al mover el panel lateral.
+                    HStack(spacing: 12) {
                         Text(kit.kpi.isEmpty ? kit.title : kit.kpi)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Toggle(kit.kpi.isEmpty ? kit.title : kit.kpi, isOn: $achieved)
+                            .labelsHidden()
+                            .fixedSize()
+                            .accessibilityIdentifier("result.achieved")
                     }
-                    .accessibilityIdentifier("result.achieved")
                 }
                 Label("Completar los pasos no confirma por sí solo el resultado.", systemImage: "info.circle")
                     .font(.footnote)

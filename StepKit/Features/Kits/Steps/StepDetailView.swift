@@ -318,17 +318,23 @@ struct StepDetailView: View {
 
     private var stepReminder: some View {
         PlainCard {
-            Toggle(isOn: Binding(
-                get: { stepEntity.notificationEnabled },
-                set: { _ in toggleStepNotification() }
-            )) {
+            // El interruptor va aparte y a su tamaño propio: dentro de un Toggle a todo el ancho, al
+            // abrir o cerrar el panel lateral el sistema lo estiraba y se veía cuadrado un instante.
+            HStack(spacing: 12) {
                 Label {
                     Text("Recordatorio")
                 } icon: {
                     IconChip(symbol: "bell.fill", color: .red, size: 28)
                 }
+                Spacer(minLength: 8)
+                Toggle("Recordatorio", isOn: Binding(
+                    get: { stepEntity.notificationEnabled },
+                    set: { _ in toggleStepNotification() }
+                ))
+                .labelsHidden()
+                .fixedSize()
+                .accessibilityHint("Activa o desactiva el recordatorio de este paso")
             }
-            .accessibilityHint("Activa o desactiva el recordatorio de este paso")
         }
     }
 
