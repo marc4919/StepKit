@@ -501,7 +501,10 @@ struct KitsEmptyView: View {
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .onAppear {
             if reduceMotion { copyVisible = true; return }
-            withAnimation(.easeOut(duration: 0.6).delay(0.9)) { copyVisible = true }
+            // Siguiente ciclo: fuera del fundido con el que llega la vista (ver OrbitMark).
+            Task { @MainActor in
+                withAnimation(.easeOut(duration: 0.6).delay(0.9)) { copyVisible = true }
+            }
         }
     }
 

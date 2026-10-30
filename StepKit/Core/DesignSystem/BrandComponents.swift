@@ -358,11 +358,22 @@ struct OrbitMark: View {
         .accessibilityHidden(true)
         .onAppear {
             guard isAnimated, buildProgress == nil else { return }
-            drawn = 0
-            appeared = false
-            withAnimation(.easeInOut(duration: 1.1)) { drawn = 1 }
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.75)) { appeared = true }
-            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true).delay(1.2)) { floating = true }
+            // El reinicio nunca se anima, aunque la vista aparezca dentro de una transición (Mis Kits
+            // vacío al borrar el último Kit): animado, el trazado volvía a cero a la vez que se
+            // dibujaba y la S salía ya hecha, sin recorrido.
+            var reset = Transaction()
+            reset.disablesAnimations = true
+            withTransaction(reset) {
+                drawn = 0
+                appeared = false
+            }
+            // En el siguiente ciclo, fuera de la transición en la que aparece la vista: dentro de ella
+            // la animación del fundido se imponía a estas y la S salía ya hecha.
+            Task { @MainActor in
+                withAnimation(.easeInOut(duration: 1.1)) { drawn = 1 }
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.75)) { appeared = true }
+                withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true).delay(1.2)) { floating = true }
+            }
         }
     }
 
