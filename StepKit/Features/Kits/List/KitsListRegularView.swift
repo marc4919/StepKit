@@ -40,6 +40,11 @@ struct KitsListRegularView: View {
         }
         // Al borrar el último Kit, de dos columnas a pantalla única con un fundido suave.
         .animation(.smooth(duration: 0.6), value: showsEmptyHome)
+        // Un Kit deja de estar «saliendo» cuando ya no está en la lista. Quitarlo antes, con la
+        // consulta aún sin reflejar el borrado, hacía reaparecer la lista un instante.
+        .onChange(of: kitEntities.map(\.id), initial: true) { _, ids in
+            viewModel.leavingKitIDs = viewModel.leavingKitIDs.filter { ids.contains($0) }
+        }
         .sheet(isPresented: $viewModel.showingDeleteConfirmation) {
             DeleteConfirmationSheet(
                 goal: viewModel.kitEntityToDelete,
@@ -62,8 +67,8 @@ struct KitsListRegularView: View {
                         try? await Task.sleep(for: .milliseconds(700))
                         withAnimation(.smooth(duration: 0.6)) {
                             viewModel.deleteKit(kit, syncManager: syncManager)
-                            viewModel.leavingKitIDs.remove(kit.id)
                         }
+                        // Sigue «saliendo» hasta que de verdad desaparece de la lista (ver `onChange`).
                     }
                 },
                 onCancel: {
