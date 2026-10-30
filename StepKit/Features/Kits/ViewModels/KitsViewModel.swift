@@ -16,7 +16,6 @@ final class KitsViewModel {
     /// Kits que se están eliminando: salen de la lista con animación antes del borrado real.
     var leavingKitIDs: Set<UUID> = []
     var selectedStepEntity: StepEntity?
-    var navigationPath: [UUID] = []
     /// Kit cuya revisión del resultado se abre encima de su plan al navegar a él.
     var reviewOnOpenKitID: UUID?
     

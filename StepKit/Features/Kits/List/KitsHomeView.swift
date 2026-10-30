@@ -15,7 +15,10 @@ struct KitsHomeView: View {
     let allCompletedKits: [GoalEntity]
     @Bindable var viewModel: KitsViewModel
     /// iPhone: abre el Kit en la pila. iPad: lo selecciona en la columna de detalle.
-    var isCompact = true
+    /// Ancho compacto (iPhone, Duo cerrado): la vista dividida se colapsa a una pila y seleccionar
+    /// un Kit lo empuja. El parámetro del inicializador ya no manda; se lee del entorno.
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isCompact: Bool { horizontalSizeClass == .compact }
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var reviewingKit: GoalEntity?
     @State private var continuingStep: StepEntity?
@@ -24,7 +27,6 @@ struct KitsHomeView: View {
         self.allActiveKits = activeKits
         self.allCompletedKits = completedKits
         self.viewModel = viewModel
-        self.isCompact = isCompact
     }
 
     private var activeKits: [GoalEntity] { allActiveKits.filter { !viewModel.leavingKitIDs.contains($0.id) } }
@@ -70,8 +72,9 @@ struct KitsHomeView: View {
                 KitsEmptyView { openCreator() }
                     .transition(.opacity)
             } else {
-                // List para conservar el gesto clásico de deslizar para eliminar.
-                List {
+                // List para conservar el gesto clásico de deslizar para eliminar. La selección enlazada
+                // es lo que hace que, en ancho compacto, elegir un Kit lo empuje (y volver la limpie).
+                List(selection: $viewModel.selectedKitId) {
                     if !pendingResultKits.isEmpty {
                         // Discretos: una fila con la bandera, sin tarjeta grande ni todo en verde.
                         Section {
@@ -82,6 +85,7 @@ struct KitsHomeView: View {
                                     .accessibilityLabel("Kit: \(kit.title)")
                                     .accessibilityValue("Todos los pasos hechos, falta revisar el resultado")
                                     .listRowInsets(EdgeInsets())
+                                    .tag(kit.id)
                                     .deletable { viewModel.prepareForDeletion(kit) }
                             }
                         } header: {
@@ -103,6 +107,7 @@ struct KitsHomeView: View {
                                 open(kit)
                             }
                             .cardRow()
+                            .tag(kit.id)
                             .deletable { viewModel.prepareForDeletion(kit) }
                         }
                     }
@@ -162,6 +167,7 @@ struct KitsHomeView: View {
                     .accessibilityValue(String(localized: "\(kit.completedStepCount) de \(kit.activeStepCount) pasos"))
                     .listRowInsets(EdgeInsets())
                     .alignmentGuide(.listRowSeparatorLeading) { _ in 72 }
+                    .tag(kit.id)
                     .deletable { viewModel.prepareForDeletion(kit) }
             }
         } header: {
@@ -173,18 +179,14 @@ struct KitsHomeView: View {
     }
 
     private func open(_ kit: GoalEntity) {
-        if isCompact {
-            viewModel.navigationPath.append(kit.id)
-        } else {
-            viewModel.selectKit(kit)
-        }
+        viewModel.selectKit(kit)
     }
 
     /// En iPhone, la revisión se abre encima del plan del Kit para que «Volver al plan» sea un simple retroceso.
     private func startReview(of kit: GoalEntity) {
         guard isCompact else { reviewingKit = kit; return }
         viewModel.reviewOnOpenKitID = kit.id
-        viewModel.navigationPath.append(kit.id)
+        viewModel.selectKit(kit)
     }
 
     private func openCreator() {

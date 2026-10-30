@@ -24,7 +24,7 @@ struct KitsListRegularView: View {
                 // Sin Kits, una barra lateral vacía no aporta: Mis Kits ocupa toda la pantalla
                 // y crear el primero está a un toque (iPad e interior del iPhone Duo).
                 NavigationStack {
-                    KitsHomeView(activeKits: [], completedKits: [], viewModel: viewModel, isCompact: false)
+                    KitsHomeView(activeKits: [], completedKits: [], viewModel: viewModel)
                 }
                 .transition(.opacity)
             } else {
@@ -83,15 +83,17 @@ struct KitsListRegularView: View {
             KitsHomeView(
                 activeKits: activeKits,
                 completedKits: completedKits,
-                viewModel: viewModel,
-                isCompact: false
+                viewModel: viewModel
             )
             .navigationSplitViewColumnWidth(min: 360, ideal: 400, max: 440)
         } detail: {
             NavigationStack {
                 if let kitEntity = viewModel.selectedKitEntity {
-                    KitDetailView(kitEntity: kitEntity)
-                        .id(kitEntity.id)
+                    KitDetailView(kitEntity: kitEntity,
+                                  opensResultReview: viewModel.reviewOnOpenKitID == kitEntity.id) {
+                        viewModel.reviewOnOpenKitID = nil
+                    }
+                    .id(kitEntity.id)
                 } else {
                     ContentUnavailableView {
                         Label("Selecciona un Kit", systemImage: Symbols.kits)

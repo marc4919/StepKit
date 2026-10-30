@@ -37,10 +37,12 @@ struct StepDetailView: View {
     @Environment(\.detailColumnSize) private var detailColumnSize
     private var layoutSize: CGSize { measuredSize ?? detailColumnSize ?? Self.windowSize }
     private var wideLayout: Bool { TwoColumnLayout.fits(layoutSize) }
-    /// Con el tamaño de la ventana, nunca con el medido: la barra de acciones propia resta altura a la
-    /// vista, y en un iPhone eso la volvía «casi cuadrada», se quitaba la barra, volvía a crecer, y así
-    /// sin fin (pantalla en blanco con la CPU al 100 %).
-    private var sideControls: Bool { Self.isNearlySquare(Self.windowSize) }
+    /// Si el sistema dibuja las barras en vertical (iPhone Duo cerrado, y abierto en horizontal), lo dice
+    /// `toolbarVerticalEdge` (iOS 27.1): las acciones van entonces en la barra del sistema. Sin ese dato,
+    /// se estima con el tamaño de la ventana, nunca con el medido: la barra de acciones propia resta
+    /// altura a la vista y en un iPhone eso la volvía «casi cuadrada» en un bucle sin fin.
+    @State private var toolbarIsVertical: Bool?
+    private var sideControls: Bool { toolbarIsVertical ?? Self.isNearlySquare(Self.windowSize) }
     /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
     /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
     @State private var insets = EdgeInsets()
@@ -162,6 +164,11 @@ struct StepDetailView: View {
             }
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { measuredSize = $0 }
+        .background {
+            if #available(iOS 27.1, *) {
+                ToolbarVerticalEdgeProbe { toolbarIsVertical = $0 }
+            }
+        }
         .sensoryFeedback(.success, trigger: celebration)
         .navigationDestination(isPresented: $showingKitResult) {
             if let kit = stepEntity.goal { ResultReviewView(kit: kit) }
@@ -996,5 +1003,19 @@ private struct CompletionBanner: View {
         .onAppear { appeared = true }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isStaticText)
+    }
+}
+
+/// Lee si la barra de navegación va en vertical (iPhone Duo) y lo comunica; la propiedad de entorno
+/// solo existe desde iOS 27.1, por eso va en una vista aparte con disponibilidad propia.
+@available(iOS 27.1, *)
+private struct ToolbarVerticalEdgeProbe: View {
+    @Environment(\.toolbarVerticalEdge) private var edge
+    let onChange: (Bool) -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .onChange(of: edge != nil, initial: true) { _, vertical in onChange(vertical) }
     }
 }

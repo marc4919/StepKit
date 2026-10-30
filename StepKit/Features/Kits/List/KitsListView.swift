@@ -11,7 +11,6 @@ import SwiftData
 
 struct KitsListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(AuthManager.self) private var authManager
     
     // Animado: al borrar un Kit, el resto de la lista se recoloca con suavidad.
@@ -56,50 +55,20 @@ struct KitsListView: View {
     // MARK: - Body
     
     var body: some View {
-        Group {
-            if horizontalSizeClass == .compact {
-                KitsListCompactView(
-                    activeKits: activeKitEntities,
-                    completedKits: completedKitEntities,
-                    kitEntities: visibleKitEntities,
-                    viewModel: viewModel
-                )
-            } else {
-                KitsListRegularView(
-                    activeKits: activeKitEntities,
-                    completedKits: completedKitEntities,
-                    kitEntities: visibleKitEntities,
-                    viewModel: viewModel
-                )
-            }
-        }
-        // El creador cuelga de aquí, no de cada disposición: al plegar o desplegar el iPhone Duo
-        // la disposición cambia y, si el creador colgara de ella, se cerraría a medio generar.
+        // Una sola vista dividida en todos los tamaños. En ancho compacto (iPhone, Duo cerrado) el
+        // sistema la colapsa a una pila por sí mismo y conserva el Kit y el paso abiertos al plegar
+        // o girar. Antes se cambiaba a otro árbol con su propia ruta y el relevo en mitad del plegado
+        // dejaba la barra del Kit a medio montar (cápsula vacía abajo, botones perdidos).
+        KitsListRegularView(
+            activeKits: activeKitEntities,
+            completedKits: completedKitEntities,
+            kitEntities: visibleKitEntities,
+            viewModel: viewModel
+        )
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
             KitCreatorView { newKit in
-                if horizontalSizeClass == .compact {
-                    viewModel.navigationPath.append(newKit.id)
-                } else if let entity = visibleKitEntities.first(where: { $0.id == newKit.id }) {
-                    viewModel.selectedKitEntity = entity
-                }
-            }
-        }
-        // iPhone Duo al plegar o desplegar: se pasa de una columna a dos (o al revés).
-        // El Kit abierto se conserva en lugar de volver a Mis Kits.
-        .onChange(of: horizontalSizeClass) { _, sizeClass in
-            // Sin animación: el relevo ocurre en mitad del plegado y una transición de empuje en ese
-            // momento dejaba la barra de navegación del Kit a medio montar (cápsula vacía abajo).
-            var transaction = Transaction()
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                if sizeClass == .compact {
-                    if let id = viewModel.selectedKitId, viewModel.navigationPath.isEmpty {
-                        viewModel.navigationPath = [id]
-                    }
-                } else if let id = viewModel.navigationPath.last,
-                          let kit = visibleKitEntities.first(where: { $0.id == id }) {
-                    viewModel.selectKit(kit)
-                    viewModel.navigationPath = []
+                if let entity = visibleKitEntities.first(where: { $0.id == newKit.id }) {
+                    viewModel.selectKit(entity)
                 }
             }
         }
