@@ -127,28 +127,30 @@ struct StepDetailView: View {
                 .accessibilityHint("Permite cambiar el título, las descripciones, la fecha y el tiempo del paso")
             }
         }
+        // Fuera del Duo cerrado, la barra de acciones es nuestra (botones de cristal del sistema, mismo
+        // aspecto) y no la barra inferior de la navegación: esa, al girar, plegar o abrir el panel lateral
+        // en el Duo, dejaba cápsulas vacías «fantasma» en el paso y hasta en el Kit.
         .safeAreaInset(edge: .bottom) {
-            if !wideLayout && !actionsInToolbar {
-                stepActions
+            if !sideControls {
+                bottomActionBar
             }
         }
         // Pantalla casi cuadrada (iPhone Duo cerrado): las tres acciones van como controles laterales,
         // en columna junto al borde, y el contenido conserva toda la altura.
         // Pantalla casi cuadrada (iPhone Duo cerrado): las acciones van en la barra de herramientas,
         // que el sistema dibuja en vertical junto al borde, en su parte de abajo (hoy vacía).
+        // Duo cerrado: la barra inferior del sistema, que allí se dibuja en vertical junto al borde.
         .toolbar {
-            if actionsInToolbar {
+            if sideControls {
                 ToolbarItemGroup(placement: .bottomBar) {
                     sideToolbarActions
-                        .id(toolbarLabelMode)
-                        .transaction { $0.animation = nil }
                 }
             }
         }
-        .toolbarVisibility(.visible, for: .bottomBar)
+        .toolbarVisibility(sideControls ? .visible : .hidden, for: .bottomBar)
         .overlay(alignment: .bottom) {
             // Con las acciones en la barra, el aviso de completado flota abajo sin desplazar nada.
-            if actionsInToolbar, let celebration {
+            if sideControls, let celebration {
                 CompletionBanner(celebration: celebration) { openNextStep() }
                     .padding(.bottom, 12)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -640,6 +642,28 @@ struct StepDetailView: View {
             .buttonStyle(.glassProminent)
             .accessibilityLabel("Marcar como completado")
             .accessibilityIdentifier("step.toggleCompletion")
+        }
+    }
+
+    /// Barra de acciones propia (iPhone, Duo abierto, iPad): botones de cristal flotando abajo, centrados.
+    private var bottomActionBar: some View {
+        GlassEffectContainer(spacing: 10) {
+            HStack(spacing: 10) {
+                sideToolbarActions
+            }
+            .buttonStyle(.glass)
+            .controlSize(.large)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 6)
+        .overlay(alignment: .bottom) {
+            if let celebration {
+                CompletionBanner(celebration: celebration) { openNextStep() }
+                    .padding(.bottom, 64)
+                    .padding(.horizontal, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
     }
 
