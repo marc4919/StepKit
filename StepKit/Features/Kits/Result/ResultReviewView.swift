@@ -64,9 +64,7 @@ struct ResultReviewView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Toggle(kit.kpi.isEmpty ? kit.title : kit.kpi, isOn: $achieved)
                             .labelsHidden()
-                            .fixedSize()
-                            .geometryGroup()
-                            .transaction { $0.animation = nil }
+                            .toggleStyle(StepKitSwitchStyle())
                             .accessibilityIdentifier("result.achieved")
                     }
                 }

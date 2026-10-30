@@ -685,3 +685,29 @@ private struct ViewControllerLifecycle: UIViewControllerRepresentable {
         }
     }
 }
+
+/// Interruptor con el aspecto del sistema, dibujado en SwiftUI. El UISwitch de cristal se deformaba
+/// (cuadrado un instante) al girar o plegar el iPhone Duo dentro de una tarjeta; este no.
+struct StepKitSwitchStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            ZStack(alignment: configuration.isOn ? .trailing : .leading) {
+                Capsule()
+                    .fill(configuration.isOn ? Color.green : Color(.systemFill))
+                    .frame(width: 51, height: 31)
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                    .frame(width: 27, height: 27)
+                    .padding(2)
+            }
+            .animation(.spring(response: 0.25, dampingFraction: 0.9), value: configuration.isOn)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: configuration.isOn)
+        .accessibilityRepresentation { Toggle(configuration) }
+    }
+}

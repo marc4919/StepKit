@@ -113,7 +113,6 @@ struct KitDetailView: View {
         // «botón fantasma» del Duo cerrado, que coloca ese elemento en una cápsula abajo, al centro.
         .navigationTitle(barTitleShown ? kitEntity.title : "")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarVisibility(.hidden, for: .bottomBar)
         // El título vive en la cabecera; en la barra solo aparece cuando la cabecera ya no se ve,
         // como en Salud, Fitness o Música. Así no se lee dos veces al entrar.
         .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.contentInsets.top > max(headerHeight - 24, 1) } action: { _, past in

@@ -147,7 +147,9 @@ struct StepDetailView: View {
                 }
             }
         }
-        .toolbarVisibility(sideControls ? .visible : .hidden, for: .bottomBar)
+        // Fuera del Duo cerrado no se toca la visibilidad: ocultar la barra a mano dejaba su cápsula
+        // de cristal vacía en el Duo al plegar (el sistema reserva el hueco aunque no haya botones).
+        .toolbarVisibility(sideControls ? .visible : .automatic, for: .bottomBar)
         .overlay(alignment: .bottom) {
             // Con las acciones en la barra, el aviso de completado flota abajo sin desplazar nada.
             if sideControls, let celebration {
@@ -337,11 +339,9 @@ struct StepDetailView: View {
                     set: { _ in toggleStepNotification() }
                 ))
                 .labelsHidden()
-                .fixedSize()
-                // Al girar o plegar, el interruptor se veía cuadrado un instante: su geometría se fija
-                // antes de la animación del contenedor y no se anima por su cuenta.
-                .geometryGroup()
-                .transaction { $0.animation = nil }
+                // Interruptor dibujado por nosotros: el del sistema (UIKit, cristal) se veía cuadrado un
+                // instante al girar o plegar el Duo, y ningún ajuste de SwiftUI lo evitaba.
+                .toggleStyle(StepKitSwitchStyle())
                 .accessibilityHint("Activa o desactiva el recordatorio de este paso")
             }
         }
