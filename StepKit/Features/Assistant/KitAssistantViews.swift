@@ -270,16 +270,18 @@ struct KitAssistantChatView: View {
 
     private func proposalCard(_ proposal: PlanProposal) -> some View {
         ProposalCard(proposal: proposal) {
-            proposal.accept(in: kit, context: modelContext)
-            // El cambio queda en «Tu recorrido» del Kit.
-            let lines = proposal.changes.map { change -> String in
-                if let to = change.to {
-                    return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
+            Task { @MainActor in
+                await proposal.accept(in: kit, context: modelContext, highlights: KitAssistantStore.shared.highlights)
+                // El cambio queda en «Tu recorrido» del Kit.
+                let lines = proposal.changes.map { change -> String in
+                    if let to = change.to {
+                        return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
+                    }
+                    return [change.stepLabel, change.detail].compactMap { $0 }.joined(separator: ": ")
                 }
-                return [change.stepLabel, change.detail].compactMap { $0 }.joined(separator: ": ")
+                try? ProgressLog.addAssistantChange(title: proposal.title, lines: lines, kit: kit, context: modelContext)
+                syncManager?.handleDataChange()
             }
-            try? ProgressLog.addAssistantChange(title: proposal.title, lines: lines, kit: kit, context: modelContext)
-            syncManager?.handleDataChange()
         } onDiscard: {
             proposal.state = .discarded
         }
@@ -369,7 +371,9 @@ struct ProposalCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Eyebrow(text: String(localized: "Propuesta"), color: .orange)
+                Eyebrow(text: String(localized: "Propuesta") + " · "
+                        + (proposal.changes.count == 1 ? String(localized: "1 cambio") : String(localized: "\(proposal.changes.count) cambios")),
+                        color: .orange)
                 Spacer()
                 switch proposal.state {
                 case .accepted:
@@ -384,8 +388,8 @@ struct ProposalCard: View {
                 }
             }
             Text(proposal.title).font(.headline)
-            // Las propuestas ya decididas o sustituidas se pliegan para que la conversación se lea bien.
-            if proposal.state == .pending {
+            // Los cambios concretos se ven siempre, también una vez aplicada: son lo que de verdad ha
+            // pasado en el plan, por encima de lo que diga el resumen. Al aplicarse van recibiendo su check.
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(proposal.changes) { change in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -412,15 +416,24 @@ struct ProposalCard: View {
                                 Text(detail).font(.caption).foregroundStyle(.secondary)
                             }
                         }
+                        Spacer(minLength: 0)
+                        if proposal.appliedChangeIDs.contains(change.id) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .transition(.scale.combined(with: .opacity))
+                                .accessibilityLabel("Aplicado")
+                        }
                     }
                     .accessibilityElement(children: .combine)
                 }
             }
-            Label(proposal.impact, systemImage: "info.circle")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            }
+            .animation(.snappy, value: proposal.appliedChangeIDs)
             if proposal.state == .pending {
+                Label(proposal.impact, systemImage: "info.circle")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            if proposal.state == .pending, !proposal.applying {
                 HStack(spacing: 10) {
                     Button(action: onAccept) {
                         Text("Aceptar").frame(maxWidth: .infinity)

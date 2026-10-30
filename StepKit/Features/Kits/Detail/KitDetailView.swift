@@ -101,6 +101,8 @@ struct KitDetailView: View {
         }
         .balancedHorizontalSafeArea()
         .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { wideLayout = $0 }
+        // Los pasos que el asistente acaba de tocar se resaltan unos segundos al verse el plan.
+        .onAppear { KitAssistantStore.shared.highlights.fade() }
         .onChange(of: allStepsDone) { _, done in
             guard done else { return }
             // Al completar el último paso: subir arriba y que aparezca el resultado.
@@ -366,6 +368,21 @@ private struct PlanStepRow: View {
 
     let onToggle: () -> Void
 
+    /// Lo que el asistente acaba de hacerle a este paso, mientras el plan lo resalta.
+    private var highlight: ChangeHighlights.Kind? { KitAssistantStore.shared.highlights.kind(for: step.id) }
+
+    private var highlightLabel: String {
+        switch highlight {
+        case .edited: String(localized: "Editado")
+        case .added: String(localized: "Nuevo")
+        case .moved: String(localized: "Movido")
+        case .blocked: String(localized: "En pausa")
+        case nil: ""
+        }
+    }
+
+    private var highlightColor: Color { highlight == .blocked ? .red : .accentColor }
+
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             // Como en Recordatorios: el círculo completa el paso sin entrar en él.
@@ -394,6 +411,15 @@ private struct PlanStepRow: View {
                             .strikethrough(state == .done, color: .secondary)
                             .multilineTextAlignment(.leading)
                         HStack(spacing: 8) {
+                            if highlight != nil {
+                                Text(highlightLabel)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(highlightColor)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(highlightColor.opacity(0.14), in: .capsule)
+                                    .transition(.scale.combined(with: .opacity))
+                            }
                             meta
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
@@ -424,6 +450,9 @@ private struct PlanStepRow: View {
             .accessibilityHint("Toca dos veces para abrir los detalles del paso")
             .accessibilityIdentifier("step.row")
         }
+        // Recién tocado por el asistente: un tinte suave que se apaga solo (ver ChangeHighlights.fade).
+        .background(highlightColor.opacity(highlight == nil ? 0 : 0.12))
+        .animation(.smooth(duration: 0.5), value: highlight)
     }
 }
 

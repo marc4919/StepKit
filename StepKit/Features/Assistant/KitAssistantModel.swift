@@ -46,10 +46,40 @@ final class KitConversation: Identifiable {
     var preview: String? { viewModel.messages.last(where: { $0.sender == .assistant && !$0.isError })?.text }
 }
 
+/// Pasos que el asistente acaba de tocar: el plan los resalta unos segundos cuando vuelve a verse,
+/// con una etiqueta que dice qué pasó (editado, nuevo, movido, en pausa).
+@MainActor
+@Observable
+final class ChangeHighlights {
+    enum Kind { case edited, added, moved, blocked }
+
+    private(set) var kinds: [UUID: Kind] = [:]
+    private var fadeTask: Task<Void, Never>?
+
+    func record(_ kind: Kind, for stepID: UUID) {
+        fadeTask?.cancel()
+        kinds[stepID] = kind
+    }
+
+    func kind(for stepID: UUID) -> Kind? { kinds[stepID] }
+
+    /// Cuando el plan vuelve a estar a la vista: unos segundos resaltados y después se apagan.
+    func fade(after seconds: Double = 3) {
+        guard !kinds.isEmpty else { return }
+        fadeTask?.cancel()
+        fadeTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(seconds))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeOut(duration: 0.8)) { kinds.removeAll() }
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class KitAssistantStore {
     static let shared = KitAssistantStore()
+    let highlights = ChangeHighlights()
 
     private(set) var conversations: [KitConversation] = []
 
@@ -127,11 +157,42 @@ final class PlanProposal: Identifiable {
         }
     }
 
-    func accept(in kit: GoalEntity, context: ModelContext) {
+    /// Cambios de esta propuesta ya aplicados: la tarjeta les pone el check de uno en uno.
+    var appliedChangeIDs: Set<UUID> = []
+    /// Aplicándose: los botones de aceptar y descartar desaparecen mientras tanto.
+    var applying = false
+
+    /// Aplica los cambios de uno en uno, con animación y una pausa breve entre ellos, para que se vea
+    /// qué se altera, se recorta o se añade. Cada paso tocado queda marcado en el plan (`ChangeHighlights`).
+    func accept(in kit: GoalEntity, context: ModelContext, highlights: ChangeHighlights) async {
+        guard !applying, state == .pending else { return }
+        applying = true
         let now = Date()
+        let paired = actions.count == changes.count
+        for (index, action) in actions.enumerated() {
+            withAnimation(.smooth(duration: 0.45)) {
+                apply(action, in: kit, context: context, now: now, highlights: highlights)
+                if paired { appliedChangeIDs.insert(changes[index].id) }
+            }
+            if index < actions.count - 1 {
+                try? await Task.sleep(for: .milliseconds(450))
+            }
+        }
+        kit.markModified(at: now)
+        try? context.save()
+        withAnimation(.default) {
+            appliedChangeIDs.formUnion(changes.map(\.id))
+            state = .accepted
+        }
+        applying = false
+    }
+
+    private func apply(_ action: Action, in kit: GoalEntity, context: ModelContext, now: Date,
+                       highlights: ChangeHighlights) {
         func step(_ id: UUID) -> StepEntity? { kit.orderedActiveSteps.first { $0.id == id } }
+        @discardableResult
         func insert(_ title: String, minutes: Int, date: Date?, after anchor: StepEntity?, atStart: Bool = false,
-                    short: String = "", long: String = "") {
+                    short: String = "", long: String = "") -> StepEntity {
             let order = atStart ? (kit.orderedActiveSteps.first?.order ?? 0)
                 : (anchor?.order ?? (kit.orderedActiveSteps.last?.order ?? -1)) + 1
             let new = StepEntity(ownerID: kit.ownerID, stepTitle: title, descriptionShort: short, descriptionLong: long,
@@ -147,60 +208,61 @@ final class PlanProposal: Identifiable {
             new.goal = kit
             context.insert(new)
             kit.steps.append(new)
+            highlights.record(.added, for: new.id)
+            return new
         }
-        for action in actions {
-            switch action {
-            case .setDate(let id, let date):
-                step(id)?.suggestedDeadline = date
-                step(id)?.markModified(at: now)
-            case .edit(let id, let title, let minutes, let outcome, let description):
-                guard let target = step(id) else { continue }
-                if let title { target.stepTitle = title }
-                if let minutes { target.estimateMinutes = minutes }
-                // Si cambia de qué va el paso, también su «Al terminar» y su descripción.
-                if let outcome, !outcome.isEmpty { target.descriptionShort = outcome }
-                if let description, !description.isEmpty { target.descriptionLong = description }
-                target.markModified(at: now)
-            case .split(let id, let titles, let minutes):
-                guard let target = step(id), let first = titles.first else { continue }
-                target.stepTitle = first
-                // Dividir sirve para seguir avanzando: la primera parte deja de estar bloqueada.
-                target.blockedReason = nil
-                target.blockedAt = nil
-                if let minutes { target.estimateMinutes = minutes }
-                target.markModified(at: now)
-                var anchor = target
-                // Las partes nuevas heredan la descripción del paso original para no quedar vacías.
-                let original = target.descriptionLong.isEmpty ? target.descriptionShort : target.descriptionLong
-                for (offset, title) in titles.dropFirst().enumerated() {
-                    // Cada parte en su día, uno detrás de otro.
-                    let partDate = target.suggestedDeadline.flatMap {
-                        Calendar.current.date(byAdding: .day, value: offset + 1, to: $0)
-                    }
-                    insert(title, minutes: minutes ?? target.estimateMinutes, date: partDate, after: anchor,
-                           short: String(localized: "Parte de «\(first)». \(target.descriptionShort)").trimmingCharacters(in: .whitespaces),
-                           long: original)
-                    if let added = kit.orderedActiveSteps.first(where: { $0.order == anchor.order + 1 }) { anchor = added }
+        switch action {
+        case .setDate(let id, let date):
+            guard let target = step(id) else { return }
+            target.suggestedDeadline = date
+            target.markModified(at: now)
+            highlights.record(.moved, for: target.id)
+        case .edit(let id, let title, let minutes, let outcome, let description):
+            guard let target = step(id) else { return }
+            if let title { target.stepTitle = title }
+            if let minutes { target.estimateMinutes = minutes }
+            // Si cambia de qué va el paso, también su «Al terminar» y su descripción.
+            if let outcome, !outcome.isEmpty { target.descriptionShort = outcome }
+            if let description, !description.isEmpty { target.descriptionLong = description }
+            target.markModified(at: now)
+            highlights.record(.edited, for: target.id)
+        case .split(let id, let titles, let minutes):
+            guard let target = step(id), let first = titles.first else { return }
+            target.stepTitle = first
+            // Dividir sirve para seguir avanzando: la primera parte deja de estar bloqueada.
+            target.blockedReason = nil
+            target.blockedAt = nil
+            if let minutes { target.estimateMinutes = minutes }
+            target.markModified(at: now)
+            highlights.record(.edited, for: target.id)
+            var anchor = target
+            // Las partes nuevas heredan la descripción del paso original para no quedar vacías.
+            let original = target.descriptionLong.isEmpty ? target.descriptionShort : target.descriptionLong
+            for (offset, title) in titles.dropFirst().enumerated() {
+                // Cada parte en su día, uno detrás de otro.
+                let partDate = target.suggestedDeadline.flatMap {
+                    Calendar.current.date(byAdding: .day, value: offset + 1, to: $0)
                 }
-            case .add(let afterID, let atStart, let title, let minutes, let date, let outcome, let description):
-                insert(title, minutes: minutes, date: date, after: afterID.flatMap(step), atStart: atStart,
-                       short: outcome ?? "", long: description ?? "")
-            case .remove(let id):
-                guard let target = step(id) else { continue }
-                target.deletedAt = now
-                target.markModified(at: now)
-            case .changeKPI(let kpi):
-                kit.kpi = kpi
-            case .block(let id, let reason):
-                guard let target = step(id) else { continue }
-                target.blockedReason = reason
-                target.blockedAt = now
-                target.markModified(at: now)
+                anchor = insert(title, minutes: minutes ?? target.estimateMinutes, date: partDate, after: anchor,
+                                short: String(localized: "Parte de «\(first)». \(target.descriptionShort)").trimmingCharacters(in: .whitespaces),
+                                long: original)
             }
+        case .add(let afterID, let atStart, let title, let minutes, let date, let outcome, let description):
+            insert(title, minutes: minutes, date: date, after: afterID.flatMap(step), atStart: atStart,
+                   short: outcome ?? "", long: description ?? "")
+        case .remove(let id):
+            guard let target = step(id) else { return }
+            target.deletedAt = now
+            target.markModified(at: now)
+        case .changeKPI(let kpi):
+            kit.kpi = kpi
+        case .block(let id, let reason):
+            guard let target = step(id) else { return }
+            target.blockedReason = reason
+            target.blockedAt = now
+            target.markModified(at: now)
+            highlights.record(.blocked, for: target.id)
         }
-        kit.markModified(at: now)
-        try? context.save()
-        state = .accepted
     }
 }
 

@@ -190,6 +190,16 @@
         }
       }
     },
+    "%lld cambios": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld changes"
+          }
+        }
+      }
+    },
     "%lld de %lld": {
       "localizations": {
         "en": {
@@ -516,6 +526,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 Kit"
+          }
+        }
+      }
+    },
+    "1 cambio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 change"
           }
         }
       }
@@ -1121,6 +1141,16 @@
       }
     },
     "Aplicada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applied"
+          }
+        }
+      }
+    },
+    "Aplicado": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -2614,6 +2644,16 @@
         }
       }
     },
+    "Editado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edited"
+          }
+        }
+      }
+    },
     "Editar": {
       "localizations": {
         "en": {
@@ -3146,6 +3186,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "To the maximum extent permitted by law, StepKit and its developers will not be liable for any indirect, incidental, special or consequential damages arising from your use of, or inability to use, the App."
+          }
+        }
+      }
+    },
+    "En pausa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused"
           }
         }
       }
@@ -4786,6 +4836,16 @@
         }
       }
     },
+    "Movido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved"
+          }
+        }
+      }
+    },
     "Muestra el detalle del paso": {
       "localizations": {
         "en": {
@@ -5238,6 +5298,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "New time"
+          }
+        }
+      }
+    },
+    "Nuevo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New"
           }
         }
       }
