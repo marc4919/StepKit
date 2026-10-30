@@ -108,7 +108,6 @@ extension HelpTopic {
 struct HelpSheet: View {
     let title: String
     let sections: [HelpSection]
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -131,11 +130,10 @@ struct HelpSheet: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Listo") { dismiss() } }
-            }
+            // Sin «Listo»: la hoja se cierra deslizando, como las demás hojas de ayuda.
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 
