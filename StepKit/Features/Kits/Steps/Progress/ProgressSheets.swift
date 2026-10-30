@@ -81,6 +81,7 @@ struct SaveProgressSheet: View {
             // En el Duo cerrado, con el teclado abierto, el sistema escondía la barra al desplazar y
             // «Guardar» desaparecía. La barra se mantiene siempre a la vista.
             .toolbarVisibility(.visible, for: .navigationBar)
+            .background(NavigationBarPinned())
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") { dismiss() }
@@ -89,15 +90,6 @@ struct SaveProgressSheet: View {
                     Button("Guardar") { save() }
                         .disabled(!canSave)
                         .accessibilityIdentifier("progress.save")
-                }
-                // Con el teclado abierto, «Guardar» también encima del teclado: al desplazar el
-                // contenido en el Duo cerrado, la barra superior podía quedar fuera de la vista.
-                ToolbarItemGroup(placement: .keyboard) {
-                    Button("Listo") { focused = nil }
-                    Spacer()
-                    Button("Guardar") { save() }
-                        .fontWeight(.semibold)
-                        .disabled(!canSave)
                 }
             }
             .alert("No se pudo guardar el avance", isPresented: $saveFailed) {
