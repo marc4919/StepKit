@@ -124,7 +124,7 @@ struct KitRowView: View {
     
     private var dueDateText: String {
         guard let dueDate = dueDate, !isCompleted else { return "" }
-        return ", Fecha objetivo: \(dueDate.formatted(.dateTime.day().month(.abbreviated)))"
+        return ", Fecha objetivo: \(PlanGrouping.shortDate(dueDate))"
     }
 }
 

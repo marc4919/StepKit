@@ -263,7 +263,7 @@ private struct ContinueCard: View {
                 if let date = kit.dueDate {
                     HStack(spacing: 5) {
                         Image(systemName: Symbols.wantedDate)
-                        Text("Fecha deseada · \(date.formatted(.dateTime.day().month(.abbreviated)))")
+                        Text("Fecha deseada · \(PlanGrouping.shortDate(date))")
                     }
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -440,7 +440,7 @@ private struct KitHomeRow: View {
                         if let date = kit.dueDate {
                             HStack(spacing: 3) {
                                 Image(systemName: Symbols.wantedDate)
-                                Text(date.formatted(.dateTime.day().month(.abbreviated)))
+                                Text(PlanGrouping.shortDate(date))
                             }
                             .foregroundStyle(MetaTint.date)
                         }

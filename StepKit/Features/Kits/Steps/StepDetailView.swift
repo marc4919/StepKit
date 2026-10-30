@@ -395,7 +395,7 @@ struct StepDetailView: View {
                 MetaChip(symbol: "repeat", text: repetition.label, color: MetaTint.repeatTint)
             } else {
                 MetaChip(symbol: Symbols.calendar,
-                         text: deadline.formatted(.dateTime.day().month(.abbreviated)),
+                         text: PlanGrouping.shortDate(deadline),
                          color: MetaTint.date)
             }
         }

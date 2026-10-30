@@ -221,7 +221,7 @@ struct KitDetailView: View {
                  text: String(localized: "\(kitEntity.completedStepCount) de \(kitEntity.activeStepCount)"),
                  color: MetaTint.done)
         if let date = kitEntity.dueDate {
-            MetaChip(symbol: Symbols.wantedDate, text: date.formatted(.dateTime.day().month(.abbreviated)),
+            MetaChip(symbol: Symbols.wantedDate, text: PlanGrouping.shortDate(date),
                      color: MetaTint.date)
         }
     }

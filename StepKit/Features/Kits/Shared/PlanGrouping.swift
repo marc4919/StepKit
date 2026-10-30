@@ -75,6 +75,19 @@ enum PlanGrouping {
         return String(localized: "Semana \(number) · \(range)")
     }
 
+    /// Una fecha suelta en un chip o una tarjeta: «Hoy», «Mañana», «Ayer» o «30 oct». La misma regla
+    /// que las cabeceras del plan, como en Recordatorios.
+    static func shortDate(_ date: Date, calendar: Calendar = .current, now: Date = .now) -> String {
+        if calendar.isDate(date, inSameDayAs: now) { return String(localized: "Hoy") }
+        if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now), calendar.isDate(date, inSameDayAs: tomorrow) {
+            return String(localized: "Mañana")
+        }
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: yesterday) {
+            return String(localized: "Ayer")
+        }
+        return date.formatted(.dateTime.day().month(.abbreviated))
+    }
+
     /// Fecha corta de una fila dentro de una semana: «Hoy» (destacada), «Mañana» o «mié 4».
     static func rowDate(_ date: Date, calendar: Calendar = .current, now: Date = .now) -> (text: String, isToday: Bool) {
         if calendar.isDate(date, inSameDayAs: now) { return (String(localized: "Hoy"), true) }
