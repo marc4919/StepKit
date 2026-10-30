@@ -547,6 +547,20 @@ extension EnvironmentValues {
     }
 }
 
+/// Vuelve a Mis Kits desde cualquier pantalla del Kit (la vista dividida lo cumple quitando la
+/// selección, que en ancho compacto deshace toda la pila). Sin él, «Volver a Mis Kits» solo cerraba
+/// una pantalla y dejaba al usuario en el Kit.
+struct ReturnToKitsKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
+extension EnvironmentValues {
+    var returnToKits: (() -> Void)? {
+        get { self[ReturnToKitsKey.self] }
+        set { self[ReturnToKitsKey.self] = newValue }
+    }
+}
+
 enum TwoColumnLayout {
     /// Dos columnas solo en pantallas anchas y apaisadas (iPhone Duo abierto en horizontal, iPad en horizontal).
     /// Con el Duo abierto en vertical la pantalla es casi cuadrada y una sola columna, como cerrado, se lee mejor.

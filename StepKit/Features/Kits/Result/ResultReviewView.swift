@@ -14,6 +14,7 @@ struct ResultReviewView: View {
     var onBackToPlan: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.returnToKits) private var returnToKits
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
     @State private var achieved = false
@@ -30,7 +31,10 @@ struct ResultReviewView: View {
     var body: some View {
         Group {
             if kit.resultConfirmedAt != nil {
-                ResultConfirmedContent(kit: kit, summary: summary) { dismiss() } onReopen: { setConfirmed(false) }
+                ResultConfirmedContent(kit: kit, summary: summary) {
+                    // A Mis Kits de verdad, no solo una pantalla atrás.
+                    if let returnToKits { returnToKits() } else { dismiss() }
+                } onReopen: { setConfirmed(false) }
             } else {
                 review.readableContentWidth()
             }

@@ -143,6 +143,7 @@ struct KitsHomeView: View {
                 reviewingKit = nil
                 open(kit)
             }
+            .environment(\.returnToKits, { reviewingKit = nil })
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

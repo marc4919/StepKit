@@ -127,6 +127,7 @@ struct KitsListRegularView: View {
             // La columna publica su tamaño: el paso lo usa como primera estimación de su disposición.
             .onGeometryChange(for: CGSize.self) { $0.size } action: { detailSize = $0 }
             .environment(\.detailColumnSize, detailSize)
+            .environment(\.returnToKits, { viewModel.clearSelection() })
         }
         .navigationSplitViewStyle(.balanced)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
