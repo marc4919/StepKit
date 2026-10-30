@@ -29,8 +29,6 @@ struct StepDetailView: View {
     @State private var showingAllProgress = false
     /// Aviso breve tras completar el paso: qué viene después.
     @State private var celebration: Celebration?
-    // Se parte del tamaño de la ventana para que la primera imagen ya tenga la disposición correcta:
-    // si se esperara a medir la vista, en el Duo cerrado se vería el reajuste al entrar.
     /// Tamaño medido de la vista; hasta que llega, la disposición se estima con el de la columna de
     /// detalle (vista dividida) o el de la ventana. Así el primer fotograma ya es el definitivo.
     @State private var measuredSize: CGSize?
@@ -38,13 +36,13 @@ struct StepDetailView: View {
     private var layoutSize: CGSize { measuredSize ?? detailColumnSize ?? Self.windowSize }
     private var wideLayout: Bool { TwoColumnLayout.fits(layoutSize) }
     /// Si el sistema dibuja las barras en vertical (iPhone Duo cerrado, y abierto en horizontal), lo dice
-    /// `toolbarVerticalEdge` (iOS 27.1): las acciones van entonces en la barra del sistema. Sin ese dato,
-    /// se estima con el tamaño de la ventana, nunca con el medido: la barra de acciones propia resta
-    /// altura a la vista y en un iPhone eso la volvía «casi cuadrada» en un bucle sin fin.
+    /// `toolbarVerticalEdge` (iOS 27.1). Sin ese dato, se estima con el tamaño de la ventana, nunca con
+    /// el medido: la barra de acciones propia resta altura a la vista y en un iPhone eso la volvía
+    /// «casi cuadrada» en un bucle sin fin.
     @State private var toolbarIsVertical: Bool?
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    /// Solo en ancho compacto (Duo cerrado): abierto en horizontal las barras también van en vertical,
-    /// pero con las acciones dentro se desbordaban en un menú «…»; ahí se queda la barra propia abajo.
+    /// Disposición del Duo cerrado (chips cortos, márgenes de la franja lateral): ancho compacto con
+    /// las barras en vertical.
     private var sideControls: Bool {
         horizontalSizeClass == .compact && (toolbarIsVertical ?? Self.isNearlySquare(Self.windowSize))
     }
@@ -58,10 +56,7 @@ struct StepDetailView: View {
     /// En el iPhone Duo (cerrado, o abierto en horizontal) la barra de botones va en vertical junto al
     /// borde derecho y su zona segura llega después del primer fotograma: se reserva a mano.
     private var reservesSideColumn: Bool { DeviceKind.isDuo && (sideControls || landscape) }
-    /// Acciones dentro de la barra de herramientas (Duo cerrado) en vez de botones grandes.
-    /// Las acciones del paso van siempre en la barra inferior del sistema (botones de cristal con
-    /// icono y texto, «Completar» destacado): en el Duo cerrado el sistema la pinta en vertical.
-    private var actionsInToolbar: Bool { true }
+
     /// Siguiente paso abierto desde el aviso de completado.
     @State private var openedNextStep: StepEntity?
     @State private var showingKitResult = false
@@ -137,26 +132,6 @@ struct StepDetailView: View {
                 .accessibilityHint("Permite cambiar el título, las descripciones, la fecha y el tiempo del paso")
             }
         }
-        // Duo cerrado: las acciones van en la barra inferior del sistema, que allí se dibuja en vertical
-        // junto al borde. En el resto de casos la barra es propia y va dentro de `stepScroll`.
-        .toolbar {
-            if sideControls {
-                ToolbarItemGroup(placement: .bottomBar) {
-                    sideToolbarActions
-                }
-            }
-        }
-        // Fuera del Duo cerrado no se toca la visibilidad: ocultar la barra a mano dejaba su cápsula
-        // de cristal vacía en el Duo al plegar (el sistema reserva el hueco aunque no haya botones).
-        .toolbarVisibility(sideControls ? .visible : .automatic, for: .bottomBar)
-        .overlay(alignment: .bottom) {
-            // Con las acciones en la barra, el aviso de completado flota abajo sin desplazar nada.
-            if sideControls, let celebration {
-                CompletionBanner(celebration: celebration) { openNextStep() }
-                    .padding(.bottom, 12)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
         .background {
             if #available(iOS 27.1, *) {
                 ToolbarVerticalEdgeProbe { toolbarIsVertical = $0 }
@@ -221,8 +196,12 @@ struct StepDetailView: View {
         // La barra de acciones propia (botones de cristal del sistema) va pegada al propio paso, no a la
         // pantalla: con el Duo entreabierto el paso ocupa una mitad y la barra se quedaba cruzando el
         // pliegue y tapando el final del contenido. Aquí reserva su sitio al final del scroll.
+        // Las tres acciones van siempre en una barra propia de cristal al pie del contenido, también
+        // con el Duo cerrado: en la franja vertical del sistema quitaban sitio a Atrás y a la barra de
+        // pestañas, y al volver al Kit la franja se quedaba vacía medio segundo.
         .safeAreaInset(edge: .bottom) {
-            if !sideControls {
+            // Duo entreabierto: las acciones van en la otra mitad, con el recorrido; aquí solo contenido.
+            if !hingePartiallyOpen {
                 bottomActionBar
             }
         }
@@ -231,19 +210,6 @@ struct StepDetailView: View {
         // Con el tamaño de la vista, no de la ventana: en el Duo abierto la columna de detalle es
         // estrecha aunque la ventana sea ancha, y con la ventana salían dos columnas apretadas.
         .onGeometryChange(for: CGSize.self) { $0.size } action: { measuredSize = $0 }
-    }
-
-    private var stepActions: some View {
-        VStack(spacing: 10) {
-            if let celebration {
-                CompletionBanner(celebration: celebration) { openNextStep() }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-            bottomActions
-        }
-        // En pantallas anchas los botones no se estiran de borde a borde.
-        .frame(maxWidth: 600)
-        .frame(maxWidth: .infinity)
     }
 
     private var stepHeader: some View {
@@ -357,19 +323,12 @@ struct StepDetailView: View {
                         }
                     }
                 }
-                if !stepEntity.isCompleted {
-                    Button { showingSaveProgress = true } label: {
-                        Text("Guardar avance").frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                }
-                Text("Plegar el teléfono no abre ningún formulario: guardas cuando quieras.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             .padding()
         }
+        // Como pide Apple para el pliegue: contenido en una mitad, controles en la otra. Las tres
+        // acciones viven aquí, al pie, en vez de cruzar el pliegue o tapar el texto del paso.
+        .safeAreaInset(edge: .bottom) { bottomActionBar }
         .background(Color(.systemGroupedBackground))
     }
 
@@ -529,50 +488,6 @@ struct StepDetailView: View {
         .accessibilityIdentifier("step.resolveBlock")
     }
 
-    @ViewBuilder private var bottomActions: some View {
-        let compactHeight = verticalSizeClass == .compact
-        let layout = compactHeight ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 8))
-        layout {
-            switch state {
-            case .done:
-                completionButton.buttonStyle(.glass)
-            case .blocked:
-                resolveBlockMenu
-                if !compactHeight {
-                    Text("Úsalo cuando ya no te frene: el paso vuelve a «En curso» y tu avance se conserva.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            case .pending, .inProgress:
-                // Tres acciones a la vista, una al lado de otra, como controles de Liquid Glass.
-                GlassEffectContainer(spacing: 8) {
-                HStack(spacing: 8) {
-                    actionTile(String(localized: "Avance"), symbol: Symbols.note, identifier: "step.saveProgress",
-                               accessibilityLabel: String(localized: "Guardar avance")) {
-                        savingBlocked = false
-                        showingSaveProgress = true
-                        StepActionsTip().invalidate(reason: .actionPerformed)
-                    }
-                    actionTile(String(localized: "Atasco"), symbol: "hand.raised", identifier: "step.reportBlock",
-                               accessibilityLabel: String(localized: "Me he atascado")) {
-                        savingBlocked = true
-                        showingSaveProgress = true
-                    }
-                    actionTile(String(localized: "Completar"), symbol: "checkmark", prominent: true, identifier: "step.toggleCompletion",
-                               accessibilityLabel: String(localized: "Marcar como completado")) {
-                        withAnimation(.smooth) { toggleStepCompletion() }
-                    }
-                }
-                }
-                .popoverTip(StepActionsTip(), arrowEdge: .bottom)
-            }
-        }
-        .controlSize(compactHeight ? .regular : .large)
-        .padding(.horizontal, wideLayout ? 0 : 16)
-        .padding(.vertical, compactHeight ? 6 : 10)
-    }
-
-    /// Pantalla casi cuadrada y pequeña: el iPhone Duo cerrado.
     static func isNearlySquare(_ size: CGSize) -> Bool {
         size.width < 700 && size.height < 760 && size.width / max(size.height, 1) > 0.6
     }
@@ -673,9 +588,9 @@ struct StepDetailView: View {
     }
 
     @ViewBuilder private func toolbarLabel(_ title: LocalizedStringKey, symbol: String, primary: Bool = false) -> some View {
-        // En vertical (Duo cerrado) solo icono; en un iPhone estrecho, texto solo en «Completar»
-        // (tres botones con texto no caben y el sistema los plegaba en un menú «…»).
-        if sideControls || (!primary && layoutSize.width < 500) {
+        // En un ancho estrecho (iPhone, Duo cerrado), texto solo en «Completar»: tres botones con
+        // texto no caben en la barra.
+        if !primary && layoutSize.width < 500 {
             Image(systemName: symbol)
         } else {
             HStack(spacing: 6) {
