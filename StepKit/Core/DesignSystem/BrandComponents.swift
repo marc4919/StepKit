@@ -244,9 +244,24 @@ struct OrbitMark: View {
     var hidesSphere = false
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var drawn: CGFloat = 1
+    @State private var drawn: CGFloat
     @State private var floating = false
-    @State private var appeared = true
+    @State private var appeared: Bool
+
+    init(height: CGFloat = 160, milestones: [CGFloat] = [], bloom: Bool = false, animated: Bool = false,
+         buildProgress: Double? = nil, liftOff: Bool = false, hidesSphere: Bool = false) {
+        self.height = height
+        self.milestones = milestones
+        self.bloom = bloom
+        self.animated = animated
+        self.buildProgress = buildProgress
+        self.liftOff = liftOff
+        self.hidesSphere = hidesSphere
+        // Si va a dibujarse al aparecer, nace sin trazo y con la esfera recogida: empezar dibujada y
+        // reiniciar a cero se veía como la S deshaciéndose antes de trazarse.
+        _drawn = State(initialValue: animated && buildProgress == nil ? 0 : 1)
+        _appeared = State(initialValue: !(animated && buildProgress == nil))
+    }
 
     private var isAnimated: Bool { animated && !reduceMotion }
 
@@ -357,15 +372,11 @@ struct OrbitMark: View {
         .frame(height: height)
         .accessibilityHidden(true)
         .onAppear {
-            guard isAnimated, buildProgress == nil else { return }
-            // El reinicio nunca se anima, aunque la vista aparezca dentro de una transición (Mis Kits
-            // vacío al borrar el último Kit): animado, el trazado volvía a cero a la vez que se
-            // dibujaba y la S salía ya hecha, sin recorrido.
-            var reset = Transaction()
-            reset.disablesAnimations = true
-            withTransaction(reset) {
-                drawn = 0
-                appeared = false
+            guard animated, buildProgress == nil else { return }
+            if reduceMotion {
+                drawn = 1
+                appeared = true
+                return
             }
             // En el siguiente ciclo, fuera de la transición en la que aparece la vista: dentro de ella
             // la animación del fundido se imponía a estas y la S salía ya hecha.
