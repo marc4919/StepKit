@@ -618,25 +618,21 @@ struct KitCreationStreamingProgress: View {
                             .foregroundStyle(.secondary)
                     }
                     if expandedSteps.contains(index) {
-                        // Resumen: qué queda hecho, el tiempo, el esfuerzo y el principio de la descripción.
+                        // Resumen: qué queda hecho, y el tiempo y el esfuerzo en una línea. La descripción
+                        // larga se lee en el paso: cortada a tres líneas aquí no aportaba y alargaba la lista.
                         VStack(alignment: .leading, spacing: 6) {
                             if !step.description.short.isEmpty {
                                 Text("Al terminar").font(.caption.weight(.semibold))
                                 Text(step.description.short).font(.subheadline)
                             }
-                            Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(MetaTint.time)
-                            Label(String(localized: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: step.effortLevel).lowercased())"),
-                                  systemImage: Symbols.effort)
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(MetaTint.effort)
-                            if !step.description.long.isEmpty {
-                                Text(step.description.long)
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(3)
+                            HStack(spacing: 10) {
+                                Label(String(localized: "\(step.estimateMinutes) min"), systemImage: Symbols.time)
+                                    .foregroundStyle(MetaTint.time)
+                                Label(String(localized: "Esfuerzo \(StepDetailHelpers.effortLevelText(for: step.effortLevel).lowercased())"),
+                                      systemImage: Symbols.effort)
+                                    .foregroundStyle(MetaTint.effort)
                             }
+                            .font(.caption.weight(.medium))
                         }
                         .padding(.top, 6)
                         // La fila crece y el texto se funde dentro de ella: nada se desliza desde fuera.
