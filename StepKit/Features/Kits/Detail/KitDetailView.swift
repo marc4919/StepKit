@@ -111,6 +111,9 @@ struct KitDetailView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
+        // El Kit no tiene barra inferior. Al plegar el Duo con un paso abierto, la barra de acciones
+        // del paso podía quedarse como una cápsula vacía encima del Kit: aquí se oculta siempre.
+        .toolbarVisibility(.hidden, for: .bottomBar)
         // El título vive en la cabecera; en la barra solo aparece cuando la cabecera ya no se ve,
         // como en Salud, Fitness o Música. Así no se lee dos veces al entrar.
         .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.contentInsets.top > max(headerHeight - 24, 1) } action: { _, past in

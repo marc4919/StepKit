@@ -124,6 +124,7 @@ struct KitsHomeView: View {
         // Al borrar el último Kit, la lista da paso al estado vacío con un fundido, sin saltos.
         .animation(.smooth(duration: 0.5), value: isEmpty)
         .navigationTitle("Mis Kits")
+        .toolbarVisibility(.hidden, for: .bottomBar)
         .onAppear {
             // iPad: el detalle empieza mostrando el Kit que avanzaste por última vez.
             if !isCompact, viewModel.selectedKitEntity == nil, let kit = continueKit {

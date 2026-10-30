@@ -143,6 +143,7 @@ struct StepDetailView: View {
                 }
             }
         }
+        .toolbarVisibility(.visible, for: .bottomBar)
         .overlay(alignment: .bottom) {
             // Con las acciones en la barra, el aviso de completado flota abajo sin desplazar nada.
             if actionsInToolbar, let celebration {
