@@ -33,6 +33,12 @@ struct StepDetailView: View {
     // si se esperara a medir la vista, en el Duo cerrado se vería el reajuste al entrar.
     @State private var wideLayout = TwoColumnLayout.fits(StepDetailView.windowSize)
     @State private var sideControls = StepDetailView.isNearlySquare(StepDetailView.windowSize)
+    /// Zonas seguras reales. En el primer fotograma de la entrada llegan a cero (sin barra ni columna
+    /// lateral) y el texto se maquetaba a todo el ancho; después se estrechaba y se recolocaba.
+    @State private var insets = EdgeInsets()
+    /// Lo que ocupan la barra superior y la columna de botones en el Duo cerrado (medido).
+    private static let foldedTopInset: CGFloat = 82
+    private static let foldedTrailingInset: CGFloat = 84
     /// Acciones dentro de la barra de herramientas (Duo cerrado) en vez de botones grandes.
     private var actionsInToolbar: Bool { Self.forcesSideControls || (sideControls && !wideLayout) }
     /// Siguiente paso abierto desde el aviso de completado.
@@ -198,7 +204,12 @@ struct StepDetailView: View {
             // Un respiro bajo la barra: en el Duo cerrado la cabecera rozaba el cristal y se cortaba.
             .padding(.top, 6)
             .padding(.bottom, 20)
+            // Duo cerrado: mientras el sistema no haya aplicado sus zonas seguras, se reservan a mano
+            // para que el primer fotograma ya tenga el ancho definitivo y nada se recoloque.
+            .padding(.trailing, sideControls && insets.trailing == 0 ? Self.foldedTrailingInset : 0)
+            .padding(.top, sideControls && insets.top == 0 ? Self.foldedTopInset : 0)
         }
+        .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
         .balancedHorizontalSafeArea()
         // Se decide siempre con el tamaño de la ventana, igual que el valor inicial: medir la vista daba
         // otro resultado en el primer fotograma (Duo cerrado) y el texto se recolocaba al entrar.

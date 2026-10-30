@@ -38,6 +38,10 @@ struct KitInfoSheetView: View {
                     Button(role: .close) { dismiss() }
                         .accessibilityIdentifier("kitInfo.close")
                 }
+                // El «?» vive aquí, en los detalles: explica el Kit y el paso sin cargar las barras.
+                ToolbarItem(placement: .topBarTrailing) {
+                    HelpButton()
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Editar") { showingEdit = true }
                         .accessibilityIdentifier("kit.edit")

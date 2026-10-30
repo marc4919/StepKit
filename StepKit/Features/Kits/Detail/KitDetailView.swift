@@ -109,10 +109,6 @@ struct KitDetailView: View {
         .navigationTitle(kitEntity.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Un solo «?» en toda la app: explica el Kit y el paso. En el paso no hay otro.
-            ToolbarItem(placement: .topBarLeading) {
-                HelpButton()
-            }
             // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {
