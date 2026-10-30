@@ -75,6 +75,11 @@ struct StepKitApp: App {
             .background(WindowBackgroundSetter())
             // En toda la app, tocar fuera de un campo de texto cierra el teclado.
             .dismissesKeyboardOnTap()
+            #if DEBUG
+            // `-StepKitRotateEvery N`: alterna vertical/horizontal cada N segundos en el simulador, para
+            // reproducir los cambios de clase de tamaño (plegar el Duo, girar un Max) sin tocar el dispositivo.
+            .task { await DebugRotation.runIfRequested() }
+            #endif
             .task {
                 #if DEBUG
                 guard DesignFixtureScenario.current == nil else { return }
@@ -267,3 +272,20 @@ private struct WindowBackgroundSetter: UIViewRepresentable {
         view.window?.backgroundColor = .systemBackground
     }
 }
+
+#if DEBUG
+enum DebugRotation {
+    @MainActor static func runIfRequested() async {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-StepKitRotateEvery"), args.indices.contains(i + 1),
+              let seconds = Double(args[i + 1]) else { return }
+        var landscape = false
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(seconds))
+            landscape.toggle()
+            let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
+            scene?.requestGeometryUpdate(.iOS(interfaceOrientations: landscape ? .landscapeRight : .portrait))
+        }
+    }
+}
+#endif

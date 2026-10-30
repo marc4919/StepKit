@@ -189,7 +189,24 @@ struct DesignFixtureRoot: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     private var kits: some View {
-        kitsLayout.fullScreenCover(isPresented: $viewModel.showingKitCreator) { KitCreatorView() }
+        kitsLayout
+            .fullScreenCover(isPresented: $viewModel.showingKitCreator) { KitCreatorView() }
+            // Mismo relevo que KitsListView al plegar o girar: el Kit abierto se conserva.
+            .onChange(of: sizeClass) { _, size in
+                let all = (try? container.mainContext.fetch(FetchDescriptor<GoalEntity>())) ?? []
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    if size == .compact {
+                        if let id = viewModel.selectedKitId, viewModel.navigationPath.isEmpty {
+                            viewModel.navigationPath = [id]
+                        }
+                    } else if let id = viewModel.navigationPath.last, let kit = all.first(where: { $0.id == id }) {
+                        viewModel.selectKit(kit)
+                        viewModel.navigationPath = []
+                    }
+                }
+            }
     }
 
     @ViewBuilder private var kitsLayout: some View {

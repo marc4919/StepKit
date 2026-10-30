@@ -87,14 +87,20 @@ struct KitsListView: View {
         // iPhone Duo al plegar o desplegar: se pasa de una columna a dos (o al revés).
         // El Kit abierto se conserva en lugar de volver a Mis Kits.
         .onChange(of: horizontalSizeClass) { _, sizeClass in
-            if sizeClass == .compact {
-                if let id = viewModel.selectedKitId, viewModel.navigationPath.isEmpty {
-                    viewModel.navigationPath = [id]
+            // Sin animación: el relevo ocurre en mitad del plegado y una transición de empuje en ese
+            // momento dejaba la barra de navegación del Kit a medio montar (cápsula vacía abajo).
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                if sizeClass == .compact {
+                    if let id = viewModel.selectedKitId, viewModel.navigationPath.isEmpty {
+                        viewModel.navigationPath = [id]
+                    }
+                } else if let id = viewModel.navigationPath.last,
+                          let kit = visibleKitEntities.first(where: { $0.id == id }) {
+                    viewModel.selectKit(kit)
+                    viewModel.navigationPath = []
                 }
-            } else if let id = viewModel.navigationPath.last,
-                      let kit = visibleKitEntities.first(where: { $0.id == id }) {
-                viewModel.selectKit(kit)
-                viewModel.navigationPath = []
             }
         }
     }

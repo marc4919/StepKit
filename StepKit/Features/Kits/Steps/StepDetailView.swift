@@ -195,27 +195,13 @@ struct StepDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 stepHeader
-                if wideLayout {
-                    // Interior del iPhone Duo o iPad: qué hacer a la izquierda; tu avance y el recordatorio a la derecha.
-                    HStack(alignment: .top, spacing: 20) {
-                        VStack(alignment: .leading, spacing: 18) {
-                            stepWhatToDo
-                            stepDetails
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        VStack(alignment: .leading, spacing: 18) {
-                            stepProgress
-                            stepReminder
-                            // Con dos columnas, las acciones van aquí, bajo el recordatorio, y no en una barra abajo.
-                            if !actionsInToolbar { stepActions }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                } else {
-                    stepWhatToDo
-                    stepProgress
-                    stepDetails
-                    stepReminder
+                // Interior del iPhone Duo o iPad: qué hacer y detalles a la izquierda; avance y recordatorio
+                // a la derecha. En estrecho, todo en columna. Mismos hijos en ambos casos (ver StepColumnsLayout).
+                StepColumnsLayout(wide: wideLayout, rightColumn: [1, 3]) {
+                    VStack(alignment: .leading, spacing: 18) { stepWhatToDo }
+                    VStack(alignment: .leading, spacing: 18) { stepProgress }
+                    VStack(alignment: .leading, spacing: 18) { stepDetails }
+                    VStack(alignment: .leading, spacing: 18) { stepReminder }
                 }
             }
             .padding(.horizontal)
@@ -325,25 +311,19 @@ struct StepDetailView: View {
 
     private var stepReminder: some View {
         PlainCard {
-            // El interruptor va aparte y a su tamaño propio: dentro de un Toggle a todo el ancho, al
-            // abrir o cerrar el panel lateral el sistema lo estiraba y se veía cuadrado un instante.
-            HStack(spacing: 12) {
+            // El mismo interruptor del sistema que en Perfil. Lo que lo deformaba al girar o plegar era
+            // que la vista se recreaba al cambiar de disposición; ya no (ver StepColumnsLayout).
+            Toggle(isOn: Binding(
+                get: { stepEntity.notificationEnabled },
+                set: { _ in toggleStepNotification() }
+            )) {
                 Label {
                     Text("Recordatorio")
                 } icon: {
                     IconChip(symbol: "bell.fill", color: .red, size: 28)
                 }
-                Spacer(minLength: 8)
-                Toggle("Recordatorio", isOn: Binding(
-                    get: { stepEntity.notificationEnabled },
-                    set: { _ in toggleStepNotification() }
-                ))
-                .labelsHidden()
-                // Interruptor dibujado por nosotros: el del sistema (UIKit, cristal) se veía cuadrado un
-                // instante al girar o plegar el Duo, y ningún ajuste de SwiftUI lo evitaba.
-                .toggleStyle(StepKitSwitchStyle())
-                .accessibilityHint("Activa o desactiva el recordatorio de este paso")
             }
+            .accessibilityHint("Activa o desactiva el recordatorio de este paso")
         }
     }
 
