@@ -137,19 +137,8 @@ struct StepDetailView: View {
                 .accessibilityHint("Permite cambiar el título, las descripciones, la fecha y el tiempo del paso")
             }
         }
-        // Fuera del Duo cerrado, la barra de acciones es nuestra (botones de cristal del sistema, mismo
-        // aspecto) y no la barra inferior de la navegación: esa, al girar, plegar o abrir el panel lateral
-        // en el Duo, dejaba cápsulas vacías «fantasma» en el paso y hasta en el Kit.
-        .safeAreaInset(edge: .bottom) {
-            if !sideControls {
-                bottomActionBar
-            }
-        }
-        // Pantalla casi cuadrada (iPhone Duo cerrado): las tres acciones van como controles laterales,
-        // en columna junto al borde, y el contenido conserva toda la altura.
-        // Pantalla casi cuadrada (iPhone Duo cerrado): las acciones van en la barra de herramientas,
-        // que el sistema dibuja en vertical junto al borde, en su parte de abajo (hoy vacía).
-        // Duo cerrado: la barra inferior del sistema, que allí se dibuja en vertical junto al borde.
+        // Duo cerrado: las acciones van en la barra inferior del sistema, que allí se dibuja en vertical
+        // junto al borde. En el resto de casos la barra es propia y va dentro de `stepScroll`.
         .toolbar {
             if sideControls {
                 ToolbarItemGroup(placement: .bottomBar) {
@@ -168,7 +157,6 @@ struct StepDetailView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { measuredSize = $0 }
         .background {
             if #available(iOS 27.1, *) {
                 ToolbarVerticalEdgeProbe { toolbarIsVertical = $0 }
@@ -230,6 +218,14 @@ struct StepDetailView: View {
             .padding(.top, sideControls && insets.top == 0 ? Self.foldedTopInset : 0)
         }
         .ignoresSafeArea(.container, edges: reservesSideColumn ? .trailing : [])
+        // La barra de acciones propia (botones de cristal del sistema) va pegada al propio paso, no a la
+        // pantalla: con el Duo entreabierto el paso ocupa una mitad y la barra se quedaba cruzando el
+        // pliegue y tapando el final del contenido. Aquí reserva su sitio al final del scroll.
+        .safeAreaInset(edge: .bottom) {
+            if !sideControls {
+                bottomActionBar
+            }
+        }
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
         .balancedHorizontalSafeArea()
         // Con el tamaño de la vista, no de la ventana: en el Duo abierto la columna de detalle es

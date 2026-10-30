@@ -615,10 +615,21 @@ struct DelayedReveal<Content: View>: View {
 
 // MARK: - Barra de pestañas oculta con transición
 
-/// Pantallas que ocultan la barra de pestañas (paso, asistente, resultado). Visibilidad fija: la
-/// variante con contador y viewWillAppear/viewWillDisappear perdía la cuenta cuando el sistema
-/// reubicaba la vista al plegar el iPhone Duo, y la barra reaparecía sobre el paso.
+/// Pantallas que ocultan la barra de pestañas (paso, asistente, resultado). Mientras la pantalla está
+/// presentada (en la pila), la barra se oculta; en cuanto empieza a cerrarse (`isPresented` pasa a
+/// false al iniciarse el retroceso), la barra vuelve durante la transición y no un segundo después.
+/// Es estado de navegación de SwiftUI, no del ciclo de vida de UIKit: plegar o desplegar el iPhone Duo
+/// recoloca la vista pero no la saca de la pila, así que no la confunde (la variante con contador y
+/// viewWillAppear/viewWillDisappear sí perdía la cuenta y dejaba la barra sobre el paso).
+struct HidesTabBarSmoothly: ViewModifier {
+    @Environment(\.isPresented) private var isPresented
+
+    func body(content: Content) -> some View {
+        content.toolbarVisibility(isPresented ? .hidden : .visible, for: .tabBar)
+    }
+}
+
 extension View {
-    func hidesTabBarSmoothly() -> some View { toolbarVisibility(.hidden, for: .tabBar) }
+    func hidesTabBarSmoothly() -> some View { modifier(HidesTabBarSmoothly()) }
 }
 
