@@ -810,6 +810,16 @@
         }
       }
     },
+    "Activa los recordatorios en Perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn reminders on in Profile"
+          }
+        }
+      }
+    },
     "Activa o desactiva el recordatorio de este paso": {
       "localizations": {
         "en": {
@@ -1276,6 +1286,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Also remind me the day before"
+          }
+        }
+      }
+    },
+    "Avisos de este Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders for this Kit"
           }
         }
       }
@@ -2032,6 +2052,16 @@
         }
       }
     },
+    "Creado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Created"
+          }
+        }
+      }
+    },
     "Creando tu Kit": {
       "localizations": {
         "en": {
@@ -2214,6 +2244,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "How StepKit works"
+          }
+        }
+      }
+    },
+    "Cómo sabrás que está listo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How you'll know it's done"
           }
         }
       }
@@ -2780,6 +2820,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The rest of the plan stays the same."
+          }
+        }
+      }
+    },
+    "El resumen de cada mañana y las sesiones": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each morning's summary and the sessions"
           }
         }
       }
@@ -5152,6 +5202,16 @@
         }
       }
     },
+    "Objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal"
+          }
+        }
+      }
+    },
     "Objetivos ilimitados": {
       "localizations": {
         "en": {
@@ -5604,6 +5664,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow and prepare the plan"
+          }
+        }
+      }
+    },
+    "Personal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personal"
           }
         }
       }
@@ -7318,6 +7388,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "It has what to do, how long it takes and which day it's due. You open it and work on it."
+          }
+        }
+      }
+    },
+    "Tipo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
           }
         }
       }
