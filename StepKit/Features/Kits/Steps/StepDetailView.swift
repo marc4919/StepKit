@@ -204,11 +204,13 @@ struct StepDetailView: View {
             // Un respiro bajo la barra: en el Duo cerrado la cabecera rozaba el cristal y se cortaba.
             .padding(.top, 6)
             .padding(.bottom, 20)
-            // Duo cerrado: mientras el sistema no haya aplicado sus zonas seguras, se reservan a mano
-            // para que el primer fotograma ya tenga el ancho definitivo y nada se recoloque.
-            .padding(.trailing, sideControls && insets.trailing == 0 ? Self.foldedTrailingInset : 0)
+            // Duo cerrado: la columna de botones del borde derecho se reserva siempre a mano y se
+            // ignora la zona segura que el sistema aplica después. Así el ancho del texto es el
+            // mismo en el primer fotograma de la entrada y en los siguientes, y nada se recoloca.
+            .padding(.trailing, sideControls ? Self.foldedTrailingInset : 0)
             .padding(.top, sideControls && insets.top == 0 ? Self.foldedTopInset : 0)
         }
+        .ignoresSafeArea(.container, edges: sideControls ? .trailing : [])
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { insets = $0 }
         .balancedHorizontalSafeArea()
         // Se decide siempre con el tamaño de la ventana, igual que el valor inicial: medir la vista daba
