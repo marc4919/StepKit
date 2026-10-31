@@ -338,6 +338,8 @@ final class KitCreatorViewModel {
         
         // Guardar en SwiftData
         let goalEntity = GoalEntity(from: kitDTO, ownerID: ownerID)
+        // La fecha que eligió la persona es la fecha final del Kit, no la del último paso.
+        goalEntity.targetDate = Calendar.current.startOfDay(for: dueDate)
         modelContext.insert(goalEntity)
         
         // Añadir los steps

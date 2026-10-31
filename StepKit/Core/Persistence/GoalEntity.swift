@@ -31,6 +31,9 @@ final class GoalEntity {
     var notificationsEnabled: Bool
     /// El usuario confirmó el resultado; independiente de completar todos los pasos.
     var resultConfirmedAt: Date?
+    /// Fecha final que eligió la persona al crear el Kit (o que aceptó del asistente).
+    /// Nil en Kits anteriores a guardarla: entonces se usa el último paso.
+    var targetDate: Date?
 
     @Relationship(deleteRule: .cascade, inverse: \StepEntity.goal)
     var steps: [StepEntity] = []
@@ -124,7 +127,7 @@ final class GoalEntity {
     }
     
     var dueDate: Date? {
-        steps.compactMap { $0.suggestedDeadline }.max()
+        targetDate ?? steps.compactMap { $0.suggestedDeadline }.max()
     }
 
     // MARK: - Modification Tracking
@@ -169,6 +172,7 @@ final class GoalEntity {
             deletedAt: deletedAt,
             deleted: isRemoved,
             resultConfirmedAt: resultConfirmedAt,
+            targetDate: targetDate,
             steps: nil  // Steps se envían por separado
         )
     }
@@ -189,6 +193,8 @@ final class GoalEntity {
         deletedAt = dto.deletedAt ?? (dto.deleted ? dto.updatedAt : nil)
         isDeleted = dto.deleted
         resultConfirmedAt = dto.resultConfirmedAt
+        // Un servidor que aún no guarda la fecha no la envía: se conserva la local.
+        if let targetDate = dto.targetDate { self.targetDate = targetDate }
     }
 
     /// Crea una entidad desde un DTO de sync
@@ -211,5 +217,6 @@ final class GoalEntity {
             isDeleted: dto.deleted
         )
         self.resultConfirmedAt = dto.resultConfirmedAt
+        self.targetDate = dto.targetDate
     }
 }

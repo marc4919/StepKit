@@ -6,28 +6,37 @@ import Testing
 @Suite("SwiftData versioned schema", .serialized)
 @MainActor
 struct SchemaVersioningTests {
-    /// Un almacén creado con el esquema sin versionar (TestFlight hasta la build 5)
-    /// se abre con `StepKitSchemaV1` sin perder Kits ni pasos.
-    @Test("Store created before versioning opens with V1 and keeps its data")
-    func legacyStoreOpens() throws {
+    private func tempStoreURL() throws -> (URL, URL) {
         let folder = FileManager.default.temporaryDirectory.appending(path: "schema-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return (folder, folder.appending(path: "default.store"))
+    }
+
+    /// Un almacén de TestFlight (esquema V1, sin fecha final) se migra a V2 sin perder nada.
+    @Test("V1 store migrates to V2 and keeps Kits, steps and progress")
+    func v1StoreMigrates() throws {
+        let (folder, url) = try tempStoreURL()
         defer { try? FileManager.default.removeItem(at: folder) }
-        let url = folder.appending(path: "default.store")
         let kitID = UUID()
 
         do {
-            let legacy = Schema([GoalEntity.self, StepEntity.self, ProgressEntryEntity.self, WorkSessionEntity.self])
-            let container = try ModelContainer(for: legacy, configurations: [ModelConfiguration(schema: legacy, url: url)])
+            let v1 = Schema(versionedSchema: StepKitSchemaV1.self)
+            let container = try ModelContainer(for: v1, configurations: [ModelConfiguration(schema: v1, url: url)])
             let context = container.mainContext
-            let kit = GoalEntity(id: kitID, ownerID: "a", planTitle: "Correr 5 km", horizonDays: 30, kpi: "5 km")
+            let kit = StepKitSchemaV1.GoalEntity()
+            kit.id = kitID
+            kit.ownerID = "a"
+            kit.planTitle = "Correr 5 km"
             context.insert(kit)
-            let step = StepEntity(ownerID: "a", stepTitle: "Caminar 20 min", descriptionShort: "", descriptionLong: "",
-                                  estimateMinutes: 20)
+            let step = StepKitSchemaV1.StepEntity()
+            step.stepTitle = "Caminar 20 min"
+            step.suggestedDeadline = Date(timeIntervalSince1970: 1_800_000_000)
             context.insert(step)
             kit.steps.append(step)
-            context.insert(ProgressEntryEntity(ownerID: "a", kitID: kitID, stepID: step.id, kind: .progress,
-                                               note: "Hecho", notedAt: .now, updatedAt: .now))
+            let entry = StepKitSchemaV1.ProgressEntryEntity()
+            entry.kitID = kitID
+            entry.kindRaw = "progress"
+            context.insert(entry)
             try context.save()
         }
 
@@ -35,9 +44,17 @@ struct SchemaVersioningTests {
         let reopened = persistence.container.mainContext
         let kits = try reopened.fetch(FetchDescriptor<GoalEntity>())
         #expect(kits.map(\.id) == [kitID])
-        #expect(kits.first?.planTitle == "Correr 5 km")
-        #expect(kits.first?.steps.map(\.stepTitle) == ["Caminar 20 min"])
+        let kit = try #require(kits.first)
+        #expect(kit.planTitle == "Correr 5 km")
+        #expect(kit.steps.map(\.stepTitle) == ["Caminar 20 min"])
+        #expect(kit.targetDate == nil)
+        #expect(kit.dueDate == Date(timeIntervalSince1970: 1_800_000_000))   // sin fecha guardada, la del último paso
         #expect(try reopened.fetchCount(FetchDescriptor<ProgressEntryEntity>()) == 1)
+
+        let target = Date(timeIntervalSince1970: 1_900_000_000)
+        kit.targetDate = target
+        try reopened.save()
+        #expect(kit.dueDate == target)
         withExtendedLifetime(persistence) {}
     }
 }

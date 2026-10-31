@@ -266,6 +266,7 @@ enum RemoteProposalBuilder {
                 newDates[target.id] = to
             case "change_kit_due_date":
                 guard let to = date(change.newDate), let last = steps.last(where: { !$0.isCompleted }) else { continue }
+                actions.append(.setKitDueDate(to))
                 if (newDates[last.id] ?? last.suggestedDeadline).map({ $0 < to }) ?? true {
                     newDates[last.id] = to
                 }

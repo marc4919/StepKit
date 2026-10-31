@@ -2794,6 +2794,16 @@
         }
       }
     },
+    "El plan se reparte hasta esta fecha. Podrás cambiarla después con el asistente.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The plan is spread out up to this date. You can change it later with the assistant."
+          }
+        }
+      }
+    },
     "El Calendario es tu tiempo": {
       "localizations": {
         "en": {

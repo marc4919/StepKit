@@ -55,6 +55,8 @@ struct KitSyncDTO: Codable {
     let deletedAt: Date?
     let deleted: Bool
     let resultConfirmedAt: Date?
+    /// Fecha final elegida para el Kit. Opcional: un servidor o cliente que no la conoce la omite.
+    var targetDate: Date? = nil
     let steps: [StepSyncDTO]?
 
     // No necesita CodingKeys - Vapor usa camelCase por defecto

@@ -205,7 +205,7 @@ struct KitCreationFormContent: View {
         } header: {
             Text("Tu tiempo")
         } footer: {
-            Text("La fecha es orientativa. Podrás ajustar el plan y tu tiempo después.")
+            Text("El plan se reparte hasta esta fecha. Podrás cambiarla después con el asistente.")
         }
     }
 

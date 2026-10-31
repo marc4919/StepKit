@@ -138,6 +138,8 @@ final class PlanProposal: Identifiable {
         case remove(stepID: UUID)
         case block(stepID: UUID, reason: String)
         case changeKPI(String)
+        /// Nueva fecha final del Kit (los pasos se mueven con `setDate`).
+        case setKitDueDate(Date)
     }
 
     let id = UUID()
@@ -260,6 +262,10 @@ final class PlanProposal: Identifiable {
             target.markModified(at: now)
         case .changeKPI(let kpi):
             kit.kpi = kpi
+            kit.markModified(at: now)
+        case .setKitDueDate(let date):
+            kit.targetDate = Calendar.current.startOfDay(for: date)
+            kit.markModified(at: now)
         case .block(let id, let reason):
             guard let target = step(id) else { return }
             target.blockedReason = reason
