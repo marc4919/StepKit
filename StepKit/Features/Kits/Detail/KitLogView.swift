@@ -65,8 +65,9 @@ struct KitLogView: View {
         result.append(Item(
             id: "start", date: kit.createdAt, symbol: "flag.fill", color: MetaTint.date,
             title: String(localized: "Tu plan empezó aquí"),
-            text: [kit.kpi.isEmpty ? nil : kit.kpi,
-                   kit.dueDate.map { "fecha deseada \($0.formatted(.dateTime.day().month(.abbreviated)))" }]
+            // Solo el punto de partida: el Resultado ya está en Detalles y la fecha en la cabecera.
+            text: [kit.activeStepCount == 1 ? String(localized: "1 paso") : String(localized: "\(kit.activeStepCount) pasos"),
+                   kit.dueDate.map { String(localized: "hasta el \($0.formatted(.dateTime.day().month(.abbreviated)))") }]
                 .compactMap { $0 }.joined(separator: " · ")
         ))
         return result

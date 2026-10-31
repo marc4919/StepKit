@@ -91,11 +91,30 @@ struct CalendarPlusView: View {
             }
     }
 
-    private var goalsForSelectedDate: [GoalEntity] {
+    /// Kits cuya fecha final cae en el día elegido.
+    private var kitsEndingOnSelectedDate: [GoalEntity] {
         visibleGoalEntities.filter { kit in
             guard let dueDate = kit.dueDate else { return false }
             return Calendar.current.isDate(dueDate, inSameDayAs: selectedDate)
         }
+    }
+
+    /// Fila propia de «Fecha prevista» solo si ese día no hay ningún paso del Kit:
+    /// si lo hay, la bandera va en la fila del paso y no se repite el Kit.
+    private var goalsForSelectedDate: [GoalEntity] {
+        let kitsWithSteps = Set(stepsForSelectedDate.compactMap { $0.goal?.id })
+        return kitsEndingOnSelectedDate.filter { !kitsWithSteps.contains($0.id) }
+    }
+
+    /// El último paso de cada Kit que termina ese día lleva la bandera de la fecha final.
+    private var flaggedStepIDs: Set<UUID> {
+        let ending = Set(kitsEndingOnSelectedDate.map(\.id))
+        var lastByKit: [UUID: UUID] = [:]
+        for step in stepsForSelectedDate {
+            guard let kitID = step.goal?.id, ending.contains(kitID) else { continue }
+            lastByKit[kitID] = step.id
+        }
+        return Set(lastByKit.values)
     }
 
     private var selectedDayIsPast: Bool {
@@ -348,7 +367,8 @@ struct CalendarPlusView: View {
                     dayRow(symbol: step.isCompleted ? "checkmark.circle.fill" : "circle",
                            tint: step.isCompleted ? .green : .blue,
                            title: step.stepTitle,
-                           detail: stepDayDetail(step))
+                           detail: stepDayDetail(step),
+                           endsKit: flaggedStepIDs.contains(step.id))
                 }
             }
             ForEach(goalsForSelectedDate) { kit in
@@ -419,12 +439,18 @@ struct CalendarPlusView: View {
         return String(localized: "\(kit) · \(repetition.sessionName(index))")
     }
 
-    private func dayRow(symbol: String, tint: Color, title: String, detail: String) -> some View {
+    private func dayRow(symbol: String, tint: Color, title: String, detail: String, endsKit: Bool = false) -> some View {
         HStack(spacing: 12) {
             Image(systemName: symbol).foregroundStyle(tint).accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.body)
                 Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+            if endsKit {
+                Spacer(minLength: 8)
+                Image(systemName: "flag.fill")
+                    .foregroundStyle(.purple)
+                    .accessibilityLabel(Text("Fecha prevista del Kit"))
             }
         }
         .accessibilityElement(children: .combine)

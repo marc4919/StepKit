@@ -560,6 +560,16 @@
         }
       }
     },
+    "hasta el %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "until %@"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
@@ -3696,6 +3706,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Target date"
+          }
+        }
+      }
+    },
+    "Fecha prevista del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit's planned date"
           }
         }
       }
