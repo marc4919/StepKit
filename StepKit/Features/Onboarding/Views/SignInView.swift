@@ -237,7 +237,12 @@ struct SignInView: View {
     }
     
     private func handleLoginError(with error: Error) {
-        // Errores provenientes directamente de Sign in with Apple (por ejemplo, cancelado)
+        // Cancelar no es un error: la pantalla se queda como estaba, sin aviso.
+        if (error as? ASAuthorizationError)?.code == .canceled {
+            errorMessage = nil
+            return
+        }
+        // Errores provenientes directamente de Sign in with Apple
         errorMessage = userFriendlyAuthErrorMessage(from: error)
         #if DEBUG
         print("Apple authorization failed: type=\(String(describing: type(of: error)))")
@@ -277,7 +282,8 @@ struct SignInView: View {
             case .deviceNotConfiguredForPasskeyCreation:
                 return String(localized: "El dispositivo no está configurado para crear passkeys. Verifica la configuración.")
             case .unknown:
-                return String(localized: "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde.")
+                // Es lo que llega, por ejemplo, si el dispositivo no tiene una cuenta de Apple.
+                return String(localized: "No hemos podido iniciar sesión con Apple. Comprueba que tienes una cuenta de Apple en Ajustes e inténtalo de nuevo.")
             @unknown default:
                 // Casos futuros no conocidos en tiempo de compilación
                 return String(localized: "Ha ocurrido un problema inesperado con Sign in with Apple. Inténtalo más tarde.")

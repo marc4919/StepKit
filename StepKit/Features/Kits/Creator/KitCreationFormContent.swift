@@ -22,6 +22,7 @@ struct KitCreationFormContent: View {
     let todayStart: Date
     let isDateInPast: Bool
     let isFormValid: Bool
+    var aiNotice: String? = nil
     let onCreate: () -> Void
 
     @State private var showsOtherDate = false
@@ -307,6 +308,12 @@ struct KitCreationFormContent: View {
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
             .accessibilityIdentifier("kitCreator.create")
+        } footer: {
+            if let aiNotice {
+                Text(aiNotice)
+                    .padding(.top, 4)
+                    .accessibilityIdentifier("kitCreator.aiNotice")
+            }
         }
     
     }

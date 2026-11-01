@@ -427,6 +427,12 @@ struct AboutView: View {
             }
             Section {
                 LabeledContent("Versión", value: version)
+                if let contact = URL(string: "mailto:marcgt.dev@icloud.com") {
+                    Link(destination: contact) {
+                        Label("Contactar con soporte", systemImage: "envelope")
+                    }
+                    .accessibilityIdentifier("about.contact")
+                }
             }
         }
         .scrollContentBackground(.hidden)

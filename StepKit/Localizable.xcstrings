@@ -660,6 +660,76 @@
         }
       }
     },
+    "No hemos podido iniciar sesión con Apple. Comprueba que tienes una cuenta de Apple en Ajustes e inténtalo de nuevo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We couldn't sign in with Apple. Check that you have an Apple Account in Settings and try again."
+          }
+        }
+      }
+    },
+    "¿Descartar este Kit?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard this Kit?"
+          }
+        }
+      }
+    },
+    "Seguir editando": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep Editing"
+          }
+        }
+      }
+    },
+    "Se perderá lo que has escrito.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you've written will be lost."
+          }
+        }
+      }
+    },
+    "Crear un Kit requiere enviar tu objetivo al servicio de IA. Puedes dar el permiso cuando quieras.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creating a Kit requires sending your goal to the AI service. You can give permission whenever you like."
+          }
+        }
+      }
+    },
+    "El plan lo prepara un servicio de IA externo. Te pedirá permiso antes de enviar nada.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An external AI service prepares the plan. You'll be asked for permission before anything is sent."
+          }
+        }
+      }
+    },
+    "Contactar con soporte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contact Support"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
@@ -5542,12 +5612,12 @@
         }
       }
     },
-    "Para acceder a ciertas funciones, debes crear una cuenta (por ejemplo, mediante 'Sign in with Apple'). Eres responsable de mantener la confidencialidad de tu cuenta y de todas las actividades que ocurran bajo ella. Nos reservamos el derecho de suspender o eliminar tu cuenta si violas estos Términos.": {
+    "Para usar StepKit debes crear una cuenta con 'Sign in with Apple'. Eres responsable de mantener la confidencialidad de tu cuenta y de todas las actividades que ocurran bajo ella. Nos reservamos el derecho de suspender o eliminar tu cuenta si violas estos Términos.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "To use certain features, you must create an account (for example, with 'Sign in with Apple'). You are responsible for keeping your account confidential and for all activity under it. We reserve the right to suspend or delete your account if you violate these Terms."
+            "value": "To use StepKit, you must create an account with 'Sign in with Apple'. You are responsible for keeping your account confidential and for all activity under it. We reserve the right to suspend or delete your account if you violate these Terms."
           }
         }
       }

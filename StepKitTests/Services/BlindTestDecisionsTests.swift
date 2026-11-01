@@ -17,6 +17,17 @@ struct BlindTestDecisionsTests {
         #expect(vm.isFormValid)   // hoy sigue siendo elegible, para un Kit de una sesión
     }
 
+    @Test("A goal of only spaces cannot prepare a plan and is not a draft to protect")
+    func onlySpaces() {
+        let vm = KitCreatorViewModel(apiClient: MockAPIClient())
+        vm.dueDate = Calendar.current.date(byAdding: .month, value: 1, to: .now)
+        vm.description = "   \n "
+        #expect(!vm.isFormValid)
+        #expect(!vm.hasDraft)
+        vm.doneWhen = "Correr sin parar"
+        #expect(vm.hasDraft)
+    }
+
     @Test("From the Calendar, today is not a choice but another selected day is")
     func calendarDate() {
         #expect(KitCreatorViewModel(apiClient: MockAPIClient(), initialDate: .now).dueDate == nil)

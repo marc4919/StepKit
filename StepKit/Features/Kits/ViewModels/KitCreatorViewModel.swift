@@ -122,8 +122,18 @@ final class KitCreatorViewModel {
         dueDate.map { $0 < todayStart } ?? false
     }
     
+    private var trimmedDescription: String {
+        description.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Hay algo escrito que se perdería al cerrar el formulario.
+    var hasDraft: Bool {
+        [description, doneWhen, startingPoint, inconveniences]
+            .contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
     var isFormValid: Bool {
-        !description.isEmpty && dueDate != nil && !isDateInPast
+        !trimmedDescription.isEmpty && dueDate != nil && !isDateInPast
     }
     
     var toolbarTitle: String {
@@ -152,7 +162,7 @@ final class KitCreatorViewModel {
     
     func createKit(token: String) {
         // Validación básica
-        guard !description.isEmpty, let dueDate else { return }
+        guard !trimmedDescription.isEmpty, let dueDate else { return }
         
         // Cambiar a estado loading
         withAnimation(.easeInOut(duration: 0.3)) {

@@ -32,6 +32,17 @@ struct KitCreatorView: View {
 
     // Fecha inicial opcional (para cuando se abre desde el calendario)
     var initialDate: Date?
+    @State private var confirmingDiscard = false
+    @State private var consentDeclined = false
+
+    /// Aviso junto a «Preparar plan» mientras no haya permiso de IA.
+    private var aiNotice: String? {
+        if consentManager.hasConsent { return nil }
+        return consentDeclined
+            ? String(localized: "Crear un Kit requiere enviar tu objetivo al servicio de IA. Puedes dar el permiso cuando quieras.")
+            : String(localized: "El plan lo prepara un servicio de IA externo. Te pedirá permiso antes de enviar nada.")
+    }
+
     /// Resultado ya escrito (cuando el asistente propone otro Kit).
     var initialGoal: String?
 
@@ -86,6 +97,7 @@ struct KitCreatorView: View {
                     todayStart: vm.todayStart,
                     isDateInPast: vm.isDateInPast,
                     isFormValid: vm.isFormValid,
+                    aiNotice: aiNotice,
                     onCreate: {
                         // Verificar consentimiento de IA antes de crear
                         guard consentManager.hasConsent else {
@@ -124,7 +136,17 @@ struct KitCreatorView: View {
             ToolbarItem(placement: .cancellationAction) {
                 if vm.showsCancelButton {
                     Button(vm.cancelButtonTitle) {
-                        cancelAndDismiss(vm: vm)
+                        if vm.viewState == .form && vm.hasDraft {
+                            confirmingDiscard = true
+                        } else {
+                            cancelAndDismiss(vm: vm)
+                        }
+                    }
+                    .confirmationDialog("¿Descartar este Kit?", isPresented: $confirmingDiscard, titleVisibility: .visible) {
+                        Button("Descartar", role: .destructive) { cancelAndDismiss(vm: vm) }
+                        Button("Seguir editando", role: .cancel) { }
+                    } message: {
+                        Text("Se perderá lo que has escrito.")
                     }
                 }
             }
@@ -147,6 +169,7 @@ struct KitCreatorView: View {
             case .aiConsent:
                 AIConsentView { granted in
                     showAIConsent = false
+                    consentDeclined = !granted
                     // Con permiso, se sigue con lo que el usuario había pedido: crear el plan.
                     if granted, let token = authManager.token {
                         vm.createKit(token: token)

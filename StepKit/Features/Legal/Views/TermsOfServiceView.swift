@@ -20,7 +20,7 @@ struct TermsOfServiceView: View {
                             .font(.title2)
                             .bold()
                         
-                        Text("Última actualización: 30 de octubre de 2026")
+                        Text("Última actualización: 1 de noviembre de 2026")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -47,7 +47,7 @@ struct TermsOfServiceView: View {
                         termSection(
                             number: "4",
                             title: String(localized: "Cuentas de Usuario"),
-                            content: String(localized: "Para acceder a ciertas funciones, debes crear una cuenta (por ejemplo, mediante 'Sign in with Apple'). Eres responsable de mantener la confidencialidad de tu cuenta y de todas las actividades que ocurran bajo ella. Nos reservamos el derecho de suspender o eliminar tu cuenta si violas estos Términos.")
+                            content: String(localized: "Para usar StepKit debes crear una cuenta con 'Sign in with Apple'. Eres responsable de mantener la confidencialidad de tu cuenta y de todas las actividades que ocurran bajo ella. Nos reservamos el derecho de suspender o eliminar tu cuenta si violas estos Términos.")
                         )
                         
                         termSection(

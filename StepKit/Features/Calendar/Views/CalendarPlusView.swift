@@ -124,7 +124,8 @@ struct CalendarPlusView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             Group {
-                if visibleGoalEntities.isEmpty {
+                // Una sesión reservada también cuenta: sin Kits, debe poder verse y borrarse.
+                if visibleGoalEntities.isEmpty && sessions.isEmpty {
                     emptyCalendar
                 } else {
                     calendarList
