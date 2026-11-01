@@ -148,6 +148,8 @@ struct KitCreationFormContent: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("kitCreator.context")
+            // La misma vibración ligera que da el interruptor.
+            .sensoryFeedback(.selection, trigger: showsContext)
             if showsContext {
                 field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
                       placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen, next: .startingPoint)
@@ -282,6 +284,7 @@ struct KitCreationFormContent: View {
             showsOtherDate = true
         }
         .accessibilityIdentifier("kitCreator.otherDate")
+        .sensoryFeedback(.selection, trigger: showsOtherDate)
     }
 
     @ViewBuilder
@@ -373,8 +376,10 @@ private extension Animation {
 
 private extension AnyTransition {
     static var formRow: AnyTransition {
-        .asymmetric(
-            insertion: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.5).delay(0.05)),
-            removal: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.35)))
+        // Un recorrido algo mayor que la propia fila, para que se note que baja desde arriba.
+        let travel = AnyTransition.opacity.combined(with: .move(edge: .top)).combined(with: .offset(y: -18))
+        return .asymmetric(
+            insertion: travel.animation(.smooth(duration: 0.5).delay(0.05)),
+            removal: travel.animation(.smooth(duration: 0.35)))
     }
 }
