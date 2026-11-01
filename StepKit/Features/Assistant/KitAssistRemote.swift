@@ -102,7 +102,7 @@ struct AssistResponse: Decodable {
 }
 
 enum AssistTrigger: String {
-    case message, blocked, progress, overdue, edited
+    case message, blocked, overdue
 }
 
 // MARK: - Petición a partir del Kit
@@ -400,7 +400,7 @@ enum KitAssistant {
         }
     }
 
-    /// Reacción automática (bloqueo, avance, paso vencido, edición): solo deja algo si aporta.
+    /// Reacción automática, solo al bloquear un paso o si se vence: ahí ayuda sin que se lo pidas.
     static func react(
         _ trigger: AssistTrigger,
         kit: GoalEntity,

@@ -39,7 +39,8 @@ final class KitCreatorViewModel {
     
     // Form State
     var description: String = ""
-    var dueDate: Date = Date()
+    /// Sin marcar hasta que la persona elige: una fecha por defecto producía metas imposibles.
+    var dueDate: Date?
     var inconveniences: String = ""
     var dailyAvailableTime: String = ""
     /// v4.4: cómo sabrá el usuario que lo ha conseguido y desde dónde parte.
@@ -102,7 +103,8 @@ final class KitCreatorViewModel {
     
     init(apiClient: any APIClientProtocol, initialDate: Date? = nil, initialGoal: String? = nil) {
         self.apiClient = apiClient
-        if let initialDate {
+        // Desde el Calendario, el día elegido; hoy es solo el día abierto por defecto, no una elección.
+        if let initialDate, !Calendar.current.isDateInToday(initialDate) {
             self.dueDate = initialDate
         }
         if let initialGoal, !initialGoal.isEmpty {
@@ -117,11 +119,11 @@ final class KitCreatorViewModel {
     }
     
     var isDateInPast: Bool {
-        dueDate < todayStart
+        dueDate.map { $0 < todayStart } ?? false
     }
     
     var isFormValid: Bool {
-        !description.isEmpty && !isDateInPast
+        !description.isEmpty && dueDate != nil && !isDateInPast
     }
     
     var toolbarTitle: String {
@@ -150,7 +152,7 @@ final class KitCreatorViewModel {
     
     func createKit(token: String) {
         // Validación básica
-        guard !description.isEmpty else { return }
+        guard !description.isEmpty, let dueDate else { return }
         
         // Cambiar a estado loading
         withAnimation(.easeInOut(duration: 0.3)) {
@@ -339,7 +341,7 @@ final class KitCreatorViewModel {
         // Guardar en SwiftData
         let goalEntity = GoalEntity(from: kitDTO, ownerID: ownerID)
         // La fecha que eligió la persona es la fecha final del Kit, no la del último paso.
-        goalEntity.targetDate = Calendar.current.startOfDay(for: dueDate)
+        goalEntity.targetDate = dueDate.map { Calendar.current.startOfDay(for: $0) }
         modelContext.insert(goalEntity)
         
         // Añadir los steps

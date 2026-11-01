@@ -10,7 +10,7 @@ import SwiftUI
 
 struct KitCreationFormContent: View {
     @Binding var description: String
-    @Binding var dueDate: Date
+    @Binding var dueDate: Date?
     @Binding var inconveniences: String
     @Binding var doneWhen: String
     @Binding var startingPoint: String
@@ -24,6 +24,7 @@ struct KitCreationFormContent: View {
     let isFormValid: Bool
     let onCreate: () -> Void
 
+    @State private var showsOtherDate = false
     @State private var width: CGFloat = 0
     /// Interior del iPhone Duo, iPad o iPhone en horizontal: dos columnas en vez de una tira estirada.
     private var twoColumns: Bool { TwoColumnLayout.fits(CGSize(width: width, height: height)) }
@@ -198,14 +199,91 @@ struct KitCreationFormContent: View {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
                 }
             }
-            DatePicker(selection: $dueDate, in: todayStart..., displayedComponents: .date) {
-                Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+            dateShortcuts
+            if showsOtherDate {
+                DatePicker(selection: Binding(get: { dueDate ?? todayStart }, set: { dueDate = $0 }),
+                           in: todayStart..., displayedComponents: .date) {
+                    Text("Elige el día")
+                }
+                .accessibilityIdentifier("kitCreator.dueDate")
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
-            .accessibilityIdentifier("kitCreator.dueDate")
         } header: {
             Text("Tu tiempo")
         } footer: {
             Text("El plan se reparte hasta esta fecha. Podrás cambiarla después con el asistente.")
+        }
+    }
+
+    /// Atajos sin nada marcado: la fecha la elige la persona, con un toque si le vale uno de ellos.
+    private var dateShortcuts: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+                Spacer(minLength: 8)
+                if !showsOtherDate {
+                    Text(dueDate?.formatted(.dateTime.day().month(.abbreviated).year()) ?? String(localized: "Sin elegir"))
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.opacity)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) { shortcutButtons }
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) { shortcut(String(localized: "1 semana"), .day, 7); shortcut(String(localized: "1 mes"), .month, 1) }
+                    HStack(spacing: 8) { shortcut(String(localized: "3 meses"), .month, 3); otherDateButton }
+                }
+            }
+        }
+        .onAppear {
+            // Una fecha que llega desde el Calendario no coincide con ningún atajo.
+            if let dueDate, !isShortcut(dueDate) { showsOtherDate = true }
+        }
+    }
+
+    @ViewBuilder private var shortcutButtons: some View {
+        shortcut(String(localized: "1 semana"), .day, 7)
+        shortcut(String(localized: "1 mes"), .month, 1)
+        shortcut(String(localized: "3 meses"), .month, 3)
+        otherDateButton
+    }
+
+    private func shortcutDate(_ component: Calendar.Component, _ value: Int) -> Date? {
+        Calendar.current.date(byAdding: component, value: value, to: todayStart)
+    }
+
+    private func isShortcut(_ date: Date) -> Bool {
+        [shortcutDate(.day, 7), shortcutDate(.month, 1), shortcutDate(.month, 3)].contains { candidate in
+            candidate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+        }
+    }
+
+    private func shortcut(_ title: String, _ component: Calendar.Component, _ value: Int) -> some View {
+        let date = shortcutDate(component, value)
+        let selected = !showsOtherDate && date != nil && dueDate.map { Calendar.current.isDate($0, inSameDayAs: date!) } == true
+        return dateChip(title, selected: selected) {
+            showsOtherDate = false
+            dueDate = date
+        }
+    }
+
+    private var otherDateButton: some View {
+        dateChip(String(localized: "Otra fecha"), selected: showsOtherDate) {
+            showsOtherDate = true
+            if dueDate == nil { dueDate = todayStart }
+        }
+        .accessibilityIdentifier("kitCreator.otherDate")
+    }
+
+    @ViewBuilder
+    private func dateChip(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        let tap = { withAnimation(.smooth) { action() } }
+        if selected {
+            Button(title, action: tap).buttonStyle(.borderedProminent).controlSize(.small).lineLimit(1).fixedSize()
+                .accessibilityAddTraits(.isSelected)
+        } else {
+            Button(title, action: tap).buttonStyle(.bordered).controlSize(.small).lineLimit(1).fixedSize()
         }
     }
 

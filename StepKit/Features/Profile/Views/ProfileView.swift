@@ -371,7 +371,7 @@ struct AIPrivacyView: View {
                 }
                 .accessibilityIdentifier("profile.aiConsent")
             } footer: {
-                Text("Al crear un Kit o escribir al asistente del Kit, tu objetivo, tu plan, tus avances y lo que escribas se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.")
+                Text("Al crear un Kit, al escribir al asistente del Kit, al marcar un paso como bloqueado o al abrir un Kit con un paso vencido, tu objetivo, tu plan, tus avances y lo que escribas se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.")
             }
             Section {
                 Label {

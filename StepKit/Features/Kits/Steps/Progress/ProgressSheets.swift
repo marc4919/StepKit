@@ -103,9 +103,9 @@ struct SaveProgressSheet: View {
                                          context: modelContext, keepsBlockState: !reportingBlock)
             TipFlow.firstProgressSaved = true
             syncManager?.handleDataChange()
-            // El asistente reacciona: con un bloqueo puede proponer cómo seguir.
-            if let kit = step.goal {
-                KitAssistant.react(reportingBlock ? .blocked : .progress, kit: kit, step: step,
+            // Con un bloqueo, el asistente propone cómo seguir. Un avance normal no lo llama.
+            if reportingBlock, let kit = step.goal {
+                KitAssistant.react(.blocked, kit: kit, step: step,
                                    context: modelContext, apiClient: apiClient, token: authManager.token)
             }
             UINotificationFeedbackGenerator().notificationOccurred(.success)

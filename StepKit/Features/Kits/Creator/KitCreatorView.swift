@@ -140,7 +140,8 @@ struct KitCreatorView: View {
         )) { sheet in
             switch sheet {
             case .date:
-                DateSelectionSheet(selectedDate: $vm.dueDate, todayStart: vm.todayStart)
+                DateSelectionSheet(selectedDate: Binding(get: { vm.dueDate ?? vm.todayStart }, set: { vm.dueDate = $0 }),
+                                   todayStart: vm.todayStart)
                     .presentationDetents(Set([.fraction(0.7), .large]), selection: $vm.sheetDetent)
                     .presentationDragIndicator(.visible)
             case .aiConsent:

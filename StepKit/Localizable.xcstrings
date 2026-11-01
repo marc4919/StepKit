@@ -570,6 +570,96 @@
         }
       }
     },
+    "Omitir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        }
+      }
+    },
+    "1 mes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 month"
+          }
+        }
+      }
+    },
+    "3 meses": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 months"
+          }
+        }
+      }
+    },
+    "Otra fecha": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other date"
+          }
+        }
+      }
+    },
+    "Sin elegir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not chosen"
+          }
+        }
+      }
+    },
+    "Elige el día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the day"
+          }
+        }
+      }
+    },
+    "Guardar y pedir ayuda al asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save and ask the assistant for help"
+          }
+        }
+      }
+    },
+    "Algún paso quedaría después de la fecha final del Kit, el %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A step would end up after the Kit's end date, %@."
+          }
+        }
+      }
+    },
+    "Última actualización: 1 de noviembre de 2026": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last updated: November 1, 2026"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
@@ -1000,12 +1090,12 @@
         }
       }
     },
-    "Al crear un Kit o escribir al asistente del Kit, tu objetivo, tu plan, tus avances y lo que escribas se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.": {
+    "Al crear un Kit, al escribir al asistente del Kit, al marcar un paso como bloqueado o al abrir un Kit con un paso vencido, tu objetivo, tu plan, tus avances y lo que escribas se envían a un servicio de IA de otra empresa a través de nuestro servidor. Puedes retirar el permiso cuando quieras.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When you create a Kit or write to the Kit assistant, your goal, your plan, your progress and what you write are sent through our server to an AI service run by another company. You can withdraw permission at any time."
+            "value": "When you create a Kit, write to the Kit assistant, mark a step as blocked or open a Kit with an overdue step, your goal, your plan, your progress and what you write are sent through our server to an AI service run by another company. You can withdraw permission at any time."
           }
         }
       }
@@ -9030,12 +9120,12 @@
         }
       }
     },
-    "• **IA externa, solo con tu permiso.** Al crear un Kit o al escribir al asistente de un Kit, enviamos a nuestro servidor lo necesario para responderte: tu meta, fechas, tiempo disponible, obstáculos, el estado del plan y de tus avances, y tus mensajes. El servidor lo reenvía a un modelo de IA de terceros a través de OpenRouter, Inc. Usamos solo endpoints de **retención cero**: el proveedor no guarda la petición una vez respondida ni la usa para entrenar modelos. Los modelos actuales se ejecutan en Google Cloud Vertex AI, Amazon Bedrock o Microsoft Azure, preferentemente en centros de datos de la Unión Europea.\n• **En tu dispositivo (Apple Intelligence).** Al crear un Kit, StepKit puede usar el modelo de tu iPhone o iPad para estimar lo complejo que es tu objetivo. Eso no sale del dispositivo.\n\nTe pedimos permiso antes del primer envío. Sin él, el asistente del Kit y la creación de planes con IA no están disponibles. Puedes retirarlo cuando quieras en **Perfil > IA y privacidad**, y desde ese momento no se envía nada más.": {
+    "• **IA externa, solo con tu permiso.** Al crear un Kit, al escribir al asistente de un Kit, al marcar un paso como bloqueado o al abrir un Kit con un paso vencido, enviamos a nuestro servidor lo necesario para responderte: tu meta, fechas, tiempo disponible, obstáculos, el estado del plan y de tus avances, y tus mensajes. El servidor lo reenvía a un modelo de IA de terceros a través de OpenRouter, Inc. Usamos solo endpoints de **retención cero**: el proveedor no guarda la petición una vez respondida ni la usa para entrenar modelos. Los modelos actuales se ejecutan en Google Cloud Vertex AI, Amazon Bedrock o Microsoft Azure, preferentemente en centros de datos de la Unión Europea.\n• **En tu dispositivo (Apple Intelligence).** Al crear un Kit, StepKit puede usar el modelo de tu iPhone o iPad para estimar lo complejo que es tu objetivo. Eso no sale del dispositivo.\n\nTe pedimos permiso antes del primer envío. Sin él, el asistente del Kit y la creación de planes con IA no están disponibles. Puedes retirarlo cuando quieras en **Perfil > IA y privacidad**, y desde ese momento no se envía nada más.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "• **External AI, only with your permission.** When you create a Kit or write to a Kit's assistant, we send our server what it needs to answer you: your goal, dates, available time, obstacles, the state of your plan and progress, and your messages. The server forwards it to a third-party AI model through OpenRouter, Inc. We only use **zero-retention** endpoints: the provider does not keep the request once answered or use it to train models. The current models run on Google Cloud Vertex AI, Amazon Bedrock or Microsoft Azure, preferably in European Union data centers.\n• **On your device (Apple Intelligence).** When you create a Kit, StepKit may use your iPhone or iPad's model to estimate how complex your goal is. That never leaves the device.\n\nWe ask for permission before the first send. Without it, the Kit assistant and AI plan creation are not available. You can withdraw it anytime in **Profile > AI and privacy**, and from then on nothing else is sent."
+            "value": "• **External AI, only with your permission.** When you create a Kit, write to a Kit's assistant, mark a step as blocked or open a Kit with an overdue step, we send our server what it needs to answer you: your goal, dates, available time, obstacles, the state of your plan and progress, and your messages. The server forwards it to a third-party AI model through OpenRouter, Inc. We only use **zero-retention** endpoints: the provider does not keep the request once answered or use it to train models. The current models run on Google Cloud Vertex AI, Amazon Bedrock or Microsoft Azure, preferably in European Union data centers.\n• **On your device (Apple Intelligence).** When you create a Kit, StepKit may use your iPhone or iPad's model to estimate how complex your goal is. That never leaves the device.\n\nWe ask for permission before the first send. Without it, the Kit assistant and AI plan creation are not available. You can withdraw it anytime in **Profile > AI and privacy**, and from then on nothing else is sent."
           }
         }
       }

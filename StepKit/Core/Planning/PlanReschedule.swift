@@ -11,6 +11,12 @@ import Foundation
 enum PlanReschedule {
     static let maxStepsPerDay = 3
 
+    /// Si alguna de las fechas nuevas queda después de la fecha final del Kit (se compara por días).
+    static func passes(target: Date, moves: [UUID: Date], calendar: Calendar = .current) -> Bool {
+        guard let latest = moves.values.max() else { return false }
+        return calendar.startOfDay(for: latest) > calendar.startOfDay(for: target)
+    }
+
     /// Fechas nuevas de los pasos pendientes tras aplicar `overrides` (id → fecha deseada).
     /// Devuelve solo los pasos cuyo día cambia, incluidos los de `overrides`.
     static func dates(

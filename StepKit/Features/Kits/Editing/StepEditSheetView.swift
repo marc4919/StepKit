@@ -8,18 +8,20 @@ import SwiftUI
 
 struct StepEditSheetView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.apiClient) private var apiClient: any APIClientProtocol
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
     @Environment(AuthManager.self) private var authManager
 
     let stepEntity: StepEntity
+    /// Tras guardar, abrir el asistente: lo pide la persona desde el aviso de la fecha final.
+    var onAskAssistant: () -> Void = {}
 
     @State private var draft: StepEditDraft
     @State private var showingSaveError = false
 
-    init(stepEntity: StepEntity) {
+    init(stepEntity: StepEntity, onAskAssistant: @escaping () -> Void = {}) {
         self.stepEntity = stepEntity
+        self.onAskAssistant = onAskAssistant
         _draft = State(initialValue: StepEditDraft(step: stepEntity))
     }
 
@@ -97,6 +99,12 @@ struct StepEditSheetView: View {
         return PlanReschedule.dates(for: kitSteps, overrides: [stepEntity.id: deadline])
     }
 
+    /// La fecha final del Kit, si con esta edición algún paso queda después de ella.
+    private var overrunTarget: Date? {
+        guard let target = stepEntity.goal?.targetDate else { return nil }
+        return PlanReschedule.passes(target: target, moves: rescheduled) ? target : nil
+    }
+
     private var minuteOptions: [Int] {
         let base = [5, 10, 15, 20, 25, 30, 45, 60, 90, 120, 180, 240]
         return Array(Set(base + [stepEntity.estimateMinutes])).sorted()
@@ -124,6 +132,21 @@ struct StepEditSheetView: View {
                 ReschedulePreview(steps: kitSteps, editedStepID: stepEntity.id, moves: rescheduled)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
+            if let target = overrunTarget {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label {
+                        Text(String(localized: "Algún paso quedaría después de la fecha final del Kit, el \(target.formatted(.dateTime.day().month(.abbreviated)))."))
+                            .font(.subheadline)
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    }
+                    Button("Guardar y pedir ayuda al asistente") { save(askAssistant: true) }
+                        .buttonStyle(.borderless)
+                        .font(.subheadline.weight(.medium))
+                        .accessibilityIdentifier("stepEdit.askAssistant")
+                }
+                .transition(.opacity)
+            }
         } header: {
             Text("Planificación")
         } footer: {
@@ -131,7 +154,7 @@ struct StepEditSheetView: View {
         }
     }
 
-    private func save() {
+    private func save(askAssistant: Bool = false) {
         guard let ownerID = authManager.currentUser?.id else {
             showingSaveError = true
             return
@@ -151,10 +174,7 @@ struct StepEditSheetView: View {
                 }
             }
             syncManager?.handleDataChange()
-            if let kit = stepEntity.goal {
-                KitAssistant.react(.edited, kit: kit, step: stepEntity, context: modelContext,
-                                   apiClient: apiClient, token: authManager.token)
-            }
+            if askAssistant { onAskAssistant() }
             dismiss()
         } catch {
             showingSaveError = true

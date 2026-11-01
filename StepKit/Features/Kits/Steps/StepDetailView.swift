@@ -14,6 +14,7 @@ struct StepDetailView: View {
     @Bindable var stepEntity: StepEntity
     var stepNumber: Int = 1
     @State private var showingEditor = false
+    @State private var assistantAfterEdit = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
@@ -130,8 +131,12 @@ struct StepDetailView: View {
         .navigationDestination(item: $openedNextStep) { step in
             StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? stepNumber + 1)
         }
-        .sheet(isPresented: $showingEditor) {
-            StepEditSheetView(stepEntity: stepEntity)
+        .sheet(isPresented: $showingEditor, onDismiss: {
+            guard assistantAfterEdit else { return }
+            assistantAfterEdit = false
+            assistantLaunch = AssistantLaunch(intent: nil)
+        }) {
+            StepEditSheetView(stepEntity: stepEntity, onAskAssistant: { assistantAfterEdit = true })
         }
         .sheet(isPresented: $showingSaveProgress) {
             SaveProgressSheet(step: stepEntity, stepNumber: stepNumber, startsBlocked: savingBlocked)

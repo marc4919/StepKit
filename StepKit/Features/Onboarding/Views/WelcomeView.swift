@@ -58,6 +58,19 @@ struct WelcomeView: View {
             .padding(.bottom, 12)
             .accessibilityIdentifier("onboarding.action")
         }
+        .overlay(alignment: .topTrailing) {
+            // Como la barra del sistema: solo texto, arriba a la derecha, y no hace falta en la última página.
+            if page < 2 {
+                Button("Omitir") {
+                    withAnimation(.easeInOut(duration: 0.45)) { onFinish() }
+                }
+                .frame(minWidth: 44, minHeight: 44)
+                .padding(.trailing, 16)
+                .transition(.opacity)
+                .accessibilityIdentifier("onboarding.skip")
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: page)
         .background { EntryBackground() }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
     }
