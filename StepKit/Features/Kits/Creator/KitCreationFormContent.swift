@@ -202,19 +202,14 @@ struct KitCreationFormContent: View {
             }
             dateShortcuts
             if showsOtherDate {
-                // Mostrar hoy en el selector no lo elige: la fecha solo cuenta cuando la persona la toca.
-                // Tocar el día que ya se ve no avisa al selector, así que hoy tiene su propio botón.
-                HStack(spacing: 8) {
+                // Mostrar un día en el selector no lo elige: atenuado hasta que la persona toque uno.
+                HStack {
                     Text("Elige el día")
                     Spacer(minLength: 8)
-                    dateChip(String(localized: "Hoy"),
-                             selected: dueDate.map { Calendar.current.isDateInToday($0) } ?? false) {
-                        dueDate = todayStart
-                    }
-                    .accessibilityIdentifier("kitCreator.today")
                     DatePicker("Elige el día", selection: Binding(get: { dueDate ?? todayStart }, set: { dueDate = $0 }),
                                in: todayStart..., displayedComponents: .date)
                         .labelsHidden()
+                        .opacity(dueDate == nil ? 0.5 : 1)
                         .accessibilityIdentifier("kitCreator.dueDate")
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -232,18 +227,21 @@ struct KitCreationFormContent: View {
             HStack {
                 Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
                 Spacer(minLength: 8)
-                if !showsOtherDate || dueDate == nil {
+                if !showsOtherDate {
                     Text(dueDate?.formatted(.dateTime.day().month(.abbreviated).year()) ?? String(localized: "Sin elegir"))
                         .foregroundStyle(.secondary)
                         .contentTransition(.opacity)
                 }
             }
             .accessibilityElement(children: .combine)
+            // Las chips ocupan todo el ancho: en una fila si caben y, si no, en dos.
             ViewThatFits(in: .horizontal) {
-                HStack(spacing: 8) { shortcutButtons }
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) { shortcut(String(localized: "1 semana"), .day, 7); shortcut(String(localized: "1 mes"), .month, 1) }
-                    HStack(spacing: 8) { shortcut(String(localized: "3 meses"), .month, 3); otherDateButton }
+                HStack(spacing: 8) {
+                    todayChip; weekChip; monthChip; threeMonthsChip; otherDateButton
+                }
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) { todayChip; weekChip; monthChip }
+                    HStack(spacing: 8) { threeMonthsChip; otherDateButton }
                 }
             }
         }
@@ -253,19 +251,17 @@ struct KitCreationFormContent: View {
         }
     }
 
-    @ViewBuilder private var shortcutButtons: some View {
-        shortcut(String(localized: "1 semana"), .day, 7)
-        shortcut(String(localized: "1 mes"), .month, 1)
-        shortcut(String(localized: "3 meses"), .month, 3)
-        otherDateButton
-    }
+    private var todayChip: some View { shortcut(String(localized: "Hoy"), .day, 0).accessibilityIdentifier("kitCreator.today") }
+    private var weekChip: some View { shortcut(String(localized: "1 semana"), .day, 7) }
+    private var monthChip: some View { shortcut(String(localized: "1 mes"), .month, 1) }
+    private var threeMonthsChip: some View { shortcut(String(localized: "3 meses"), .month, 3) }
 
     private func shortcutDate(_ component: Calendar.Component, _ value: Int) -> Date? {
         Calendar.current.date(byAdding: component, value: value, to: todayStart)
     }
 
     private func isShortcut(_ date: Date) -> Bool {
-        [shortcutDate(.day, 7), shortcutDate(.month, 1), shortcutDate(.month, 3)].contains { candidate in
+        [shortcutDate(.day, 0), shortcutDate(.day, 7), shortcutDate(.month, 1), shortcutDate(.month, 3)].contains { candidate in
             candidate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
         }
     }
@@ -291,11 +287,12 @@ struct KitCreationFormContent: View {
     @ViewBuilder
     private func dateChip(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         let tap = { withAnimation(.smooth) { action() } }
+        let label = Text(title).lineLimit(1).frame(maxWidth: .infinity)
         if selected {
-            Button(title, action: tap).buttonStyle(.borderedProminent).controlSize(.small).lineLimit(1).fixedSize()
+            Button(action: tap) { label }.buttonStyle(.borderedProminent).controlSize(.small)
                 .accessibilityAddTraits(.isSelected)
         } else {
-            Button(title, action: tap).buttonStyle(.bordered).controlSize(.small).lineLimit(1).fixedSize()
+            Button(action: tap) { label }.buttonStyle(.bordered).controlSize(.small)
         }
     }
 
