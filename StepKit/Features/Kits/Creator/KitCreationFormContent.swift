@@ -123,7 +123,7 @@ struct KitCreationFormContent: View {
             field("target", .accentColor, String(localized: "Resultado"), placeholder: String(localized: "Ej.: Correr 5 km sin parar"),
                   text: $description, focus: .description, next: showsContext ? .doneWhen : nil, identifier: "kitCreator.description")
             Button {
-                withAnimation(.smooth(duration: 0.4)) { showsContext.toggle() }
+                withAnimation(.formReveal) { showsContext.toggle() }
                 if !showsContext, [.doneWhen, .startingPoint, .obstacles].contains(focusedField.wrappedValue) {
                     focusedField.wrappedValue = nil
                 }
@@ -151,10 +151,13 @@ struct KitCreationFormContent: View {
             if showsContext {
                 field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
                       placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen, next: .startingPoint)
+                    .transition(.formRow)
                 field("flag.fill", .pink, String(localized: "Punto de partida (opcional)"),
                       placeholder: String(localized: "Ej.: Ahora aguanto 10 min seguidos"), text: $startingPoint, focus: .startingPoint, next: .obstacles)
+                    .transition(.formRow)
                 field(Symbols.risk, .orange, String(localized: "Qué te puede frenar (opcional)"),
                       placeholder: String(localized: "Ej.: Trabajo a turnos, me duele la rodilla"), text: $inconveniences, focus: .obstacles)
+                    .transition(.formRow)
             }
         } header: {
             Text("Tu objetivo")
@@ -164,7 +167,7 @@ struct KitCreationFormContent: View {
 
     @ViewBuilder private var timeSection: some View {
         Section {
-            Toggle(isOn: $oneSitting.animation(.smooth(duration: 0.5))) {
+            Toggle(isOn: $oneSitting.animation(.formReveal)) {
                 Label {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("En una sola sesión")
@@ -185,10 +188,7 @@ struct KitCreationFormContent: View {
                         IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                     }
                 }
-                // La fila se pliega y se funde a la vez, sin aparecer ni desaparecer de golpe.
-                .transition(.asymmetric(
-                    insertion: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.5).delay(0.05)),
-                    removal: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.35))))
+                .transition(.formRow)
             }
             Picker(selection: $sessionMinutes) {
                 ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
@@ -212,7 +212,7 @@ struct KitCreationFormContent: View {
                         .opacity(dueDate == nil ? 0.5 : 1)
                         .accessibilityIdentifier("kitCreator.dueDate")
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .transition(.formRow)
             }
         } header: {
             Text("Tu tiempo")
@@ -286,7 +286,7 @@ struct KitCreationFormContent: View {
 
     @ViewBuilder
     private func dateChip(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
-        let tap = { withAnimation(.smooth) { action() } }
+        let tap = { withAnimation(.formReveal) { action() } }
         let label = Text(title).lineLimit(1).frame(maxWidth: .infinity)
         if selected {
             Button(action: tap) { label }.buttonStyle(.borderedProminent).controlSize(.small)
@@ -360,5 +360,21 @@ struct KitCreationFormContent: View {
             }
         }
         .id(focus)
+    }
+}
+
+// MARK: - Filas que aparecen y desaparecen
+
+/// La misma animación para todo lo que se despliega en el formulario: la fila se pliega y se funde
+/// a la vez, sin aparecer ni desaparecer de golpe.
+private extension Animation {
+    static let formReveal = Animation.smooth(duration: 0.5)
+}
+
+private extension AnyTransition {
+    static var formRow: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.5).delay(0.05)),
+            removal: .opacity.combined(with: .move(edge: .top)).animation(.smooth(duration: 0.35)))
     }
 }
