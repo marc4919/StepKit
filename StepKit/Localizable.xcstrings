@@ -730,6 +730,36 @@
         }
       }
     },
+    "Las notificaciones están desactivadas en Ajustes, así que estos avisos no llegarán.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are turned off in Settings, so these reminders won't arrive."
+          }
+        }
+      }
+    },
+    "Abrir Ajustes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        }
+      }
+    },
+    "Cada paso puede desactivar su recordatorio.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each step can turn off its reminder."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

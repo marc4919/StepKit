@@ -289,7 +289,11 @@ struct StepDetailView: View {
                 }
             }
             .accessibilityHint("Activa o desactiva el recordatorio de este paso")
+            if stepEntity.notificationEnabled && NotificationService.shared.isDenied {
+                NotificationsDeniedNotice()
+            }
         }
+        .refreshesNotificationStatus()
     }
 
     /// Todos los avances del paso: el último destacado y los anteriores debajo.

@@ -179,9 +179,13 @@ struct KitInfoSheetView: View {
             .onChange(of: kitNotificationsEnabled) { _, newValue in
                 updateKitNotificationsSetting(enabled: newValue)
             }
+            if globalNotificationsEnabled && kitNotificationsEnabled && NotificationService.shared.isDenied {
+                NotificationsDeniedNotice()
+            }
         } header: {
             Text("Recordatorios")
         }
+        .refreshesNotificationStatus()
     }
 
     // MARK: - Filas

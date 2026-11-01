@@ -312,8 +312,13 @@ struct RemindersSettingsView: View {
                         NotificationService.shared.cancelAllNotifications()
                     }
                 }
+                if globalNotificationsEnabled && NotificationService.shared.isDenied {
+                    NotificationsDeniedNotice()
+                }
             } footer: {
-                Text("Cada paso puede desactivar su recordatorio. StepKit pide permiso de notificaciones la primera vez que hace falta.")
+                Text(NotificationService.shared.isDenied
+                     ? String(localized: "Cada paso puede desactivar su recordatorio.")
+                     : String(localized: "Cada paso puede desactivar su recordatorio. StepKit pide permiso de notificaciones la primera vez que hace falta."))
             }
             if globalNotificationsEnabled {
                 Section {
@@ -329,6 +334,7 @@ struct RemindersSettingsView: View {
                 .onChange(of: dayBefore) { NotificationService.shared.refreshStepReminders() }
             }
         }
+        .refreshesNotificationStatus()
         .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -202,11 +202,21 @@ struct KitCreationFormContent: View {
             }
             dateShortcuts
             if showsOtherDate {
-                DatePicker(selection: Binding(get: { dueDate ?? todayStart }, set: { dueDate = $0 }),
-                           in: todayStart..., displayedComponents: .date) {
+                // Mostrar hoy en el selector no lo elige: la fecha solo cuenta cuando la persona la toca.
+                // Tocar el día que ya se ve no avisa al selector, así que hoy tiene su propio botón.
+                HStack(spacing: 8) {
                     Text("Elige el día")
+                    Spacer(minLength: 8)
+                    dateChip(String(localized: "Hoy"),
+                             selected: dueDate.map { Calendar.current.isDateInToday($0) } ?? false) {
+                        dueDate = todayStart
+                    }
+                    .accessibilityIdentifier("kitCreator.today")
+                    DatePicker("Elige el día", selection: Binding(get: { dueDate ?? todayStart }, set: { dueDate = $0 }),
+                               in: todayStart..., displayedComponents: .date)
+                        .labelsHidden()
+                        .accessibilityIdentifier("kitCreator.dueDate")
                 }
-                .accessibilityIdentifier("kitCreator.dueDate")
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         } header: {
@@ -222,7 +232,7 @@ struct KitCreationFormContent: View {
             HStack {
                 Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
                 Spacer(minLength: 8)
-                if !showsOtherDate {
+                if !showsOtherDate || dueDate == nil {
                     Text(dueDate?.formatted(.dateTime.day().month(.abbreviated).year()) ?? String(localized: "Sin elegir"))
                         .foregroundStyle(.secondary)
                         .contentTransition(.opacity)
@@ -271,8 +281,9 @@ struct KitCreationFormContent: View {
 
     private var otherDateButton: some View {
         dateChip(String(localized: "Otra fecha"), selected: showsOtherDate) {
+            // Sin fecha hasta que elija una: también si venía de un atajo.
+            if !showsOtherDate { dueDate = nil }
             showsOtherDate = true
-            if dueDate == nil { dueDate = todayStart }
         }
         .accessibilityIdentifier("kitCreator.otherDate")
     }

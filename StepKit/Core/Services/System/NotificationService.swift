@@ -24,6 +24,9 @@ final class NotificationService {
     /// Estado de autorización de notificaciones
     private(set) var isAuthorized: Bool = false
 
+    /// La persona dijo que no, o las desactivó en Ajustes: los avisos no llegarán.
+    private(set) var isDenied: Bool = false
+
     /// Los recorridos E2E no deben mostrar el diálogo del sistema.
     var promptsSuppressed = false
 
@@ -36,6 +39,7 @@ final class NotificationService {
             await requestAuthorization()
         } else {
             isAuthorized = settings.authorizationStatus == .authorized
+            isDenied = settings.authorizationStatus == .denied
         }
     }
 
@@ -48,6 +52,7 @@ final class NotificationService {
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
             isAuthorized = granted
+            isDenied = !granted
             return granted
         } catch {
             #if DEBUG
@@ -64,6 +69,7 @@ final class NotificationService {
     func checkAuthorizationStatus() async {
         let settings = await center.notificationSettings()
         isAuthorized = settings.authorizationStatus == .authorized
+        isDenied = settings.authorizationStatus == .denied
     }
 
     // MARK: - Schedule Notifications
