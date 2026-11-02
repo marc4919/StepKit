@@ -810,6 +810,26 @@
         }
       }
     },
+    "¿Ya puedes seguir con este paso?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can you continue with this step?"
+          }
+        }
+      }
+    },
+    "Quitar el bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the Block"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

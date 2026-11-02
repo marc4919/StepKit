@@ -15,6 +15,7 @@ struct StepDetailView: View {
     var stepNumber: Int = 1
     @State private var showingEditor = false
     @State private var assistantAfterEdit = false
+    @State private var confirmingResolve = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
@@ -130,6 +131,18 @@ struct StepDetailView: View {
         }
         .navigationDestination(item: $openedNextStep) { step in
             StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? stepNumber + 1)
+        }
+        // Un toque en la barra no debe quitar un bloqueo sin querer: el botón solo lleva un icono.
+        .confirmationDialog("¿Ya puedes seguir con este paso?", isPresented: $confirmingResolve, titleVisibility: .visible) {
+            Button("Quitar el bloqueo") {
+                withAnimation(.smooth) {
+                    try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
+                }
+                syncManager?.handleDataChange()
+            }
+            Button("Cancelar", role: .cancel) { }
+        } message: {
+            Text("Tu avance sigue guardado.")
         }
         .sheet(isPresented: $showingEditor, onDismiss: {
             guard assistantAfterEdit else { return }
@@ -289,11 +302,7 @@ struct StepDetailView: View {
                 }
             }
             .accessibilityHint("Activa o desactiva el recordatorio de este paso")
-            if stepEntity.notificationEnabled && NotificationService.shared.isDenied {
-                NotificationsDeniedNotice()
-            }
         }
-        .refreshesNotificationStatus()
     }
 
     /// Todos los avances del paso: el último destacado y los anteriores debajo.
@@ -441,10 +450,7 @@ struct StepDetailView: View {
 
     private var resolveBlockMenu: some View {
         Button {
-            withAnimation(.smooth) {
-                try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
-            }
-            syncManager?.handleDataChange()
+            confirmingResolve = true
         } label: {
             Text("Ya lo tengo, seguir").frame(maxWidth: .infinity)
         }
@@ -473,8 +479,7 @@ struct StepDetailView: View {
             .accessibilityIdentifier("step.toggleCompletion")
         case .blocked:
             Button(String(localized: "Ya lo tengo, seguir"), systemImage: "checkmark.circle") {
-                try? ProgressLog.resolveBlock(for: stepEntity, context: modelContext)
-                syncManager?.handleDataChange()
+                confirmingResolve = true
             }
             .accessibilityIdentifier("step.resolveBlock")
             Button(String(localized: "Guardar avance"), systemImage: Symbols.note) {
