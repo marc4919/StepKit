@@ -13,6 +13,7 @@ enum StepListEditor {
     /// Añade un paso al Kit. Sin `anchor`: al principio con `atStart`, si no, al final.
     @discardableResult
     static func insert(
+        id: UUID = UUID(),
         title: String,
         minutes: Int,
         date: Date?,
@@ -33,7 +34,7 @@ enum StepListEditor {
         } else {
             index = steps.count
         }
-        let new = StepEntity(ownerID: kit.ownerID, stepTitle: title, descriptionShort: short, descriptionLong: long,
+        let new = StepEntity(id: id, ownerID: kit.ownerID, stepTitle: title, descriptionShort: short, descriptionLong: long,
                              estimateMinutes: minutes, suggestedDeadline: date ?? anchor?.suggestedDeadline,
                              effortLevel: anchor?.effortLevel ?? "medium",
                              order: index,
@@ -82,6 +83,16 @@ enum StepListEditor {
         steps.remove(at: current)
         steps.insert(step, at: min(max(index, 0), steps.count))
         assignOrder(to: steps, at: now)
+    }
+
+    /// Deja los pasos activos en el orden dado; los que no aparezcan quedan al final.
+    static func setOrder(_ ids: [UUID], of kit: GoalEntity, at now: Date = Date()) {
+        let steps = kit.orderedActiveSteps
+        let positions = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
+        let sorted = steps.enumerated().sorted {
+            (positions[$0.element.id] ?? ids.count + $0.offset) < (positions[$1.element.id] ?? ids.count + $1.offset)
+        }.map(\.element)
+        assignOrder(to: sorted, at: now)
     }
 
     /// Da al paso una fecha acorde con su sitio en el plan y mueve los siguientes solo si hace falta.

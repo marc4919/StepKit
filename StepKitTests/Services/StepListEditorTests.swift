@@ -385,4 +385,150 @@ struct StepListEditorTests {
         StepListEditor.settleDate(of: try step("B", in: kit), in: kit)
         #expect(offsets(kit) == [nil, nil, nil])
     }
+
+    // MARK: - Borrador de la hoja «Editar pasos»
+
+    @Test("Nothing changes in the Kit until the draft is applied")
+    func draftDoesNotTouchKit() throws {
+        let kit = makeKit()
+        dated(kit, [1, 2, 3])
+        var draft = StepListDraft(kit: kit)
+        #expect(!draft.hasChanges)
+        draft.movePending(fromOffsets: [0], toOffset: 3)
+        draft.remove(try step("B", in: kit).id)
+        draft.add(StepDraft(title: "Nuevo", date: day(5)))
+        #expect(draft.hasChanges)
+        #expect(titles(kit) == ["A", "B", "C"])
+        #expect(offsets(kit) == [1, 2, 3])
+    }
+
+    @Test("Applying adds, removes and reorders; the order stays 0…n and a new step appears once")
+    func draftApply() throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 3])
+        let b = try step("B", in: kit)
+        var draft = StepListDraft(kit: kit)
+        draft.remove(b.id)
+        draft.add(StepDraft(title: "  Nuevo  ", short: "Hecho", minutes: 45, date: day(7)))
+        draft.apply(to: kit, context: context)
+        try context.save()
+        #expect(titles(kit) == ["A", "C", "Nuevo"])
+        #expect(orders(kit) == [0, 1, 2])
+        #expect(offsets(kit) == [1, 3, 7])
+        #expect(b.deletedAt != nil)
+        let new = try step("Nuevo", in: kit)
+        #expect(new.descriptionShort == "Hecho" && new.estimateMinutes == 45)
+        #expect(kit.steps.filter { $0.id == new.id }.count == 1)
+    }
+
+    @Test("A moved step takes the previous step's date, and the change is shown before saving")
+    func draftMoveDates() throws {
+        let kit = makeKit(["A", "B", "C", "D"])
+        dated(kit, [1, 2, 3, 4])
+        var draft = StepListDraft(kit: kit)
+        draft.movePending(fromOffsets: [0], toOffset: 3)
+        let changes = draft.dateChanges()
+        #expect(changes.map(\.title) == ["A"])
+        draft.apply(to: kit, context: context)
+        #expect(titles(kit) == ["B", "C", "A", "D"])
+        #expect(offsets(kit) == [2, 3, 3, 4])
+    }
+
+    @Test("Moving to the start takes the next date; moving back to the same place changes nothing")
+    func draftMoveToStartAndBack() throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 3])
+        var draft = StepListDraft(kit: kit)
+        draft.movePending(fromOffsets: [2], toOffset: 0)
+        #expect(draft.dateChanges().map(\.title) == ["C"])
+        var same = draft
+        same.movePending(fromOffsets: [0], toOffset: 3)
+        #expect(!same.hasChanges)
+        #expect(same.dateChanges().isEmpty)
+        draft.apply(to: kit, context: context)
+        #expect(offsets(kit) == [1, 1, 2])
+    }
+
+    @Test("Removing or renaming doesn't move dates; a chosen date that fits is respected")
+    func draftKeepsDates() throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 3])
+        var draft = StepListDraft(kit: kit)
+        draft.remove(try step("B", in: kit).id)
+        var a = try #require(draft.pending.first)
+        a.title = "A2"
+        draft.update(a)
+        draft.add(StepDraft(title: "Fin", date: day(9)))
+        #expect(draft.dateChanges().isEmpty)
+        draft.apply(to: kit, context: context)
+        #expect(titles(kit) == ["A2", "C", "Fin"])
+        #expect(offsets(kit) == [1, 3, 9])
+    }
+
+    @Test("A new step's earlier date is corrected and shown; a later date pushes only what's needed")
+    func draftNewStepDates() throws {
+        let kit = makeKit(["A", "B"])
+        dated(kit, [3, 8])
+        var draft = StepListDraft(kit: kit)
+        draft.add(StepDraft(title: "Nuevo", date: day(1)))
+        #expect(draft.dateChanges().map(\.title) == ["Nuevo"])
+        draft.apply(to: kit, context: context)
+        #expect(offsets(kit) == [3, 8, 8])
+    }
+
+    @Test("Completed steps keep their place and date when the pending ones are reordered")
+    func draftKeepsCompletedInPlace() throws {
+        let kit = makeKit(["A", "B", "C", "D"])
+        dated(kit, [8, 1, 2, 3])
+        try step("A", in: kit).isCompleted = true
+        var draft = StepListDraft(kit: kit)
+        #expect(draft.completed.map(\.title) == ["A"])
+        draft.movePending(fromOffsets: [2], toOffset: 0)
+        draft.apply(to: kit, context: context)
+        #expect(titles(kit) == ["A", "D", "B", "C"])
+        #expect(offsets(kit) == [8, 1, 1, 2])
+        #expect(orders(kit) == [0, 1, 2, 3])
+    }
+
+    @Test("Plan structure changes only when an existing step moves or goes")
+    func draftStructure() throws {
+        let kit = makeKit()
+        var added = StepListDraft(kit: kit)
+        added.add(StepDraft(title: "Nuevo", date: nil))
+        #expect(!added.changesPlanStructure)
+        added.remove(try #require(added.pending.last).id)
+        #expect(!added.changesPlanStructure)
+        #expect(!added.hasChanges)
+
+        var moved = StepListDraft(kit: kit)
+        moved.movePending(fromOffsets: [0], toOffset: 2)
+        #expect(moved.changesPlanStructure)
+
+        var removed = StepListDraft(kit: kit)
+        removed.remove(try step("A", in: kit).id)
+        #expect(removed.changesPlanStructure)
+    }
+
+    @Test("Removing through the draft moves the step's sessions to the Kit")
+    func draftRemoveDetachesSessions() throws {
+        let kit = makeKit()
+        let b = try step("B", in: kit)
+        let own = session(for: b, in: kit)
+        var draft = StepListDraft(kit: kit)
+        draft.remove(b.id)
+        #expect(own.stepID == b.id)
+        let detached = draft.apply(to: kit, context: context)
+        #expect(detached.map(\.id) == [own.id])
+        #expect(own.stepID == nil)
+    }
+
+    @Test("Going past the Kit's final date is detected")
+    func draftPassesTarget() throws {
+        let kit = makeKit(["A"])
+        dated(kit, [1])
+        var draft = StepListDraft(kit: kit)
+        #expect(!draft.passes(target: day(3)))
+        draft.add(StepDraft(title: "Nuevo", date: day(5)))
+        #expect(draft.passes(target: day(3)))
+    }
 }

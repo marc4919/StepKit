@@ -1020,6 +1020,116 @@
         }
       }
     },
+    "Nuevo paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Step"
+          }
+        }
+      }
+    },
+    "¿Descartar los cambios?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard changes?"
+          }
+        }
+      }
+    },
+    "Se moverán estas fechas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These dates will move"
+          }
+        }
+      }
+    },
+    "Volver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "Las fechas se ajustan al guardar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dates adjust when you save."
+          }
+        }
+      }
+    },
+    "Has cambiado el plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You changed the plan"
+          }
+        }
+      }
+    },
+    "¿Quieres que el asistente compruebe el plan y sugiera ajustes? Lo que proponga podrás aceptarlo o descartarlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do you want the assistant to check the plan and suggest adjustments? You can accept or discard what it proposes."
+          }
+        }
+      }
+    },
+    "Y %lld más.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "And %lld more."
+          }
+        }
+      }
+    },
+    "Revisa los cambios del plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review the plan changes"
+          }
+        }
+      }
+    },
+    "Comprobar que el plan sigue teniendo sentido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the plan still makes sense"
+          }
+        }
+      }
+    },
+    "He cambiado a mano el plan de %@. Comprueba si sigue teniendo sentido y propón los ajustes necesarios. Lo decidiré yo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I changed the plan of %@ by hand. Check whether it still makes sense and suggest any adjustments. I will decide."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

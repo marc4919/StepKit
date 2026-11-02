@@ -39,6 +39,10 @@ struct KitDetailView: View {
     @Environment(AuthManager.self) private var authManager
     @State private var presentedSheet: PresentedSheet?
     @State private var editingSteps = false
+    /// Se reordenó o se quitó un paso de un plan preparado por la IA: se ofrece revisarlo con el asistente.
+    @State private var planChangedByHand = false
+    @State private var offeringPlanReview = false
+    @State private var reviewConversation: KitConversation?
     @State private var segment = 0
     @State private var headerHeight: CGFloat = 0
     @State private var barTitleShown = false
@@ -78,11 +82,7 @@ struct KitDetailView: View {
                     // Pantalla ancha (iPhone Duo abierto, iPad): plan y registro a la vez, sin conmutador.
                     HStack(alignment: .top, spacing: 20) {
                         VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text("Plan").font(.title3.bold())
-                                Spacer()
-                                editStepsButton
-                            }
+                            Text("Plan").font(.title3.bold())
                             stepsSection
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -104,8 +104,6 @@ struct KitDetailView: View {
                     }
                     .accessibilityIdentifier("kit.segment")
                     if segment == 0 {
-                        editStepsButton
-                            .frame(maxWidth: .infinity, alignment: .trailing)
                         stepsSection
                     } else {
                         logSection
@@ -137,7 +135,7 @@ struct KitDetailView: View {
             withAnimation(.easeInOut(duration: 0.2)) { barTitleShown = past }
         }
         .toolbar {
-            // Asistente primero, como en el paso; a su derecha, detalles (con «Editar» dentro).
+            // Asistente primero, como en el paso; luego editar los pasos y detalles (con «Editar» dentro).
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {
                     KitAssistantHubView(kit: kitEntity)
@@ -149,6 +147,11 @@ struct KitDetailView: View {
                 .simultaneousGesture(TapGesture().onEnded { KitAssistantTip().invalidate(reason: .actionPerformed) })
                 .accessibilityIdentifier("kit.assistant")
                 .accessibilityValue(pendingProposals == 0 ? "" : pendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(pendingProposals) propuestas pendientes"))
+                // Con el resultado ya confirmado, el plan es historial: no se edita.
+                if kitEntity.resultConfirmedAt == nil {
+                    Button("Editar pasos", systemImage: "list.bullet") { editingSteps = true }
+                        .accessibilityIdentifier("kit.editSteps")
+                }
                 Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
                     .accessibilityIdentifier("kit.info")
                     .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
@@ -166,7 +169,32 @@ struct KitDetailView: View {
             ProgressLog.importLegacyKitNotes(for: kitEntity, context: modelContext)
             reactToOverdueSteps()
         }
-        .sheet(isPresented: $editingSteps) { KitStepsEditorView(kit: kitEntity) }
+        .sheet(isPresented: $editingSteps, onDismiss: {
+            // Después de cerrar la hoja: una alerta no se presenta sobre otra que se está yendo.
+            if planChangedByHand {
+                planChangedByHand = false
+                offeringPlanReview = true
+            }
+        }) {
+            KitStepsEditorView(kit: kitEntity) { planChangedByHand = true }
+        }
+        .alert("Has cambiado el plan", isPresented: $offeringPlanReview) {
+            Button("Revisar") {
+                let intent = AssistantIntent.reviewChanges
+                reviewConversation = KitAssistantStore.shared.newConversation(kit: kitEntity, title: intent.title)
+            }
+            Button("Ahora no", role: .cancel) {}
+        } message: {
+            Text("¿Quieres que el asistente compruebe el plan y sugiera ajustes? Lo que proponga podrás aceptarlo o descartarlo.")
+        }
+        .navigationDestination(isPresented: Binding(
+            get: { reviewConversation != nil },
+            set: { if !$0 { reviewConversation = nil } }
+        )) {
+            if let reviewConversation {
+                KitAssistantChatView(kit: kitEntity, conversation: reviewConversation, initialIntent: AssistantIntent.reviewChanges.id)
+            }
+        }
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
             case .information:
@@ -300,16 +328,6 @@ struct KitDetailView: View {
 
     /// Cabeceras de sección por semana (por día si el Kit cabe en dos semanas), como las listas agrupadas
     /// de iOS, con la regla que comparte con la vista previa al crear (`PlanGrouping`).
-    /// Con el resultado ya confirmado, el plan es historial: no se edita.
-    @ViewBuilder private var editStepsButton: some View {
-        if kitEntity.resultConfirmedAt == nil {
-            Button("Editar") { editingSteps = true }
-                .font(.subheadline.weight(.semibold))
-                .accessibilityLabel("Editar pasos")
-                .accessibilityIdentifier("kit.editSteps")
-        }
-    }
-
     private var stepsSection: some View {
         Group {
             if kitEntity.orderedActiveSteps.isEmpty {

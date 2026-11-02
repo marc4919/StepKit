@@ -265,7 +265,7 @@ struct KitAssistantChatView: View {
                 }
             }
             guard !didSendInitial, let id = initialIntent,
-                  let intent = intents.first(where: { $0.id == id }) else { return }
+                  let intent = (intents + [AssistantIntent.reviewChanges]).first(where: { $0.id == id }) else { return }
             didSendInitial = true
             // Si el asistente ya respondió a este mismo bloqueo (al anotarlo o al pedir ayuda antes),
             // se muestra esa ayuda y no se vuelve a pedir.

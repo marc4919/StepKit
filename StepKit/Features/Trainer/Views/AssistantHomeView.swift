@@ -36,6 +36,11 @@ struct AssistantIntent: Identifiable {
                         detail: String(localized: "Revisar el plan con lo que ya sabes"), symbol: "questionmark.circle", color: .green),
     ]
 
+    /// Tras cambiar a mano un plan preparado: se abre desde el aviso, no aparece entre las sugerencias.
+    static let reviewChanges = AssistantIntent(id: "review-changes", title: String(localized: "Revisa los cambios del plan"),
+                                               detail: String(localized: "Comprobar que el plan sigue teniendo sentido"),
+                                               symbol: "checklist", color: .purple)
+
     static let all: [AssistantIntent] = [
         AssistantIntent(id: "less-time", title: String(localized: "Tengo menos tiempo"),
                         detail: String(localized: "Buscar un tramo más pequeño para ahora"), symbol: Symbols.time, color: .blue),
@@ -70,6 +75,8 @@ struct AssistantIntent: Identifiable {
             return String(localized: "¿Dónde lo dejé en \(kitName)? Resume mi último avance y dime el siguiente paso concreto.")
         case "change-date":
             return String(localized: "Quiero cambiar la fecha final de \(kitName). ¿Qué pasos tendría que mover?")
+        case "review-changes":
+            return String(localized: "He cambiado a mano el plan de \(kitName). Comprueba si sigue teniendo sentido y propón los ajustes necesarios. Lo decidiré yo.")
         case "still-sense":
             return String(localized: "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve.")
         default:
