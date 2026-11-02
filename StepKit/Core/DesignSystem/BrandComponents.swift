@@ -657,19 +657,20 @@ struct DelayedReveal<Content: View>: View {
 /// Es estado de navegación de SwiftUI, no del ciclo de vida de UIKit: plegar o desplegar el iPhone Duo
 /// recoloca la vista pero no la saca de la pila, así que no la confunde (la variante con contador y
 /// viewWillAppear/viewWillDisappear sí perdía la cuenta y dejaba la barra sobre el paso).
+/// Al cerrarse pide `.automatic` y no `.visible`: un `.visible` en un paso abierto sobre otro paso
+/// sacaba las pestañas encima de sus acciones, y afirmarlo en la raíz también.
 /// También se oculta con las barras en vertical (Duo cerrado, o abierto en horizontal): las acciones
 /// del paso van en esa franja y con las pestañas no cabían. Ahí el sistema anima la franja por fases
 /// y, al volver al Kit, el hueco de las pestañas tarda medio segundo en llenarse; es su comportamiento.
 struct HidesTabBarSmoothly: ViewModifier {
-    var always = false
     @Environment(\.isPresented) private var isPresented
 
     func body(content: Content) -> some View {
-        content.toolbarVisibility(always || isPresented ? .hidden : .visible, for: .tabBar)
+        content.toolbarVisibility(isPresented ? .hidden : .automatic, for: .tabBar)
     }
 }
 
 extension View {
-    func hidesTabBarSmoothly(always: Bool = false) -> some View { modifier(HidesTabBarSmoothly(always: always)) }
+    func hidesTabBarSmoothly() -> some View { modifier(HidesTabBarSmoothly()) }
 }
 

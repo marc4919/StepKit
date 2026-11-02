@@ -13,9 +13,6 @@ import NaturalLanguage
 struct StepDetailView: View {
     @Bindable var stepEntity: StepEntity
     var stepNumber: Int = 1
-    /// Abierto desde el aviso «Siguiente», encima de otro paso: ahí `isPresented` no avisa y las pestañas
-    /// se quedarían sobre las acciones. Atrás lleva a otro paso, así que nunca hacen falta aquí.
-    var opensOverStep = false
     @State private var showingEditor = false
     @State private var assistantAfterEdit = false
     /// Al cambiar el ancho (desplegar el Duo, girar un iPhone grande) la vista pasa a otra columna y el
@@ -103,7 +100,7 @@ struct StepDetailView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(stepEntity.goal?.title ?? "")
         .navigationBarTitleDisplayMode(.inline)
-        .hidesTabBarSmoothly(always: opensOverStep)
+        .hidesTabBarSmoothly()
         .onChange(of: horizontalSizeClass) {
             showsBottomActions = false
             Task { @MainActor in
@@ -145,7 +142,7 @@ struct StepDetailView: View {
             if let kit = stepEntity.goal { ResultReviewView(kit: kit) }
         }
         .navigationDestination(item: $openedNextStep) { step in
-            StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? stepNumber + 1, opensOverStep: true)
+            StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? stepNumber + 1)
         }
         // Un toque en la barra no debe quitar un bloqueo sin querer: el botón solo lleva un icono.
         .confirmationDialog("¿Ya puedes seguir con este paso?", isPresented: $confirmingResolve, titleVisibility: .visible) {
