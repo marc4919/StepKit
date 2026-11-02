@@ -306,11 +306,11 @@ struct KitCreationFormContent: View {
 
 /// La misma animación para todo lo que se despliega en el formulario: la fila se pliega y se funde
 /// a la vez, sin aparecer ni desaparecer de golpe.
-private extension Animation {
+extension Animation {
     static let formReveal = Animation.smooth(duration: 0.5)
 }
 
-private extension AnyTransition {
+extension AnyTransition {
     static var formRow: AnyTransition {
         // Un recorrido algo mayor que la propia fila, para que se note que baja desde arriba.
         let travel = AnyTransition.opacity.combined(with: .move(edge: .top)).combined(with: .offset(y: -18))

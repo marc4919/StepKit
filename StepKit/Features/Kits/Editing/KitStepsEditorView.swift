@@ -233,6 +233,7 @@ struct StepDraftFormView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var step: StepDraft
+    @State private var showsDetails: Bool
     @FocusState private var titleFocused: Bool
     private let original: StepDraft
     private let onSave: (StepDraft) -> Void
@@ -246,6 +247,8 @@ struct StepDraftFormView: View {
         self.latestDate = latestDate
         self.onSave = onSave
         _step = State(initialValue: step)
+        // Con descripción ya escrita se ve abierto, para que no parezca que se ha perdido.
+        _showsDetails = State(initialValue: !step.short.isEmpty || !step.long.isEmpty)
     }
 
     private var minuteOptions: [Int] {
@@ -258,15 +261,45 @@ struct StepDraftFormView: View {
         return min(today, step.date.map(Calendar.current.startOfDay(for:)) ?? today)
     }
 
-    @ViewBuilder private var descriptionSection: some View {
+    /// Lo único obligatorio es el título: las descripciones van plegadas, como el contexto en el creador.
+    @ViewBuilder private var detailsSection: some View {
         Section {
-            TextEditor(text: $step.long)
-                .frame(minHeight: 120)
-                .accessibilityLabel("Descripción detallada")
-        } header: {
-            Text("Descripción detallada")
-        } footer: {
-            Text("Describe la acción concreta necesaria para completar este paso.")
+            Button {
+                withAnimation(.formReveal) { showsDetails.toggle() }
+            } label: {
+                HStack(spacing: 12) {
+                    IconChip(symbol: "text.badge.plus", color: .secondary, size: 28)
+                    Text(showsDetails ? String(localized: "Ocultar detalles") : String(localized: "Añadir detalles (opcional)"))
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(showsDetails ? 180 : 0))
+                }
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("stepDraft.details")
+            .sensoryFeedback(.selection, trigger: showsDetails)
+            if showsDetails {
+                TextField("Descripción breve", text: $step.short, axis: .vertical)
+                    .lineLimit(2...4)
+                    .textInputAutocapitalization(.sentences)
+                    .transition(.formRow)
+                TextEditor(text: $step.long)
+                    .frame(minHeight: 120)
+                    .accessibilityLabel("Descripción detallada")
+                    .overlay(alignment: .topLeading) {
+                        if step.long.isEmpty {
+                            Text("Descripción detallada")
+                                .foregroundStyle(.tertiary)
+                                .padding(.top, 8)
+                                .padding(.leading, 5)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .transition(.formRow)
+            }
         }
     }
 
@@ -326,18 +359,9 @@ struct StepDraftFormView: View {
                             if title.count > Self.maxTitleLength { step.title = String(title.prefix(Self.maxTitleLength)) }
                         }
                         .accessibilityIdentifier("stepDraft.title")
-                    TextField("Descripción breve", text: $step.short, axis: .vertical)
-                        .lineLimit(2...4)
-                        .textInputAutocapitalization(.sentences)
                 }
-                // En un paso nuevo, lo que hace falta a la vista: la descripción larga es opcional.
-                if original.isNew {
-                    planningSection
-                    descriptionSection
-                } else {
-                    descriptionSection
-                    planningSection
-                }
+                planningSection
+                detailsSection
             }
             .navigationTitle(original.isNew ? "Nuevo paso" : "Editar paso")
             .navigationBarTitleDisplayMode(.inline)

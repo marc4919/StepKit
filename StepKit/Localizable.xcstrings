@@ -1300,6 +1300,26 @@
         }
       }
     },
+    "Añadir detalles (opcional)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Details (Optional)"
+          }
+        }
+      }
+    },
+    "Ocultar detalles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide Details"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
