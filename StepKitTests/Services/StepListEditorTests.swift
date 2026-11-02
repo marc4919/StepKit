@@ -119,40 +119,6 @@ struct StepListEditorTests {
         #expect(last.updatedAt > lastDate)
     }
 
-    @Test("Dates spread from the first day to the last, in order")
-    func distributeSpreads() {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Europe/Madrid")!
-        let kit = makeKit(["A", "B", "C", "D", "E"])
-        let start = calendar.date(from: DateComponents(year: 2026, month: 11, day: 2, hour: 16))!
-        let end = calendar.date(from: DateComponents(year: 2026, month: 11, day: 10))!
-        StepListEditor.distributeDates(of: kit.orderedActiveSteps, from: start, to: end, calendar: calendar)
-        let days = kit.orderedActiveSteps.map { calendar.component(.day, from: $0.suggestedDeadline!) }
-        #expect(days == [2, 4, 6, 8, 10])
-    }
-
-    @Test("More steps than days stay inside the range, and one step or a past end date don't break")
-    func distributeEdgeCases() {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Europe/Madrid")!
-        let start = calendar.date(from: DateComponents(year: 2026, month: 11, day: 2))!
-        let end = calendar.date(from: DateComponents(year: 2026, month: 11, day: 4))!
-
-        let crowded = makeKit((1...10).map(String.init))
-        StepListEditor.distributeDates(of: crowded.orderedActiveSteps, from: start, to: end, calendar: calendar)
-        let days = crowded.orderedActiveSteps.map { calendar.component(.day, from: $0.suggestedDeadline!) }
-        #expect(days == days.sorted())
-        #expect(days.first == 2 && days.last == 4)
-
-        let single = makeKit(["A"])
-        StepListEditor.distributeDates(of: single.orderedActiveSteps, from: start, to: end, calendar: calendar)
-        #expect(calendar.component(.day, from: single.orderedActiveSteps[0].suggestedDeadline!) == 2)
-
-        let past = makeKit(["A", "B"])
-        StepListEditor.distributeDates(of: past.orderedActiveSteps, from: end, to: start, calendar: calendar)
-        #expect(past.orderedActiveSteps.allSatisfy { calendar.component(.day, from: $0.suggestedDeadline!) == 4 })
-    }
-
     @Test("Accepting an assistant proposal adds, splits and removes as before, keeping 0…n")
     func assistantProposalUsesEditor() async throws {
         let kit = makeKit(["A", "B", "C"])
@@ -637,45 +603,6 @@ struct StepListEditorTests {
     }
 
     private func days(_ dates: [Date], _ calendar: Calendar) -> [Int] { dates.map { calendar.component(.day, from: $0) } }
-
-    @Test("Steps without a date spread from today to the final date; one step stays today")
-    func manualSpreadsDates() {
-        let c = gregorian
-        #expect(days(ManualKit.plannedDates(chosen: [nil, nil, nil], from: nov(2, c), to: nov(10, c), calendar: c), c) == [2, 6, 10])
-        #expect(days(ManualKit.plannedDates(chosen: [nil], from: nov(2, c), to: nov(10, c), calendar: c), c) == [2])
-    }
-
-    @Test("A chosen date is kept; steps around it stay in order and inside the final date")
-    func manualChosenDates() {
-        let c = gregorian
-        #expect(days(ManualKit.plannedDates(chosen: [nil, nov(9, c), nil], from: nov(2, c), to: nov(10, c), calendar: c), c) == [2, 9, 10])
-        // Elegida antes que la anterior o después de la final: se corrige.
-        #expect(days(ManualKit.plannedDates(chosen: [nov(8, c), nov(3, c)], from: nov(2, c), to: nov(10, c), calendar: c), c) == [8, 8])
-        #expect(days(ManualKit.plannedDates(chosen: [nov(20, c)], from: nov(2, c), to: nov(10, c), calendar: c), c) == [10])
-        // Con muchos pasos, la fecha final manda.
-        #expect(days(ManualKit.plannedDates(chosen: Array(repeating: nil, count: 10), from: nov(2, c), to: nov(4, c), calendar: c), c).last == 4)
-        #expect(ManualKit.dateChanges(of: [StepDraft(title: "A", date: nov(8, c)), StepDraft(title: "B", date: nov(3, c))],
-                                      from: nov(2, c), to: nov(10, c), calendar: c).map(\.title) == ["B"])
-        #expect(ManualKit.dateChanges(of: [StepDraft(title: "A", date: nil)], from: nov(2, c), to: nov(10, c), calendar: c).isEmpty)
-    }
-
-    @Test("A manual Kit is saved like any other, marked as manual, without duplicates")
-    func manualCreate() throws {
-        let c = gregorian
-        let steps = [StepDraft(title: "Uno", minutes: 30, date: nil), StepDraft(title: "Dos", short: "Hecho", date: nil)]
-        let kit = ManualKit.create(name: "  Pan  ", dueDate: nov(6, c), steps: steps, ownerID: "a", context: context, calendar: c, at: nov(2, c))
-        try context.save()
-        #expect(kit.title == "Pan")
-        #expect(kit.sourceModel == StepListDraft.manualSource)
-        #expect(kit.kpi.isEmpty)
-        #expect(kit.horizonDays == 5)
-        #expect(kit.targetDate == c.startOfDay(for: nov(6, c)))
-        #expect(titles(kit) == ["Uno", "Dos"])
-        #expect(orders(kit) == [0, 1])
-        #expect(kit.steps.count == 2)
-        #expect(kit.orderedActiveSteps.allSatisfy { $0.ownerID == "a" && $0.suggestedDeadline != nil })
-        #expect(kit.orderedActiveSteps[1].descriptionShort == "Hecho")
-    }
 
     @Test("Free plan: two active Kits reach the limit; finished, removed, other owners or Pro don't")
     func manualFreeLimit() throws {

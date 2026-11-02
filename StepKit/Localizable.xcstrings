@@ -1210,46 +1210,6 @@
         }
       }
     },
-    "Añade al menos un paso para continuar.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add at least one step to continue."
-          }
-        }
-      }
-    },
-    "Los pasos sin fecha se reparten hasta la fecha final.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Steps without a date spread out until the end date."
-          }
-        }
-      }
-    },
-    "Sin fecha, el paso se reparte hasta la fecha final.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Without a date, the step is placed before the end date."
-          }
-        }
-      }
-    },
-    "Para mantener el orden de los pasos, dentro de la fecha final.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To keep the order of the steps, within the end date."
-          }
-        }
-      }
-    },
     "Empezar de cero": {
       "localizations": {
         "en": {
@@ -1406,6 +1366,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "I added “%@” as step %lld."
+          }
+        }
+      }
+    },
+    "Los pasos los añadirás en el Kit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You will add the steps in the Kit."
           }
         }
       }

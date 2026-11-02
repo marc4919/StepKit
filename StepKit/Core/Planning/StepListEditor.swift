@@ -113,27 +113,6 @@ enum StepListEditor {
         assignOrder(to: kit.orderedActiveSteps, at: now)
     }
 
-    /// Reparte los pasos dados, en su orden, del primer día al último. La fecha final manda sobre
-    /// `PlanReschedule.maxStepsPerDay`: con muchos pasos y pocos días, un día puede superar ese máximo.
-    static func distributeDates(
-        of steps: [StepEntity],
-        from start: Date,
-        to end: Date,
-        calendar: Calendar = .current,
-        at now: Date = Date()
-    ) {
-        let first = calendar.startOfDay(for: start)
-        let last = calendar.startOfDay(for: end)
-        let days = max(calendar.dateComponents([.day], from: first, to: last).day ?? 0, 0)
-        for (index, step) in steps.enumerated() {
-            let offset = steps.count > 1 ? days * index / (steps.count - 1) : 0
-            guard let date = calendar.date(byAdding: .day, value: offset, to: first) else { continue }
-            if let current = step.suggestedDeadline, calendar.isDate(current, inSameDayAs: date) { continue }
-            step.suggestedDeadline = date
-            step.markModified(at: now)
-        }
-    }
-
     private static func assignOrder(to steps: [StepEntity], at now: Date) {
         for (index, step) in steps.enumerated() where step.order != index {
             step.order = index
