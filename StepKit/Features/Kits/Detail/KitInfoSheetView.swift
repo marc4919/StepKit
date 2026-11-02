@@ -115,7 +115,7 @@ struct KitInfoSheetView: View {
             LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
                       alignment: .leading, spacing: 14) {
                 if let dueDate = goalEntity.dueDate {
-                    planCell(symbol: Symbols.wantedDate, color: MetaTint.date, title: String(localized: "Fecha deseada"),
+                    planCell(symbol: Symbols.wantedDate, color: MetaTint.date, title: String(localized: "Fecha final"),
                              value: dueDate.formatted(.dateTime.day().month(.abbreviated).year()))
                     if !goalEntity.isCompleted {
                         let remaining = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now),

@@ -42,7 +42,7 @@ struct DeleteConfirmationSheet: View {
 
             // Texto
             VStack(spacing: 8) {
-                Text("¿Eliminar este kit?")
+                Text("¿Eliminar este Kit?")
                     .font(.title3)
                     .fontWeight(.semibold)
 

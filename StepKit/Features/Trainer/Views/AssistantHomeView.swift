@@ -30,7 +30,7 @@ struct AssistantIntent: Identifiable {
                         detail: String(localized: "Quitar o juntar pasos sin perder el resultado"), symbol: "scissors", color: .orange),
         AssistantIntent(id: "where-left", title: String(localized: "¿Dónde lo dejamos?"),
                         detail: String(localized: "Recuperar el hilo con tu último avance"), symbol: Symbols.note, color: .accentColor),
-        AssistantIntent(id: "change-date", title: String(localized: "Quiero cambiar la fecha objetivo"),
+        AssistantIntent(id: "change-date", title: String(localized: "Quiero cambiar la fecha final"),
                         detail: String(localized: "Ver qué pasos se mueven y por qué"), symbol: Symbols.wantedDate, color: .purple),
         AssistantIntent(id: "still-sense", title: String(localized: "¿Sigue teniendo sentido este plan?"),
                         detail: String(localized: "Revisar el plan con lo que ya sabes"), symbol: "questionmark.circle", color: .green),
@@ -69,7 +69,7 @@ struct AssistantIntent: Identifiable {
         case "where-left":
             return String(localized: "¿Dónde lo dejé en \(kitName)? Resume mi último avance y dime el siguiente paso concreto.")
         case "change-date":
-            return String(localized: "Quiero cambiar la fecha objetivo de \(kitName). ¿Qué pasos tendría que mover?")
+            return String(localized: "Quiero cambiar la fecha final de \(kitName). ¿Qué pasos tendría que mover?")
         case "still-sense":
             return String(localized: "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve.")
         default:

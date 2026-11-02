@@ -16,7 +16,7 @@ struct WelcomeView: View {
 
     private let titles = [String(localized: "Un objetivo grande.\nUn primer paso claro."),
                           String(localized: "Un plan que puedes ajustar"),
-                          String(localized: "Vuelve con un paso claro")]
+                          String(localized: "Siempre sabes qué sigue")]
     private let subtitles = [String(localized: "Da forma a tu idea, avanza a tu ritmo y retoma donde lo dejaste."),
                              String(localized: "Convierte tu idea en pasos claros. Revisa el plan y adáptalo a tu tiempo."),
                              String(localized: "Guarda lo que avanzas y retoma desde donde lo dejaste.")]
@@ -199,9 +199,9 @@ struct WelcomeView: View {
              Row(symbol: Symbols.calendar, color: .purple, text: String(localized: "Tiempo que encaja contigo"))],
             [Row(symbol: "1.circle.fill", color: .accentColor, text: String(localized: "Define lo que quieres conseguir")),
              Row(symbol: "2.circle.fill", color: .accentColor, text: String(localized: "Avanza por pasos con su tiempo y su fecha")),
-             Row(symbol: "3.circle.fill", color: .accentColor, text: String(localized: "Confirma que tienes lo que buscabas"))],
+             Row(symbol: "3.circle.fill", color: .accentColor, text: String(localized: "Confirma que lo has conseguido"))],
             [Row(symbol: Symbols.note, color: .orange, text: String(localized: "Anota lo que has hecho y lo que falta")),
-             Row(symbol: Symbols.blocked, color: .red, text: String(localized: "Marca un bloqueo sin perder lo hecho")),
+             Row(symbol: Symbols.blocked, color: .red, text: String(localized: "Di qué te frena sin perder lo hecho")),
              Row(symbol: "arrow.uturn.forward", color: .green, text: String(localized: "Retoma con un paso concreto"))],
         ]
     }

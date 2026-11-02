@@ -327,7 +327,7 @@ enum PlanProposalBuilder {
                                       from: date, to: shifted)
         }
         let newTarget = changes.compactMap(\.to).max().map(day) ?? ""
-        return PlanProposal(title: String(localized: "Retrasar la fecha deseada una semana"), changes: changes,
-                            impact: String(localized: "La fecha deseada pasa al \(newTarget). Cada paso pendiente se mueve \(days) días."))
+        return PlanProposal(title: String(localized: "Retrasar la fecha final una semana"), changes: changes,
+                            impact: String(localized: "La fecha final pasa al \(newTarget). Cada paso pendiente se mueve \(days) días."))
     }
 }

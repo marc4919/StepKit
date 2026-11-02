@@ -338,12 +338,12 @@
         }
       }
     },
-    "%lld fechas previstas": {
+    "%lld fechas finales": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld expected dates"
+            "value": "%lld end dates"
           }
         }
       }
@@ -550,12 +550,12 @@
         }
       }
     },
-    "1 fecha prevista": {
+    "1 fecha final": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "1 expected date"
+            "value": "1 end date"
           }
         }
       }
@@ -2206,12 +2206,12 @@
         }
       }
     },
-    "Confirma que tienes lo que buscabas": {
+    "Confirma que lo has conseguido": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confirm you got what you wanted"
+            "value": "Confirm you've achieved it"
           }
         }
       }
@@ -2508,12 +2508,12 @@
         }
       }
     },
-    "Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha prevista. También podrás reservar sesiones para avanzar.": {
+    "Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha final. También podrás reservar sesiones para avanzar.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When you create a Kit, you'll see its suggested steps and expected date here. You can also book sessions to make progress."
+            "value": "When you create a Kit, you'll see its suggested steps and end date here. You can also book sessions to make progress."
           }
         }
       }
@@ -3940,52 +3940,32 @@
         }
       }
     },
-    "Fecha deseada": {
+    "Fecha final": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Target date"
+            "value": "End date"
           }
         }
       }
     },
-    "Fecha deseada · %@": {
+    "Fecha final · %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Target date · %@"
+            "value": "End date · %@"
           }
         }
       }
     },
-    "Fecha objetivo": {
+    "Fecha final del Kit": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Target date"
-          }
-        }
-      }
-    },
-    "Fecha prevista del Kit": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit's planned date"
-          }
-        }
-      }
-    },
-    "Fecha prevista": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Expected date"
+            "value": "Kit's end date"
           }
         }
       }
@@ -4588,18 +4568,12 @@
         }
       }
     },
-    "La fecha deseada pasa al %@. Cada paso pendiente se mueve %lld días.": {
+    "La fecha final pasa al %@. Cada paso pendiente se mueve %lld días.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The target date moves to %@. Each pending step moves %lld days."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "new",
-            "value": "La fecha deseada pasa al %1$@. Cada paso pendiente se mueve %2$lld días."
+            "value": "The end date moves to %@. Each pending step moves %lld days."
           }
         }
       }
@@ -4704,12 +4678,12 @@
         }
       }
     },
-    "Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha prevista": {
+    "Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha final": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Legend: dot, booked session; circle, suggested step; flag, expected date"
+            "value": "Legend: dot, booked session; circle, suggested step; flag, end date"
           }
         }
       }
@@ -4874,12 +4848,12 @@
         }
       }
     },
-    "Marca un bloqueo sin perder lo hecho": {
+    "Di qué te frena sin perder lo hecho": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Flag a blocker without losing what you've done"
+            "value": "Say what's holding you back without losing what you've done"
           }
         }
       }
@@ -5020,12 +4994,12 @@
         }
       }
     },
-    "Menos contexto": {
+    "Ocultar contexto": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Less context"
+            "value": "Hide context"
           }
         }
       }
@@ -6560,22 +6534,22 @@
         }
       }
     },
-    "Quiero cambiar la fecha objetivo": {
+    "Quiero cambiar la fecha final": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "I want to change the target date"
+            "value": "I want to change the end date"
           }
         }
       }
     },
-    "Quiero cambiar la fecha objetivo de %@. ¿Qué pasos tendría que mover?": {
+    "Quiero cambiar la fecha final de %@. ¿Qué pasos tendría que mover?": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "I want to change the target date of %@. Which steps would I need to move?"
+            "value": "I want to change the end date of %@. Which steps would I need to move?"
           }
         }
       }
@@ -6890,12 +6864,12 @@
         }
       }
     },
-    "Reservar este día": {
+    "Añadir una sesión este día": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Book this day"
+            "value": "Add a session this day"
           }
         }
       }
@@ -7050,12 +7024,12 @@
         }
       }
     },
-    "Retrasar la fecha deseada una semana": {
+    "Retrasar la fecha final una semana": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Push the target date back a week"
+            "value": "Push the end date back a week"
           }
         }
       }
@@ -8022,12 +7996,12 @@
         }
       }
     },
-    "Tu avance y la fecha prevista del Kit se conservan.": {
+    "Tu avance y la fecha final del Kit se conservan.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your progress and the Kit's expected date are kept."
+            "value": "Your progress and the Kit's end date are kept."
           }
         }
       }
@@ -8382,12 +8356,12 @@
         }
       }
     },
-    "Un paso claro para volver": {
+    "Tu objetivo, paso a paso": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A clear step to come back to"
+            "value": "Your goal, step by step"
           }
         }
       }
@@ -8672,12 +8646,12 @@
         }
       }
     },
-    "Vuelve con un paso claro": {
+    "Siempre sabes qué sigue": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Come back to a clear step"
+            "value": "You always know what's next"
           }
         }
       }
@@ -9050,7 +9024,7 @@
         }
       }
     },
-    "¿Eliminar este kit?": {
+    "¿Eliminar este Kit?": {
       "localizations": {
         "en": {
           "stringUnit": {

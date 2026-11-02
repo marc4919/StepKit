@@ -131,7 +131,7 @@ struct KitCreationFormContent: View {
                 HStack(spacing: 12) {
                     IconChip(symbol: "text.badge.plus", color: .secondary, size: 28)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(showsContext ? String(localized: "Menos contexto") : String(localized: "Añadir contexto (opcional)"))
+                        Text(showsContext ? String(localized: "Ocultar contexto") : String(localized: "Añadir contexto (opcional)"))
                         if !showsContext {
                             Text("Cómo sabrás que está listo, de dónde partes, qué te puede frenar.")
                                 .font(.caption)
@@ -228,7 +228,7 @@ struct KitCreationFormContent: View {
     private var dateShortcuts: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label { Text("Fecha deseada") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+                Label { Text("Fecha final") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
                 Spacer(minLength: 8)
                 if !showsOtherDate {
                     Text(dueDate?.formatted(.dateTime.day().month(.abbreviated).year()) ?? String(localized: "Sin elegir"))

@@ -264,7 +264,7 @@ private struct ContinueCard: View {
                 if let date = kit.dueDate {
                     HStack(spacing: 5) {
                         Image(systemName: Symbols.wantedDate)
-                        Text("Fecha deseada · \(PlanGrouping.shortDate(date))")
+                        Text("Fecha final · \(PlanGrouping.shortDate(date))")
                     }
                     .font(.subheadline)
                     .foregroundStyle(.secondary)

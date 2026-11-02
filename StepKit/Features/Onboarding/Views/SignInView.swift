@@ -78,7 +78,7 @@ struct SignInView: View {
             Text("StepKit")
                 .font(.largeTitle.bold())
                 .accessibilityAddTraits(.isHeader)
-            Text("Un paso claro para volver")
+            Text("Tu objetivo, paso a paso")
                 .foregroundStyle(.secondary)
         }
     }

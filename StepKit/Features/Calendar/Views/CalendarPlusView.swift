@@ -280,7 +280,7 @@ struct CalendarPlusView: View {
                         Text("Aún no hay nada planificado")
                             .font(.headline)
                     }
-                    Text("Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha prevista. También podrás reservar sesiones para avanzar.")
+                    Text("Cuando crees un Kit verás aquí sus pasos sugeridos y su fecha final. También podrás reservar sesiones para avanzar.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -298,7 +298,7 @@ struct CalendarPlusView: View {
                           detail: String(localized: "El tiempo que apartas para avanzar. Son tu compromiso."))
                 legendRow(symbol: "circle", title: String(localized: "Pasos sugeridos"),
                           detail: String(localized: "La fecha orientativa de cada paso."))
-                legendRow(symbol: "flag.fill", title: String(localized: "Fecha prevista"), tint: .purple,
+                legendRow(symbol: "flag.fill", title: String(localized: "Fecha final"), tint: .purple,
                           detail: String(localized: "Cuándo terminaría el Kit según su plan."))
             }
         }
@@ -334,7 +334,7 @@ struct CalendarPlusView: View {
                 .font(.caption)
                 .textCase(nil)
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha prevista")
+                .accessibilityLabel("Leyenda: punto, sesión reservada; círculo, paso sugerido; bandera, fecha final")
         }
     }
 
@@ -351,7 +351,7 @@ struct CalendarPlusView: View {
                 Menu {
                     bookingButtons
                 } label: {
-                    Label("Reservar este día", systemImage: Symbols.session)
+                    Label("Añadir una sesión este día", systemImage: Symbols.session)
                 }
                 .accessibilityIdentifier("calendar.bookDay")
             }
@@ -374,7 +374,7 @@ struct CalendarPlusView: View {
             }
             ForEach(goalsForSelectedDate) { kit in
                 NavigationLink(value: GoalNavigation(id: kit.id)) {
-                    dayRow(symbol: "flag.fill", tint: .purple, title: kit.title, detail: String(localized: "Fecha prevista"))
+                    dayRow(symbol: "flag.fill", tint: .purple, title: kit.title, detail: String(localized: "Fecha final"))
                 }
             }
         } header: {
@@ -388,7 +388,7 @@ struct CalendarPlusView: View {
     @ViewBuilder private var legend: some View {
         Label("Sesión", systemImage: "circle.fill").foregroundStyle(.blue).fixedSize()
         Label("Sugerencia", systemImage: "circle").foregroundStyle(.blue).fixedSize()
-        Label("Fecha prevista", systemImage: "flag.fill").foregroundStyle(.purple).fixedSize()
+        Label("Fecha final", systemImage: "flag.fill").foregroundStyle(.purple).fixedSize()
     }
 
     // MARK: - Resumen del día
@@ -408,7 +408,7 @@ struct CalendarPlusView: View {
         }
         let kits = goalsForSelectedDate.count
         if kits > 0 {
-            parts.append(kits == 1 ? String(localized: "1 fecha prevista") : String(localized: "\(kits) fechas previstas"))
+            parts.append(kits == 1 ? String(localized: "1 fecha final") : String(localized: "\(kits) fechas finales"))
         }
         return parts.isEmpty ? String(localized: "Nada previsto este día.") : parts.joined(separator: " · ")
     }
@@ -451,7 +451,7 @@ struct CalendarPlusView: View {
                 Spacer(minLength: 8)
                 Image(systemName: "flag.fill")
                     .foregroundStyle(.purple)
-                    .accessibilityLabel(Text("Fecha prevista del Kit"))
+                    .accessibilityLabel(Text("Fecha final del Kit"))
             }
         }
         .accessibilityElement(children: .combine)
