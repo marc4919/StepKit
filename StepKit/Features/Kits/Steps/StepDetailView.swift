@@ -15,6 +15,9 @@ struct StepDetailView: View {
     var stepNumber: Int = 1
     @State private var showingEditor = false
     @State private var assistantAfterEdit = false
+    /// Al cambiar el ancho (desplegar el Duo, girar un iPhone grande) la vista pasa a otra columna y el
+    /// sistema pierde la barra inferior hasta volver a entrar: se retira un instante para que la cree de nuevo.
+    @State private var showsBottomActions = true
     @State private var confirmingResolve = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -98,6 +101,13 @@ struct StepDetailView: View {
         .navigationTitle(stepEntity.goal?.title ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
+        .onChange(of: horizontalSizeClass) {
+            showsBottomActions = false
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(350))
+                showsBottomActions = true
+            }
+        }
         // Con el paso abierto ya se ha podido ver el consejo de las acciones: el siguiente puede salir.
         .onAppear { TipFlow.stepActionsSeen = true }
         .toolbar {
@@ -121,8 +131,10 @@ struct StepDetailView: View {
             // pasa a la franja lateral. Son botones con título e icono, siempre los mismos: el sistema
             // decide cómo pintarlos en cada postura. Cambiarlos al girar o plegar (texto o solo icono,
             // identidades nuevas) dejaba cápsulas vacías, botones duplicados o perdidos.
-            ToolbarItemGroup(placement: .bottomBar) {
-                sideToolbarActions
+            if showsBottomActions {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    sideToolbarActions
+                }
             }
         }
         .sensoryFeedback(.success, trigger: celebration)
