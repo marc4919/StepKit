@@ -84,6 +84,7 @@ struct ResultReviewView: View {
                     Text("Confirmar resultado").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
                 .disabled(!achieved)
                 .accessibilityIdentifier("result.confirm")
                 Button {
@@ -183,6 +184,7 @@ private struct ResultConfirmedContent: View {
                     Text("Volver a Mis Kits").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
                 .controlSize(.large)
                 Button("Reabrir resultado", action: onReopen)
                     .font(.subheadline)

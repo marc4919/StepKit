@@ -289,6 +289,7 @@ struct CalendarPlusView: View {
                         Text("Crear un Kit").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(.primaryAction)
                     .controlSize(.large)
                         .accessibilityIdentifier("calendar.createKit")
                 }

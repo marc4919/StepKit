@@ -390,6 +390,7 @@ struct QuotaReachedCard: View {
                 Label("Ver StepKit Pro", systemImage: "sparkles").frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(.primaryAction)
             .controlSize(.large)
             .accessibilityIdentifier("assistant.upgrade")
         }
@@ -416,6 +417,7 @@ struct NewKitCard: View {
                 Label("Crear un Kit nuevo con esta idea", systemImage: "plus.circle").frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(.primaryAction)
             .controlSize(.large)
             .accessibilityIdentifier("assistant.createKit")
         }
@@ -501,6 +503,7 @@ struct ProposalCard: View {
                         Text("Aceptar").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(.primaryAction)
                     .accessibilityIdentifier("proposal.accept")
                     Button(action: onDiscard) {
                         Text("Descartar").frame(maxWidth: .infinity)

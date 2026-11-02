@@ -323,6 +323,7 @@ struct KitCreationFormContent: View {
                 Text("Preparar plan").frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(.primaryAction)
             .controlSize(.large)
             .disabled(!isFormValid)
             .listRowBackground(Color.clear)

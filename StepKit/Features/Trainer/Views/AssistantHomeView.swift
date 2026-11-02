@@ -239,6 +239,8 @@ struct AssistantHomeView: View {
             Button("Enviar", systemImage: "arrow.up", action: onSend)
                 .labelStyle(.iconOnly)
                 .buttonStyle(.glassProminent)
+                .tint(.primaryAction)
+                .foregroundStyle(.white)
                 .controlSize(.large)
                 .disabled(isResponding || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .accessibilityIdentifier("assistant.send")

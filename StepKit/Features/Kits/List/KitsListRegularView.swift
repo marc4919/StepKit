@@ -123,6 +123,8 @@ struct KitsListRegularView: View {
                     } actions: {
                         Button("Nuevo Kit", systemImage: "plus") { viewModel.showingKitCreator = true }
                             .buttonStyle(.glassProminent)
+                            .tint(.primaryAction)
+                            .foregroundStyle(.white)
                     }
                 }
                 }

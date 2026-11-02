@@ -649,6 +649,14 @@ struct DelayedReveal<Content: View>: View {
     }
 }
 
+// MARK: - Color de los botones principales
+
+extension ShapeStyle where Self == Color {
+    /// Azul de los botones principales: el blanco alcanza 5,4:1 (con el color de acento, 4,0:1).
+    /// Solo en botones: en modo oscuro, los textos azules perderían contraste con este tono.
+    static var primaryAction: Color { Color(red: 0, green: 0.4, blue: 0.84) }
+}
+
 // MARK: - Barra de pestañas oculta con transición
 
 /// Pantallas que ocultan la barra de pestañas (paso, asistente, resultado). Mientras la pantalla está

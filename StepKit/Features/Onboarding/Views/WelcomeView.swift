@@ -51,6 +51,7 @@ struct WelcomeView: View {
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(.primaryAction)
             .controlSize(.large)
             .frame(maxWidth: 480)
             .padding(.horizontal, 24)

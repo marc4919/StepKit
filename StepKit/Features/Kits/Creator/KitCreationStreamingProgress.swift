@@ -497,6 +497,7 @@ struct KitCreationStreamingProgress: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(.primaryAction)
             .accessibilityIdentifier("kitCreator.save")
             Button("Descartar y volver a mi idea", role: .destructive, action: onDiscard)
                 .font(.subheadline)
@@ -712,6 +713,7 @@ struct KitCreationStreamingProgress: View {
                     Text("Volver a mi idea").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
                 .controlSize(.large)
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -875,6 +877,7 @@ private struct KitQuestionsCard: View {
                     Text("Crear mi plan").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
                 .controlSize(.large)
                 .disabled(answers.isEmpty)
                 .accessibilityIdentifier("kitQuestions.submit")

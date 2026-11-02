@@ -77,6 +77,7 @@ struct AIConsentView: View {
                         Text(purpose == .plan ? LocalizedStringKey("Permitir y preparar el plan") : LocalizedStringKey("Permitir y enviar")).frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(.primaryAction)
                     .controlSize(.large)
                     .disabled(!hasAccepted)
                     .accessibilityIdentifier("consent.continue")

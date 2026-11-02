@@ -273,6 +273,7 @@ private struct ContinueCard: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
                 .controlSize(.large)
             }
         }
@@ -342,22 +343,25 @@ private struct ContinueCard: View {
                     }
                 }
             }
-            Button(action: onContinue) {
-                Group {
-                    if isNextStepOpen {
-                        Text("Abierto")
-                    } else {
-                        Label("Continuar", systemImage: "chevron.right")
-                            .labelStyle(TrailingIconLabelStyle())
-                    }
+            if isNextStepOpen {
+                // Un botón desactivado casi no se leía: texto normal sobre el azul, y el ✓ dice el estado.
+                Label("Abierto", systemImage: "checkmark")
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(Color.accentColor.opacity(0.25), in: .capsule)
+                    .accessibilityIdentifier("kit.continue")
+            } else {
+                Button(action: onContinue) {
+                    Label("Continuar", systemImage: "chevron.right")
+                        .labelStyle(TrailingIconLabelStyle())
+                        .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
+                .controlSize(.large)
+                .accessibilityIdentifier("kit.continue")
+                .accessibilityHint("Abre el siguiente paso de \(kit.title)")
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(isNextStepOpen)
-            .accessibilityIdentifier("kit.continue")
-            .accessibilityHint("Abre el siguiente paso de \(kit.title)")
         }
     }
 }
@@ -433,6 +437,7 @@ private struct PendingResultCard: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
                 .controlSize(.large)
                 .accessibilityIdentifier("result.review")
                 Button(action: onBackToPlan) {
@@ -566,6 +571,7 @@ struct KitsEmptyView: View {
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
+        .tint(.primaryAction)
         .controlSize(.large)
         .frame(maxWidth: 420)
         .padding(.horizontal, 30)

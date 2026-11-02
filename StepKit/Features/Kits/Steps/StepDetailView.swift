@@ -469,6 +469,8 @@ struct StepDetailView: View {
             Text("Ya lo tengo, seguir").frame(maxWidth: .infinity)
         }
         .buttonStyle(.glassProminent)
+        .tint(.primaryAction)
+        .foregroundStyle(.white)
         .accessibilityIdentifier("step.resolveBlock")
     }
 
@@ -517,9 +519,11 @@ struct StepDetailView: View {
             Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
             } label: {
-                StepActionLabel(title: String(localized: "Completar"), symbol: "checkmark")
+                StepActionLabel(title: String(localized: "Completar"), symbol: "checkmark", tint: .white)
             }
             .buttonStyle(.glassProminent)
+            .tint(.primaryAction)
+            .foregroundStyle(.white)
             .accessibilityLabel(String(localized: "Marcar como completado"))
             .accessibilityIdentifier("step.toggleCompletion")
         }
@@ -589,15 +593,19 @@ struct StepDetailView: View {
 private struct StepActionLabel: View {
     let title: String
     let symbol: String
+    /// En la barra, en modo oscuro, el sistema pone negro el texto del botón principal: 3,9:1 sobre el azul.
+    var tint: Color = .primary
 
     var body: some View {
         if DeviceKind.isDuo {
             Label(title, systemImage: symbol)
+                .foregroundStyle(tint)
         } else {
             HStack(spacing: 6) {
                 Image(systemName: symbol)
                 Text(title).lineLimit(1).fixedSize()
             }
+            .foregroundStyle(tint)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(title)
         }

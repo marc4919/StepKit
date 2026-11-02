@@ -304,6 +304,8 @@ struct SubscriptionView: View {
                 .frame(minHeight: 30)
             }
             .buttonStyle(.glassProminent)
+            .tint(.primaryAction)
+            .foregroundStyle(.white)
             .controlSize(.large)
             .disabled(viewModel.isLoading || selectedProduct == nil)
             .accessibilityIdentifier("subscription.subscribe")
