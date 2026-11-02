@@ -139,6 +139,9 @@ struct KitDetailView: View {
             }
         }
         .navigationDestination(isPresented: $showingResultReview) { ResultReviewView(kit: kitEntity) }
+        .navigationDestination(for: StepEntity.self) { step in
+            StepDetailView(stepEntity: step, stepNumber: kitEntity.position(of: step))
+        }
         .onAppear {
             if opensResultReview {
                 onResultReviewOpened()
@@ -406,9 +409,7 @@ private struct PlanStepRow: View {
             .accessibilityLabel(step.isCompleted ? String(localized: "Marcar como pendiente") : String(localized: "Marcar como completado"))
             .accessibilityValue(String(localized: "Paso \(number): \(step.stepTitle)"))
             .accessibilityIdentifier("step.rowToggle")
-            NavigationLink {
-                StepDetailView(stepEntity: step, stepNumber: number)
-            } label: {
+            NavigationLink(value: step) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 5) {
                         Text(step.stepTitle)

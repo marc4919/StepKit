@@ -13,6 +13,8 @@ final class KitsViewModel {
     // MARK: - Navigation & Selection State
     var selectedKitEntity: GoalEntity?
     var selectedKitId: UUID?
+    /// Pasos abiertos encima del plan del Kit elegido. Vaciarla vuelve al plan.
+    var detailPath: [StepEntity] = []
     /// Kits que se están eliminando: salen de la lista con animación antes del borrado real.
     var leavingKitIDs: Set<UUID> = []
     var selectedStepEntity: StepEntity?
@@ -32,10 +34,23 @@ final class KitsViewModel {
         selectedKitId = kit.id
     }
     
+    /// Abre el plan, también si el Kit ya estaba elegido con un paso encima.
+    func openKitPlan(_ kit: GoalEntity) {
+        detailPath = []
+        selectKit(kit)
+    }
+
+    /// Con dos columnas, el paso se abre encima de su Kit: así atrás siempre lleva al plan.
+    func continueStep(_ step: StepEntity, of kit: GoalEntity) {
+        selectKit(kit)
+        detailPath = [step]
+    }
+
     func clearSelection() {
         selectedKitEntity = nil
         selectedKitId = nil
         selectedStepEntity = nil
+        detailPath = []
     }
     
     func prepareForDeletion(_ kit: GoalEntity) {

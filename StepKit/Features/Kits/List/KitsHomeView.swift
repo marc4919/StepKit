@@ -22,8 +22,11 @@ struct KitsHomeView: View {
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var reviewingKit: GoalEntity?
     @State private var continuingStep: StepEntity?
+    /// Hay columna de detalle a la vista. No sirve `isCompact`: dentro de la barra lateral el entorno es compacto.
+    private let hasDetailColumn: Bool
 
-    init(activeKits: [GoalEntity], completedKits: [GoalEntity], viewModel: KitsViewModel, isCompact: Bool = true) {
+    init(activeKits: [GoalEntity], completedKits: [GoalEntity], viewModel: KitsViewModel, isCompact: Bool = true, hasDetailColumn: Bool = false) {
+        self.hasDetailColumn = hasDetailColumn
         self.allActiveKits = activeKits
         self.allCompletedKits = completedKits
         self.viewModel = viewModel
@@ -108,7 +111,11 @@ struct KitsHomeView: View {
                         Section {
                             ContinueCard(kit: kit, lastProgress: lastProgress(of: kit, onStep: kit.nextStep)) {
                                 if let step = kit.nextStep {
-                                    continuingStep = step
+                                    if hasDetailColumn {
+                                        viewModel.continueStep(step, of: kit)
+                                    } else {
+                                        continuingStep = step
+                                    }
                                 } else {
                                     open(kit)
                                 }
@@ -189,9 +196,9 @@ struct KitsHomeView: View {
     }
 
     private func open(_ kit: GoalEntity) {
-        // Con las dos columnas, un paso abierto con «Continuar» tapaba el Kit y «Ver Kit» no hacía nada.
+        // Un paso abierto antes de desplegar el Duo tapaba el Kit y «Ver Kit» no hacía nada.
         continuingStep = nil
-        viewModel.selectKit(kit)
+        viewModel.openKitPlan(kit)
     }
 
     /// En iPhone, la revisión se abre encima del plan del Kit para que «Volver al plan» sea un simple retroceso.

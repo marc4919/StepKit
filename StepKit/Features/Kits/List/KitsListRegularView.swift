@@ -14,6 +14,7 @@ struct KitsListRegularView: View {
     @Bindable var viewModel: KitsViewModel
     
     @Environment(\.syncManager) private var syncManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var detailSize: CGSize?
     @State private var presentedOnce = false
@@ -97,16 +98,16 @@ struct KitsListRegularView: View {
             KitsHomeView(
                 activeKits: activeKits,
                 completedKits: completedKits,
-                viewModel: viewModel
+                viewModel: viewModel,
+                hasDetailColumn: horizontalSizeClass == .regular
             )
             .navigationSplitViewColumnWidth(min: 360, ideal: 400, max: 440)
         } detail: {
-            NavigationStack {
+            NavigationStack(path: $viewModel.detailPath) {
                 if let kitEntity = viewModel.selectedKitEntity {
                     KitDetailView(kitEntity: kitEntity,
-                                  opensResultReview: viewModel.reviewOnOpenKitID == kitEntity.id) {
-                        viewModel.reviewOnOpenKitID = nil
-                    }
+                                  opensResultReview: viewModel.reviewOnOpenKitID == kitEntity.id,
+                                  onResultReviewOpened: { viewModel.reviewOnOpenKitID = nil })
                     .id(kitEntity.id)
                 } else {
                     ContentUnavailableView {
