@@ -475,8 +475,11 @@ struct StepDetailView: View {
     @ViewBuilder private var sideToolbarActions: some View {
         switch state {
         case .done:
-            Button(String(localized: "Marcar como pendiente"), systemImage: "arrow.uturn.backward") {
+            Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
+            } label: {
+                StepActionLabel(title: String(localized: "Marcar como pendiente"), symbol: "arrow.uturn.backward",
+                                showsTitle: !reservesSideColumn)
             }
             .accessibilityIdentifier("step.toggleCompletion")
         case .blocked:
@@ -500,10 +503,14 @@ struct StepDetailView: View {
             }
             .accessibilityIdentifier("step.reportBlock")
             // Destacado en el color de la app: es la acción principal del paso.
-            Button(String(localized: "Marcar como completado"), systemImage: "checkmark") {
+            Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
+            } label: {
+                StepActionLabel(title: String(localized: "Completar"), symbol: "checkmark",
+                                showsTitle: !reservesSideColumn)
             }
             .buttonStyle(.glassProminent)
+            .accessibilityLabel(String(localized: "Marcar como completado"))
             .accessibilityIdentifier("step.toggleCompletion")
         }
     }
@@ -562,6 +569,24 @@ struct StepDetailView: View {
             try? await Task.sleep(for: .seconds(6))
             if celebration == shown { withAnimation(.smooth) { celebration = nil } }
         }
+    }
+}
+
+/// Texto e icono en la barra inferior; solo icono en la franja lateral del Duo, que es estrecha.
+/// No es un `Label`: la barra los dibuja siempre solo con el icono. La vista es la misma al plegar
+/// o girar, sin identidades nuevas.
+private struct StepActionLabel: View {
+    let title: String
+    let symbol: String
+    let showsTitle: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol)
+            if showsTitle { Text(title).lineLimit(1).fixedSize() }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
     }
 }
 
