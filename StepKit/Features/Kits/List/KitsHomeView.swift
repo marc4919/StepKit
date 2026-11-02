@@ -88,6 +88,7 @@ struct KitsHomeView: View {
                 // List para conservar el gesto clásico de deslizar para eliminar. La selección enlazada
                 // es lo que hace que, en ancho compacto, elegir un Kit lo empuje (y volver la limpie).
                 List(selection: $viewModel.selectedKitId) {
+                    Section { TipView(StartFromScratchTip()).tipListRow() }
                     if !pendingResultKits.isEmpty {
                         // Discretos: una fila con la bandera, sin tarjeta grande ni todo en verde.
                         Section {
@@ -180,7 +181,6 @@ struct KitsHomeView: View {
                 } primaryAction: {
                     openCreator()
                 }
-                    .popoverTip(CreateKitTip())
                     .accessibilityIdentifier("kit.create")
                     .accessibilityHint("Abre el creador de kits")
             }
@@ -223,7 +223,7 @@ struct KitsHomeView: View {
     }
 
     private func openCreator(manual: Bool = false) {
-        CreateKitTip().invalidate(reason: .actionPerformed)
+        if manual { StartFromScratchTip().invalidate(reason: .actionPerformed) }
         viewModel.creatorStartsManual = manual
         viewModel.showingKitCreator = true
     }

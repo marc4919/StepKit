@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// Lo que no depende de la pantalla: límite del plan gratis y guardar el Kit.
 enum ManualKit {
@@ -43,6 +44,7 @@ enum ManualKit {
         if let stepMinutes { setStepMinutes(stepMinutes, for: kit) }
         try? context.save()
         try? ProgressLog.addKitNote(startingPoint, kit: kit, context: context, now: now)
+        StartFromScratchTip().invalidate(reason: .actionPerformed)
         return kit
     }
 

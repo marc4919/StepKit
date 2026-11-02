@@ -101,7 +101,10 @@ struct KitAssistantHubView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(kit.title)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { TipFlow.assistantSeen = true }
+        .onAppear {
+            TipFlow.assistantSeen = true
+            KitAssistantTip().invalidate(reason: .actionPerformed)
+        }
         .navigationDestination(item: $opened) { item in
             KitAssistantChatView(kit: kit, conversation: item.conversation, initialIntent: item.intent)
         }

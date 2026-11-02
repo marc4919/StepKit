@@ -2,10 +2,10 @@
 //  StepKitTips.swift
 //  StepKit
 //
-//  Consejos de primera vez (TipKit). Salen de uno en uno sobre lo que la persona tiene delante,
-//  cada uno una sola vez, y el siguiente solo cuando ya ha visto el anterior. Nada de tutorial
-//  al abrir la app: lo que hace falta aparece cuando hace falta, y el «?» de cada pantalla lo
-//  repite cuando se quiera.
+//  Consejos de primera vez (TipKit). Van dentro de la página, porque `popoverTip` no se pinta sobre
+//  la barra de herramientas: como mucho uno al día, cada uno una sola vez, y el que depende de otra
+//  cosa solo cuando ya se ha hecho. Nada de tutorial al abrir la app: lo que hace falta aparece cuando
+//  hace falta, y el «?» de cada pantalla lo repite cuando se quiera.
 //
 
 import SwiftUI
@@ -21,21 +21,21 @@ struct TipFlow {
     @Parameter static var firstProgressSaved: Bool = false
 }
 
-struct CreateKitTip: Tip {
-    var title: Text { Text("Crea tu primer Kit") }
-    var message: Text? { Text("Escribe una meta y una fecha. La IA te propone los pasos y los revisas antes de empezar.") }
-    var image: Image? { Image(systemName: "plus.circle") }
+struct StartFromScratchTip: Tip {
+    var title: Text { Text("Crea un Kit a tu manera") }
+    var message: Text? { Text("Mantén pulsado «+» y elige «Empezar de cero» para escribir tú los pasos, sin IA.") }
+    var image: Image? { Image(systemName: "square.and.pencil") }
 }
 
-struct StepActionsTip: Tip {
-    var title: Text { Text("Tres acciones en cada paso") }
-    var message: Text? { Text("Avance guarda lo que llevas. Atasco anota qué te frena. Completar cierra el paso.") }
-    var image: Image? { Image(systemName: Symbols.note) }
+struct EditStepsTip: Tip {
+    var title: Text { Text("Edita los pasos") }
+    var message: Text? { Text("En «···» puedes añadir, quitar y ordenar los pasos del plan.") }
+    var image: Image? { Image(systemName: "list.bullet") }
 }
 
 struct KitAssistantTip: Tip {
     var title: Text { Text("Tu asistente del Kit") }
-    var message: Text? { Text("Pregúntale cuando no sepas cómo seguir. Si propone cambiar el plan, decides tú.") }
+    var message: Text? { Text("Está arriba, con este icono. Pregúntale cuando no sepas cómo seguir; si propone cambiar el plan, decides tú.") }
     var image: Image? { Image(systemName: Symbols.assistant) }
     var rules: [Rule] { #Rule(TipFlow.$stepActionsSeen) { $0 } }
 }
@@ -49,9 +49,16 @@ struct KitLogTip: Tip {
 
 struct BookSessionTip: Tip {
     var title: Text { Text("Reserva cuándo lo harás") }
-    var message: Text? { Text("Elige día y hora para un paso o para algo propio. Te avisa 10 minutos antes.") }
+    var message: Text? { Text("Toca «+» y elige día y hora para un paso o para algo propio. Te avisa 10 minutos antes.") }
     var image: Image? { Image(systemName: Symbols.session) }
     var rules: [Rule] { #Rule(TipFlow.$assistantSeen) { $0 } }
+}
+
+extension TipView {
+    /// Como fila de una lista: el consejo ya trae su propio fondo, sin otra tarjeta alrededor.
+    func tipListRow() -> some View {
+        listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
+    }
 }
 
 // MARK: - Ayuda de cada pantalla («?»)

@@ -151,8 +151,6 @@ struct CalendarPlusView: View {
                     } label: {
                         Label("Añadir", systemImage: "plus")
                     }
-                    .popoverTip(BookSessionTip())
-                    .simultaneousGesture(TapGesture().onEnded { BookSessionTip().invalidate(reason: .actionPerformed) })
                     .accessibilityIdentifier("calendar.add")
                 }
             }
@@ -209,6 +207,7 @@ struct CalendarPlusView: View {
                 List { monthSection }
                     .frame(maxWidth: 500)
                 List {
+                    Section { TipView(BookSessionTip()).tipListRow() }
                     daySection
                     upcomingSection
                 }
@@ -230,9 +229,15 @@ struct CalendarPlusView: View {
 
     /// Dos formas de reservar: un rato para algo propio o tiempo para un paso de un Kit.
     @ViewBuilder private var bookingButtons: some View {
-        Button("Algo propio", systemImage: "person.crop.circle.badge.clock") { booking = .free }
+        Button("Algo propio", systemImage: "person.crop.circle.badge.clock") {
+            BookSessionTip().invalidate(reason: .actionPerformed)
+            booking = .free
+        }
             .accessibilityIdentifier("calendar.bookFree")
-        Button("Sesión de un Kit", systemImage: Symbols.kits) { booking = .kit }
+        Button("Sesión de un Kit", systemImage: Symbols.kits) {
+            BookSessionTip().invalidate(reason: .actionPerformed)
+            booking = .kit
+        }
             .disabled(activeKits.isEmpty)
             .accessibilityIdentifier("calendar.bookKit")
     }
@@ -254,6 +259,7 @@ struct CalendarPlusView: View {
 
     private var stackedList: some View {
         List {
+            Section { TipView(BookSessionTip()).tipListRow() }
             monthSection
             daySection
             upcomingSection

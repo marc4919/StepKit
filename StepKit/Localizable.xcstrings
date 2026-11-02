@@ -1370,6 +1370,106 @@
         }
       }
     },
+    "Crea un Kit a tu manera": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a Kit Your Way"
+          }
+        }
+      }
+    },
+    "Mantén pulsado «+» y elige «Empezar de cero» para escribir tú los pasos, sin IA.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch and hold “+” and choose “Start from Scratch” to write the steps yourself, without AI."
+          }
+        }
+      }
+    },
+    "Edita los pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Steps"
+          }
+        }
+      }
+    },
+    "En «···» puedes añadir, quitar y ordenar los pasos del plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In “···” you can add, remove and reorder the plan’s steps."
+          }
+        }
+      }
+    },
+    "Está arriba, con este icono. Pregúntale cuando no sepas cómo seguir; si propone cambiar el plan, decides tú.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It’s at the top, with this icon. Ask it when you’re not sure how to continue; if it suggests changing the plan, you decide."
+          }
+        }
+      }
+    },
+    "Toca «+» y elige día y hora para un paso o para algo propio. Te avisa 10 minutos antes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap “+” and choose a day and time for a step or something of your own. You’ll get a reminder 10 minutes before."
+          }
+        }
+      }
+    },
+    "Tu sesión ha caducado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Session Has Expired"
+          }
+        }
+      }
+    },
+    "Tu cuenta no se ha borrado. Vuelve a entrar y elimínala desde aquí.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account hasn’t been deleted. Sign in again and delete it from here."
+          }
+        }
+      }
+    },
+    "Volver a entrar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign In Again"
+          }
+        }
+      }
+    },
+    "Esa Apple Account no es la de esta cuenta. Tu cuenta no se ha borrado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That Apple Account isn’t the one for this account. Your account hasn’t been deleted."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

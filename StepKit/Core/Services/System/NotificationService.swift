@@ -9,6 +9,23 @@ import Foundation
 import UserNotifications
 import SwiftData
 
+/// Ejecuta trabajos asíncronos de uno en uno, en el orden en que llegan.
+@MainActor
+struct SerialTaskQueue {
+    private var last: Task<Void, Never>?
+
+    @discardableResult
+    mutating func enqueue(_ work: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
+        let previous = last
+        let task = Task { @MainActor in
+            await previous?.value
+            await work()
+        }
+        last = task
+        return task
+    }
+}
+
 @MainActor
 @Observable
 final class NotificationService {
@@ -79,6 +96,7 @@ final class NotificationService {
     /// Cuenta cuyos Kits se avisan; sin cuenta no se programa nada.
     var ownerID: String?
     private var digestTask: Task<Void, Never>?
+    private var queue = SerialTaskQueue()
 
     /// Rehace los avisos de pasos tras un cambio (completar, editar, sincronizar…), agrupando cambios seguidos.
     func refreshStepReminders() {
@@ -91,7 +109,12 @@ final class NotificationService {
     }
 
     /// Un aviso al día por Kit (ver `DailyDigest`). Sustituye a los avisos por paso de versiones anteriores.
+    /// En fila: una pasada más vieja no puede volver a meter el aviso de un Kit recién borrado o terminado.
     func rescheduleStepReminders() async {
+        await queue.enqueue { [self] in await performStepReminders() }.value
+    }
+
+    private func performStepReminders() async {
         let pending = await center.pendingNotificationRequests()
         let stale = pending.map(\.identifier).filter { $0.hasPrefix(DailyDigest.identifierPrefix) || $0.hasPrefix("step-") }
         center.removePendingNotificationRequests(withIdentifiers: stale)
@@ -130,7 +153,10 @@ final class NotificationService {
 
     /// Cancela todas las notificaciones pendientes
     func cancelAllNotifications() {
+        digestTask?.cancel()
         center.removeAllPendingNotificationRequests()
+        // Y otra vez detrás de la pasada que esté en marcha, que aún podría estar añadiendo avisos.
+        queue.enqueue { [center] in center.removeAllPendingNotificationRequests() }
 
         #if DEBUG
         print("🔕 NotificationService: Todas las notificaciones canceladas")

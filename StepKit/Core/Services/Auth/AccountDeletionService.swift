@@ -15,7 +15,22 @@ enum AccountDeletionService {
     enum Failure: Error {
         case cancelled
         case appleFailed
+        /// El servidor no ha aceptado la sesión: no se sabe si la cuenta sigue ahí, así que no se da por borrada.
+        case sessionExpired
+        /// Apple ha confirmado otra cuenta distinta de la que tiene la sesión abierta.
+        case differentAppleAccount
         case server(Int)
+    }
+
+    /// Solo un 2xx confirma el borrado. El servidor responde 401 tanto si la cuenta ya no existe como si
+    /// la sesión ha caducado, y en ese segundo caso los datos siguen allí.
+    static func requireDeleted(status: Int) throws {
+        switch status {
+        case 200...299: return
+        case 401: throw Failure.sessionExpired
+        case 403: throw Failure.differentAppleAccount
+        default: throw Failure.server(status)
+        }
     }
 
     struct AppleConfirmation {
@@ -43,12 +58,13 @@ enum AccountDeletionService {
             "authorizationCode": confirmation.authorizationCode,
         ])
         request.timeoutInterval = 30
-        let (_, response) = try await URLSession.shared.data(for: request)
-        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-        // 401: la cuenta ya no existe en el servidor; se termina igualmente la limpieza local.
-        guard (200...299).contains(status) || status == 401 else {
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            try requireDeleted(status: (response as? HTTPURLResponse)?.statusCode ?? 0)
+        } catch {
+            // La cuenta sigue en pie, también sin red: el dispositivo no se toca y vuelve a sincronizar.
             syncManager?.startAutoSync()
-            throw Failure.server(status)
+            throw error
         }
 
         clearLocalState(authentication: authentication)

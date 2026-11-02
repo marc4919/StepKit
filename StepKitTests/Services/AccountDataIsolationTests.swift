@@ -54,7 +54,11 @@ struct AccountDataIsolationTests {
 
         let network = CapturingSyncNetworkService()
         let manager = makeAuthenticatedManager(userID: "account-a")
-        let service = SyncService(authManager: manager, networkService: network)
+        // Preferencias propias: en las compartidas, el cursor de una pasada anterior dejaría fuera el Kit.
+        let suiteName = "StepKitTests.AccountSync.\(UUID().uuidString)"
+        let preferences = UserDefaults(suiteName: suiteName)!
+        defer { preferences.removePersistentDomain(forName: suiteName) }
+        let service = SyncService(authManager: manager, networkService: network, preferences: preferences)
         service.configure(with: context)
 
         try await service.syncAll()

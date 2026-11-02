@@ -17,6 +17,7 @@ struct DeleteAccountView: View {
     @State private var confirming = false
     @State private var deleting = false
     @State private var errorMessage: String?
+    @State private var sessionExpired = false
     @State private var showingSubscriptions = false
 
     var body: some View {
@@ -76,6 +77,13 @@ struct DeleteAccountView: View {
         } message: {
             Text(errorMessage ?? "")
         }
+        .alert("Tu sesión ha caducado", isPresented: $sessionExpired) {
+            Button("Ahora no", role: .cancel) { }
+            // Cerrar sesión no borra nada del dispositivo: al volver a entrar, todo sigue ahí.
+            Button("Volver a entrar") { authManager.signOut() }
+        } message: {
+            Text("Tu cuenta no se ha borrado. Vuelve a entrar y elimínala desde aquí.")
+        }
     }
 
     @MainActor
@@ -90,6 +98,10 @@ struct DeleteAccountView: View {
             // La persona no ha confirmado con Apple: no se borra nada.
         } catch AccountDeletionService.Failure.appleFailed {
             errorMessage = String(localized: "Apple no ha podido confirmar tu identidad. Inténtalo de nuevo.")
+        } catch AccountDeletionService.Failure.sessionExpired {
+            sessionExpired = true
+        } catch AccountDeletionService.Failure.differentAppleAccount {
+            errorMessage = String(localized: "Esa Apple Account no es la de esta cuenta. Tu cuenta no se ha borrado.")
         } catch {
             errorMessage = String(localized: "Comprueba tu conexión e inténtalo de nuevo. Tu cuenta no se ha borrado.")
         }

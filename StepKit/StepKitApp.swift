@@ -42,18 +42,21 @@ struct StepKitApp: App {
         NetworkDiagnostics.logEnvironment(appEnvironment)
         #endif
 
+        // Como mucho un consejo al día: de uno en uno, sin llenar las primeras pantallas.
+        var tipFrequency = Tips.ConfigurationOption.DisplayFrequency.daily
         #if DEBUG
         // Capturas y pruebas sin consejos de primera vez encima.
-        // `-StepKitShowTips`: los muestra desde cero para revisarlos.
+        // `-StepKitShowTips`: los muestra desde cero y todos seguidos, para revisarlos.
         let arguments = ProcessInfo.processInfo.arguments
         if arguments.contains("-StepKitShowTips") {
             try? Tips.resetDatastore()
+            tipFrequency = .immediate
         } else if arguments.contains("-StepKitDesignFixtures") {
             Tips.hideAllTipsForTesting()
         }
         #endif
         try? Tips.configure([
-            .displayFrequency(.immediate)
+            .displayFrequency(tipFrequency)
         ])
     }
 

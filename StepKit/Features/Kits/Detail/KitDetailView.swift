@@ -64,6 +64,12 @@ struct KitDetailView: View {
         allEntries.filter { $0.kitID == kitEntity.id && $0.ownerID == kitEntity.ownerID && $0.deletedAt == nil }
     }
 
+    /// En un Kit a mano no hace falta explicar el plan: lo acaba de escribir la propia persona.
+    private var showsFirstKitCard: Bool {
+        !firstKitCardSeen && !firstKitCardDismissed && !allStepsDone && kitEntity.activeStepCount > 0
+            && kitEntity.sourceModel != StepListDraft.manualSource
+    }
+
     var body: some View {
         ScrollViewReader { proxy in
         ScrollView {
@@ -71,12 +77,13 @@ struct KitDetailView: View {
                 header
                     .id("kit.top")
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headerHeight = $0 }
-                // En un Kit a mano no hace falta explicar el plan: lo acaba de escribir la propia persona.
-                if !firstKitCardSeen && !firstKitCardDismissed && !allStepsDone && kitEntity.activeStepCount > 0
-                    && kitEntity.sourceModel != StepListDraft.manualSource {
+                if showsFirstKitCard {
                     firstKitCard
                         .transition(.asymmetric(insertion: .identity,
                                                 removal: .opacity.combined(with: .scale(scale: 0.92, anchor: .top))))
+                } else if !allStepsDone {
+                    TipView(KitAssistantTip())
+                    if kitEntity.activeStepCount >= 2 { TipView(EditStepsTip()) }
                 }
                 if allStepsDone {
                     resultCard
@@ -100,12 +107,12 @@ struct KitDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 } else {
+                    TipView(KitLogTip())
                     Picker("Vista", selection: $segment) {
                         Text("Plan").tag(0)
                         Text("Registro").tag(1)
                     }
                     .pickerStyle(.segmented)
-                    .popoverTip(KitLogTip(), arrowEdge: .top)
                     .onChange(of: segment) { _, value in
                         if value == 1 { KitLogTip().invalidate(reason: .actionPerformed) }
                     }
@@ -155,14 +162,15 @@ struct KitDetailView: View {
                     Label("Asistente", systemImage: Symbols.assistant)
                 }
                 .badge(pendingProposals)
-                .popoverTip(KitAssistantTip())
-                .simultaneousGesture(TapGesture().onEnded { KitAssistantTip().invalidate(reason: .actionPerformed) })
                 .accessibilityIdentifier("kit.assistant")
                 .accessibilityValue(pendingProposals == 0 ? "" : pendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(pendingProposals) propuestas pendientes"))
                 Menu("Más opciones", systemImage: "ellipsis") {
                     // Con el resultado ya confirmado, el plan es historial: no se edita.
                     if kitEntity.resultConfirmedAt == nil {
-                        Button("Editar pasos", systemImage: "list.bullet") { editingSteps = true }
+                        Button("Editar pasos", systemImage: "list.bullet") {
+                            EditStepsTip().invalidate(reason: .actionPerformed)
+                            editingSteps = true
+                        }
                             .accessibilityIdentifier("kit.editSteps")
                     }
                     Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
