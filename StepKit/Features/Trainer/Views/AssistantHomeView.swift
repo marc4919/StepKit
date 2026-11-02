@@ -127,9 +127,10 @@ struct AssistantHomeView: View {
                 }
             }
         }
+        .safeAreaBar(edge: .bottom) { composer }
+        // Por fuera de la barra: dentro, con el teclado en horizontal, el fondo no llegaba al borde de la pantalla.
         .background(alignment: .top) { BrandGlow() }
         .background(Color(.systemGroupedBackground))
-        .safeAreaBar(edge: .bottom) { composer }
     }
 
     private var start: some View {
