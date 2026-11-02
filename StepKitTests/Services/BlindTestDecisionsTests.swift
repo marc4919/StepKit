@@ -35,6 +35,22 @@ struct BlindTestDecisionsTests {
         #expect(KitCreatorViewModel(apiClient: MockAPIClient(), initialDate: later).dueDate == later)
     }
 
+    @Test("A new session never defaults to the small hours")
+    func sessionStart() {
+        let calendar = Calendar.current
+        func at(_ hour: Int) -> Date { calendar.date(bySettingHour: hour, minute: 30, second: 0, of: Date(timeIntervalSince1970: 1_900_000_000))! }
+        let night = at(0)
+        let start = SessionStart.default(on: night, now: night)
+        #expect(calendar.component(.hour, from: start) == 9)
+        #expect(calendar.isDate(start, inSameDayAs: night))
+        let late = at(23)
+        let next = SessionStart.default(on: late, now: late)
+        #expect(calendar.component(.hour, from: next) == 9)
+        #expect(!calendar.isDate(next, inSameDayAs: late))
+        let afternoon = at(16)
+        #expect(calendar.component(.hour, from: SessionStart.default(on: afternoon, now: afternoon)) == 17)
+    }
+
     @Test("The warning appears only when a moved step passes the Kit's end date")
     func endDateWarning() {
         let target = Calendar.current.startOfDay(for: Date(timeIntervalSince1970: 1_900_000_000))

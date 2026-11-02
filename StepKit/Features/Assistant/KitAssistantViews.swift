@@ -152,7 +152,7 @@ private struct ConversationRow: View {
                             .padding(.vertical, 2)
                             .background(Color.orange.opacity(0.12), in: .capsule)
                     }
-                    Text(conversation.lastActivity.formatted(.relative(presentation: .named)))
+                    RelativeDateText(date: conversation.lastActivity)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

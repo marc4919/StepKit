@@ -230,6 +230,11 @@ final class PlanProposal: Identifiable {
             // Si cambia de qué va el paso, también su «Al terminar» y su descripción.
             if let outcome, !outcome.isEmpty { target.descriptionShort = outcome }
             if let description, !description.isEmpty { target.descriptionLong = description }
+            // Si el paso se reescribe, lo que lo frenaba ya no aplica; cambiar solo los minutos no lo resuelve.
+            if title != nil || outcome?.isEmpty == false || description?.isEmpty == false {
+                target.blockedReason = nil
+                target.blockedAt = nil
+            }
             target.markModified(at: now)
             highlights.record(.edited, for: target.id)
         case .split(let id, let titles, let minutes):

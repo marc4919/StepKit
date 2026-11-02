@@ -361,7 +361,7 @@ struct StepDetailView: View {
                         Text("Qué te frena").font(.headline)
                         Spacer()
                         if let date = stepEntity.blockedAt {
-                            Text(date, format: .relative(presentation: .named))
+                            RelativeDateText(date: date)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -413,7 +413,9 @@ struct StepDetailView: View {
                 MetaChip(symbol: "repeat", text: repetition.label, color: MetaTint.repeatTint)
             } else {
                 MetaChip(symbol: Symbols.calendar,
-                         text: PlanGrouping.shortDate(deadline),
+                         // Un paso hecho no «toca mañana»: su día, sin más.
+                         text: stepEntity.isCompleted ? deadline.formatted(.dateTime.day().month(.abbreviated))
+                                                      : PlanGrouping.shortDate(deadline),
                          color: MetaTint.date)
             }
         }

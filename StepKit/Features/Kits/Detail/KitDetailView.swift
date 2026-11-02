@@ -356,8 +356,13 @@ private struct PlanStepRow: View {
     private var meta: Text {
         var parts: [Text] = []
         if showsDate, let date = step.suggestedDeadline {
-            let day = PlanGrouping.rowDate(date)
-            parts.append(day.isToday ? Text(day.text).foregroundStyle(.tint).fontWeight(.semibold) : Text(day.text))
+            if step.isCompleted {
+                // Un paso hecho no «toca mañana»: su día, sin más.
+                parts.append(Text(date.formatted(.dateTime.weekday(.abbreviated).day())))
+            } else {
+                let day = PlanGrouping.rowDate(date)
+                parts.append(day.isToday ? Text(day.text).foregroundStyle(.tint).fontWeight(.semibold) : Text(day.text))
+            }
         }
         parts.append(Text(String(localized: "\(step.estimateMinutes) min")))
         if let repetition = step.repetition {

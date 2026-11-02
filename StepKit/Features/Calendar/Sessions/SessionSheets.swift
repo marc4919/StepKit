@@ -72,14 +72,18 @@ enum SessionBookingKind: String, Identifiable {
 
 /// La próxima hora en punto, en el día elegido (o hoy si es pasado).
 enum SessionStart {
-    static func `default`(on day: Date) -> Date {
-        let calendar = Calendar.current
-        let now = Date()
+    /// La próxima hora en punto, sin proponer la madrugada ni la noche: de 22:00 a 8:00, las 9:00.
+    static func `default`(on day: Date, now: Date = Date(), calendar: Calendar = .current) -> Date {
         let base = calendar.isDate(day, inSameDayAs: now) || day < now ? now : calendar.date(bySettingHour: 18, minute: 0, second: 0, of: day) ?? day
         guard calendar.isDate(base, inSameDayAs: now) else { return base }
         let nextHour = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
         let hour = calendar.component(.hour, from: nextHour)
-        return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: nextHour) ?? nextHour
+        if hour >= 8 && hour < 22 && calendar.isDate(nextHour, inSameDayAs: now) {
+            return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: nextHour) ?? nextHour
+        }
+        // Antes de las 8 aún se puede hoy; desde las 22, a la mañana siguiente.
+        let morning = calendar.component(.hour, from: now) < 8 ? now : calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        return calendar.date(bySettingHour: 9, minute: 0, second: 0, of: morning) ?? morning
     }
 }
 
@@ -188,6 +192,8 @@ struct BookSessionSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                // Primero el cuándo: con muchos Kits o pasos, la hora quedaba fuera de la vista.
+                SessionWhenSection(date: $date, minutes: $minutes, suggested: step?.estimateMinutes)
                 Section("Kit") {
                     ForEach(kits) { candidate in
                         Button {
@@ -231,7 +237,6 @@ struct BookSessionSheet: View {
                     }
                     .transition(.opacity)
                 }
-                SessionWhenSection(date: $date, minutes: $minutes, suggested: step?.estimateMinutes)
                 Section {
                     Toggle("Recordármelo", isOn: $remind)
                 }
