@@ -1170,6 +1170,16 @@
         }
       }
     },
+    "Pasa a ser el paso %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Becomes step %lld"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

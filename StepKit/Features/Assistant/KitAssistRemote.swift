@@ -64,6 +64,9 @@ struct AssistRequest: Encodable {
     let conversation: Conversation
     /// Idioma de la app («es» o «en»): la respuesta y la propuesta deben ir en este idioma.
     var language: String = AppLanguage.code
+    /// Tipos de cambio que esta versión sabe aplicar además de los de siempre: el servidor solo propone
+    /// «move_step» a quien lo declara, porque las versiones anteriores ignoran lo que no conocen.
+    var capabilities: [String] = ["move_step"]
 }
 
 struct AssistResponse: Decodable {
@@ -73,6 +76,8 @@ struct AssistResponse: Decodable {
         let newDate: String?
         let newTitles: [String]?
         let newMinutes: Int?
+        /// move_step: posición final (1…n) en la lista completa, tal como se envió.
+        let newPosition: Int?
         let reason: String?
         /// add_step y edit_step: qué queda hecho al terminar y cómo hacerlo. `reason` es por qué se propone, no el contenido del paso.
         let newOutcome: String?
@@ -277,6 +282,8 @@ enum RemoteProposalBuilder {
         // Pasos añadidos: su fecha se decide al final, cuando se sabe dónde queda cada uno.
         var additions: [PendingAddition] = []
         var removedIDs: Set<UUID> = []
+        // Posición final de cada paso que el asistente cambia de sitio.
+        var moves: [Int: StepEntity] = [:]
 
         for change in remote.changes {
             switch change.type {
@@ -328,6 +335,12 @@ enum RemoteProposalBuilder {
                                                  afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0))
                 changes.append(additionChange(title: title, minutes: change.newMinutes, date: date(change.newDate)))
                 actions.append(additionAction(additions[additions.count - 1], date: date(change.newDate)))
+            case "move_step":
+                // Los terminados se quedan en su sitio: ni se mueven ni se ocupa su hueco.
+                guard let target = step(change.stepNumber), !target.isCompleted,
+                      let position = change.newPosition, let destination = step(position), !destination.isCompleted,
+                      moves[position] == nil else { continue }
+                moves[position] = target
             case "remove_step":
                 guard let target = step(change.stepNumber) else { continue }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
@@ -351,6 +364,9 @@ enum RemoteProposalBuilder {
         }
 
         var impact = remote.impact ?? String(localized: "El resto del plan no cambia.")
+        if !moves.isEmpty {
+            addMoves(moves, steps: steps, kit: kit, changes: &changes, actions: &actions)
+        }
         let requestedMoves = !newDates.isEmpty
         if !additions.isEmpty {
             let resolved = resolveAdditions(additions, steps: steps.filter { !removedIDs.contains($0.id) },
@@ -387,6 +403,44 @@ enum RemoteProposalBuilder {
 
         guard !actions.isEmpty else { return nil }
         return PlanProposal(title: remote.summary, changes: changes, impact: impact, actions: actions)
+    }
+
+    /// Cada paso movido ocupa su hueco y los demás pendientes rellenan el resto en su orden. Las fechas
+    /// las recalcula la app con la misma regla que «Editar pasos».
+    private static func addMoves(
+        _ moves: [Int: StepEntity],
+        steps: [StepEntity],
+        kit: GoalEntity,
+        changes: inout [ProposedStepChange],
+        actions: inout [PlanProposal.Action]
+    ) {
+        let movedIDs = Set(moves.values.map(\.id))
+        var rest = steps.filter { !$0.isCompleted && !movedIDs.contains($0.id) }[...]
+        var pendingOrder: [UUID] = []
+        for (index, step) in steps.enumerated() where !step.isCompleted {
+            if let moved = moves[index + 1] {
+                pendingOrder.append(moved.id)
+            } else if let next = rest.popFirst() {
+                pendingOrder.append(next.id)
+            }
+        }
+        var draft = StepListDraft(kit: kit)
+        draft.setPendingOrder(pendingOrder)
+        let order = draft.finalOrder
+        for position in moves.keys.sorted() {
+            guard let moved = moves[position] else { continue }
+            changes.append(ProposedStepChange(stepID: moved.id, stepLabel: label(kit, moved), from: nil, to: nil,
+                                              detail: String(localized: "Pasa a ser el paso \(position)"),
+                                              symbol: "arrow.up.arrow.down"))
+            actions.append(.reorder(order: order, movedStepID: moved.id))
+        }
+        let planned = draft.plannedDates(calendar: calendar)
+        for step in steps {
+            guard let to = planned[step.id], let from = step.suggestedDeadline,
+                  !calendar.isDate(from, inSameDayAs: to) else { continue }
+            changes.append(ProposedStepChange(stepID: step.id, stepLabel: label(kit, step), from: from, to: to))
+            actions.append(.setDate(stepID: step.id, date: to))
+        }
     }
 
     private struct PendingAddition {

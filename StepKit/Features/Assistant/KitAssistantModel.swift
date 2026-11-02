@@ -145,6 +145,8 @@ final class PlanProposal: Identifiable {
         /// `afterStepID` nil y `atStart` true: al principio; nil y false: al final.
         case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?, outcome: String?, description: String?)
         case remove(stepID: UUID)
+        /// Deja el plan en `order`; se repite con cada paso movido para marcarlos de uno en uno en la tarjeta.
+        case reorder(order: [UUID], movedStepID: UUID)
         case block(stepID: UUID, reason: String)
         case changeKPI(String)
         /// Nueva fecha final del Kit (los pasos se mueven con `setDate`).
@@ -184,6 +186,7 @@ final class PlanProposal: Identifiable {
             case .split(let id, let titles, _): "split|\(id)|\(titles.map { text($0) })"
             case .add(_, _, let title, _, let date, _, _): "add|\(text(title))|\(day(date))"
             case .remove(let id): "remove|\(id)"
+            case .reorder(let order, _): "reorder|\(order)"
             case .block(let id, _): "block|\(id)"
             case .changeKPI(let kpi): "kpi|\(text(kpi))"
             case .setKitDueDate(let date): "due|\(day(date))"
@@ -280,6 +283,9 @@ final class PlanProposal: Identifiable {
             guard let target = step(id) else { return }
             let detached = StepListEditor.remove(target, from: kit, context: context, at: now)
             StepListEditor.refreshReminders(of: detached, kit: kit)
+        case .reorder(let order, let moved):
+            StepListEditor.setOrder(order, of: kit, at: now)
+            highlights.record(.moved, for: moved)
         case .changeKPI(let kpi):
             kit.kpi = kpi
             kit.markModified(at: now)

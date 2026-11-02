@@ -560,4 +560,65 @@ struct StepListEditorTests {
         let prompt = AssistantIntent.reviewChanges.prompt(kit: makeKit(), planChanges: nil)
         #expect(prompt.contains("empieza por la conclusión") || prompt.contains("start with the conclusion"))
     }
+
+    // MARK: - El asistente propone reordenar
+
+    @Test("A move proposal reorders the plan, shows the change and adjusts the moved step's date")
+    func moveStepProposal() async throws {
+        let kit = makeKit(["Pesto", "Reunir", "Repasar"])
+        dated(kit, [1, 2, 3])
+        let plan = try proposal(#"{"type":"move_step","stepNumber":1,"newPosition":3}"#, kit: kit)
+        #expect(plan.changes.first?.symbol == "arrow.up.arrow.down")
+        #expect(plan.changes.count == 2)   // el movimiento y su nueva fecha
+        await accept(plan, in: kit)
+        #expect(titles(kit) == ["Reunir", "Repasar", "Pesto"])
+        #expect(orders(kit) == [0, 1, 2])
+        #expect(offsets(kit) == [2, 3, 3])
+    }
+
+    @Test("Several moves use the original positions as slots; the rest fill the free ones in order")
+    func severalMovesAsSlots() async throws {
+        let kit = makeKit(["A", "B", "C", "D"])
+        let plan = try proposal(#"{"type":"move_step","stepNumber":4,"newPosition":1},{"type":"move_step","stepNumber":1,"newPosition":3}"#, kit: kit)
+        await accept(plan, in: kit)
+        #expect(titles(kit) == ["D", "B", "A", "C"])
+    }
+
+    @Test("Completed steps keep their place when pending ones are moved around them")
+    func moveKeepsCompletedInPlace() async throws {
+        let kit = makeKit(["A", "Hecho", "C", "D"])
+        try step("Hecho", in: kit).isCompleted = true
+        let plan = try proposal(#"{"type":"move_step","stepNumber":4,"newPosition":1}"#, kit: kit)
+        await accept(plan, in: kit)
+        #expect(titles(kit) == ["D", "Hecho", "A", "C"])
+    }
+
+    @Test("Invalid moves are ignored: a completed step, its slot, out of range or a repeated position")
+    func invalidMovesIgnored() throws {
+        let kit = makeKit(["A", "Hecho", "C", "D"])
+        try step("Hecho", in: kit).isCompleted = true
+        let invalid = [
+            #"{"type":"move_step","stepNumber":2,"newPosition":1}"#,
+            #"{"type":"move_step","stepNumber":1,"newPosition":2}"#,
+            #"{"type":"move_step","stepNumber":1,"newPosition":9}"#,
+            #"{"type":"move_step","stepNumber":9,"newPosition":1}"#,
+            #"{"type":"move_step","stepNumber":1}"#
+        ]
+        for change in invalid {
+            let json = #"{"summary":"Cambio","changes":[\#(change)]}"#
+            let remote = try JSONDecoder().decode(AssistResponse.Proposal.self, from: Data(json.utf8))
+            #expect(RemoteProposalBuilder.build(remote, kit: kit) == nil)
+        }
+        let repeated = try proposal(#"{"type":"move_step","stepNumber":1,"newPosition":4},{"type":"move_step","stepNumber":3,"newPosition":4}"#, kit: kit)
+        #expect(repeated.changes.filter { $0.symbol == "arrow.up.arrow.down" }.count == 1)
+    }
+
+    @Test("Accepting a move proposal on an edited plan never duplicates or loses steps")
+    func moveWithEdit() async throws {
+        let kit = makeKit(["A", "B", "C"])
+        let plan = try proposal(#"{"type":"move_step","stepNumber":3,"newPosition":1},{"type":"edit_step","stepNumber":1,"newTitles":["A2"]}"#, kit: kit)
+        await accept(plan, in: kit)
+        #expect(titles(kit) == ["C", "A2", "B"])
+        #expect(kit.steps.count == 3)
+    }
 }

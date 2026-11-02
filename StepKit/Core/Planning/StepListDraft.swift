@@ -113,6 +113,14 @@ struct StepListDraft: Equatable {
         pending.move(fromOffsets: source, toOffset: destination)
     }
 
+    /// Ordena los pendientes según `ids`; los que no aparezcan quedan detrás, en su orden actual.
+    mutating func setPendingOrder(_ ids: [UUID]) {
+        let positions = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
+        pending = pending.enumerated().sorted {
+            (positions[$0.element.id] ?? ids.count + $0.offset) < (positions[$1.element.id] ?? ids.count + $1.offset)
+        }.map(\.element)
+    }
+
     mutating func add(_ step: StepDraft) {
         pending.append(step.normalized)
     }
@@ -219,7 +227,7 @@ struct StepListDraft: Equatable {
     // MARK: - Guardar
 
     /// Los pasos terminados no cambian de sitio: los pendientes ocupan los huecos que ya tenían.
-    private var finalOrder: [UUID] {
+    var finalOrder: [UUID] {
         var queue = pending.map(\.id)[...]
         var result: [UUID] = []
         for id in savedOrder where !removedIDs.contains(id) {
