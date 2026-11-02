@@ -184,6 +184,7 @@ struct KitAssistantChatView: View {
     /// Lo que se iba a enviar mientras se pide el permiso de IA externa.
     @State private var pendingSend: PendingSend?
     @State private var creatingKit = false
+    @State private var showingPro = false
 
     private enum PendingSend: Identifiable {
         case draft(String), intent(AssistantIntent)
@@ -236,6 +237,9 @@ struct KitAssistantChatView: View {
         .navigationTitle(step == nil ? conversation.title : String(localized: "Ayuda del paso"))
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
+        .sheet(isPresented: $showingPro) {
+            NavigationStack { SubscriptionView(reason: .cloudAI) }
+        }
         .fullScreenCover(isPresented: $creatingKit) {
             let suggestion = conversation.newKitSuggestion
             KitCreatorView(initialGoal: suggestion?.goal ?? suggestion?.title)
@@ -301,6 +305,9 @@ struct KitAssistantChatView: View {
             }
             if let suggestion = conversation.newKitSuggestion {
                 NewKitCard(suggestion: suggestion) { creatingKit = true }
+            }
+            if conversation.quotaReached {
+                QuotaReachedCard { showingPro = true }
             }
             if let step, step.isBlocked,
                conversation.viewModel.messages.contains(where: { $0.text == String(localized: "Me falta algo") }) {
@@ -372,6 +379,26 @@ struct KitAssistantChatView: View {
 // MARK: - Tarjetas
 
 /// Cambiar de tema no es un ajuste de este Kit: el asistente sugiere crear otro, ya precargado.
+/// Cupo mensual agotado: no es un fallo, y la salida es Pro, igual que al crear un Kit.
+struct QuotaReachedCard: View {
+    let onUpgrade: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(String(localized: "Has usado tus \(PlanLimits.freeCloudAIPerMonth) consultas de este mes")).font(.headline)
+            Button(action: onUpgrade) {
+                Label("Ver StepKit Pro", systemImage: "sparkles").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .accessibilityIdentifier("assistant.upgrade")
+        }
+        .padding(16)
+        .background(Color.accentColor.opacity(0.08), in: .rect(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.accentColor.opacity(0.2)))
+    }
+}
+
 struct NewKitCard: View {
     let suggestion: AssistResponse.Suggestion
     let onCreate: () -> Void

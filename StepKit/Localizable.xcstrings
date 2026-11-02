@@ -840,6 +840,26 @@
         }
       }
     },
+    "Has usado tus %lld consultas de este mes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've used your %lld requests this month"
+          }
+        }
+      }
+    },
+    "Ver StepKit Pro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See StepKit Pro"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

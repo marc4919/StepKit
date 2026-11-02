@@ -213,7 +213,7 @@ enum AssistRequestBuilder {
 // MARK: - Cliente
 
 enum KitAssistClient {
-    enum Failure: Error { case unavailable, server(Int) }
+    enum Failure: Error { case unavailable, quotaExceeded, server(Int) }
 
     static func send(_ request: AssistRequest, apiClient: any APIClientProtocol, token: String) async throws -> AssistResponse {
         var urlRequest = apiClient.authenticatedRequest(path: "/ai/assist", method: "POST", token: token)
@@ -225,9 +225,13 @@ enum KitAssistClient {
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         guard let http = response as? HTTPURLResponse else { throw Failure.unavailable }
         guard (200...299).contains(http.statusCode) else {
-            // 404: servidor sin asistente. 429: cupo de IA del plan gratuito agotado.
-            // En ambos casos responde el modelo del dispositivo, que no tiene cupo.
-            throw [404, 429].contains(http.statusCode) ? Failure.unavailable : Failure.server(http.statusCode)
+            // 429 es el cupo mensual de IA o, si no lo menciona, el límite de peticiones por minuto:
+            // solo lo primero se arregla con Pro. 404: servidor sin asistente.
+            if http.statusCode == 429 {
+                let reason = String(decoding: data, as: UTF8.self).lowercased()
+                throw reason.contains("quota") ? Failure.quotaExceeded : Failure.unavailable
+            }
+            throw http.statusCode == 404 ? Failure.unavailable : Failure.server(http.statusCode)
         }
         return try JSONDecoder().decode(AssistResponse.self, from: data)
     }
@@ -378,6 +382,7 @@ enum KitAssistant {
             // Permiso retirado mientras esperábamos: se descarta la respuesta.
             guard AIConsentManager().hasConsent else { return false }
             conversation.serverSummary = response.summary ?? conversation.serverSummary
+            conversation.quotaReached = false
             // Cada respuesta decide si sigue en pie la sugerencia de crear otro Kit.
             conversation.newKitSuggestion = response.suggestion.flatMap { $0.type == "new_kit" ? $0 : nil }
             let proposal = response.proposal.flatMap { RemoteProposalBuilder.build($0, kit: kit) }
@@ -388,6 +393,10 @@ enum KitAssistant {
                                                fromServer: true))
             }
             if let proposal { conversation.add(proposal) }
+            return true
+        } catch KitAssistClient.Failure.quotaExceeded {
+            // Las reacciones automáticas no dicen nada: no lo ha pedido la persona.
+            if visible { conversation.quotaReached = true }
             return true
         } catch KitAssistClient.Failure.unavailable {
             return false

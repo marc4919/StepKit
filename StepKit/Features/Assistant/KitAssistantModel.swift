@@ -45,6 +45,8 @@ final class KitConversation: Identifiable {
         proposal.anchorMessageID = viewModel.messages.last?.id
         proposals.append(proposal)
     }
+    /// El cupo mensual de IA se agotó al preguntar: se ofrece Pro en lugar de un error.
+    var quotaReached = false
     var preview: String? { viewModel.messages.last(where: { $0.sender == .assistant && !$0.isError })?.text }
 }
 
