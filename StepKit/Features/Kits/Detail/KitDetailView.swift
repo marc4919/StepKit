@@ -343,8 +343,8 @@ struct KitDetailView: View {
 
     private var addStepForm: some View {
         StepDraftFormView(step: StepDraft(minutes: ManualKit.stepMinutes(for: kitEntity), date: nil),
-                          dateIsOptional: true, unsetDateNote: "Sin fecha, toma la del paso anterior.",
-                          earliest: lastPendingDate, latestDate: kitEntity.targetDate) { step in
+                          dateIsOptional: true, unsetDateNote: "Sin fecha, se reparte hasta la fecha final.",
+                          earliest: ManualKit.lastFixedDate(of: kitEntity), latestDate: kitEntity.targetDate) { step in
             withAnimation(.smooth) {
                 _ = ManualKit.addStep(step.normalized, to: kitEntity, context: modelContext)
             }
@@ -352,10 +352,6 @@ struct KitDetailView: View {
             syncManager?.handleDataChange()
             NotificationService.shared.refreshStepReminders()
         }
-    }
-
-    private var lastPendingDate: Date? {
-        kitEntity.orderedActiveSteps.last { !$0.isCompleted }?.suggestedDeadline
     }
 
     /// En un Kit a mano, añadir pasos es lo principal: va en el plan y no escondido en «···».

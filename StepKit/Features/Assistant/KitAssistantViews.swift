@@ -203,6 +203,8 @@ struct KitAssistantChatView: View {
         conversation.stepID.flatMap { id in kit.orderedActiveSteps.first { $0.id == id } }
     }
 
+    /// Las sugerencias y las que se abren desde el plan: reintentar reenvía su texto completo, no el título.
+    private var sendableIntents: [AssistantIntent] { intents + [.reviewChanges, .suggestSteps] }
     private var intents: [AssistantIntent] { step == nil ? AssistantIntent.kit : AssistantIntent.step }
 
     var body: some View {
@@ -268,7 +270,7 @@ struct KitAssistantChatView: View {
                 }
             }
             guard !didSendInitial, let id = initialIntent,
-                  let intent = (intents + [AssistantIntent.reviewChanges, AssistantIntent.suggestSteps]).first(where: { $0.id == id }) else { return }
+                  let intent = sendableIntents.first(where: { $0.id == id }) else { return }
             didSendInitial = true
             // Si el asistente ya respondió a este mismo bloqueo (al anotarlo o al pedir ayuda antes),
             // se muestra esa ayuda y no se vuelve a pedir.
@@ -384,7 +386,7 @@ struct KitAssistantChatView: View {
         guard !vm.isResponding, let index = vm.messages.lastIndex(where: { $0.sender == .user }) else { return }
         let text = vm.messages[index].text
         vm.messages.removeSubrange(index...)
-        if let intent = intents.first(where: { $0.title == text }) { deliver(intent) } else { deliver(text) }
+        if let intent = sendableIntents.first(where: { $0.title == text }) { deliver(intent) } else { deliver(text) }
     }
 }
 

@@ -650,16 +650,47 @@ struct StepListEditorTests {
         #expect(try context.fetch(FetchDescriptor<ProgressEntryEntity>(predicate: #Predicate { $0.kitID == kitID })).isEmpty)
     }
 
-    @Test("A step added to a Kit goes last; without a date it takes the previous one's or today's")
-    func addStepDates() throws {
-        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(9), ownerID: "a", context: context)
+    @Test("Steps without a chosen date spread up to the final date as more are added")
+    func addStepSpreads() throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(8), ownerID: "a", context: context)
         ManualKit.addStep(StepDraft(title: "Uno", date: nil), to: kit, context: context)
         #expect(offsets(kit) == [0])
-        ManualKit.addStep(StepDraft(title: "Dos", date: day(3)), to: kit, context: context)
+        ManualKit.addStep(StepDraft(title: "Dos", date: nil), to: kit, context: context)
+        #expect(offsets(kit) == [0, 8])
         ManualKit.addStep(StepDraft(title: "Tres", date: nil), to: kit, context: context)
         #expect(titles(kit) == ["Uno", "Dos", "Tres"])
-        #expect(offsets(kit) == [0, 3, 3])
+        #expect(offsets(kit) == [0, 4, 8])
         #expect(orders(kit) == [0, 1, 2])
+    }
+
+    @Test("A chosen date never moves, and the others spread around it")
+    func addStepKeepsChosenDate() throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(8), ownerID: "a", context: context)
+        ManualKit.addStep(StepDraft(title: "Uno", date: nil), to: kit, context: context)
+        ManualKit.addStep(StepDraft(title: "Dos", date: day(4)), to: kit, context: context)
+        #expect(offsets(kit) == [0, 4])
+        ManualKit.addStep(StepDraft(title: "Tres", date: nil), to: kit, context: context)
+        ManualKit.addStep(StepDraft(title: "Cuatro", date: nil), to: kit, context: context)
+        #expect(offsets(kit) == [0, 4, 6, 8])
+        #expect(ManualKit.lastFixedDate(of: kit).map { Calendar.current.isDate($0, inSameDayAs: day(4)) } == true)
+    }
+
+    @Test("A date changed by other means stops moving with the spread")
+    func addStepRespectsLaterChange() throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(8), ownerID: "a", context: context)
+        ManualKit.addStep(StepDraft(title: "Uno", date: nil), to: kit, context: context)
+        let two = ManualKit.addStep(StepDraft(title: "Dos", date: nil), to: kit, context: context)
+        two.suggestedDeadline = day(2)
+        ManualKit.addStep(StepDraft(title: "Tres", date: nil), to: kit, context: context)
+        #expect(offsets(kit) == [0, 2, 8])
+    }
+
+    @Test("Without days left, the steps share today")
+    func addStepTightDates() throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(0), ownerID: "a", context: context)
+        ManualKit.addStep(StepDraft(title: "Uno", date: nil), to: kit, context: context)
+        ManualKit.addStep(StepDraft(title: "Dos", date: nil), to: kit, context: context)
+        #expect(offsets(kit) == [0, 0])
     }
 
     @Test("The assistant's steps for an empty plan keep their order, also when they all say step 0")

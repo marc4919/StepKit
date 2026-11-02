@@ -239,26 +239,22 @@ struct KitCreationFormContent: View {
             .disabled(!isFormValid)
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
+            .accessibilityHint(missingField ?? "")
             .accessibilityIdentifier("kitCreator.create")
         } footer: {
             VStack(alignment: .leading, spacing: 6) {
-                // Un botón apagado sin motivo parece roto: se dice qué falta.
-                if let missingField {
-                    Text(missingField)
-                        .accessibilityIdentifier("kitCreator.missing")
-                }
-                if let aiNotice {
-                    Text(aiNotice)
-                        .accessibilityIdentifier("kitCreator.aiNotice")
-                }
                 if let onStartFromScratch {
                     Button(startFromScratchTitle, action: onStartFromScratch)
                         .disabled(!canStartFromScratch)
                         .font(.subheadline.weight(.semibold))
                         .frame(maxWidth: .infinity)
-                        .padding(.top, 8)
+                        .padding(.vertical, 4)
                         .accessibilityHint("Crea el Kit a mano, sin IA")
                         .accessibilityIdentifier("kitCreator.fromScratch")
+                }
+                if let aiNotice {
+                    Text(aiNotice)
+                        .accessibilityIdentifier("kitCreator.aiNotice")
                 }
             }
             .padding(.top, 4)

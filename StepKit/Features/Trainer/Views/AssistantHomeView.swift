@@ -369,6 +369,7 @@ private struct AssistantUnavailableCard: View {
             if let onRetry {
                 Button("Reintentar", systemImage: "arrow.clockwise", action: onRetry)
                     .buttonStyle(.bordered)
+                    .frame(maxWidth: .infinity)
             }
         }
         .accessibilityElement(children: .combine)

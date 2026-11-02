@@ -1300,12 +1300,12 @@
         }
       }
     },
-    "Sin fecha, toma la del paso anterior.": {
+    "Sin fecha, se reparte hasta la fecha final.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Without a date, it takes the previous step's date."
+            "value": "Without a date, it spreads up to the final date."
           }
         }
       }
