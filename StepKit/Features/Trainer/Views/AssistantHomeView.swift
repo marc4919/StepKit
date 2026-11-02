@@ -53,7 +53,7 @@ struct AssistantIntent: Identifiable {
     ]
 
     /// Mensaje que se envía al modelo; menciona el Kit y el paso para no depender de la memoria.
-    func prompt(kit: GoalEntity?, step explicitStep: StepEntity? = nil) -> String {
+    func prompt(kit: GoalEntity?, step explicitStep: StepEntity? = nil, planChanges: String? = nil) -> String {
         let kitName = kit?.title ?? String(localized: "mi Kit")
         let step = explicitStep ?? kit?.nextStep
         let stepText = step.map { String(localized: "«\($0.stepTitle)» (\($0.estimateMinutes) min)") } ?? String(localized: "el siguiente paso")
@@ -76,7 +76,8 @@ struct AssistantIntent: Identifiable {
         case "change-date":
             return String(localized: "Quiero cambiar la fecha final de \(kitName). ¿Qué pasos tendría que mover?")
         case "review-changes":
-            return String(localized: "He cambiado a mano el plan de \(kitName). Comprueba si sigue teniendo sentido y propón los ajustes necesarios. Lo decidiré yo.")
+            // El asistente no puede proponer mover pasos de sitio: si el orden falla, debe decirlo con claridad.
+            return String(localized: "He cambiado a mano el plan de \(kitName). \(planChanges ?? "") Comprueba primero si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Si es así, dímelo con claridad, explica por qué y di qué orden recomiendas; ese cambio de orden lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Si todo encaja, dímelo. Lo decidiré yo.")
         case "still-sense":
             return String(localized: "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve.")
         default:

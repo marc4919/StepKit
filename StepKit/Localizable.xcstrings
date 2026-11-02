@@ -1120,12 +1120,42 @@
         }
       }
     },
-    "He cambiado a mano el plan de %@. Comprueba si sigue teniendo sentido y propón los ajustes necesarios. Lo decidiré yo.": {
+    "Más opciones": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "I changed the plan of %@ by hand. Check whether it still makes sense and suggest any adjustments. I will decide."
+            "value": "More Options"
+          }
+        }
+      }
+    },
+    "«%@» pasó del paso %lld al %lld.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” moved from step %2$lld to %3$lld."
+          }
+        }
+      }
+    },
+    "Quité «%@».": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I removed “%@”."
+          }
+        }
+      }
+    },
+    "He cambiado a mano el plan de %@. %@ Comprueba primero si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Si es así, dímelo con claridad, explica por qué y di qué orden recomiendas; ese cambio de orden lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Si todo encaja, dímelo. Lo decidiré yo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I changed the plan of %1$@ by hand. %2$@ First check whether the order is still logical: see if any step needs another one that now comes later. If so, tell me clearly, explain why and say which order you recommend; I will make that change myself in “Edit Steps”. Dates and free slots only afterwards. If everything fits, tell me. I will decide."
           }
         }
       }

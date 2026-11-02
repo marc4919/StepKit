@@ -389,6 +389,10 @@ final class StepKitUITests: XCTestCase {
     @MainActor
     private func editFixtureKit() -> SyncCheckpoint {
         let checkpoint = currentSyncCheckpoint()
+        // Detalles del Kit está dentro de «···».
+        let more = element("kit.more")
+        XCTAssertTrue(more.waitForExistence(timeout: defaultTimeout))
+        more.tap()
         let info = element(Identifier.kitInfo)
         XCTAssertTrue(info.waitForExistence(timeout: defaultTimeout))
         info.tap()

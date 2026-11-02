@@ -40,7 +40,7 @@ struct KitDetailView: View {
     @State private var presentedSheet: PresentedSheet?
     @State private var editingSteps = false
     /// Se reordenó o se quitó un paso de un plan preparado por la IA: se ofrece revisarlo con el asistente.
-    @State private var planChangedByHand = false
+    @State private var planChangesByHand: String?
     @State private var offeringPlanReview = false
     @State private var reviewConversation: KitConversation?
     @State private var segment = 0
@@ -135,7 +135,8 @@ struct KitDetailView: View {
             withAnimation(.easeInOut(duration: 0.2)) { barTitleShown = past }
         }
         .toolbar {
-            // Asistente primero, como en el paso; luego editar los pasos y detalles (con «Editar» dentro).
+            // Asistente primero, como en el paso; lo demás en «···»: con el Duo plegado las barras van en
+            // una sola columna y un botón más ya no cabía bien.
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink {
                     KitAssistantHubView(kit: kitEntity)
@@ -147,14 +148,17 @@ struct KitDetailView: View {
                 .simultaneousGesture(TapGesture().onEnded { KitAssistantTip().invalidate(reason: .actionPerformed) })
                 .accessibilityIdentifier("kit.assistant")
                 .accessibilityValue(pendingProposals == 0 ? "" : pendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(pendingProposals) propuestas pendientes"))
-                // Con el resultado ya confirmado, el plan es historial: no se edita.
-                if kitEntity.resultConfirmedAt == nil {
-                    Button("Editar pasos", systemImage: "list.bullet") { editingSteps = true }
-                        .accessibilityIdentifier("kit.editSteps")
+                Menu("Más opciones", systemImage: "ellipsis") {
+                    // Con el resultado ya confirmado, el plan es historial: no se edita.
+                    if kitEntity.resultConfirmedAt == nil {
+                        Button("Editar pasos", systemImage: "list.bullet") { editingSteps = true }
+                            .accessibilityIdentifier("kit.editSteps")
+                    }
+                    Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
+                        .accessibilityIdentifier("kit.info")
+                        .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
                 }
-                Button("Detalles del Kit", systemImage: "info.circle") { presentedSheet = .information }
-                    .accessibilityIdentifier("kit.info")
-                    .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
+                .accessibilityIdentifier("kit.more")
             }
         }
         .navigationDestination(isPresented: $showingResultReview) { ResultReviewView(kit: kitEntity) }
@@ -171,19 +175,21 @@ struct KitDetailView: View {
         }
         .sheet(isPresented: $editingSteps, onDismiss: {
             // Después de cerrar la hoja: una alerta no se presenta sobre otra que se está yendo.
-            if planChangedByHand {
-                planChangedByHand = false
-                offeringPlanReview = true
-            }
+            if planChangesByHand != nil { offeringPlanReview = true }
         }) {
-            KitStepsEditorView(kit: kitEntity) { planChangedByHand = true }
+            KitStepsEditorView(kit: kitEntity) { planChanges in
+                planChangesByHand = planChanges
+            }
         }
         .alert("Has cambiado el plan", isPresented: $offeringPlanReview) {
             Button("Revisar") {
                 let intent = AssistantIntent.reviewChanges
-                reviewConversation = KitAssistantStore.shared.newConversation(kit: kitEntity, title: intent.title)
+                let conversation = KitAssistantStore.shared.newConversation(kit: kitEntity, title: intent.title)
+                conversation.planChanges = planChangesByHand
+                planChangesByHand = nil
+                reviewConversation = conversation
             }
-            Button("Ahora no", role: .cancel) {}
+            Button("Ahora no", role: .cancel) { planChangesByHand = nil }
         } message: {
             Text("¿Quieres que el asistente compruebe el plan y sugiera ajustes? Lo que proponga podrás aceptarlo o descartarlo.")
         }

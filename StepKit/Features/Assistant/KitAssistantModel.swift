@@ -26,6 +26,8 @@ final class KitConversation: Identifiable {
     var serverSummary: String?
     /// El asistente propone otro Kit en vez de cambiar este: la conversación ofrece crearlo.
     var newKitSuggestion: AssistResponse.Suggestion?
+    /// Qué se cambió a mano en el plan, para la revisión que se ofrece al guardar.
+    var planChanges: String?
 
     init(kitID: UUID, stepID: UUID?, title: String) {
         self.kitID = kitID

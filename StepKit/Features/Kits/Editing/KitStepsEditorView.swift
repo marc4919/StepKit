@@ -14,8 +14,8 @@ struct KitStepsEditorView: View {
     private static let maxVisibleDateChanges = 6
 
     let kit: GoalEntity
-    /// Se reordenó o se quitó un paso de un Kit generado con IA.
-    var onPlanChanged: () -> Void = {}
+    /// Se reordenó o se quitó un paso de un Kit generado con IA. Recibe qué cambió, para el asistente.
+    var onPlanChanged: (String) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -26,7 +26,7 @@ struct KitStepsEditorView: View {
     @State private var confirmingDiscard = false
     @State private var confirmingDates = false
 
-    init(kit: GoalEntity, onPlanChanged: @escaping () -> Void = {}) {
+    init(kit: GoalEntity, onPlanChanged: @escaping (String) -> Void = { _ in }) {
         self.kit = kit
         self.onPlanChanged = onPlanChanged
         _draft = State(initialValue: StepListDraft(kit: kit))
@@ -207,13 +207,14 @@ struct KitStepsEditorView: View {
     }
 
     private func save() {
-        let offersReview = draft.changesPlanStructure && kit.sourceModel != StepListDraft.manualSource
+        let planChanges = draft.changesPlanStructure && kit.sourceModel != StepListDraft.manualSource
+            ? draft.structureSummary : nil
         let detached = draft.apply(to: kit, context: modelContext)
         try? modelContext.save()
         StepListEditor.refreshReminders(of: detached, kit: kit)
         syncManager?.handleDataChange()
         NotificationService.shared.refreshStepReminders()
-        if offersReview { onPlanChanged() }
+        if let planChanges { onPlanChanged(planChanges) }
         dismiss()
     }
 }

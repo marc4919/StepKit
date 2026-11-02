@@ -531,4 +531,34 @@ struct StepListEditorTests {
         draft.add(StepDraft(title: "Nuevo", date: day(5)))
         #expect(draft.passes(target: day(3)))
     }
+
+    @Test("The assistant is told which steps really moved and which went, not the ones shifted by them")
+    func draftStructureSummary() throws {
+        let kit = makeKit(["Reunir", "Repasar", "Pesto", "Cocer"])
+        var draft = StepListDraft(kit: kit)
+        draft.movePending(fromOffsets: [2], toOffset: 0)
+        draft.remove(try step("Cocer", in: kit).id)
+        #expect(draft.structureSummary.contains("Pesto"))
+        #expect(draft.structureSummary.contains("Cocer"))
+        #expect(!draft.structureSummary.contains("Reunir"))
+        #expect(!draft.structureSummary.contains("Repasar"))
+    }
+
+    @Test("The review request carries the changes and asks to check the order first")
+    func reviewPromptIncludesChanges() {
+        let kit = makeKit()
+        let prompt = AssistantIntent.reviewChanges.prompt(kit: kit, planChanges: "CAMBIO-DE-PRUEBA")
+        #expect(prompt.contains("CAMBIO-DE-PRUEBA"))
+        #expect(prompt.contains(kit.title))
+        #expect(prompt.count < 1_000)
+    }
+
+    @Test("The summary stays short enough for the server even with many changes")
+    func structureSummaryIsBounded() {
+        let kit = makeKit((1...60).map { "Paso con un título bastante largo número \($0)" })
+        var draft = StepListDraft(kit: kit)
+        draft.movePending(fromOffsets: IndexSet(0..<30), toOffset: 60)
+        let message = AssistantIntent.reviewChanges.prompt(kit: kit, planChanges: draft.structureSummary)
+        #expect(message.count <= 2_000)
+    }
 }

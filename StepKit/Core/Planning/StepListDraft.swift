@@ -92,6 +92,23 @@ struct StepListDraft: Equatable {
         return kept != savedOrder.filter { kept.contains($0) }
     }
 
+    /// Qué pasos cambiaron de sitio o se quitaron, para contárselo al asistente. Solo los movidos de
+    /// verdad, no los que se desplazan por ellos, y limitado: el mensaje al servidor tiene un tamaño máximo.
+    var structureSummary: String {
+        let maxLines = 8
+        let order = finalOrder
+        let stayed = stayedIDs
+        var lines: [String] = pending.compactMap { step in
+            guard !step.isNew, !stayed.contains(step.id),
+                  let from = savedOrder.firstIndex(of: step.id), let to = order.firstIndex(of: step.id) else { return nil }
+            return String(localized: "«\(step.title)» pasó del paso \(from + 1) al \(to + 1).")
+        }
+        lines += savedOrder.filter(removedIDs.contains).compactMap { id in
+            saved[id].map { String(localized: "Quité «\($0.title)».") }
+        }
+        return lines.prefix(maxLines).joined(separator: " ")
+    }
+
     mutating func movePending(fromOffsets source: IndexSet, toOffset destination: Int) {
         pending.move(fromOffsets: source, toOffset: destination)
     }
@@ -124,7 +141,12 @@ struct StepListDraft: Equatable {
             guard let date = step.date else { return false }
             return original.date.map { !calendar.isDate($0, inSameDayAs: date) } ?? true
         }.map(\.id))
+        moved.formUnion(pending.map(\.id).filter { saved[$0] != nil && !stayedIDs.contains($0) })
+        return moved
+    }
 
+    /// Pasos guardados que conservan su orden relativo: los demás son los que se han movido.
+    private var stayedIDs: Set<UUID> {
         let existing = pending.filter { saved[$0.id] != nil }
         let originalIndex = Dictionary(uniqueKeysWithValues: savedOrder.enumerated().map { ($1, $0) })
         // Subsecuencia creciente más larga: los que forman parte de ella no se han movido.
@@ -144,8 +166,7 @@ struct StepListDraft: Equatable {
             stayed.insert(existing[cursor].id)
             cursor = previous[cursor]
         }
-        moved.formUnion(existing.map(\.id).filter { !stayed.contains($0) })
-        return moved
+        return stayed
     }
 
     /// Fecha final de los pasos pendientes. El paso movido toma la del anterior (o la del siguiente, si

@@ -363,7 +363,7 @@ struct KitAssistantChatView: View {
     }
 
     private func deliver(_ intent: AssistantIntent) {
-        deliver(intent.title, sending: intent.prompt(kit: kit, step: step))
+        deliver(intent.title, sending: intent.prompt(kit: kit, step: step, planChanges: conversation.planChanges))
     }
 
     /// Reintenta el último mensaje con el asistente del servidor.
