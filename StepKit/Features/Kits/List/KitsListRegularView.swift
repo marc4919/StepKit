@@ -18,7 +18,12 @@ struct KitsListRegularView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var detailSize: CGSize?
     @State private var presentedOnce = false
+    @State private var screenWidth: CGFloat = 0
     
+    private var preferredVisibility: NavigationSplitViewVisibility {
+        screenWidth < 900 ? .detailOnly : .all
+    }
+
     /// Sin Kits, o con el último ya saliendo: así el cambio a Mis Kits a pantalla completa se funde a la
     /// vez que el Kit se va de la lista, en una sola transición. Esperar al borrado real añadía un
     /// segundo fundido, entre dos estados vacíos iguales, con la animación de entrada repetida.
@@ -135,10 +140,10 @@ struct KitsListRegularView: View {
             // Ancho de pantalla, con las zonas seguras: en horizontal, sin ellas, parecía que no cabían.
             $0.size.width + $0.safeAreaInsets.leading + $0.safeAreaInsets.trailing
         } action: { width in
+            screenWidth = width
             // Por debajo de 900 pt (iPad o iPhone Duo abierto en vertical) no caben las dos columnas: el
             // detalle ocupa toda la pantalla y Mis Kits queda a un toque. En horizontal se ven las dos.
-            let target: NavigationSplitViewVisibility = width < 900 ? .detailOnly : .all
-            guard target != columnVisibility else {
+            guard preferredVisibility != columnVisibility else {
                 presentedOnce = true
                 return
             }
@@ -146,12 +151,14 @@ struct KitsListRegularView: View {
             // la barra lateral y descarta un cambio inmediato (iOS 27.1, iPhone Duo). Después, al
             // plegar o girar, el cambio es inmediato para que no aparezca la barra un instante.
             if presentedOnce {
-                columnVisibility = target
+                columnVisibility = preferredVisibility
             } else {
                 presentedOnce = true
                 Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(300))
-                    columnVisibility = target
+                    // Con el ancho de ahora: al arrancar en horizontal, la primera medida aún es la de
+                    // vertical y aplicarla ocultaba la barra lateral sin que nadie la tocara.
+                    columnVisibility = preferredVisibility
                 }
             }
         }
