@@ -661,14 +661,15 @@ struct DelayedReveal<Content: View>: View {
 /// del paso van en esa franja y con las pestañas no cabían. Ahí el sistema anima la franja por fases
 /// y, al volver al Kit, el hueco de las pestañas tarda medio segundo en llenarse; es su comportamiento.
 struct HidesTabBarSmoothly: ViewModifier {
+    var always = false
     @Environment(\.isPresented) private var isPresented
 
     func body(content: Content) -> some View {
-        content.toolbarVisibility(isPresented ? .hidden : .visible, for: .tabBar)
+        content.toolbarVisibility(always || isPresented ? .hidden : .visible, for: .tabBar)
     }
 }
 
 extension View {
-    func hidesTabBarSmoothly() -> some View { modifier(HidesTabBarSmoothly()) }
+    func hidesTabBarSmoothly(always: Bool = false) -> some View { modifier(HidesTabBarSmoothly(always: always)) }
 }
 
