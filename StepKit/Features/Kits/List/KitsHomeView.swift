@@ -110,7 +110,8 @@ struct KitsHomeView: View {
                     }
                     if let kit = continueKit {
                         Section {
-                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit, onStep: kit.nextStep)) {
+                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit, onStep: kit.nextStep),
+                                         isNextStepOpen: hasDetailColumn && kit.nextStep.map(viewModel.detailPath.contains) == true) {
                                 if let step = kit.nextStep {
                                     if hasDetailColumn {
                                         openedLastKitAutomatically = false
@@ -230,6 +231,8 @@ enum KitsHomeLayout {
 private struct ContinueCard: View {
     let kit: GoalEntity
     let lastProgress: ProgressEntryEntity?
+    /// Con dos columnas, el paso ya se ve a la derecha: «Continuar» no tendría nada que hacer.
+    var isNextStepOpen = false
     let onContinue: () -> Void
     let onOpenKit: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -340,12 +343,19 @@ private struct ContinueCard: View {
                 }
             }
             Button(action: onContinue) {
-                Label("Continuar", systemImage: "chevron.right")
-                    .labelStyle(TrailingIconLabelStyle())
-                    .frame(maxWidth: .infinity)
+                Group {
+                    if isNextStepOpen {
+                        Text("Abierto")
+                    } else {
+                        Label("Continuar", systemImage: "chevron.right")
+                            .labelStyle(TrailingIconLabelStyle())
+                    }
+                }
+                .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .disabled(isNextStepOpen)
             .accessibilityIdentifier("kit.continue")
             .accessibilityHint("Abre el siguiente paso de \(kit.title)")
         }

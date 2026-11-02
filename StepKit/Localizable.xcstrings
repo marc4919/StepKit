@@ -920,6 +920,16 @@
         }
       }
     },
+    "Abierto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
