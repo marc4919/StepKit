@@ -48,11 +48,31 @@ enum StepListEditor {
         return new
     }
 
-    /// Borrado lógico del paso; los demás cierran el hueco.
-    static func remove(_ step: StepEntity, from kit: GoalEntity, at now: Date = Date()) {
+    /// Borrado lógico del paso; los demás cierran el hueco y sus sesiones pasan al Kit, para no perder
+    /// tiempo reservado. Devuelve esas sesiones: su aviso nombraba el paso (ver `refreshReminders`).
+    @discardableResult
+    static func remove(
+        _ step: StepEntity,
+        from kit: GoalEntity,
+        context: ModelContext,
+        at now: Date = Date()
+    ) -> [WorkSessionEntity] {
         step.deletedAt = now
         step.markModified(at: now)
         renumber(kit, at: now)
+        let detached = sessions(of: step, in: kit, context: context)
+        for session in detached {
+            session.stepID = nil
+            session.markModified(at: now)
+        }
+        return detached
+    }
+
+    /// Sesiones activas reservadas para el paso.
+    static func sessions(of step: StepEntity, in kit: GoalEntity, context: ModelContext) -> [WorkSessionEntity] {
+        let kitID = kit.id
+        let descriptor = FetchDescriptor<WorkSessionEntity>(predicate: #Predicate { $0.kitID == kitID })
+        return ((try? context.fetch(descriptor)) ?? []).filter { $0.stepID == step.id && $0.deletedAt == nil }
     }
 
     /// Lleva el paso a `index` dentro de los pasos activos (se recorta al rango válido).
@@ -62,6 +82,49 @@ enum StepListEditor {
         steps.remove(at: current)
         steps.insert(step, at: min(max(index, 0), steps.count))
         assignOrder(to: steps, at: now)
+    }
+
+    /// Da al paso una fecha acorde con su sitio en el plan y mueve los siguientes solo si hace falta.
+    /// Si su fecha ya cabe entre la del anterior y la del siguiente, se queda como está.
+    static func settleDate(of step: StepEntity, in kit: GoalEntity, calendar: Calendar = .current, at now: Date = Date()) {
+        guard !step.isCompleted else { return }
+        let steps = kit.orderedActiveSteps
+        guard let index = steps.firstIndex(where: { $0.id == step.id }) else { return }
+        let previous = steps[..<index].last { !$0.isCompleted && $0.suggestedDeadline != nil }?.suggestedDeadline
+        let next = steps[(index + 1)...].first { !$0.isCompleted && $0.suggestedDeadline != nil }?.suggestedDeadline
+        var date = step.suggestedDeadline
+        let fits = date.map { current in
+            (previous.map { $0 <= current || calendar.isDate($0, inSameDayAs: current) } ?? true)
+                && (next.map { current <= $0 || calendar.isDate($0, inSameDayAs: current) } ?? true)
+        } ?? false
+        if !fits { date = previous ?? next ?? date }
+
+        let slots = steps.enumerated().map { offset, candidate in
+            PlanReschedule.Slot(id: candidate.id,
+                                date: candidate.id == step.id ? date : candidate.suggestedDeadline,
+                                isCompleted: candidate.isCompleted,
+                                isFixed: offset < index)
+        }
+        let resolved = PlanReschedule.resolve(slots, calendar: calendar)
+        for candidate in steps[index...] {
+            guard let new = resolved[candidate.id] else { continue }
+            if let current = candidate.suggestedDeadline, calendar.isDate(current, inSameDayAs: new) { continue }
+            candidate.suggestedDeadline = new
+            candidate.markModified(at: now)
+        }
+    }
+
+    /// Rehace los avisos de las sesiones que han pasado al Kit: ya no deben nombrar el paso borrado.
+    @MainActor
+    static func refreshReminders(of sessions: [WorkSessionEntity], kit: GoalEntity) {
+        let withReminder = sessions.filter(\.reminderEnabled)
+        guard !withReminder.isEmpty else { return }
+        let title = kit.title
+        Task { @MainActor in
+            for session in withReminder {
+                await NotificationService.shared.scheduleReminder(for: session, kitTitle: title, stepTitle: nil)
+            }
+        }
     }
 
     /// Numera los pasos activos de 0 a n. Solo marca como modificados los que cambian, para sincronizar lo justo.

@@ -940,6 +940,86 @@
         }
       }
     },
+    "Editar pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Steps"
+          }
+        }
+      }
+    },
+    "Añadir paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Step"
+          }
+        }
+      }
+    },
+    "¿Quitar este paso?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove this step?"
+          }
+        }
+      }
+    },
+    "Quitar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        }
+      }
+    },
+    "Hecho": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Abre el editor del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the step editor"
+          }
+        }
+      }
+    },
+    "Sesiones reservadas: %lld. Pasarán al Kit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Booked sessions: %lld. They will move to the Kit."
+          }
+        }
+      }
+    },
+    "Avances: %lld. Se conservan en el Registro.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress notes: %lld. They stay in the Log."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

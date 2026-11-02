@@ -70,7 +70,7 @@ struct StepListEditorTests {
     func removeClosesGap() throws {
         let kit = makeKit()
         let target = try step("B", in: kit)
-        StepListEditor.remove(target, from: kit)
+        StepListEditor.remove(target, from: kit, context: context)
         #expect(titles(kit) == ["A", "C"])
         #expect(orders(kit) == [0, 1])
         #expect(target.deletedAt != nil)
@@ -93,7 +93,7 @@ struct StepListEditorTests {
     func moveRemovedStep() throws {
         let kit = makeKit()
         let target = try step("B", in: kit)
-        StepListEditor.remove(target, from: kit)
+        StepListEditor.remove(target, from: kit, context: context)
         StepListEditor.move(target, to: 0, in: kit)
         #expect(titles(kit) == ["A", "C"])
     }
@@ -114,7 +114,7 @@ struct StepListEditorTests {
         let last = try step("C", in: kit)
         let firstDate = first.updatedAt
         let lastDate = last.updatedAt
-        StepListEditor.remove(try step("B", in: kit), from: kit, at: Date().addingTimeInterval(60))
+        StepListEditor.remove(try step("B", in: kit), from: kit, context: context, at: Date().addingTimeInterval(60))
         #expect(first.updatedAt == firstDate)
         #expect(last.updatedAt > lastDate)
     }
@@ -278,5 +278,111 @@ struct StepListEditorTests {
         await accept(plan, in: kit)
         #expect(titles(kit) == ["A", "B", "C"])
         #expect(offsets(kit) == [4, 4, 4])
+    }
+
+    // MARK: - Fase 2: borrar con sesiones y fechas al mover
+
+    private func session(for step: StepEntity, in kit: GoalEntity) -> WorkSessionEntity {
+        let session = WorkSessionEntity(ownerID: "a", kitID: kit.id, stepID: step.id, startsAt: day(2),
+                                        durationMinutes: 30, reminderEnabled: false)
+        context.insert(session)
+        return session
+    }
+
+    @Test("Removing a step moves its sessions to the Kit; other steps' sessions stay")
+    func removeDetachesSessions() throws {
+        let kit = makeKit()
+        let a = try step("A", in: kit)
+        let b = try step("B", in: kit)
+        let own = session(for: b, in: kit)
+        let other = session(for: a, in: kit)
+        #expect(StepListEditor.sessions(of: b, in: kit, context: context).count == 1)
+        let before = own.updatedAt
+        let detached = StepListEditor.remove(b, from: kit, context: context, at: Date().addingTimeInterval(60))
+        #expect(detached.map(\.id) == [own.id])
+        #expect(own.stepID == nil)
+        #expect(own.kitID == kit.id)
+        #expect(own.deletedAt == nil)
+        #expect(own.updatedAt > before)
+        #expect(other.stepID == a.id)
+    }
+
+    @Test("An already deleted session isn't counted or touched")
+    func removeIgnoresDeletedSessions() throws {
+        let kit = makeKit()
+        let b = try step("B", in: kit)
+        let gone = session(for: b, in: kit)
+        gone.markAsDeleted()
+        #expect(StepListEditor.sessions(of: b, in: kit, context: context).isEmpty)
+        #expect(StepListEditor.remove(b, from: kit, context: context).isEmpty)
+        #expect(gone.stepID == b.id)
+    }
+
+    @Test("Removing through the assistant also moves the step's sessions to the Kit")
+    func assistantRemoveDetachesSessions() async throws {
+        let kit = makeKit()
+        let b = try step("B", in: kit)
+        let own = session(for: b, in: kit)
+        let plan = PlanProposal(title: "Quitar", changes: [], impact: "", actions: [.remove(stepID: b.id)])
+        await accept(plan, in: kit)
+        #expect(own.stepID == nil)
+    }
+
+    private func moveSettling(_ title: String, to index: Int, in kit: GoalEntity) throws {
+        let target = try step(title, in: kit)
+        StepListEditor.move(target, to: index, in: kit)
+        StepListEditor.settleDate(of: target, in: kit)
+    }
+
+    @Test("A step moved later takes the previous step's date and the rest stay")
+    func moveLaterTakesPreviousDate() throws {
+        let kit = makeKit(["A", "B", "C", "D"])
+        dated(kit, [1, 2, 3, 4])
+        try moveSettling("A", to: 2, in: kit)
+        #expect(titles(kit) == ["B", "C", "A", "D"])
+        #expect(offsets(kit) == [2, 3, 3, 4])
+    }
+
+    @Test("A step moved to the start takes the next step's date")
+    func moveToStartTakesNextDate() throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 3])
+        try moveSettling("C", to: 0, in: kit)
+        #expect(titles(kit) == ["C", "A", "B"])
+        #expect(offsets(kit) == [1, 1, 2])
+    }
+
+    @Test("A date that already fits between its neighbours doesn't change")
+    func moveKeepsFittingDate() throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [2, 2, 2])
+        try moveSettling("C", to: 1, in: kit)
+        #expect(offsets(kit) == [2, 2, 2])
+    }
+
+    @Test("Moving into a full day pushes the moved step and later steps only as needed")
+    func moveIntoFullDay() throws {
+        let kit = makeKit(["A", "B", "C", "D", "E"])
+        dated(kit, [1, 1, 1, 2, 9])
+        try moveSettling("E", to: 3, in: kit)
+        #expect(titles(kit) == ["A", "B", "C", "E", "D"])
+        #expect(offsets(kit) == [1, 1, 1, 2, 2])
+    }
+
+    @Test("Completed steps keep their dates and don't count as neighbours")
+    func moveIgnoresCompletedSteps() throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [8, 2, 3])
+        try step("A", in: kit).isCompleted = true
+        try moveSettling("C", to: 1, in: kit)
+        #expect(titles(kit) == ["A", "C", "B"])
+        #expect(offsets(kit) == [8, 2, 2])
+    }
+
+    @Test("Settling a step in a Kit without dates leaves it without a date")
+    func settleWithoutDates() throws {
+        let kit = makeKit()
+        StepListEditor.settleDate(of: try step("B", in: kit), in: kit)
+        #expect(offsets(kit) == [nil, nil, nil])
     }
 }

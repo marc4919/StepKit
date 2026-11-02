@@ -38,6 +38,7 @@ struct KitDetailView: View {
     @Environment(\.apiClient) private var apiClient: any APIClientProtocol
     @Environment(AuthManager.self) private var authManager
     @State private var presentedSheet: PresentedSheet?
+    @State private var editingSteps = false
     @State private var segment = 0
     @State private var headerHeight: CGFloat = 0
     @State private var barTitleShown = false
@@ -77,7 +78,11 @@ struct KitDetailView: View {
                     // Pantalla ancha (iPhone Duo abierto, iPad): plan y registro a la vez, sin conmutador.
                     HStack(alignment: .top, spacing: 20) {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Plan").font(.title3.bold())
+                            HStack {
+                                Text("Plan").font(.title3.bold())
+                                Spacer()
+                                editStepsButton
+                            }
                             stepsSection
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,6 +104,8 @@ struct KitDetailView: View {
                     }
                     .accessibilityIdentifier("kit.segment")
                     if segment == 0 {
+                        editStepsButton
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                         stepsSection
                     } else {
                         logSection
@@ -159,6 +166,7 @@ struct KitDetailView: View {
             ProgressLog.importLegacyKitNotes(for: kitEntity, context: modelContext)
             reactToOverdueSteps()
         }
+        .sheet(isPresented: $editingSteps) { KitStepsEditorView(kit: kitEntity) }
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
             case .information:
@@ -292,6 +300,16 @@ struct KitDetailView: View {
 
     /// Cabeceras de sección por semana (por día si el Kit cabe en dos semanas), como las listas agrupadas
     /// de iOS, con la regla que comparte con la vista previa al crear (`PlanGrouping`).
+    /// Con el resultado ya confirmado, el plan es historial: no se edita.
+    @ViewBuilder private var editStepsButton: some View {
+        if kitEntity.resultConfirmedAt == nil {
+            Button("Editar") { editingSteps = true }
+                .font(.subheadline.weight(.semibold))
+                .accessibilityLabel("Editar pasos")
+                .accessibilityIdentifier("kit.editSteps")
+        }
+    }
+
     private var stepsSection: some View {
         Group {
             if kitEntity.orderedActiveSteps.isEmpty {

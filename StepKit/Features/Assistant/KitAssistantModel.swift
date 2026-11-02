@@ -276,7 +276,8 @@ final class PlanProposal: Identifiable {
                    short: outcome ?? "", long: description ?? "")
         case .remove(let id):
             guard let target = step(id) else { return }
-            StepListEditor.remove(target, from: kit, at: now)
+            let detached = StepListEditor.remove(target, from: kit, context: context, at: now)
+            StepListEditor.refreshReminders(of: detached, kit: kit)
         case .changeKPI(let kpi):
             kit.kpi = kpi
             kit.markModified(at: now)
