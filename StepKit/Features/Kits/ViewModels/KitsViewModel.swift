@@ -42,8 +42,17 @@ final class KitsViewModel {
 
     /// Con dos columnas, el paso se abre encima de su Kit: así atrás siempre lleva al plan.
     func continueStep(_ step: StepEntity, of kit: GoalEntity) {
-        selectKit(kit)
-        detailPath = [step]
+        guard selectedKitId != kit.id else {
+            detailPath = [step]
+            return
+        }
+        openKitPlan(kit)
+        // Al cambiar de Kit la columna descarta una ruta puesta a la vez: el paso entra justo después.
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(150))
+            guard selectedKitId == kit.id else { return }
+            detailPath = [step]
+        }
     }
 
     func clearSelection() {

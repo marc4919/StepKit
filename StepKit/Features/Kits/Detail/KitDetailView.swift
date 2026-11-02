@@ -11,6 +11,15 @@ import SwiftUI
 import TipKit
 import SwiftData
 
+extension View {
+    /// Abre los pasos del plan. Va en la raíz de la pila, no en el Kit, para que exista antes que él.
+    func stepDestinations() -> some View {
+        navigationDestination(for: StepEntity.self) { step in
+            StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? 1)
+        }
+    }
+}
+
 struct KitDetailView: View {
     private enum PresentedSheet: String, Identifiable {
         case information
@@ -139,9 +148,6 @@ struct KitDetailView: View {
             }
         }
         .navigationDestination(isPresented: $showingResultReview) { ResultReviewView(kit: kitEntity) }
-        .navigationDestination(for: StepEntity.self) { step in
-            StepDetailView(stepEntity: step, stepNumber: kitEntity.position(of: step))
-        }
         .onAppear {
             if opensResultReview {
                 onResultReviewOpened()
@@ -476,7 +482,7 @@ private struct PlanStepRow: View {
     container.mainContext.insert(kitEntity)
 
     return NavigationStack {
-        KitDetailView(kitEntity: kitEntity)
+        KitDetailView(kitEntity: kitEntity).stepDestinations()
     }
     .modelContainer(container)
 }

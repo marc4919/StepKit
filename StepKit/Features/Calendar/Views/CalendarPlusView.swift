@@ -156,6 +156,7 @@ struct CalendarPlusView: View {
                     .accessibilityIdentifier("calendar.add")
                 }
             }
+            .stepDestinations()
             .navigationDestination(for: GoalNavigation.self) { nav in
                 if let goalEntity = visibleGoalEntities.first(where: { $0.id == nav.id }) {
                     KitDetailView(kitEntity: goalEntity)

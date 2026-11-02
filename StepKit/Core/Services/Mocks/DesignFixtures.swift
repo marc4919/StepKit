@@ -138,7 +138,7 @@ struct DesignFixtureRoot: View {
                 if scenario == .step || scenario == .blocked, let step = portfolioStep {
                     NavigationStack { StepDetailView(stepEntity: step, stepNumber: 2) }
                 } else if scenario == .kit || scenario == .assistantKit, let kit = portfolioStep?.goal {
-                    NavigationStack { KitDetailView(kitEntity: kit) }
+                    NavigationStack { KitDetailView(kitEntity: kit).stepDestinations() }
                 } else if scenario == .assistant, let kit = portfolioStep?.goal {
                     NavigationStack { KitAssistantHubView(kit: kit) }
                 } else if scenario == .assistantStep, let step = portfolioStep3 {

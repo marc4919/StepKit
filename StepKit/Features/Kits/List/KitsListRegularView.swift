@@ -104,6 +104,7 @@ struct KitsListRegularView: View {
             .navigationSplitViewColumnWidth(min: 360, ideal: 400, max: 440)
         } detail: {
             NavigationStack(path: $viewModel.detailPath) {
+                Group {
                 if let kitEntity = viewModel.selectedKitEntity {
                     KitDetailView(kitEntity: kitEntity,
                                   opensResultReview: viewModel.reviewOnOpenKitID == kitEntity.id,
@@ -119,6 +120,8 @@ struct KitsListRegularView: View {
                             .buttonStyle(.glassProminent)
                     }
                 }
+                }
+                .stepDestinations()
             }
             // La columna publica su tamaño: el paso lo usa como primera estimación de su disposición.
             .onGeometryChange(for: CGSize.self) { $0.size } action: { detailSize = $0 }
@@ -128,12 +131,17 @@ struct KitsListRegularView: View {
         // En toda la vista dividida, no en la columna de detalle: puesto allí, las pantallas apiladas
         // (resultado, paso) no lo heredaban y «Volver a Mis Kits» solo retrocedía una pantalla.
         .environment(\.returnToKits, { viewModel.clearSelection() })
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
-            // Por debajo de 1100 pt (iPad en vertical, iPhone Duo abierto en vertical u horizontal) el detalle
-            // ocupa toda la pantalla y Mis Kits queda a un toque. Con el Duo en horizontal no caben las dos
-            // columnas y la lista acababa encima del Kit, tapándolo.
-            let target: NavigationSplitViewVisibility = width < 1100 ? .detailOnly : .all
-            guard target != columnVisibility else { return }
+        .onGeometryChange(for: CGFloat.self) {
+            // Ancho de pantalla, con las zonas seguras: en horizontal, sin ellas, parecía que no cabían.
+            $0.size.width + $0.safeAreaInsets.leading + $0.safeAreaInsets.trailing
+        } action: { width in
+            // Por debajo de 900 pt (iPad o iPhone Duo abierto en vertical) no caben las dos columnas: el
+            // detalle ocupa toda la pantalla y Mis Kits queda a un toque. En horizontal se ven las dos.
+            let target: NavigationSplitViewVisibility = width < 900 ? .detailOnly : .all
+            guard target != columnVisibility else {
+                presentedOnce = true
+                return
+            }
             // Diferido solo la primera vez: durante su primera presentación el split vuelve a mostrar
             // la barra lateral y descarta un cambio inmediato (iOS 27.1, iPhone Duo). Después, al
             // plegar o girar, el cambio es inmediato para que no aparezca la barra un instante.

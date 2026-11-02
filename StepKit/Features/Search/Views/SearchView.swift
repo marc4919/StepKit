@@ -91,6 +91,7 @@ struct SearchView: View {
             .onChange(of: isSearching) { _, searching in
                 if !searching && query.isEmpty && navigationPath.isEmpty { onDismiss() }
             }
+            .stepDestinations()
             .navigationDestination(for: GoalNavigation.self) { nav in
                 if let kit = kits.first(where: { $0.id == nav.id }) {
                     KitDetailView(kitEntity: kit)
