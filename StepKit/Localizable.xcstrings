@@ -930,6 +930,16 @@
         }
       }
     },
+    "Otros pasos se mueven para mantener el orden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other steps move to keep the order."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

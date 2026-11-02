@@ -178,4 +178,105 @@ struct StepListEditorTests {
         #expect(try step("B2", in: kit).estimateMinutes == 15)
         #expect(proposal.state == .accepted)
     }
+
+    // MARK: - Fechas de los pasos que añade el asistente
+
+    private func day(_ offset: Int, from today: Date = Calendar.current.startOfDay(for: Date())) -> Date {
+        Calendar.current.date(bySettingHour: 12, minute: 0, second: 0,
+                              of: Calendar.current.date(byAdding: .day, value: offset, to: today)!)!
+    }
+
+    private func proposal(_ changes: String, impact: String = "El resto no cambia", kit: GoalEntity) throws -> PlanProposal {
+        let json = #"{"summary":"Cambio","impact":"\#(impact)","changes":[\#(changes)]}"#
+        let remote = try JSONDecoder().decode(AssistResponse.Proposal.self, from: Data(json.utf8))
+        return try #require(RemoteProposalBuilder.build(remote, kit: kit))
+    }
+
+    private func text(_ date: Date) -> String { AssistRequestBuilder.day(date)! }
+
+    private func accept(_ proposal: PlanProposal, in kit: GoalEntity) async {
+        await proposal.accept(in: kit, context: context, highlights: ChangeHighlights())
+    }
+
+    private func dated(_ kit: GoalEntity, _ dates: [Int]) {
+        for (step, offset) in zip(kit.orderedActiveSteps, dates) { step.suggestedDeadline = day(offset) }
+    }
+
+    private func offsets(_ kit: GoalEntity) -> [Int?] {
+        let today = Calendar.current.startOfDay(for: Date())
+        return kit.orderedActiveSteps.map { step in
+            step.suggestedDeadline.flatMap { Calendar.current.dateComponents([.day], from: today, to: Calendar.current.startOfDay(for: $0)).day }
+        }
+    }
+
+    @Test("A new step can't land before the previous one, and the rest stays put when there's room")
+    func addedStepKeepsOrder() async throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 3])
+        let plan = try proposal(#"{"type":"add_step","stepNumber":1,"newDate":"\#(text(day(0)))","newTitles":["Nuevo"]}"#, kit: kit)
+        #expect(plan.impact == "El resto no cambia")
+        #expect(plan.changes.count == 1)
+        await accept(plan, in: kit)
+        #expect(titles(kit) == ["A", "Nuevo", "B", "C"])
+        #expect(offsets(kit) == [1, 1, 2, 3])
+    }
+
+    @Test("A later date pushes only the steps that would end up before it, and the card shows them")
+    func addedStepPushesFollowers() async throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 6])
+        let plan = try proposal(#"{"type":"add_step","stepNumber":1,"newDate":"\#(text(day(4)))","newTitles":["Nuevo"]}"#, kit: kit)
+        #expect(plan.changes.count == 2)
+        #expect(plan.impact == String(localized: "Otros pasos se mueven para mantener el orden."))
+        await accept(plan, in: kit)
+        #expect(offsets(kit) == [1, 4, 4, 6])
+    }
+
+    @Test("A full day pushes the new step to the next one")
+    func addedStepRespectsDailyMaximum() async throws {
+        let kit = makeKit(["A", "B", "C", "D"])
+        dated(kit, [1, 1, 1, 5])
+        let plan = try proposal(#"{"type":"add_step","stepNumber":3,"newDate":"\#(text(day(1)))","newTitles":["Nuevo"]}"#, kit: kit)
+        await accept(plan, in: kit)
+        #expect(offsets(kit) == [1, 1, 1, 2, 5])
+    }
+
+    @Test("Without a date, a new step takes the previous step's, or the first one's at the start")
+    func addedStepWithoutDate() async throws {
+        let kit = makeKit(["A", "B"])
+        dated(kit, [2, 4])
+        let plan = try proposal(#"{"type":"add_step","stepNumber":1,"newTitles":["Medio"]},{"type":"add_step","stepNumber":0,"newTitles":["Inicio"]}"#, kit: kit)
+        await accept(plan, in: kit)
+        #expect(titles(kit) == ["Inicio", "A", "Medio", "B"])
+        #expect(offsets(kit) == [2, 2, 2, 4])
+    }
+
+    @Test("Steps before the new one keep their dates even if they were already out of order")
+    func addedStepLeavesEarlierStepsAlone() async throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [5, 2, 7])
+        let plan = try proposal(#"{"type":"add_step","stepNumber":2,"newDate":"\#(text(day(3)))","newTitles":["Nuevo"]}"#, kit: kit)
+        await accept(plan, in: kit)
+        #expect(offsets(kit) == [5, 2, 3, 7])
+    }
+
+    @Test("Going past the Kit's final date is stated in the proposal")
+    func addedStepPastFinalDate() throws {
+        let kit = makeKit(["A", "B"])
+        dated(kit, [1, 2])
+        kit.targetDate = day(3)
+        let plan = try proposal(#"{"type":"add_step","stepNumber":2,"newDate":"\#(text(day(5)))","newTitles":["Nuevo"]}"#, kit: kit)
+        #expect(plan.impact == String(localized: "Algún paso quedaría después de la fecha final del Kit, el \(day(3).formatted(.dateTime.day().month(.wide)))."))
+    }
+
+    @Test("Moving a step works as before: the plan keeps its order")
+    func moveProposalUnchanged() async throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 3])
+        let plan = try proposal(#"{"type":"move_step_date","stepNumber":1,"newDate":"\#(text(day(4)))"}"#, kit: kit)
+        #expect(plan.impact == "El resto no cambia")
+        await accept(plan, in: kit)
+        #expect(titles(kit) == ["A", "B", "C"])
+        #expect(offsets(kit) == [4, 4, 4])
+    }
 }

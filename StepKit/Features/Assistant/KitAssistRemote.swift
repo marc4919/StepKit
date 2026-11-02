@@ -274,6 +274,9 @@ enum RemoteProposalBuilder {
         var actions: [PlanProposal.Action] = []
         // Fechas tras aplicar los cambios, para calcular el efecto dominó.
         var newDates: [UUID: Date] = [:]
+        // Pasos añadidos: su fecha se decide al final, cuando se sabe dónde queda cada uno.
+        var additions: [PendingAddition] = []
+        var removedIDs: Set<UUID> = []
 
         for change in remote.changes {
             switch change.type {
@@ -319,17 +322,18 @@ enum RemoteProposalBuilder {
                 actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes))
             case "add_step":
                 guard let title = change.newTitles?.first else { continue }
-                changes.append(ProposedStepChange(stepID: nil, stepLabel: String(localized: "Paso nuevo · \(title)"), from: nil, to: date(change.newDate),
-                                                  detail: change.newMinutes.map { String(localized: "\($0) min") }, symbol: "plus.circle"))
-                // stepNumber = paso tras el que se inserta; 0 = al principio.
-                actions.append(.add(afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0,
-                                    title: title, minutes: change.newMinutes ?? 20, date: date(change.newDate),
-                                    outcome: change.newOutcome, description: change.newDescription))
+                additions.append(PendingAddition(change: change, title: title, changeIndex: changes.count,
+                                                 actionIndex: actions.count, date: date(change.newDate),
+                                                 // stepNumber = paso tras el que se inserta; 0 = al principio.
+                                                 afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0))
+                changes.append(additionChange(title: title, minutes: change.newMinutes, date: date(change.newDate)))
+                actions.append(additionAction(additions[additions.count - 1], date: date(change.newDate)))
             case "remove_step":
                 guard let target = step(change.stepNumber) else { continue }
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
                                                   detail: String(localized: "Se quita del plan"), symbol: "minus.circle"))
                 actions.append(.remove(stepID: target.id))
+                removedIDs.insert(target.id)
             case "change_kit_kpi":
                 guard let kpi = change.newTitles?.first, !kpi.isEmpty else { continue }
                 changes.append(ProposedStepChange(stepID: nil, stepLabel: String(localized: "Meta del Kit"), from: nil, to: nil,
@@ -346,10 +350,33 @@ enum RemoteProposalBuilder {
             }
         }
 
-        // Efecto dominó: el orden del plan se mantiene y ningún día pasa del máximo de pasos.
-        if !newDates.isEmpty {
+        var impact = remote.impact ?? String(localized: "El resto del plan no cambia.")
+        let requestedMoves = !newDates.isEmpty
+        if !additions.isEmpty {
+            let resolved = resolveAdditions(additions, steps: steps.filter { !removedIDs.contains($0.id) },
+                                            moves: newDates, maxStepsPerDay: maxStepsPerDay)
+            for addition in additions {
+                let final = resolved[addition.id]
+                changes[addition.changeIndex] = additionChange(title: addition.title, minutes: addition.change.newMinutes, date: final)
+                actions[addition.actionIndex] = additionAction(addition, date: final)
+            }
+            newDates = resolved
+            // Lo que explica el modelo no contaba con estos ajustes.
+            if !requestedMoves, steps.contains(where: { step in
+                guard let to = resolved[step.id], let from = step.suggestedDeadline else { return false }
+                return !calendar.isDate(from, inSameDayAs: to)
+            }) {
+                impact = String(localized: "Otros pasos se mueven para mantener el orden.")
+            }
+            if let target = kit.targetDate, PlanReschedule.passes(target: target, moves: resolved, calendar: calendar) {
+                impact = String(localized: "Algún paso quedaría después de la fecha final del Kit, el \(target.formatted(.dateTime.day().month(.wide))).")
+            }
+        } else if !newDates.isEmpty {
+            // Efecto dominó: el orden del plan se mantiene y ningún día pasa del máximo de pasos.
             newDates = PlanReschedule.dates(for: steps, overrides: newDates, maxStepsPerDay: maxStepsPerDay,
                                             calendar: calendar)
+        }
+        if !newDates.isEmpty {
             for s in steps {
                 guard let to = newDates[s.id], let from = s.suggestedDeadline,
                       !calendar.isDate(from, inSameDayAs: to) else { continue }
@@ -359,8 +386,64 @@ enum RemoteProposalBuilder {
         }
 
         guard !actions.isEmpty else { return nil }
-        return PlanProposal(title: remote.summary, changes: changes,
-                            impact: remote.impact ?? String(localized: "El resto del plan no cambia."), actions: actions)
+        return PlanProposal(title: remote.summary, changes: changes, impact: impact, actions: actions)
+    }
+
+    private struct PendingAddition {
+        let id = UUID()
+        let change: AssistResponse.Change
+        let title: String
+        let changeIndex: Int
+        let actionIndex: Int
+        let date: Date?
+        let afterStepID: UUID?
+        let atStart: Bool
+    }
+
+    private static func additionChange(title: String, minutes: Int?, date: Date?) -> ProposedStepChange {
+        ProposedStepChange(stepID: nil, stepLabel: String(localized: "Paso nuevo · \(title)"), from: nil, to: date,
+                           detail: minutes.map { String(localized: "\($0) min") }, symbol: "plus.circle")
+    }
+
+    private static func additionAction(_ addition: PendingAddition, date: Date?) -> PlanProposal.Action {
+        .add(afterStepID: addition.afterStepID, atStart: addition.atStart, title: addition.title,
+             minutes: addition.change.newMinutes ?? 20, date: date,
+             outcome: addition.change.newOutcome, description: addition.change.newDescription)
+    }
+
+    /// El paso nuevo nunca queda antes que el anterior, y los siguientes solo se mueven si hace falta.
+    /// Los que van antes del primer paso añadido no se tocan, salvo que la propuesta también mueva fechas.
+    private static func resolveAdditions(
+        _ additions: [PendingAddition],
+        steps: [StepEntity],
+        moves: [UUID: Date],
+        maxStepsPerDay: Int
+    ) -> [UUID: Date] {
+        var slots = steps.map {
+            PlanReschedule.Slot(id: $0.id, date: moves[$0.id] ?? $0.suggestedDeadline, isCompleted: $0.isCompleted)
+        }
+        // Mismo orden en que se aplican: cada paso nuevo entra justo detrás de su referencia.
+        for addition in additions {
+            let index: Int
+            if addition.atStart {
+                index = 0
+            } else if let anchor = addition.afterStepID, let position = slots.firstIndex(where: { $0.id == anchor }) {
+                index = position + 1
+            } else {
+                index = slots.count
+            }
+            slots.insert(PlanReschedule.Slot(id: addition.id, date: addition.date, isCompleted: false), at: index)
+        }
+        let addedIDs = Set(additions.map(\.id))
+        for index in slots.indices where addedIDs.contains(slots[index].id) && slots[index].date == nil {
+            let pending = slots.filter { !$0.isCompleted && $0.date != nil }
+            let before = slots[..<index].last { !$0.isCompleted && $0.date != nil }
+            slots[index].date = before?.date ?? pending.first?.date
+        }
+        if moves.isEmpty, let first = slots.firstIndex(where: { addedIDs.contains($0.id) }) {
+            for index in slots[..<first].indices { slots[index].isFixed = true }
+        }
+        return PlanReschedule.resolve(slots, maxStepsPerDay: maxStepsPerDay, calendar: calendar)
     }
 }
 
