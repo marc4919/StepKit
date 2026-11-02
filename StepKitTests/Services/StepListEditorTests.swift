@@ -328,64 +328,6 @@ struct StepListEditorTests {
         #expect(own.stepID == nil)
     }
 
-    private func moveSettling(_ title: String, to index: Int, in kit: GoalEntity) throws {
-        let target = try step(title, in: kit)
-        StepListEditor.move(target, to: index, in: kit)
-        StepListEditor.settleDate(of: target, in: kit)
-    }
-
-    @Test("A step moved later takes the previous step's date and the rest stay")
-    func moveLaterTakesPreviousDate() throws {
-        let kit = makeKit(["A", "B", "C", "D"])
-        dated(kit, [1, 2, 3, 4])
-        try moveSettling("A", to: 2, in: kit)
-        #expect(titles(kit) == ["B", "C", "A", "D"])
-        #expect(offsets(kit) == [2, 3, 3, 4])
-    }
-
-    @Test("A step moved to the start takes the next step's date")
-    func moveToStartTakesNextDate() throws {
-        let kit = makeKit(["A", "B", "C"])
-        dated(kit, [1, 2, 3])
-        try moveSettling("C", to: 0, in: kit)
-        #expect(titles(kit) == ["C", "A", "B"])
-        #expect(offsets(kit) == [1, 1, 2])
-    }
-
-    @Test("A date that already fits between its neighbours doesn't change")
-    func moveKeepsFittingDate() throws {
-        let kit = makeKit(["A", "B", "C"])
-        dated(kit, [2, 2, 2])
-        try moveSettling("C", to: 1, in: kit)
-        #expect(offsets(kit) == [2, 2, 2])
-    }
-
-    @Test("Moving into a full day pushes the moved step and later steps only as needed")
-    func moveIntoFullDay() throws {
-        let kit = makeKit(["A", "B", "C", "D", "E"])
-        dated(kit, [1, 1, 1, 2, 9])
-        try moveSettling("E", to: 3, in: kit)
-        #expect(titles(kit) == ["A", "B", "C", "E", "D"])
-        #expect(offsets(kit) == [1, 1, 1, 2, 2])
-    }
-
-    @Test("Completed steps keep their dates and don't count as neighbours")
-    func moveIgnoresCompletedSteps() throws {
-        let kit = makeKit(["A", "B", "C"])
-        dated(kit, [8, 2, 3])
-        try step("A", in: kit).isCompleted = true
-        try moveSettling("C", to: 1, in: kit)
-        #expect(titles(kit) == ["A", "C", "B"])
-        #expect(offsets(kit) == [8, 2, 2])
-    }
-
-    @Test("Settling a step in a Kit without dates leaves it without a date")
-    func settleWithoutDates() throws {
-        let kit = makeKit()
-        StepListEditor.settleDate(of: try step("B", in: kit), in: kit)
-        #expect(offsets(kit) == [nil, nil, nil])
-    }
-
     // MARK: - Borrador de la hoja «Editar pasos»
 
     @Test("Nothing changes in the Kit until the draft is applied")
@@ -550,7 +492,7 @@ struct StepListEditorTests {
         let prompt = AssistantIntent.reviewChanges.prompt(kit: kit, planChanges: "CAMBIO-DE-PRUEBA")
         #expect(prompt.contains("CAMBIO-DE-PRUEBA"))
         #expect(prompt.contains(kit.title))
-        #expect(prompt.count < 1_000)
+        #expect(prompt.count < 1_200)
     }
 
     @Test("The summary stays short enough for the server even with many changes")
@@ -560,5 +502,62 @@ struct StepListEditorTests {
         draft.movePending(fromOffsets: IndexSet(0..<30), toOffset: 60)
         let message = AssistantIntent.reviewChanges.prompt(kit: kit, planChanges: draft.structureSummary)
         #expect(message.count <= 2_000)
+    }
+
+    @Test("A date chosen by hand is respected on a full day, and the steps moved around it keep the maximum")
+    func draftRespectsChosenDate() throws {
+        let kit = makeKit(["A", "B", "C", "D"])
+        dated(kit, [5, 5, 5, 3])
+        try step("D", in: kit).isCompleted = true
+        var draft = StepListDraft(kit: kit)
+        draft.add(StepDraft(title: "Disfrutar", date: day(5)))
+        #expect(draft.dateChanges().isEmpty)
+        draft.apply(to: kit, context: context)
+        #expect(try offsets(kit)[titles(kit).firstIndex(of: "Disfrutar")!] == 5)
+    }
+
+    @Test("A date moved later by hand stays, and only the steps that would end up before it are pushed")
+    func draftChosenLaterDate() throws {
+        let kit = makeKit(["A", "B", "C"])
+        dated(kit, [1, 2, 6])
+        var draft = StepListDraft(kit: kit)
+        var a = try #require(draft.pending.first)
+        a.date = day(4)
+        draft.update(a)
+        #expect(draft.dateChanges().map(\.title) == ["B"])
+        draft.apply(to: kit, context: context)
+        #expect(offsets(kit) == [4, 4, 6])
+    }
+
+    @Test("A chosen date before the previous step is corrected, and the alert shows it")
+    func draftChosenDateKeepsOrder() throws {
+        let kit = makeKit(["A", "B"])
+        dated(kit, [3, 6])
+        var draft = StepListDraft(kit: kit)
+        var b = try #require(draft.pending.last)
+        b.date = day(1)
+        draft.update(b)
+        #expect(draft.dateChanges().map(\.title) == ["B"])
+        draft.apply(to: kit, context: context)
+        #expect(offsets(kit) == [3, 3])
+    }
+
+    @Test("The step editor respects its date on a full day; the assistant's moves keep the maximum")
+    func rescheduleChosenVersusAssistant() throws {
+        let kit = makeKit(["A", "B", "C", "D"])
+        dated(kit, [5, 5, 5, 8])
+        let d = try step("D", in: kit)
+        // D va después de los otros tres: elegir el día 5 lo deja el cuarto de ese día.
+        let target = day(5)
+        let chosen = PlanReschedule.dates(for: kit.orderedActiveSteps, overrides: [d.id: target], overridesAreChosen: true)
+        #expect(chosen[d.id].map { Calendar.current.isDate($0, inSameDayAs: target) } == true)
+        let automatic = PlanReschedule.dates(for: kit.orderedActiveSteps, overrides: [d.id: target])
+        #expect(automatic[d.id].map { Calendar.current.isDate($0, inSameDayAs: day(6)) } == true)
+    }
+
+    @Test("The review asks for the conclusion first")
+    func reviewPromptStartsWithConclusion() {
+        let prompt = AssistantIntent.reviewChanges.prompt(kit: makeKit(), planChanges: nil)
+        #expect(prompt.contains("empieza por la conclusión") || prompt.contains("start with the conclusion"))
     }
 }

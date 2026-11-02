@@ -96,7 +96,7 @@ struct StepEditSheetView: View {
     /// Pasos cuyo día cambia si se guarda la fecha elegida (incluido este, si su día estaba lleno).
     private var rescheduled: [UUID: Date] {
         guard draft.changesDate(of: stepEntity), let deadline = draft.deadline else { return [:] }
-        return PlanReschedule.dates(for: kitSteps, overrides: [stepEntity.id: deadline])
+        return PlanReschedule.dates(for: kitSteps, overrides: [stepEntity.id: deadline], overridesAreChosen: true)
     }
 
     /// La fecha final del Kit, si con esta edición algún paso queda después de ella.
@@ -150,7 +150,7 @@ struct StepEditSheetView: View {
         } header: {
             Text("Planificación")
         } footer: {
-            Text(String(localized: "Si la nueva fecha alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho \(PlanReschedule.maxStepsPerDay) pasos al día."))
+            Text(String(localized: "Tu fecha se respeta. Si alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho \(PlanReschedule.maxStepsPerDay) pasos al día en los que se mueven."))
         }
     }
 

@@ -23,10 +23,12 @@ enum PlanReschedule {
         for steps: [StepEntity],
         overrides: [UUID: Date],
         maxStepsPerDay: Int = maxStepsPerDay,
+        overridesAreChosen: Bool = false,
         calendar: Calendar = .current
     ) -> [UUID: Date] {
         let slots = steps.map {
-            Slot(id: $0.id, date: overrides[$0.id] ?? $0.suggestedDeadline, isCompleted: $0.isCompleted)
+            Slot(id: $0.id, date: overrides[$0.id] ?? $0.suggestedDeadline, isCompleted: $0.isCompleted,
+                 isChosen: overridesAreChosen && overrides[$0.id] != nil)
         }
         let resolved = resolve(slots, maxStepsPerDay: maxStepsPerDay, calendar: calendar)
         return resolved.filter { id, date in
@@ -42,6 +44,8 @@ enum PlanReschedule {
         let isCompleted: Bool
         /// Conserva su fecha aunque incumpla la regla: los que van antes de un paso añadido no se tocan.
         var isFixed = false
+        /// Fecha elegida a mano: se respeta aunque el día ya tenga el máximo de pasos. El orden sí manda.
+        var isChosen = false
     }
 
     /// Fecha final de cada paso pendiente con fecha, recorriendo el plan en orden.
@@ -57,7 +61,7 @@ enum PlanReschedule {
             guard var current = slot.date else { continue }
             if !slot.isFixed {
                 if let previous, current < previous { current = previous }
-                while perDay[day(of: current, calendar), default: 0] >= maxStepsPerDay,
+                while !slot.isChosen, perDay[day(of: current, calendar), default: 0] >= maxStepsPerDay,
                       let next = calendar.date(byAdding: .day, value: 1, to: current) {
                     current = next
                 }

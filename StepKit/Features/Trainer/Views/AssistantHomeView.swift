@@ -77,7 +77,7 @@ struct AssistantIntent: Identifiable {
             return String(localized: "Quiero cambiar la fecha final de \(kitName). ¿Qué pasos tendría que mover?")
         case "review-changes":
             // El asistente no puede proponer mover pasos de sitio: si el orden falla, debe decirlo con claridad.
-            return String(localized: "He cambiado a mano el plan de \(kitName). \(planChanges ?? "") Comprueba primero si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Si es así, dímelo con claridad, explica por qué y di qué orden recomiendas; ese cambio de orden lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Si todo encaja, dímelo. Lo decidiré yo.")
+            return String(localized: "He cambiado a mano el plan de \(kitName). \(planChanges ?? "") Comprueba si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Decide antes de escribir y empieza por la conclusión, sin contar tu razonamiento ni cambiar de idea en la respuesta. Si encaja, empieza por «El orden encaja». Si no, empieza por «Hay un problema de orden:», explica por qué y di qué orden recomiendas; si no puedes proponer ese cambio, lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Lo decidiré yo.")
         case "still-sense":
             return String(localized: "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve.")
         default:

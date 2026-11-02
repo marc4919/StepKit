@@ -136,13 +136,16 @@ struct StepListDraft: Equatable {
     /// Pasos que cambian de sitio (los menos posibles), nuevos o con otra fecha. Los demás conservan la suya
     /// salvo que haga falta moverlos.
     private func movedIDs(calendar: Calendar) -> Set<UUID> {
-        var moved = Set(pending.filter { step in
-            guard let original = saved[step.id] else { return true }
+        chosenDateIDs(calendar: calendar).union(pending.map(\.id).filter { saved[$0] == nil || !stayedIDs.contains($0) })
+    }
+
+    /// Pasos con una fecha elegida a mano en el formulario: nuevos o con otro día.
+    private func chosenDateIDs(calendar: Calendar) -> Set<UUID> {
+        Set(pending.filter { step in
             guard let date = step.date else { return false }
+            guard let original = saved[step.id] else { return true }
             return original.date.map { !calendar.isDate($0, inSameDayAs: date) } ?? true
         }.map(\.id))
-        moved.formUnion(pending.map(\.id).filter { saved[$0] != nil && !stayedIDs.contains($0) })
-        return moved
     }
 
     /// Pasos guardados que conservan su orden relativo: los demás son los que se han movido.
@@ -171,9 +174,11 @@ struct StepListDraft: Equatable {
 
     /// Fecha final de los pasos pendientes. El paso movido toma la del anterior (o la del siguiente, si
     /// queda el primero) cuando la suya ya no cabe; los siguientes solo se mueven si hace falta.
+    /// La fecha elegida a mano se respeta: solo se corrige si quedaría antes que el paso anterior.
     func plannedDates(calendar: Calendar = .current) -> [UUID: Date] {
         let moved = movedIDs(calendar: calendar)
         guard let first = pending.firstIndex(where: { moved.contains($0.id) }) else { return [:] }
+        let chosen = chosenDateIDs(calendar: calendar)
         func day(_ date: Date) -> Date { calendar.startOfDay(for: date) }
 
         var dates = pending.map(\.date)
@@ -182,12 +187,14 @@ struct StepListDraft: Equatable {
             let after = pending.indices.filter { $0 > index && !moved.contains(pending[$0].id) }
                 .lazy.compactMap { dates[$0] }.first
             let fits = dates[index].map { date in
-                (before.map { day($0) <= day(date) } ?? true) && (after.map { day(date) <= day($0) } ?? true)
+                (before.map { day($0) <= day(date) } ?? true)
+                    && (chosen.contains(pending[index].id) || after.map { day(date) <= day($0) } ?? true)
             } ?? false
             if !fits { dates[index] = before ?? after ?? dates[index] }
         }
         let slots = pending.indices.map { index in
-            PlanReschedule.Slot(id: pending[index].id, date: dates[index], isCompleted: false, isFixed: index < first)
+            PlanReschedule.Slot(id: pending[index].id, date: dates[index], isCompleted: false, isFixed: index < first,
+                                isChosen: chosen.contains(pending[index].id))
         }
         return PlanReschedule.resolve(slots, calendar: calendar)
     }

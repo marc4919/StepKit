@@ -1150,12 +1150,22 @@
         }
       }
     },
-    "He cambiado a mano el plan de %@. %@ Comprueba primero si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Si es así, dímelo con claridad, explica por qué y di qué orden recomiendas; ese cambio de orden lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Si todo encaja, dímelo. Lo decidiré yo.": {
+    "He cambiado a mano el plan de %@. %@ Comprueba si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Decide antes de escribir y empieza por la conclusión, sin contar tu razonamiento ni cambiar de idea en la respuesta. Si encaja, empieza por «El orden encaja». Si no, empieza por «Hay un problema de orden:», explica por qué y di qué orden recomiendas; si no puedes proponer ese cambio, lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Lo decidiré yo.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "I changed the plan of %1$@ by hand. %2$@ First check whether the order is still logical: see if any step needs another one that now comes later. If so, tell me clearly, explain why and say which order you recommend; I will make that change myself in “Edit Steps”. Dates and free slots only afterwards. If everything fits, tell me. I will decide."
+            "value": "I changed the plan of %1$@ by hand. %2$@ Check whether the order is still logical: see if any step needs another one that now comes later. Decide before writing and start with the conclusion, without narrating your reasoning or changing your mind in the reply. If it fits, start with “The order fits”. If not, start with “There is an order problem:”, explain why and say which order you recommend; if you cannot propose that change, I will make it in “Edit Steps”. Dates and free slots only afterwards. I will decide."
+          }
+        }
+      }
+    },
+    "Para mantener el orden de los pasos, sin pasar de %lld al día en los que se mueven.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To keep the order of the steps, with at most %lld a day among those that move."
           }
         }
       }
@@ -7730,12 +7740,12 @@
         }
       }
     },
-    "Si la nueva fecha alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho %lld pasos al día.": {
+    "Tu fecha se respeta. Si alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho %lld pasos al día en los que se mueven.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "If the new date reaches the next steps, they move with it: same order and at most %lld steps a day."
+            "value": "Your date is kept. If it reaches the next steps, they move with it: same order and at most %lld steps a day among those that move."
           }
         }
       }

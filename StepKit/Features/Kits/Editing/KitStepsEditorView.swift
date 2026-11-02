@@ -178,6 +178,7 @@ struct KitStepsEditorView: View {
         if changes.count > Self.maxVisibleDateChanges {
             lines.append(String(localized: "Y \(changes.count - Self.maxVisibleDateChanges) más."))
         }
+        lines.append(String(localized: "Para mantener el orden de los pasos, sin pasar de \(PlanReschedule.maxStepsPerDay) al día en los que se mueven."))
         if let target = kit.targetDate, draft.passes(target: target) {
             lines.append(String(localized: "Algún paso quedaría después de la fecha final del Kit, el \(target.formatted(.dateTime.day().month(.abbreviated)))."))
         }
