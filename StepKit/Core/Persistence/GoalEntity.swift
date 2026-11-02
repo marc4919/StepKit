@@ -126,6 +126,11 @@ final class GoalEntity {
         !steps.isEmpty && steps.allSatisfy { $0.isCompleted }
     }
     
+    /// Tiempo total del plan: un paso que se repite cuenta todas sus sesiones, igual que en la vista previa.
+    var plannedMinutes: Int {
+        steps.filter { $0.deletedAt == nil }.reduce(0) { $0 + $1.estimateMinutes * ($1.repetition?.times ?? 1) }
+    }
+
     var dueDate: Date? {
         targetDate ?? steps.compactMap { $0.suggestedDeadline }.max()
     }

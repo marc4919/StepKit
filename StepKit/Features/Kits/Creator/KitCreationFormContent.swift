@@ -185,7 +185,8 @@ struct KitCreationFormContent: View {
             if !oneSitting {
                 Stepper(value: $sessionsPerWeek, in: 1...14) {
                     Label {
-                        Text(sessionsPerWeek == 1 ? String(localized: "1 sesión por semana") : String(localized: "\(sessionsPerWeek) sesiones por semana"))
+                        // «Hasta»: es la disponibilidad que tiene en cuenta el plan, no un horario que vaya a llenar.
+                        Text(sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión por semana") : String(localized: "Hasta \(sessionsPerWeek) sesiones por semana"))
                     } icon: {
                         IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                     }

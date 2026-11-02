@@ -760,6 +760,26 @@
         }
       }
     },
+    "Hasta 1 sesión por semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to 1 session a week"
+          }
+        }
+      }
+    },
+    "Hasta %lld sesiones por semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to %lld sessions a week"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

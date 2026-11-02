@@ -36,6 +36,18 @@ struct KitTargetDateTests {
         #expect(GoalEntity(fromSync: dto, ownerID: "a").targetDate == later)
     }
 
+    @Test("Planned time counts every session of a repeating step")
+    func plannedMinutesCountRepetitions() {
+        let kit = GoalEntity(ownerID: "a", planTitle: "Kit", horizonDays: 30, kpi: "")
+        let once = StepEntity(ownerID: "a", stepTitle: "Una vez", descriptionShort: "", descriptionLong: "", estimateMinutes: 30)
+        let weekly = StepEntity(ownerID: "a", stepTitle: "Semanal", descriptionShort: "", descriptionLong: "", estimateMinutes: 20)
+        weekly.repeatEvery = "week"
+        weekly.repeatTimes = 4
+        let removed = StepEntity(ownerID: "a", stepTitle: "Quitado", descriptionShort: "", descriptionLong: "", estimateMinutes: 60, deletedAt: .now)
+        kit.steps.append(contentsOf: [once, weekly, removed])
+        #expect(kit.plannedMinutes == 110)
+    }
+
     @Test("The payload omits the date when the Kit has none, so older servers are unaffected")
     func payloadOmitsMissingDate() throws {
         let kit = GoalEntity(ownerID: "a", planTitle: "Kit", horizonDays: 30, kpi: "")

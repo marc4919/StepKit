@@ -73,7 +73,7 @@ struct KitInfoSheetView: View {
 
     private var done: Int { goalEntity.steps.filter { $0.isCompleted && $0.deletedAt == nil }.count }
     private var total: Int { goalEntity.steps.filter { $0.deletedAt == nil }.count }
-    private var totalMinutes: Int { goalEntity.steps.filter { $0.deletedAt == nil }.reduce(0) { $0 + $1.estimateMinutes } }
+    private var totalMinutes: Int { goalEntity.plannedMinutes }
 
     private var heroSection: some View {
         Section {
