@@ -478,8 +478,7 @@ struct StepDetailView: View {
             Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
             } label: {
-                StepActionLabel(title: String(localized: "Marcar como pendiente"), symbol: "arrow.uturn.backward",
-                                showsTitle: !reservesSideColumn)
+                StepActionLabel(title: String(localized: "Marcar como pendiente"), symbol: "arrow.uturn.backward")
             }
             .accessibilityIdentifier("step.toggleCompletion")
         case .blocked:
@@ -506,8 +505,7 @@ struct StepDetailView: View {
             Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
             } label: {
-                StepActionLabel(title: String(localized: "Completar"), symbol: "checkmark",
-                                showsTitle: !reservesSideColumn)
+                StepActionLabel(title: String(localized: "Completar"), symbol: "checkmark")
             }
             .buttonStyle(.glassProminent)
             .accessibilityLabel(String(localized: "Marcar como completado"))
@@ -572,21 +570,25 @@ struct StepDetailView: View {
     }
 }
 
-/// Texto e icono en la barra inferior; solo icono en la franja lateral del Duo, que es estrecha.
-/// No es un `Label`: la barra los dibuja siempre solo con el icono. La vista es la misma al plegar
-/// o girar, sin identidades nuevas.
+/// Texto e icono en la barra inferior del iPhone. En el Duo, un `Label`, que la barra dibuja solo con
+/// el icono: su barra pasa de abajo a la franja lateral al plegar, y con una vista propia los botones
+/// desaparecían al desplegar hasta volver a entrar en el paso. Se decide por dispositivo, nunca por
+/// postura, para que el botón sea siempre el mismo.
 private struct StepActionLabel: View {
     let title: String
     let symbol: String
-    let showsTitle: Bool
 
     var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: symbol)
-            if showsTitle { Text(title).lineLimit(1).fixedSize() }
+        if DeviceKind.isDuo {
+            Label(title, systemImage: symbol)
+        } else {
+            HStack(spacing: 6) {
+                Image(systemName: symbol)
+                Text(title).lineLimit(1).fixedSize()
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(title)
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(title)
     }
 }
 
