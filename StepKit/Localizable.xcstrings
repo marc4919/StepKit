@@ -780,6 +780,36 @@
         }
       }
     },
+    "6 meses": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 months"
+          }
+        }
+      }
+    },
+    "Escribe qué quieres conseguir para continuar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write what you want to achieve to continue."
+          }
+        }
+      }
+    },
+    "Elige una fecha para continuar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a date to continue."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

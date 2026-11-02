@@ -240,11 +240,11 @@ struct KitCreationFormContent: View {
             // Las chips ocupan todo el ancho: en una fila si caben y, si no, en dos.
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {
-                    todayChip; weekChip; monthChip; threeMonthsChip; otherDateButton
+                    todayChip; weekChip; monthChip; threeMonthsChip; sixMonthsChip; otherDateButton
                 }
                 VStack(spacing: 8) {
                     HStack(spacing: 8) { todayChip; weekChip; monthChip }
-                    HStack(spacing: 8) { threeMonthsChip; otherDateButton }
+                    HStack(spacing: 8) { threeMonthsChip; sixMonthsChip; otherDateButton }
                 }
             }
         }
@@ -258,13 +258,14 @@ struct KitCreationFormContent: View {
     private var weekChip: some View { shortcut(String(localized: "1 semana"), .day, 7) }
     private var monthChip: some View { shortcut(String(localized: "1 mes"), .month, 1) }
     private var threeMonthsChip: some View { shortcut(String(localized: "3 meses"), .month, 3) }
+    private var sixMonthsChip: some View { shortcut(String(localized: "6 meses"), .month, 6) }
 
     private func shortcutDate(_ component: Calendar.Component, _ value: Int) -> Date? {
         Calendar.current.date(byAdding: component, value: value, to: todayStart)
     }
 
     private func isShortcut(_ date: Date) -> Bool {
-        [shortcutDate(.day, 0), shortcutDate(.day, 7), shortcutDate(.month, 1), shortcutDate(.month, 3)].contains { candidate in
+        [shortcutDate(.day, 0), shortcutDate(.day, 7), shortcutDate(.month, 1), shortcutDate(.month, 3), shortcutDate(.month, 6)].contains { candidate in
             candidate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
         }
     }
@@ -306,6 +307,13 @@ struct KitCreationFormContent: View {
         focusedField.wrappedValue = nil
     }
 
+    private var missingField: String? {
+        if description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return String(localized: "Escribe qué quieres conseguir para continuar.")
+        }
+        return dueDate == nil ? String(localized: "Elige una fecha para continuar.") : nil
+    }
+
     @ViewBuilder private var createSection: some View {
         Section {
             Button {
@@ -321,11 +329,18 @@ struct KitCreationFormContent: View {
             .listRowInsets(EdgeInsets())
             .accessibilityIdentifier("kitCreator.create")
         } footer: {
-            if let aiNotice {
-                Text(aiNotice)
-                    .padding(.top, 4)
-                    .accessibilityIdentifier("kitCreator.aiNotice")
+            VStack(alignment: .leading, spacing: 6) {
+                // Un botón apagado sin motivo parece roto: se dice qué falta.
+                if let missingField {
+                    Text(missingField)
+                        .accessibilityIdentifier("kitCreator.missing")
+                }
+                if let aiNotice {
+                    Text(aiNotice)
+                        .accessibilityIdentifier("kitCreator.aiNotice")
+                }
             }
+            .padding(.top, 4)
         }
     
     }
