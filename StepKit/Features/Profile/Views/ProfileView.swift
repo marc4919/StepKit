@@ -48,21 +48,15 @@ struct ProfileView: View {
                 ProfileRow(title: String(localized: "IA y privacidad"), symbol: "hand.raised.fill", color: .blue)
             }
             .accessibilityIdentifier("profile.aiPrivacy")
-            Toggle(isOn: $focusLayout) {
-                Label {
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("Destacar el último Kit")
-                        Text("Mis Kits abre con el que avanzaste")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } icon: {
-                    IconChip(symbol: "rectangle.topthird.inset.filled", color: .teal, size: 28)
-                }
-            }
-            .accessibilityIdentifier("profile.focusLayout")
             // Sin fila de idioma: la app sigue el idioma del iPhone. La fila llevaba a Ajustes, donde iOS
             // solo muestra el idioma por app si el iPhone tiene más de un idioma preferido, y confundía.
+        }
+        Section {
+            HomeLayoutPicker(focusLayout: $focusLayout)
+        } header: {
+            Text("Mis Kits")
+        } footer: {
+            Text("Elige cómo se abre Mis Kits.")
         }
     }
 

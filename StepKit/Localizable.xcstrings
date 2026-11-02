@@ -870,6 +870,56 @@
         }
       }
     },
+    "Destacado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Featured"
+          }
+        }
+      }
+    },
+    "Lista": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List"
+          }
+        }
+      }
+    },
+    "Una tarjeta grande con el último Kit que avanzaste y los demás debajo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A large card with the last Kit you worked on and the others below"
+          }
+        }
+      }
+    },
+    "Solo la lista de tus Kits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just the list of your Kits"
+          }
+        }
+      }
+    },
+    "Elige cómo se abre Mis Kits.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose how My Kits opens."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
