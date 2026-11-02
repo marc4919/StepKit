@@ -225,23 +225,8 @@ final class PlanProposal: Identifiable {
         @discardableResult
         func insert(_ title: String, minutes: Int, date: Date?, after anchor: StepEntity?, atStart: Bool = false,
                     short: String = "", long: String = "") -> StepEntity {
-            let order = atStart ? (kit.orderedActiveSteps.first?.order ?? 0)
-                : (anchor?.order ?? (kit.orderedActiveSteps.last?.order ?? -1)) + 1
-            let new = StepEntity(ownerID: kit.ownerID, stepTitle: title, descriptionShort: short, descriptionLong: long,
-                                 estimateMinutes: minutes, suggestedDeadline: date ?? anchor?.suggestedDeadline,
-                                 effortLevel: anchor?.effortLevel ?? "medium",
-                                 order: order,
-                                 createdAt: now, updatedAt: now)
-            // Hace hueco detrás del paso de referencia.
-            for later in kit.orderedActiveSteps where later.order >= new.order {
-                later.order += 1
-                later.markModified(at: now)
-            }
-            context.insert(new)
-            // Solo el append: `steps` tiene inversa en `goal`, así que asignar también `new.goal = kit`
-            // dejaba el mismo paso dos veces en la lista (el Kit pasaba de 6 a 7 con un paso repetido,
-            // el asistente veía un duplicado que no podía quitar y «paso 2» apuntaba a otro paso).
-            kit.steps.append(new)
+            let new = StepListEditor.insert(title: title, minutes: minutes, date: date, after: anchor, atStart: atStart,
+                                            short: short, long: long, into: kit, context: context, at: now)
             highlights.record(.added, for: new.id)
             return new
         }
@@ -291,8 +276,7 @@ final class PlanProposal: Identifiable {
                    short: outcome ?? "", long: description ?? "")
         case .remove(let id):
             guard let target = step(id) else { return }
-            target.deletedAt = now
-            target.markModified(at: now)
+            StepListEditor.remove(target, from: kit, at: now)
         case .changeKPI(let kpi):
             kit.kpi = kpi
             kit.markModified(at: now)
