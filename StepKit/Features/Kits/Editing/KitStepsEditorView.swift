@@ -228,7 +228,7 @@ extension StepListDraft {
 // MARK: - Formulario de un paso
 
 /// Título, descripciones, fecha y tiempo de un paso del borrador: nuevo o ya existente.
-private struct StepDraftFormView: View {
+struct StepDraftFormView: View {
     private static let maxTitleLength = 200
 
     @Environment(\.dismiss) private var dismiss
@@ -236,9 +236,14 @@ private struct StepDraftFormView: View {
     @FocusState private var titleFocused: Bool
     private let original: StepDraft
     private let onSave: (StepDraft) -> Void
+    /// Al crear un Kit a mano: sin fecha, el paso se reparte solo hasta la fecha final.
+    private let dateIsOptional: Bool
+    private let latestDate: Date?
 
-    init(step: StepDraft, onSave: @escaping (StepDraft) -> Void) {
+    init(step: StepDraft, dateIsOptional: Bool = false, latestDate: Date? = nil, onSave: @escaping (StepDraft) -> Void) {
         original = step
+        self.dateIsOptional = dateIsOptional
+        self.latestDate = latestDate
         self.onSave = onSave
         _step = State(initialValue: step)
     }
@@ -251,6 +256,63 @@ private struct StepDraftFormView: View {
     private var earliestDate: Date {
         let today = Calendar.current.startOfDay(for: .now)
         return min(today, step.date.map(Calendar.current.startOfDay(for:)) ?? today)
+    }
+
+    @ViewBuilder private var descriptionSection: some View {
+        Section {
+            TextEditor(text: $step.long)
+                .frame(minHeight: 120)
+                .accessibilityLabel("Descripción detallada")
+        } header: {
+            Text("Descripción detallada")
+        } footer: {
+            Text("Describe la acción concreta necesaria para completar este paso.")
+        }
+    }
+
+    @ViewBuilder private var planningSection: some View {
+        if !step.isCompleted {
+            Section {
+                if dateIsOptional {
+                    Toggle(isOn: Binding(
+                        get: { step.date != nil },
+                        set: { step.date = $0 ? atNoon(earliestDate) : nil }
+                    ).animation(.smooth)) {
+                        Label { Text("Fecha") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+                    }
+                    .accessibilityIdentifier("stepDraft.dateToggle")
+                }
+                if !dateIsOptional || step.date != nil {
+                    DatePicker(selection: Binding(
+                        get: { step.date ?? earliestDate },
+                        set: { step.date = atNoon($0) }
+                    ), in: earliestDate...max(latestDate ?? .distantFuture, earliestDate), displayedComponents: .date) {
+                        if dateIsOptional {
+                            Text("Día")
+                        } else {
+                            Label { Text("Fecha") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+                        }
+                    }
+                    .accessibilityIdentifier("stepDraft.date")
+                }
+                Picker(selection: $step.minutes) {
+                    ForEach(minuteOptions, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
+                } label: {
+                    Label { Text("Tiempo") } icon: { IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28) }
+                }
+                .accessibilityIdentifier("stepDraft.minutes")
+            } header: {
+                Text("Planificación")
+            } footer: {
+                if dateIsOptional, step.date == nil {
+                    Text("Sin fecha, el paso se reparte hasta la fecha final.")
+                }
+            }
+        }
+    }
+
+    private func atNoon(_ date: Date) -> Date {
+        Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: date) ?? date
     }
 
     var body: some View {
@@ -268,31 +330,13 @@ private struct StepDraftFormView: View {
                         .lineLimit(2...4)
                         .textInputAutocapitalization(.sentences)
                 }
-                Section {
-                    TextEditor(text: $step.long)
-                        .frame(minHeight: 120)
-                        .accessibilityLabel("Descripción detallada")
-                } header: {
-                    Text("Descripción detallada")
-                } footer: {
-                    Text("Describe la acción concreta necesaria para completar este paso.")
-                }
-                if !step.isCompleted {
-                    Section("Planificación") {
-                        DatePicker(selection: Binding(
-                            get: { step.date ?? earliestDate },
-                            set: { step.date = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: $0) ?? $0 }
-                        ), in: earliestDate..., displayedComponents: .date) {
-                            Label { Text("Fecha") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
-                        }
-                        .accessibilityIdentifier("stepDraft.date")
-                        Picker(selection: $step.minutes) {
-                            ForEach(minuteOptions, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
-                        } label: {
-                            Label { Text("Tiempo") } icon: { IconChip(symbol: Symbols.time, color: MetaTint.time, size: 28) }
-                        }
-                        .accessibilityIdentifier("stepDraft.minutes")
-                    }
+                // En un paso nuevo, lo que hace falta a la vista: la descripción larga es opcional.
+                if original.isNew {
+                    planningSection
+                    descriptionSection
+                } else {
+                    descriptionSection
+                    planningSection
                 }
             }
             .navigationTitle(original.isNew ? "Nuevo paso" : "Editar paso")

@@ -66,11 +66,11 @@ struct KitsListView: View {
             viewModel: viewModel
         )
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
-            KitCreatorView { newKit in
+            KitCreatorView(onKitCreated: { newKit in
                 if let entity = visibleKitEntities.first(where: { $0.id == newKit.id }) {
                     viewModel.selectKit(entity)
                 }
-            }
+            }, startsManual: viewModel.creatorStartsManual)
         }
     }
 }

@@ -171,8 +171,13 @@ struct KitsHomeView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Crear Kit", systemImage: "plus") {
-                    CreateKitTip().invalidate(reason: .actionPerformed)
+                // Un toque abre el creador; mantener pulsado ofrece también crearlo a mano.
+                Menu {
+                    Button("Ayúdame a planificar", systemImage: "sparkles") { openCreator() }
+                    Button("Empezar de cero", systemImage: "square.and.pencil") { openCreator(manual: true) }
+                } label: {
+                    Label("Crear Kit", systemImage: "plus")
+                } primaryAction: {
                     openCreator()
                 }
                     .popoverTip(CreateKitTip())
@@ -217,7 +222,9 @@ struct KitsHomeView: View {
         viewModel.selectKit(kit)
     }
 
-    private func openCreator() {
+    private func openCreator(manual: Bool = false) {
+        CreateKitTip().invalidate(reason: .actionPerformed)
+        viewModel.creatorStartsManual = manual
         viewModel.showingKitCreator = true
     }
 }

@@ -195,7 +195,7 @@ struct DesignFixtureRoot: View {
             kitEntities: all,
             viewModel: viewModel
         )
-        .fullScreenCover(isPresented: $viewModel.showingKitCreator) { KitCreatorView() }
+        .fullScreenCover(isPresented: $viewModel.showingKitCreator) { KitCreatorView(startsManual: viewModel.creatorStartsManual) }
     }
 }
 

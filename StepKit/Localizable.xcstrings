@@ -1180,6 +1180,126 @@
         }
       }
     },
+    "Crear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "Nombre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Por ejemplo, Aprender a hacer pan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For example, Learn to bake bread"
+          }
+        }
+      }
+    },
+    "Escribe el nombre del Kit para continuar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the Kit name to continue."
+          }
+        }
+      }
+    },
+    "Añade al menos un paso para continuar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add at least one step to continue."
+          }
+        }
+      }
+    },
+    "Los pasos sin fecha se reparten hasta la fecha final.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps without a date spread out until the end date."
+          }
+        }
+      }
+    },
+    "Sin fecha, el paso se reparte hasta la fecha final.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without a date, the step is placed before the end date."
+          }
+        }
+      }
+    },
+    "Para mantener el orden de los pasos, dentro de la fecha final.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To keep the order of the steps, within the end date."
+          }
+        }
+      }
+    },
+    "Empezar de cero": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start from Scratch"
+          }
+        }
+      }
+    },
+    "Ayúdame a planificar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help Me Plan"
+          }
+        }
+      }
+    },
+    "Crea el Kit a mano, sin IA": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creates the Kit by hand, without AI"
+          }
+        }
+      }
+    },
+    "Día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

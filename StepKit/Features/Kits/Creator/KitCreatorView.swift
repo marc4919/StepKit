@@ -46,6 +46,11 @@ struct KitCreatorView: View {
     /// Resultado ya escrito (cuando el asistente propone otro Kit).
     var initialGoal: String?
 
+    /// Abrir directamente la creación a mano (menú del «+» en Mis Kits).
+    private let startsManual: Bool
+    @State private var manual: Bool
+    @Query private var allKits: [GoalEntity]
+
     // MARK: - ViewModel
     
     @State private var vm: KitCreatorViewModel?
@@ -57,15 +62,37 @@ struct KitCreatorView: View {
     
     // MARK: - Initialization
     
-    init(onKitCreated: ((Goal) -> Void)? = nil, initialDate: Date? = nil, initialGoal: String? = nil) {
+    init(onKitCreated: ((Goal) -> Void)? = nil, initialDate: Date? = nil, initialGoal: String? = nil, startsManual: Bool = false) {
         self.onKitCreated = onKitCreated
         self.initialDate = initialDate
         self.initialGoal = initialGoal
+        self.startsManual = startsManual
+        _manual = State(initialValue: startsManual)
+    }
+
+    /// Los Kits a mano cuentan para el límite del plan gratis: la app lo comprueba antes de abrir la pantalla.
+    private var reachesFreeLimit: Bool {
+        guard let user = authManager.currentUser else { return false }
+        return ManualKit.reachesFreeLimit(kits: allKits, ownerID: user.id, isPremium: user.isPremium)
+    }
+
+    private func startFromScratch(vm: KitCreatorViewModel) {
+        if reachesFreeLimit {
+            vm.planLimit = .activeKits
+        } else {
+            withAnimation(.smooth) { manual = true }
+        }
     }
 
     var body: some View {
         NavigationStack {
-            if let vm {
+            if manual {
+                ManualKitCreatorView(initialName: vm?.description ?? initialGoal ?? "",
+                                     initialDueDate: vm?.dueDate ?? initialDate,
+                                     onCreated: finishCreating) {
+                    if startsManual { dismiss() } else { withAnimation(.smooth) { manual = false } }
+                }
+            } else if let vm {
                 content(vm: vm)
             } else {
                 ProgressView()
@@ -73,7 +100,12 @@ struct KitCreatorView: View {
         }
         .task {
             if vm == nil {
-                vm = KitCreatorViewModel(apiClient: apiClient, initialDate: initialDate, initialGoal: initialGoal)
+                let model = KitCreatorViewModel(apiClient: apiClient, initialDate: initialDate, initialGoal: initialGoal)
+                vm = model
+                if startsManual, reachesFreeLimit {
+                    manual = false
+                    model.planLimit = .activeKits
+                }
             }
         }
     }
@@ -111,7 +143,8 @@ struct KitCreatorView: View {
                             vm.errorMessage = String(localized: "Necesitas iniciar sesión para crear un kit")
                             vm.showingError = true
                         }
-                    }
+                    },
+                    onStartFromScratch: { startFromScratch(vm: vm) }
                 )
             case .loading, .streaming:
                 // Una sola pantalla de preparación: arranca en «Preparando» y sigue con los pasos.
@@ -218,22 +251,26 @@ struct KitCreatorView: View {
     private func saveAndNavigate(vm: KitCreatorViewModel) {
         guard let ownerID = authManager.currentUser?.id else { return }
         if let goal = vm.saveKit(in: modelContext, ownerID: ownerID) {
-            // Trigger sync
-            syncManager?.handleDataChange()
-            let goalID = goal.id
-            let context = modelContext
-            Task {
-                // Primer momento en que un recordatorio tiene sentido: hay pasos con fecha.
-                await NotificationService.shared.requestAuthorizationIfNeeded()
-                let descriptor = FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.id == goalID })
-                if let entity = try? context.fetch(descriptor).first {
-                    await NotificationService.shared.scheduleNotifications(for: entity)
-                }
-            }
-            
-            onKitCreated?(goal)
-            dismiss()
+            finishCreating(goal)
         }
+    }
+
+    private func finishCreating(_ goal: Goal) {
+        // Trigger sync
+        syncManager?.handleDataChange()
+        let goalID = goal.id
+        let context = modelContext
+        Task {
+            // Primer momento en que un recordatorio tiene sentido: hay pasos con fecha.
+            await NotificationService.shared.requestAuthorizationIfNeeded()
+            let descriptor = FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.id == goalID })
+            if let entity = try? context.fetch(descriptor).first {
+                await NotificationService.shared.scheduleNotifications(for: entity)
+            }
+        }
+
+        onKitCreated?(goal)
+        dismiss()
     }
 }
 

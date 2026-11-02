@@ -24,8 +24,9 @@ struct KitCreationFormContent: View {
     let isFormValid: Bool
     var aiNotice: String? = nil
     let onCreate: () -> Void
+    /// Crear el Kit a mano, sin IA.
+    var onStartFromScratch: (() -> Void)? = nil
 
-    @State private var showsOtherDate = false
     @State private var width: CGFloat = 0
     /// Interior del iPhone Duo, iPad o iPhone en horizontal: dos columnas en vez de una tira estirada.
     private var twoColumns: Bool { TwoColumnLayout.fits(CGSize(width: width, height: height)) }
@@ -203,24 +204,144 @@ struct KitCreationFormContent: View {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
                 }
             }
-            dateShortcuts
-            if showsOtherDate {
-                // Mostrar un día en el selector no lo elige: atenuado hasta que la persona toque uno.
-                HStack {
-                    Text("Elige el día")
-                    Spacer(minLength: 8)
-                    DatePicker("Elige el día", selection: Binding(get: { dueDate ?? todayStart }, set: { dueDate = $0 }),
-                               in: todayStart..., displayedComponents: .date)
-                        .labelsHidden()
-                        .opacity(dueDate == nil ? 0.5 : 1)
-                        .accessibilityIdentifier("kitCreator.dueDate")
-                }
-                .transition(.formRow)
-            }
+            KitDueDateField(dueDate: $dueDate, todayStart: todayStart)
         } header: {
             Text("Tu tiempo")
         } footer: {
             Text("El plan se reparte hasta esta fecha. Podrás cambiarla después con el asistente.")
+        }
+    }
+
+    /// Cambiar un control que no es de texto retira el teclado, para que no tape el formulario.
+    /// (Sin gestos añadidos a los controles: un TapGesture simultáneo bloqueaba el interruptor.)
+    private func dismissKeyboard() {
+        focusedField.wrappedValue = nil
+    }
+
+    private var missingField: String? {
+        if description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return String(localized: "Escribe qué quieres conseguir para continuar.")
+        }
+        return dueDate == nil ? String(localized: "Elige una fecha para continuar.") : nil
+    }
+
+    @ViewBuilder private var createSection: some View {
+        Section {
+            Button {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                onCreate()
+            } label: {
+                Text("Preparar plan").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.primaryAction)
+            .controlSize(.large)
+            .disabled(!isFormValid)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
+            .accessibilityIdentifier("kitCreator.create")
+        } footer: {
+            VStack(alignment: .leading, spacing: 6) {
+                // Un botón apagado sin motivo parece roto: se dice qué falta.
+                if let missingField {
+                    Text(missingField)
+                        .accessibilityIdentifier("kitCreator.missing")
+                }
+                if let aiNotice {
+                    Text(aiNotice)
+                        .accessibilityIdentifier("kitCreator.aiNotice")
+                }
+                if let onStartFromScratch {
+                    Button("Empezar de cero", action: onStartFromScratch)
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 8)
+                        .accessibilityHint("Crea el Kit a mano, sin IA")
+                        .accessibilityIdentifier("kitCreator.fromScratch")
+                }
+            }
+            .padding(.top, 4)
+        }
+    
+    }
+
+    /// Desde ratos cortos hasta una mañana entera.
+    private var durations: [Int] {
+        oneSitting ? [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
+    }
+
+    private func field(
+        _ symbol: String,
+        _ color: Color,
+        _ title: String,
+        placeholder: String,
+        text: Binding<String>,
+        focus: KitCreatorField,
+        next: KitCreatorField? = nil,
+        identifier: String? = nil
+    ) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            IconChip(symbol: symbol, color: color, size: 28).padding(.top, 2)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.caption).foregroundStyle(.secondary)
+                TextField(placeholder, text: text, axis: .vertical)
+                    .lineLimit(1...4)
+                    .focused(focusedField, equals: focus)
+                    // Intro no hace salto de línea: pasa al campo siguiente (y en el último cierra el teclado).
+                    .submitLabel(next == nil ? .done : .next)
+                    .onChange(of: text.wrappedValue) { _, value in
+                        guard value.contains("\n") else { return }
+                        text.wrappedValue = value.replacingOccurrences(of: "\n", with: "")
+                        withAnimation(.smooth) { focusedField.wrappedValue = next }
+                    }
+                    .accessibilityIdentifier(identifier ?? "")
+                    .accessibilityLabel(title)
+            }
+        }
+        .id(focus)
+    }
+}
+
+// MARK: - Filas que aparecen y desaparecen
+
+/// La misma animación para todo lo que se despliega en el formulario: la fila se pliega y se funde
+/// a la vez, sin aparecer ni desaparecer de golpe.
+private extension Animation {
+    static let formReveal = Animation.smooth(duration: 0.5)
+}
+
+private extension AnyTransition {
+    static var formRow: AnyTransition {
+        // Un recorrido algo mayor que la propia fila, para que se note que baja desde arriba.
+        let travel = AnyTransition.opacity.combined(with: .move(edge: .top)).combined(with: .offset(y: -18))
+        return .asymmetric(
+            insertion: travel.animation(.smooth(duration: 0.5).delay(0.05)),
+            removal: travel.animation(.smooth(duration: 0.35)))
+    }
+}
+
+// MARK: - Fecha final
+
+/// Fecha final del Kit: atajos y «Otra fecha». Son dos filas de la sección que la contenga.
+struct KitDueDateField: View {
+    @Binding var dueDate: Date?
+    let todayStart: Date
+    @State private var showsOtherDate = false
+
+    var body: some View {
+        dateShortcuts
+        if showsOtherDate {
+            // Mostrar un día en el selector no lo elige: atenuado hasta que la persona toque uno.
+            HStack {
+                Text("Elige el día")
+                Spacer(minLength: 8)
+                DatePicker("Elige el día", selection: Binding(get: { dueDate ?? todayStart }, set: { dueDate = $0 }),
+                           in: todayStart..., displayedComponents: .date)
+                    .labelsHidden()
+                    .opacity(dueDate == nil ? 0.5 : 1)
+                    .accessibilityIdentifier("kitCreator.dueDate")
+            }
+            .transition(.formRow)
         }
     }
 
@@ -299,104 +420,5 @@ struct KitCreationFormContent: View {
         } else {
             Button(action: tap) { label }.buttonStyle(.bordered).controlSize(.small)
         }
-    }
-
-    /// Cambiar un control que no es de texto retira el teclado, para que no tape el formulario.
-    /// (Sin gestos añadidos a los controles: un TapGesture simultáneo bloqueaba el interruptor.)
-    private func dismissKeyboard() {
-        focusedField.wrappedValue = nil
-    }
-
-    private var missingField: String? {
-        if description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return String(localized: "Escribe qué quieres conseguir para continuar.")
-        }
-        return dueDate == nil ? String(localized: "Elige una fecha para continuar.") : nil
-    }
-
-    @ViewBuilder private var createSection: some View {
-        Section {
-            Button {
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                onCreate()
-            } label: {
-                Text("Preparar plan").frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.primaryAction)
-            .controlSize(.large)
-            .disabled(!isFormValid)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
-            .accessibilityIdentifier("kitCreator.create")
-        } footer: {
-            VStack(alignment: .leading, spacing: 6) {
-                // Un botón apagado sin motivo parece roto: se dice qué falta.
-                if let missingField {
-                    Text(missingField)
-                        .accessibilityIdentifier("kitCreator.missing")
-                }
-                if let aiNotice {
-                    Text(aiNotice)
-                        .accessibilityIdentifier("kitCreator.aiNotice")
-                }
-            }
-            .padding(.top, 4)
-        }
-    
-    }
-
-    /// Desde ratos cortos hasta una mañana entera.
-    private var durations: [Int] {
-        oneSitting ? [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
-    }
-
-    private func field(
-        _ symbol: String,
-        _ color: Color,
-        _ title: String,
-        placeholder: String,
-        text: Binding<String>,
-        focus: KitCreatorField,
-        next: KitCreatorField? = nil,
-        identifier: String? = nil
-    ) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            IconChip(symbol: symbol, color: color, size: 28).padding(.top, 2)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.caption).foregroundStyle(.secondary)
-                TextField(placeholder, text: text, axis: .vertical)
-                    .lineLimit(1...4)
-                    .focused(focusedField, equals: focus)
-                    // Intro no hace salto de línea: pasa al campo siguiente (y en el último cierra el teclado).
-                    .submitLabel(next == nil ? .done : .next)
-                    .onChange(of: text.wrappedValue) { _, value in
-                        guard value.contains("\n") else { return }
-                        text.wrappedValue = value.replacingOccurrences(of: "\n", with: "")
-                        withAnimation(.smooth) { focusedField.wrappedValue = next }
-                    }
-                    .accessibilityIdentifier(identifier ?? "")
-                    .accessibilityLabel(title)
-            }
-        }
-        .id(focus)
-    }
-}
-
-// MARK: - Filas que aparecen y desaparecen
-
-/// La misma animación para todo lo que se despliega en el formulario: la fila se pliega y se funde
-/// a la vez, sin aparecer ni desaparecer de golpe.
-private extension Animation {
-    static let formReveal = Animation.smooth(duration: 0.5)
-}
-
-private extension AnyTransition {
-    static var formRow: AnyTransition {
-        // Un recorrido algo mayor que la propia fila, para que se note que baja desde arriba.
-        let travel = AnyTransition.opacity.combined(with: .move(edge: .top)).combined(with: .offset(y: -18))
-        return .asymmetric(
-            insertion: travel.animation(.smooth(duration: 0.5).delay(0.05)),
-            removal: travel.animation(.smooth(duration: 0.35)))
     }
 }

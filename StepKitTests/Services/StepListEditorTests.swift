@@ -622,4 +622,72 @@ struct StepListEditorTests {
         #expect(titles(kit) == ["C", "A2", "B"])
         #expect(kit.steps.count == 3)
     }
+
+    // MARK: - Crear Kits a mano
+
+    private var gregorian: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Madrid")!
+        return calendar
+    }
+
+    private func nov(_ day: Int, _ calendar: Calendar) -> Date {
+        calendar.date(from: DateComponents(year: 2026, month: 11, day: day, hour: 9))!
+    }
+
+    private func days(_ dates: [Date], _ calendar: Calendar) -> [Int] { dates.map { calendar.component(.day, from: $0) } }
+
+    @Test("Steps without a date spread from today to the final date; one step stays today")
+    func manualSpreadsDates() {
+        let c = gregorian
+        #expect(days(ManualKit.plannedDates(chosen: [nil, nil, nil], from: nov(2, c), to: nov(10, c), calendar: c), c) == [2, 6, 10])
+        #expect(days(ManualKit.plannedDates(chosen: [nil], from: nov(2, c), to: nov(10, c), calendar: c), c) == [2])
+    }
+
+    @Test("A chosen date is kept; steps around it stay in order and inside the final date")
+    func manualChosenDates() {
+        let c = gregorian
+        #expect(days(ManualKit.plannedDates(chosen: [nil, nov(9, c), nil], from: nov(2, c), to: nov(10, c), calendar: c), c) == [2, 9, 10])
+        // Elegida antes que la anterior o después de la final: se corrige.
+        #expect(days(ManualKit.plannedDates(chosen: [nov(8, c), nov(3, c)], from: nov(2, c), to: nov(10, c), calendar: c), c) == [8, 8])
+        #expect(days(ManualKit.plannedDates(chosen: [nov(20, c)], from: nov(2, c), to: nov(10, c), calendar: c), c) == [10])
+        // Con muchos pasos, la fecha final manda.
+        #expect(days(ManualKit.plannedDates(chosen: Array(repeating: nil, count: 10), from: nov(2, c), to: nov(4, c), calendar: c), c).last == 4)
+        #expect(ManualKit.dateChanges(of: [StepDraft(title: "A", date: nov(8, c)), StepDraft(title: "B", date: nov(3, c))],
+                                      from: nov(2, c), to: nov(10, c), calendar: c).map(\.title) == ["B"])
+        #expect(ManualKit.dateChanges(of: [StepDraft(title: "A", date: nil)], from: nov(2, c), to: nov(10, c), calendar: c).isEmpty)
+    }
+
+    @Test("A manual Kit is saved like any other, marked as manual, without duplicates")
+    func manualCreate() throws {
+        let c = gregorian
+        let steps = [StepDraft(title: "Uno", minutes: 30, date: nil), StepDraft(title: "Dos", short: "Hecho", date: nil)]
+        let kit = ManualKit.create(name: "  Pan  ", dueDate: nov(6, c), steps: steps, ownerID: "a", context: context, calendar: c, at: nov(2, c))
+        try context.save()
+        #expect(kit.title == "Pan")
+        #expect(kit.sourceModel == StepListDraft.manualSource)
+        #expect(kit.kpi.isEmpty)
+        #expect(kit.horizonDays == 5)
+        #expect(kit.targetDate == c.startOfDay(for: nov(6, c)))
+        #expect(titles(kit) == ["Uno", "Dos"])
+        #expect(orders(kit) == [0, 1])
+        #expect(kit.steps.count == 2)
+        #expect(kit.orderedActiveSteps.allSatisfy { $0.ownerID == "a" && $0.suggestedDeadline != nil })
+        #expect(kit.orderedActiveSteps[1].descriptionShort == "Hecho")
+    }
+
+    @Test("Free plan: two active Kits reach the limit; finished, removed, other owners or Pro don't")
+    func manualFreeLimit() throws {
+        let one = makeKit(["A"])
+        #expect(!ManualKit.reachesFreeLimit(kits: [one], ownerID: "a", isPremium: false))
+        let two = makeKit(["B"])
+        #expect(ManualKit.reachesFreeLimit(kits: [one, two], ownerID: "a", isPremium: false))
+        #expect(!ManualKit.reachesFreeLimit(kits: [one, two], ownerID: "a", isPremium: true))
+        #expect(!ManualKit.reachesFreeLimit(kits: [one, two], ownerID: "otra", isPremium: false))
+        two.orderedActiveSteps[0].isCompleted = true
+        #expect(!ManualKit.reachesFreeLimit(kits: [one, two], ownerID: "a", isPremium: false))
+        two.orderedActiveSteps[0].isCompleted = false
+        two.markAsDeleted()
+        #expect(!ManualKit.reachesFreeLimit(kits: [one, two], ownerID: "a", isPremium: false))
+    }
 }
