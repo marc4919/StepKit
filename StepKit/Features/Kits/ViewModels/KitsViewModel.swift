@@ -15,6 +15,8 @@ final class KitsViewModel {
     var selectedKitId: UUID?
     /// Pasos abiertos encima del plan del Kit elegido. Vaciarla vuelve al plan.
     var detailPath: [StepEntity] = []
+    /// El plan del Kit elegido tiene otra pantalla encima (paso, asistente, resultado…).
+    var isKitPlanCovered = false
     /// Kits que se están eliminando: salen de la lista con animación antes del borrado real.
     var leavingKitIDs: Set<UUID> = []
     var selectedStepEntity: StepEntity?

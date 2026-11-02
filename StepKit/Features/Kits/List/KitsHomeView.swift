@@ -153,8 +153,8 @@ struct KitsHomeView: View {
             if hasColumn, viewModel.selectedKitEntity == nil, let kit = continueKit {
                 viewModel.selectKit(kit)
                 openedLastKitAutomatically = true
-            } else if !hasColumn, openedLastKitAutomatically, viewModel.detailPath.isEmpty {
-                // Al plegar se vuelve a Mis Kits: ese Kit no lo abriste tú.
+            } else if !hasColumn, openedLastKitAutomatically, !viewModel.isKitPlanCovered {
+                // Al plegar se vuelve a Mis Kits: ese Kit no lo abriste tú, salvo que ya estés dentro de algo.
                 viewModel.clearSelection()
                 openedLastKitAutomatically = false
             }

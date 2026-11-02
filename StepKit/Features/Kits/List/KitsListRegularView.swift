@@ -115,6 +115,8 @@ struct KitsListRegularView: View {
                                   opensResultReview: viewModel.reviewOnOpenKitID == kitEntity.id,
                                   onResultReviewOpened: { viewModel.reviewOnOpenKitID = nil })
                     .id(kitEntity.id)
+                    .onAppear { viewModel.isKitPlanCovered = false }
+                    .onDisappear { viewModel.isKitPlanCovered = true }
                 } else {
                     ContentUnavailableView {
                         Label("Selecciona un Kit", systemImage: Symbols.kits)
