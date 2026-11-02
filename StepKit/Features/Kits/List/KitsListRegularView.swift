@@ -115,11 +115,6 @@ struct KitsListRegularView: View {
                     } description: {
                         Text("Elige un Kit para ver su plan y su registro")
                     } actions: {
-                        // Con el detalle a pantalla completa, la lista no está a la vista: se ofrece aquí.
-                        if columnVisibility == .detailOnly {
-                            Button("Ver mis Kits") { withAnimation { columnVisibility = .all } }
-                                .buttonStyle(.glass)
-                        }
                         Button("Nuevo Kit", systemImage: "plus") { viewModel.showingKitCreator = true }
                             .buttonStyle(.glassProminent)
                     }
