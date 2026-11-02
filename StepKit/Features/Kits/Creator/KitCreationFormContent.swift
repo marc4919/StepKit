@@ -244,11 +244,12 @@ struct KitCreationFormContent: View {
         } footer: {
             VStack(alignment: .leading, spacing: 6) {
                 if let onStartFromScratch {
-                    Button(startFromScratchTitle, action: onStartFromScratch)
+                    Button(action: onStartFromScratch) {
+                        Text(startFromScratchTitle).frame(minHeight: 44)
+                    }
                         .disabled(!canStartFromScratch)
                         .font(.subheadline.weight(.semibold))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
                         .accessibilityHint("Crea el Kit a mano, sin IA")
                         .accessibilityIdentifier("kitCreator.fromScratch")
                 }
@@ -323,6 +324,7 @@ extension AnyTransition {
 struct KitDueDateField: View {
     @Binding var dueDate: Date?
     let todayStart: Date
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showsOtherDate = false
 
     var body: some View {
@@ -345,9 +347,11 @@ struct KitDueDateField: View {
     /// Atajos sin nada marcado: la fecha la elige la persona, con un toque si le vale uno de ellos.
     private var dateShortcuts: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
+            let layout = typeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4)) : AnyLayout(HStackLayout())
+            layout {
                 Label { Text("Fecha final") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
-                Spacer(minLength: 8)
+                if !typeSize.isAccessibilitySize { Spacer(minLength: 8) }
                 if !showsOtherDate {
                     Text(dueDate?.formatted(.dateTime.day().month(.abbreviated).year()) ?? String(localized: "Sin elegir"))
                         .foregroundStyle(.secondary)
@@ -355,7 +359,7 @@ struct KitDueDateField: View {
                 }
             }
             .accessibilityElement(children: .combine)
-            // Las chips ocupan todo el ancho: en una fila si caben y, si no, en dos.
+            // Las chips ocupan todo el ancho: en una fila si caben y, si no, en las que necesite el texto.
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {
                     todayChip; weekChip; monthChip; threeMonthsChip; sixMonthsChip; otherDateButton
@@ -363,6 +367,14 @@ struct KitDueDateField: View {
                 VStack(spacing: 8) {
                     HStack(spacing: 8) { todayChip; weekChip; monthChip }
                     HStack(spacing: 8) { threeMonthsChip; sixMonthsChip; otherDateButton }
+                }
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) { todayChip; weekChip }
+                    HStack(spacing: 8) { monthChip; threeMonthsChip }
+                    HStack(spacing: 8) { sixMonthsChip; otherDateButton }
+                }
+                VStack(spacing: 8) {
+                    todayChip; weekChip; monthChip; threeMonthsChip; sixMonthsChip; otherDateButton
                 }
             }
         }

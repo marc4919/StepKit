@@ -685,6 +685,23 @@ struct StepListEditorTests {
         #expect(offsets(kit) == [0, 2, 8])
     }
 
+    @Test("A Kit with 60 steps keeps its order and never passes the final date")
+    func addStepAtTheLimit() throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(10), ownerID: "a", context: context)
+        for number in 1...StepListEditor.maxSteps {
+            ManualKit.addStep(StepDraft(title: "Paso \(number)", date: nil), to: kit, context: context)
+        }
+        try context.save()
+        #expect(kit.steps.count == StepListEditor.maxSteps)
+        #expect(orders(kit) == Array(0..<StepListEditor.maxSteps))
+        #expect(titles(kit).first == "Paso 1")
+        #expect(titles(kit).last == "Paso 60")
+        let spread = offsets(kit).compactMap { $0 }
+        #expect(spread == spread.sorted())
+        #expect(spread.first == 0)
+        #expect(spread.last == 10)
+    }
+
     @Test("Without days left, the steps share today")
     func addStepTightDates() throws {
         let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(0), ownerID: "a", context: context)

@@ -1305,7 +1305,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Without a date, it spreads up to the final date."
+            "value": "Without a date, it spreads up to the end date."
           }
         }
       }
@@ -1356,6 +1356,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "I added “%@” as step %lld."
+          }
+        }
+      }
+    },
+    "Abre este paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens this step"
           }
         }
       }
@@ -3393,7 +3403,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kit details"
+            "value": "Kit Details"
           }
         }
       }

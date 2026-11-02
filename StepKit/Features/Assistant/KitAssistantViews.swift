@@ -295,7 +295,7 @@ struct KitAssistantChatView: View {
     }
 
     private func proposalCard(_ proposal: PlanProposal) -> some View {
-        ProposalCard(proposal: proposal) {
+        ProposalCard(proposal: proposal, steps: kit.orderedActiveSteps) {
             if let onAcceptOnPlan {
                 onAcceptOnPlan(proposal)
                 dismiss()
@@ -443,6 +443,7 @@ struct NewKitCard: View {
 
 struct ProposalCard: View {
     let proposal: PlanProposal
+    var steps: [StepEntity] = []
     let onAccept: () -> Void
     let onDiscard: () -> Void
 
@@ -470,39 +471,14 @@ struct ProposalCard: View {
             // pasado en el plan, por encima de lo que diga el resumen. Al aplicarse van recibiendo su check.
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(proposal.changes) { change in
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Image(systemName: change.symbol)
-                            .foregroundStyle(change.to != nil ? MetaTint.date : Color.accentColor)
-                            .accessibilityHidden(true)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(change.stepLabel).font(.subheadline.weight(.medium))
-                            if let to = change.to {
-                                HStack(spacing: 6) {
-                                    if let from = change.from {
-                                        Text(from.formatted(.dateTime.day().month(.abbreviated)))
-                                            .strikethrough()
-                                            .foregroundStyle(.secondary)
-                                        Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.secondary)
-                                    }
-                                    Text(to.formatted(.dateTime.day().month(.abbreviated)))
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(MetaTint.date)
-                                }
-                                .font(.caption)
-                            }
-                            if let detail = change.detail, !detail.isEmpty {
-                                Text(detail).font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                        Spacer(minLength: 0)
-                        if proposal.appliedChangeIDs.contains(change.id) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                                .transition(.scale.combined(with: .opacity))
-                                .accessibilityLabel("Aplicado")
-                        }
+                    if let step = openableStep(for: change) {
+                        NavigationLink(value: step) { changeRow(change, opens: true) }
+                            .buttonStyle(.plain)
+                            .accessibilityHint("Abre este paso")
+                            .accessibilityIdentifier("proposal.openStep")
+                    } else {
+                        changeRow(change, opens: false)
                     }
-                    .accessibilityElement(children: .combine)
                 }
             }
             .animation(.snappy, value: proposal.appliedChangeIDs)
@@ -541,6 +517,54 @@ struct ProposalCard: View {
         .background(Color.orange.opacity(proposal.state == .pending ? 0.08 : 0.04), in: .rect(cornerRadius: 20))
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.orange.opacity(proposal.state == .pending ? 0.25 : 0.12)))
         .animation(.default, value: proposal.state)
+    }
+
+    /// Una vez aplicada, cada cambio lleva a su paso, si sigue en el plan.
+    private func openableStep(for change: ProposedStepChange) -> StepEntity? {
+        guard proposal.state == .accepted, let id = change.stepID else { return nil }
+        return steps.first { $0.id == id }
+    }
+
+    private func changeRow(_ change: ProposedStepChange, opens: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: change.symbol)
+                .foregroundStyle(change.to != nil ? MetaTint.date : Color.accentColor)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(change.stepLabel).font(.subheadline.weight(.medium))
+                if let to = change.to {
+                    HStack(spacing: 6) {
+                        if let from = change.from {
+                            Text(from.formatted(.dateTime.day().month(.abbreviated)))
+                                .strikethrough()
+                                .foregroundStyle(.secondary)
+                            Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.secondary)
+                        }
+                        Text(to.formatted(.dateTime.day().month(.abbreviated)))
+                            .fontWeight(.semibold)
+                            .foregroundStyle(MetaTint.date)
+                    }
+                    .font(.caption)
+                }
+                if let detail = change.detail, !detail.isEmpty {
+                    Text(detail).font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            Spacer(minLength: 0)
+            if proposal.appliedChangeIDs.contains(change.id) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .transition(.scale.combined(with: .opacity))
+                    .accessibilityLabel("Aplicado")
+            }
+            if opens {
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

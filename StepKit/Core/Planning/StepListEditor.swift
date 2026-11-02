@@ -10,6 +10,9 @@ import Foundation
 import SwiftData
 
 enum StepListEditor {
+    /// El servidor no acepta más pasos en un Kit al hablar con el asistente.
+    static let maxSteps = 60
+
     /// Añade un paso al Kit. Sin `anchor`: al principio con `atStart`, si no, al final.
     @discardableResult
     static func insert(

@@ -357,6 +357,7 @@ struct KitDetailView: View {
     /// En un Kit a mano, añadir pasos es lo principal: va en el plan y no escondido en «···».
     private var showsAddStepRow: Bool {
         kitEntity.sourceModel == StepListDraft.manualSource && kitEntity.resultConfirmedAt == nil
+            && kitEntity.activeStepCount < StepListEditor.maxSteps
     }
 
     private func openPlanConversation(_ intent: AssistantIntent) {
@@ -492,9 +493,13 @@ struct KitDetailView: View {
             .tint(.primaryAction)
             .controlSize(.large)
             .accessibilityIdentifier("kit.firstStep")
-            Button("Pedir pasos al asistente") { openPlanConversation(.suggestSteps) }
-                .font(.subheadline.weight(.semibold))
-                .accessibilityIdentifier("kit.askSteps")
+            Button {
+                openPlanConversation(.suggestSteps)
+            } label: {
+                Text("Pedir pasos al asistente").frame(minHeight: 44)
+            }
+            .font(.subheadline.weight(.semibold))
+            .accessibilityIdentifier("kit.askSteps")
         }
         .frame(maxWidth: .infinity)
         .padding(20)

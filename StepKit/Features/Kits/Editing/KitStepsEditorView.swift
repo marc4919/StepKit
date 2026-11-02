@@ -10,7 +10,6 @@ import SwiftData
 import SwiftUI
 
 struct KitStepsEditorView: View {
-    private static let maxSteps = 60
     private static let maxVisibleDateChanges = 6
 
     let kit: GoalEntity
@@ -56,7 +55,7 @@ struct KitStepsEditorView: View {
                     .onDelete { offsets in
                         offsets.first.map { requestRemoval(of: draft.pending[$0]) }
                     }
-                    if draft.totalCount < Self.maxSteps {
+                    if draft.totalCount < StepListEditor.maxSteps {
                         addRow
                     }
                 } footer: {

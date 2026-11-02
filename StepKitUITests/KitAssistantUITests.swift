@@ -15,5 +15,11 @@ final class KitAssistantUITests: XCTestCase {
         accept.tap()
         XCTAssertTrue(app.staticTexts["Aplicada"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["proposal.discard"].exists)
+
+        // Ya aplicada, cada cambio lleva a su paso.
+        let openStep = app.buttons["proposal.openStep"].firstMatch
+        XCTAssertTrue(openStep.waitForExistence(timeout: 5))
+        openStep.tap()
+        XCTAssertTrue(app.buttons["step.edit"].waitForExistence(timeout: 5))
     }
 }

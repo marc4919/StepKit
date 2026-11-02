@@ -150,6 +150,7 @@ struct DesignFixtureRoot: View {
                 } else if scenario == .assistantProposal, let step = portfolioStep3, let kit = step.goal {
                     NavigationStack {
                         KitAssistantChatView(kit: kit, conversation: KitAssistantStore.shared.conversation(kit: kit, step: step))
+                            .stepDestinations()
                     }
                 } else {
                     kits
