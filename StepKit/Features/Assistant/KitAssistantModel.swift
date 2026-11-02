@@ -38,6 +38,11 @@ final class KitConversation: Identifiable {
     /// Propuestas pendientes de decidir en esta conversación.
     var pendingProposalCount: Int { proposals.filter { $0.state == .pending }.count }
 
+    /// La misma propuesta que la persona ya descartó: no se le vuelve a enseñar.
+    func wasDiscarded(_ proposal: PlanProposal) -> Bool {
+        proposals.contains { $0.state == .discarded && $0.contentSignature == proposal.contentSignature }
+    }
+
     /// Añade una propuesta en su sitio de la conversación (tras el mensaje que la acompaña).
     /// Una propuesta nueva sustituye a las pendientes anteriores: así no se solapan cambios contradictorios.
     func add(_ proposal: PlanProposal) {
@@ -161,6 +166,27 @@ final class PlanProposal: Identifiable {
             guard let stepID = change.stepID, let to = change.to else { return nil }
             return .setDate(stepID: stepID, date: to)
         }
+    }
+
+    /// Lo que cambia de verdad, sin el texto del modelo: dos propuestas con el mismo contenido
+    /// son la misma aunque se redacten distinto. Las fechas cuentan por días.
+    var contentSignature: Set<String> {
+        func day(_ date: Date?) -> String {
+            date.map { Calendar.current.dateComponents([.year, .month, .day], from: $0).description } ?? ""
+        }
+        func text(_ value: String?) -> String { (value ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        return Set(actions.map { action in
+            switch action {
+            case .setDate(let id, let date): "date|\(id)|\(day(date))"
+            case .edit(let id, let title, let minutes, _, _): "edit|\(id)|\(text(title))|\(minutes ?? 0)"
+            case .split(let id, let titles, _): "split|\(id)|\(titles.map { text($0) })"
+            case .add(_, _, let title, _, let date, _, _): "add|\(text(title))|\(day(date))"
+            case .remove(let id): "remove|\(id)"
+            case .block(let id, _): "block|\(id)"
+            case .changeKPI(let kpi): "kpi|\(text(kpi))"
+            case .setKitDueDate(let date): "due|\(day(date))"
+            }
+        })
     }
 
     /// Cambios de esta propuesta ya aplicados: la tarjeta les pone el check de uno en uno.

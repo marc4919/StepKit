@@ -61,6 +61,24 @@ struct BlindTestDecisionsTests {
         #expect(AssistRequestBuilder.summary(nil, discarded: ["Dividir"])?.contains("«Dividir»") == true)
     }
 
+    @Test("A proposal with the same changes as a discarded one counts as repeated, however it is worded")
+    func repeatedProposal() {
+        let step = UUID()
+        let day = Date(timeIntervalSince1970: 1_900_000_000)
+        let kit = GoalEntity(ownerID: "a", planTitle: "Kit", horizonDays: 30, kpi: "")
+        let conversation = KitAssistantStore.shared.newConversation(kit: kit, title: "Prueba")
+        let first = PlanProposal(title: "Mover el paso", changes: [], impact: "", actions: [.setDate(stepID: step, date: day)])
+        conversation.add(first)
+        let same = PlanProposal(title: "Otro título", changes: [], impact: "Otro impacto",
+                                actions: [.setDate(stepID: step, date: day.addingTimeInterval(60))])
+        #expect(!conversation.wasDiscarded(same))   // aún pendiente, no descartada
+        first.state = .discarded
+        #expect(conversation.wasDiscarded(same))
+        let otherDay = PlanProposal(title: "Mover el paso", changes: [], impact: "",
+                                    actions: [.setDate(stepID: step, date: day.addingTimeInterval(86_400 * 2))])
+        #expect(!conversation.wasDiscarded(otherDay))
+    }
+
     @Test("The warning appears only when a moved step passes the Kit's end date")
     func endDateWarning() {
         let target = Calendar.current.startOfDay(for: Date(timeIntervalSince1970: 1_900_000_000))

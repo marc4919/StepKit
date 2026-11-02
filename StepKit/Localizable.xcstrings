@@ -860,6 +860,16 @@
         }
       }
     },
+    "Esa propuesta ya la descartaste, así que no te la vuelvo a ofrecer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You already discarded that proposal, so I won't offer it again."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

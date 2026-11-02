@@ -397,8 +397,14 @@ enum KitAssistant {
             conversation.quotaReached = false
             // Cada respuesta decide si sigue en pie la sugerencia de crear otro Kit.
             conversation.newKitSuggestion = response.suggestion.flatMap { $0.type == "new_kit" ? $0 : nil }
-            let proposal = response.proposal.flatMap { RemoteProposalBuilder.build($0, kit: kit) }
-            let text = response.message.trimmingCharacters(in: .whitespacesAndNewlines)
+            var proposal = response.proposal.flatMap { RemoteProposalBuilder.build($0, kit: kit) }
+            var text = response.message.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let repeated = proposal, conversation.wasDiscarded(repeated) {
+                // La respuesta puede seguir siendo útil; solo se quita lo ya rechazado, y se dice.
+                proposal = nil
+                let note = String(localized: "Esa propuesta ya la descartaste, así que no te la vuelvo a ofrecer.")
+                text = text.isEmpty ? note : text + "\n\n" + note
+            }
             if !text.isEmpty || proposal != nil {
                 vm.messages.append(ChatMessage(sender: .assistant,
                                                text: text.isEmpty ? String(localized: "Te propongo un ajuste del plan.") : text,
