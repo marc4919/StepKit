@@ -94,12 +94,6 @@ struct ManualKitCreatorView: View {
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var canCreate: Bool { !trimmedName.isEmpty && dueDate != nil }
 
-    /// Un botón apagado sin motivo parece roto: se dice qué falta.
-    private var missingField: String? {
-        if trimmedName.isEmpty { return String(localized: "Escribe el nombre del Kit para continuar.") }
-        return dueDate == nil ? String(localized: "Elige una fecha para continuar.") : nil
-    }
-
     var body: some View {
         Form {
             Section("Nombre") {
@@ -114,13 +108,6 @@ struct ManualKitCreatorView: View {
             }
             Section {
                 KitDueDateField(dueDate: $dueDate, todayStart: todayStart)
-            } footer: {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Los pasos los añadirás en el Kit.")
-                    if let missingField {
-                        Text(missingField).accessibilityIdentifier("manualKit.missing")
-                    }
-                }
             }
         }
         .navigationTitle("Nuevo Kit")

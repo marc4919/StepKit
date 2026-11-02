@@ -1200,16 +1200,6 @@
         }
       }
     },
-    "Escribe el nombre del Kit para continuar.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter the Kit name to continue."
-          }
-        }
-      }
-    },
     "Empezar de cero": {
       "localizations": {
         "en": {
@@ -1366,16 +1356,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "I added “%@” as step %lld."
-          }
-        }
-      }
-    },
-    "Los pasos los añadirás en el Kit.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "You will add the steps in the Kit."
           }
         }
       }
