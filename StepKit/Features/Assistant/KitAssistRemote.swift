@@ -176,8 +176,20 @@ enum AssistRequestBuilder {
                 .init(stepNumber: number($0.stepID), kind: $0.kind.rawValue, note: $0.note, notedAt: $0.notedAt)
             },
             busyMinutesByDay: busyMinutes(excluding: kit, context: context),
-            conversation: .init(summary: conversation?.serverSummary, messages: Array(chat))
+            conversation: .init(summary: summary(conversation?.serverSummary,
+                                                 discarded: conversation?.proposals.filter { $0.state == .discarded }.map(\.title) ?? []),
+                                messages: Array(chat))
         )
+    }
+
+    /// El resumen viene del servidor, que no sabe qué propuestas descartó la persona: se lo decimos
+    /// para que no las vuelva a ofrecer. Va en español, como el resto de instrucciones del asistente.
+    static func summary(_ base: String?, discarded: [String]) -> String? {
+        guard !discarded.isEmpty else { return base }
+        let note = "La persona ya ha descartado estas propuestas; no las vuelvas a ofrecer: "
+            + discarded.suffix(5).map { "«\($0)»" }.joined(separator: ", ") + "."
+        guard let base, !base.isEmpty else { return note }
+        return base + " " + note
     }
 
     /// Minutos ya ocupados cada día (otros Kits y sesiones, también las libres), de hoy a +60 días.

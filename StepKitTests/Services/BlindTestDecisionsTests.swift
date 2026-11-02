@@ -51,6 +51,16 @@ struct BlindTestDecisionsTests {
         #expect(calendar.component(.hour, from: SessionStart.default(on: afternoon, now: afternoon)) == 17)
     }
 
+    @Test("Discarded proposals reach the assistant in the conversation summary")
+    func discardedProposals() {
+        #expect(AssistRequestBuilder.summary(nil, discarded: []) == nil)
+        #expect(AssistRequestBuilder.summary("Resumen.", discarded: []) == "Resumen.")
+        let withBase = AssistRequestBuilder.summary("Resumen.", discarded: ["Mover el paso 3"])
+        #expect(withBase?.hasPrefix("Resumen. ") == true)
+        #expect(withBase?.contains("«Mover el paso 3»") == true)
+        #expect(AssistRequestBuilder.summary(nil, discarded: ["Dividir"])?.contains("«Dividir»") == true)
+    }
+
     @Test("The warning appears only when a moved step passes the Kit's end date")
     func endDateWarning() {
         let target = Calendar.current.startOfDay(for: Date(timeIntervalSince1970: 1_900_000_000))
