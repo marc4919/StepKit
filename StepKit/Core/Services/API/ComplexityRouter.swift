@@ -5,6 +5,20 @@
 //  Servicio que usa Apple Foundation Models para determinar
 //  si un objetivo requiere un modelo pesado o ligero
 //
+//  SIN USO desde el 2 de noviembre de 2026. No se llama desde ningún sitio; se conserva por si
+//  vuelve a hacer falta.
+//
+//  Qué hacía: al crear un Kit, estimaba en el dispositivo la complejidad del objetivo y elegía
+//  `promptVersion` (1 pesado, 2 ligero) en `AIGenerateKitRequest`.
+//  Por qué se desconectó: el servidor pasó a un solo prompt e ignora `promptVersion`, así que
+//  retrasaba cada creación sin cambiar el resultado.
+//  Cómo reconectarlo, en `KitCreatorViewModel.createKit`, dentro de la tarea y antes de crear la request:
+//      let result = await ComplexityRouter.shared.analyzeComplexity(goal: description, dueDate: dueDate, obstacles: obstacles)
+//      if Task.isCancelled || isCancelled { return }
+//  y pasar `useHeavyweight: result.useHeavyweight`. El servidor tendría que volver a usar
+//  `promptVersion`, y la Política de privacidad tendría que volver a mencionar este uso del modelo
+//  del dispositivo.
+//
 
 import Foundation
 import FoundationModels

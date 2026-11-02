@@ -830,6 +830,16 @@
         }
       }
     },
+    "Última actualización: 2 de noviembre de 2026": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last updated: November 2, 2026"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
@@ -9264,12 +9274,12 @@
         }
       }
     },
-    "• **IA externa, solo con tu permiso.** Al crear un Kit, al escribir al asistente de un Kit, al marcar un paso como bloqueado o al abrir un Kit con un paso vencido, enviamos a nuestro servidor lo necesario para responderte: tu meta, fechas, tiempo disponible, obstáculos, el estado del plan y de tus avances, y tus mensajes. El servidor lo reenvía a un modelo de IA de terceros a través de OpenRouter, Inc. Usamos solo endpoints de **retención cero**: el proveedor no guarda la petición una vez respondida ni la usa para entrenar modelos. Los modelos actuales se ejecutan en Google Cloud Vertex AI, Amazon Bedrock o Microsoft Azure, preferentemente en centros de datos de la Unión Europea.\n• **En tu dispositivo (Apple Intelligence).** Al crear un Kit, StepKit puede usar el modelo de tu iPhone o iPad para estimar lo complejo que es tu objetivo. Eso no sale del dispositivo.\n\nTe pedimos permiso antes del primer envío. Sin él, el asistente del Kit y la creación de planes con IA no están disponibles. Puedes retirarlo cuando quieras en **Perfil > IA y privacidad**, y desde ese momento no se envía nada más.": {
+    "• **IA externa, solo con tu permiso.** Al crear un Kit, al escribir al asistente de un Kit, al marcar un paso como bloqueado o al abrir un Kit con un paso vencido, enviamos a nuestro servidor lo necesario para responderte: tu meta, fechas, tiempo disponible, obstáculos, el estado del plan y de tus avances, y tus mensajes. El servidor lo reenvía a un modelo de IA de terceros a través de OpenRouter, Inc. Usamos solo endpoints de **retención cero**: el proveedor no guarda la petición una vez respondida ni la usa para entrenar modelos. Los modelos actuales se ejecutan en Google Cloud Vertex AI, Amazon Bedrock o Microsoft Azure, preferentemente en centros de datos de la Unión Europea.\n\nTe pedimos permiso antes del primer envío. Sin él, el asistente del Kit y la creación de planes con IA no están disponibles. Puedes retirarlo cuando quieras en **Perfil > IA y privacidad**, y desde ese momento no se envía nada más.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "• **External AI, only with your permission.** When you create a Kit, write to a Kit's assistant, mark a step as blocked or open a Kit with an overdue step, we send our server what it needs to answer you: your goal, dates, available time, obstacles, the state of your plan and progress, and your messages. The server forwards it to a third-party AI model through OpenRouter, Inc. We only use **zero-retention** endpoints: the provider does not keep the request once answered or use it to train models. The current models run on Google Cloud Vertex AI, Amazon Bedrock or Microsoft Azure, preferably in European Union data centers.\n• **On your device (Apple Intelligence).** When you create a Kit, StepKit may use your iPhone or iPad's model to estimate how complex your goal is. That never leaves the device.\n\nWe ask for permission before the first send. Without it, the Kit assistant and AI plan creation are not available. You can withdraw it anytime in **Profile > AI and privacy**, and from then on nothing else is sent."
+            "value": "• **External AI, only with your permission.** When you create a Kit, write to a Kit's assistant, mark a step as blocked or open a Kit with an overdue step, we send our server what it needs to answer you: your goal, dates, available time, obstacles, the state of your plan and progress, and your messages. The server forwards it to a third-party AI model through OpenRouter, Inc. We only use **zero-retention** endpoints: the provider does not keep the request once answered or use it to train models. The current models run on Google Cloud Vertex AI, Amazon Bedrock or Microsoft Azure, preferably in European Union data centers.\n\nWe ask for permission before the first send. Without it, the Kit assistant and AI plan creation are not available. You can withdraw it anytime in **Profile > AI and privacy**, and from then on nothing else is sent."
           }
         }
       }

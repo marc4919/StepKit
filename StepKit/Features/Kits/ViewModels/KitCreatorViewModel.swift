@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import FoundationModels
 import UIKit
 
 @Observable
@@ -183,32 +182,23 @@ final class KitCreatorViewModel {
         isCancelled = false
         
         streamingTask = Task {
-            // 1. Analizar complejidad
-            let complexityResult = await ComplexityRouter.shared.analyzeComplexity(
-                goal: description,
-                dueDate: dueDate,
-                obstacles: obstacles
-            )
+            // ComplexityRouter desconectado: el servidor usa un solo prompt e ignora promptVersion.
+            // Cómo volver a conectarlo: ver la cabecera de ComplexityRouter.swift.
             
-            // Verificar si fue cancelado
-            if Task.isCancelled || isCancelled {
-                return
-            }
-            
-            // 2. Crear request
+            // 1. Crear request
             let request = AIGenerateKitRequest(
                 description: description,
                 dueDate: dueDate,
                 dailyMinutes: dailyMinutes,
                 obstacles: obstacles,
-                useHeavyweight: complexityResult.useHeavyweight
+                useHeavyweight: false
             )
             
             #if DEBUG
             print("📤 Enviando request con promptVersion: \(request.promptVersion)")
             #endif
             
-            // 3. Consumir stream (puede terminar en preguntas si el Kit es delicado)
+            // 2. Consumir stream (puede terminar en preguntas si el Kit es delicado)
             lastRequest = request
             lastToken = token
             await consumeStream(request: request, token: token)
