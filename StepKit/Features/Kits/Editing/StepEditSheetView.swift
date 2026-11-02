@@ -150,7 +150,7 @@ struct StepEditSheetView: View {
         } header: {
             Text("Planificación")
         } footer: {
-            Text(String(localized: "Tu fecha se respeta. Si alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho \(PlanReschedule.maxStepsPerDay) pasos al día en los que se mueven."))
+            Text(String(localized: "Tu fecha se respeta. Si alcanza a los pasos siguientes, se mueven con ella, sin pasar de \(PlanReschedule.maxStepsPerDay) pasos al día."))
         }
     }
 

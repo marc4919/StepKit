@@ -1160,12 +1160,12 @@
         }
       }
     },
-    "Para mantener el orden de los pasos, sin pasar de %lld al día en los que se mueven.": {
+    "Para mantener el orden y no pasar de %lld pasos al día.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "To keep the order of the steps, with at most %lld a day among those that move."
+            "value": "To keep the order and stay within %lld steps a day."
           }
         }
       }
@@ -7740,12 +7740,12 @@
         }
       }
     },
-    "Tu fecha se respeta. Si alcanza a los pasos siguientes, se mueven con ella: mismo orden y como mucho %lld pasos al día en los que se mueven.": {
+    "Tu fecha se respeta. Si alcanza a los pasos siguientes, se mueven con ella, sin pasar de %lld pasos al día.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your date is kept. If it reaches the next steps, they move with it: same order and at most %lld steps a day among those that move."
+            "value": "Your date is kept. If it reaches the next steps, they move with it, within %lld steps a day."
           }
         }
       }
