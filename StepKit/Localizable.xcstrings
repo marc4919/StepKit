@@ -1150,12 +1150,12 @@
         }
       }
     },
-    "He cambiado a mano el plan de %@. %@ Comprueba si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Decide antes de escribir y empieza por la conclusión, sin contar tu razonamiento ni cambiar de idea en la respuesta. Si encaja, empieza por «El orden encaja». Si no, empieza por «Hay un problema de orden:», explica por qué y di qué orden recomiendas; si no puedes proponer ese cambio, lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Lo decidiré yo.": {
+    "He cambiado a mano el plan de %@. %@ Comprueba si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Si encaja, dímelo en una o dos frases, sin hablar de problemas. Si no, explica por qué y propón el cambio de orden; si no puedes proponerlo, di qué orden recomiendas y lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Lo decidiré yo.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "I changed the plan of %1$@ by hand. %2$@ Check whether the order is still logical: see if any step needs another one that now comes later. Decide before writing and start with the conclusion, without narrating your reasoning or changing your mind in the reply. If it fits, start with “The order fits”. If not, start with “There is an order problem:”, explain why and say which order you recommend; if you cannot propose that change, I will make it in “Edit Steps”. Dates and free slots only afterwards. I will decide."
+            "value": "I changed the plan of %1$@ by hand. %2$@ Check whether the order is still logical: see if any step needs another one that now comes later. If it fits, tell me in one or two sentences, without talking about problems. If not, explain why and propose the change of order; if you cannot propose it, say which order you recommend and I will make it in “Edit Steps”. Dates and free slots only afterwards. I will decide."
           }
         }
       }

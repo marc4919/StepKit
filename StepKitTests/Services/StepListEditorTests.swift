@@ -555,10 +555,11 @@ struct StepListEditorTests {
         #expect(automatic[d.id].map { Calendar.current.isDate($0, inSameDayAs: day(6)) } == true)
     }
 
-    @Test("The review asks for the conclusion first")
-    func reviewPromptStartsWithConclusion() {
+    @Test("The review asks for a short answer when the order fits, with no fixed opening")
+    func reviewPromptAsksForShortAnswer() {
         let prompt = AssistantIntent.reviewChanges.prompt(kit: makeKit(), planChanges: nil)
-        #expect(prompt.contains("empieza por la conclusión") || prompt.contains("start with the conclusion"))
+        #expect(prompt.contains("una o dos frases") || prompt.contains("one or two sentences"))
+        #expect(!prompt.contains("Hay un problema de orden:") && !prompt.contains("There is an order problem:"))
     }
 
     // MARK: - El asistente propone reordenar
