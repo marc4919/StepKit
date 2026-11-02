@@ -110,7 +110,7 @@ struct KitStepsEditorView: View {
             }
             .alert("Se moverán estas fechas", isPresented: $confirmingDates) {
                 Button("Guardar", action: save)
-                Button("Volver", role: .cancel) {}
+                Button("Cancelar", role: .cancel) {}
             } message: {
                 Text(dateChangesMessage)
             }
@@ -239,11 +239,16 @@ struct StepDraftFormView: View {
     private let onSave: (StepDraft) -> Void
     /// Al crear un Kit a mano: sin fecha, el paso se reparte solo hasta la fecha final.
     private let dateIsOptional: Bool
+    private let unsetDateNote: LocalizedStringKey?
+    private let earliest: Date?
     private let latestDate: Date?
 
-    init(step: StepDraft, dateIsOptional: Bool = false, latestDate: Date? = nil, onSave: @escaping (StepDraft) -> Void) {
+    init(step: StepDraft, dateIsOptional: Bool = false, unsetDateNote: LocalizedStringKey? = nil,
+         earliest: Date? = nil, latestDate: Date? = nil, onSave: @escaping (StepDraft) -> Void) {
         original = step
         self.dateIsOptional = dateIsOptional
+        self.unsetDateNote = unsetDateNote
+        self.earliest = earliest
         self.latestDate = latestDate
         self.onSave = onSave
         _step = State(initialValue: step)
@@ -258,6 +263,7 @@ struct StepDraftFormView: View {
 
     private var earliestDate: Date {
         let today = Calendar.current.startOfDay(for: .now)
+        if let earliest { return max(today, Calendar.current.startOfDay(for: earliest)) }
         return min(today, step.date.map(Calendar.current.startOfDay(for:)) ?? today)
     }
 
@@ -280,7 +286,6 @@ struct StepDraftFormView: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("stepDraft.details")
-            .sensoryFeedback(.selection, trigger: showsDetails)
             if showsDetails {
                 TextField("Descripción breve", text: $step.short, axis: .vertical)
                     .lineLimit(2...4)
@@ -337,8 +342,8 @@ struct StepDraftFormView: View {
             } header: {
                 Text("Planificación")
             } footer: {
-                if dateIsOptional, step.date == nil {
-                    Text("Sin fecha, el paso se reparte hasta la fecha final.")
+                if dateIsOptional, step.date == nil, let unsetDateNote {
+                    Text(unsetDateNote)
                 }
             }
         }

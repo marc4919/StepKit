@@ -437,7 +437,8 @@ struct StepListEditorTests {
         let kit = makeKit()
         var added = StepListDraft(kit: kit)
         added.add(StepDraft(title: "Nuevo", date: nil))
-        #expect(!added.changesPlanStructure)
+        #expect(added.changesPlanStructure)
+        #expect(added.structureSummary.contains("Nuevo"))
         added.remove(try #require(added.pending.last).id)
         #expect(!added.changesPlanStructure)
         #expect(!added.hasChanges)
@@ -689,5 +690,64 @@ struct StepListEditorTests {
         two.orderedActiveSteps[0].isCompleted = false
         two.markAsDeleted()
         #expect(!ManualKit.reachesFreeLimit(kits: [one, two], ownerID: "a", isPremium: false))
+    }
+
+    // MARK: - Crear los pasos yo
+
+    @Test("An empty Kit keeps what was written in the creator, marked as manual, and is not finished")
+    func emptyKitFromCreator() throws {
+        let c = gregorian
+        let kit = ManualKit.createEmpty(name: " Mi casa ", dueDate: nov(20, c), doneWhen: " Pintada ", obstacles: "El cansancio",
+                                        startingPoint: "Sin pintura", stepMinutes: 45, ownerID: "a", context: context,
+                                        calendar: c, at: nov(2, c))
+        #expect(kit.title == "Mi casa")
+        #expect(kit.kpi == "Pintada")
+        #expect(kit.risks == ["El cansancio"])
+        #expect(kit.sourceModel == StepListDraft.manualSource)
+        #expect(kit.activeStepCount == 0)
+        #expect(!kit.isCompleted)
+        #expect(ManualKit.stepMinutes(for: kit) == 45)
+        let kitID = kit.id
+        let entries = try context.fetch(FetchDescriptor<ProgressEntryEntity>(predicate: #Predicate { $0.kitID == kitID }))
+        #expect(entries.map(\.note) == ["Sin pintura"])
+        #expect(ManualKit.reachesFreeLimit(kits: [kit, makeKit(["A"])], ownerID: "a", isPremium: false))
+    }
+
+    @Test("Without optional text an empty Kit adds no note or risk, and no minutes means the default")
+    func emptyKitMinimal() throws {
+        let c = gregorian
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: nov(6, c), ownerID: "a", context: context, calendar: c, at: nov(2, c))
+        #expect(kit.kpi.isEmpty && kit.risks.isEmpty)
+        #expect(ManualKit.stepMinutes(for: kit) == 20)
+        let kitID = kit.id
+        #expect(try context.fetch(FetchDescriptor<ProgressEntryEntity>(predicate: #Predicate { $0.kitID == kitID })).isEmpty)
+    }
+
+    @Test("A step added to a Kit goes last; without a date it takes the previous one's or today's")
+    func addStepDates() throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(9), ownerID: "a", context: context)
+        ManualKit.addStep(StepDraft(title: "Uno", date: nil), to: kit, context: context)
+        #expect(offsets(kit) == [0])
+        ManualKit.addStep(StepDraft(title: "Dos", date: day(3)), to: kit, context: context)
+        ManualKit.addStep(StepDraft(title: "Tres", date: nil), to: kit, context: context)
+        #expect(titles(kit) == ["Uno", "Dos", "Tres"])
+        #expect(offsets(kit) == [0, 3, 3])
+        #expect(orders(kit) == [0, 1, 2])
+    }
+
+    @Test("The assistant's steps for an empty plan keep their order, also when they all say step 0")
+    func assistantFillsEmptyPlan() async throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(9), ownerID: "a", context: context)
+        let plan = try proposal(
+            #"{"type":"add_step","stepNumber":0,"newDate":"\#(text(day(1)))","newTitles":["Uno"]},{"type":"add_step","stepNumber":0,"newDate":"\#(text(day(2)))","newTitles":["Dos"]},{"type":"add_step","stepNumber":0,"newTitles":["Tres"]}"#,
+            kit: kit)
+        await proposal_accept(plan, in: kit)
+        #expect(titles(kit) == ["Uno", "Dos", "Tres"])
+        #expect(offsets(kit) == [1, 2, 2])
+        #expect(kit.steps.count == 3)
+    }
+
+    private func proposal_accept(_ plan: PlanProposal, in kit: GoalEntity) async {
+        await plan.accept(in: kit, context: context, highlights: ChangeHighlights(), pause: .zero, animation: nil)
     }
 }

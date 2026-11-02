@@ -41,6 +41,11 @@ struct AssistantIntent: Identifiable {
                                                detail: String(localized: "Comprobar que el plan sigue teniendo sentido"),
                                                symbol: "checklist", color: .purple)
 
+    /// Desde un plan vacío: el asistente propone los pasos del Kit.
+    static let suggestSteps = AssistantIntent(id: "suggest-steps", title: String(localized: "Propón los pasos del plan"),
+                                              detail: String(localized: "Empezar con un plan propuesto"),
+                                              symbol: "sparkles", color: .purple)
+
     static let all: [AssistantIntent] = [
         AssistantIntent(id: "less-time", title: String(localized: "Tengo menos tiempo"),
                         detail: String(localized: "Buscar un tramo más pequeño para ahora"), symbol: Symbols.time, color: .blue),
@@ -75,6 +80,8 @@ struct AssistantIntent: Identifiable {
             return String(localized: "¿Dónde lo dejé en \(kitName)? Resume mi último avance y dime el siguiente paso concreto.")
         case "change-date":
             return String(localized: "Quiero cambiar la fecha final de \(kitName). ¿Qué pasos tendría que mover?")
+        case "suggest-steps":
+            return String(localized: "\(kitName) aún no tiene pasos. Propón los pasos que hacen falta para conseguirlo, en orden lógico y con fechas hasta la fecha final. Lo decidiré yo.")
         case "review-changes":
             // El asistente no puede proponer mover pasos de sitio: si el orden falla, debe decirlo con claridad.
             return String(localized: "He cambiado a mano el plan de \(kitName). \(planChanges ?? "") Comprueba si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Si encaja, dímelo en una o dos frases, sin hablar de problemas. Si no, explica por qué y propón el cambio de orden; si no puedes proponerlo, di qué orden recomiendas y lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Lo decidiré yo.")

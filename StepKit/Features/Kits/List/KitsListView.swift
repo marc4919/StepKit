@@ -67,9 +67,7 @@ struct KitsListView: View {
         )
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
             KitCreatorView(onKitCreated: { newKit in
-                if let entity = visibleKitEntities.first(where: { $0.id == newKit.id }) {
-                    viewModel.selectKit(entity)
-                }
+                viewModel.openCreatedKit(id: newKit.id, context: modelContext)
             }, startsManual: viewModel.creatorStartsManual)
         }
     }

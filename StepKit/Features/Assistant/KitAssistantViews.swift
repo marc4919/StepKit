@@ -174,7 +174,10 @@ struct KitAssistantChatView: View {
     let kit: GoalEntity
     @Bindable var conversation: KitConversation
     var initialIntent: AssistantIntent.ID?
+    /// Al aceptar se vuelve al plan, y es allí donde los cambios entran a la vista.
+    var onAcceptOnPlan: ((PlanProposal) -> Void)?
 
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncManager) private var syncManager
     @Environment(\.apiClient) private var apiClient: any APIClientProtocol
@@ -265,7 +268,7 @@ struct KitAssistantChatView: View {
                 }
             }
             guard !didSendInitial, let id = initialIntent,
-                  let intent = (intents + [AssistantIntent.reviewChanges]).first(where: { $0.id == id }) else { return }
+                  let intent = (intents + [AssistantIntent.reviewChanges, AssistantIntent.suggestSteps]).first(where: { $0.id == id }) else { return }
             didSendInitial = true
             // Si el asistente ya respondió a este mismo bloqueo (al anotarlo o al pedir ayuda antes),
             // se muestra esa ayuda y no se vuelve a pedir.
@@ -277,19 +280,28 @@ struct KitAssistantChatView: View {
         }
     }
 
+    /// El cambio queda en «Tu recorrido» del Kit.
+    static func record(_ proposal: PlanProposal, kit: GoalEntity, context: ModelContext, syncManager: SyncManager?) {
+        let lines = proposal.changes.map { change -> String in
+            if let to = change.to {
+                return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
+            }
+            return [change.stepLabel, change.detail].compactMap { $0 }.joined(separator: ": ")
+        }
+        try? ProgressLog.addAssistantChange(title: proposal.title, lines: lines, kit: kit, context: context)
+        syncManager?.handleDataChange()
+    }
+
     private func proposalCard(_ proposal: PlanProposal) -> some View {
         ProposalCard(proposal: proposal) {
+            if let onAcceptOnPlan {
+                onAcceptOnPlan(proposal)
+                dismiss()
+                return
+            }
             Task { @MainActor in
                 await proposal.accept(in: kit, context: modelContext, highlights: KitAssistantStore.shared.highlights)
-                // El cambio queda en «Tu recorrido» del Kit.
-                let lines = proposal.changes.map { change -> String in
-                    if let to = change.to {
-                        return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
-                    }
-                    return [change.stepLabel, change.detail].compactMap { $0 }.joined(separator: ": ")
-                }
-                try? ProgressLog.addAssistantChange(title: proposal.title, lines: lines, kit: kit, context: modelContext)
-                syncManager?.handleDataChange()
+                Self.record(proposal, kit: kit, context: modelContext, syncManager: syncManager)
             }
         } onDiscard: {
             proposal.state = .discarded

@@ -92,7 +92,8 @@ struct KitsListRegularView: View {
         .onChange(of: viewModel.selectedKitId) { _, newId in
             if let newId, let entity = kitEntities.first(where: { $0.id == newId }) {
                 viewModel.selectedKitEntity = entity
-            } else {
+            } else if viewModel.selectedKitEntity?.id != newId {
+                // Un Kit recién creado aún puede no estar en la lista: se mantiene si es el elegido.
                 viewModel.selectedKitEntity = nil
             }
         }

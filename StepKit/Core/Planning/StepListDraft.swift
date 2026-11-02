@@ -85,9 +85,9 @@ struct StepListDraft: Equatable {
             || (pending + completed).contains { saved[$0.id] != $0 }
     }
 
-    /// Se quitó un paso guardado o cambió el orden de los que ya había. Añadir o retocar textos no cuenta.
+    /// Se añadió o quitó un paso, o cambió el orden de los que ya había. Retocar textos no cuenta.
     var changesPlanStructure: Bool {
-        guard removedIDs.isEmpty else { return true }
+        guard removedIDs.isEmpty, !pending.contains(where: \.isNew) else { return true }
         let kept = pending.filter { !$0.isNew }.map(\.id)
         return kept != savedOrder.filter { kept.contains($0) }
     }
@@ -102,6 +102,9 @@ struct StepListDraft: Equatable {
             guard !step.isNew, !stayed.contains(step.id),
                   let from = savedOrder.firstIndex(of: step.id), let to = order.firstIndex(of: step.id) else { return nil }
             return String(localized: "«\(step.title)» pasó del paso \(from + 1) al \(to + 1).")
+        }
+        lines += pending.filter(\.isNew).compactMap { step in
+            order.firstIndex(of: step.id).map { String(localized: "Añadí «\(step.title)» como paso \($0 + 1).") }
         }
         lines += savedOrder.filter(removedIDs.contains).compactMap { id in
             saved[id].map { String(localized: "Quité «\($0.title)».") }

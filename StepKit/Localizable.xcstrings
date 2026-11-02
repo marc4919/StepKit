@@ -1080,16 +1080,6 @@
         }
       }
     },
-    "¿Quieres que el asistente compruebe el plan y sugiera ajustes? Lo que proponga podrás aceptarlo o descartarlo.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Do you want the assistant to check the plan and suggest adjustments? You can accept or discard what it proposes."
-          }
-        }
-      }
-    },
     "Y %lld más.": {
       "localizations": {
         "en": {
@@ -1316,6 +1306,106 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hide Details"
+          }
+        }
+      }
+    },
+    "Crear los pasos yo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create Steps Myself"
+          }
+        }
+      }
+    },
+    "Crear el primer paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create First Step"
+          }
+        }
+      }
+    },
+    "Pedir pasos al asistente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask Assistant for Steps"
+          }
+        }
+      }
+    },
+    "Aún no hay pasos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No steps yet"
+          }
+        }
+      }
+    },
+    "Sin fecha, toma la del paso anterior.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without a date, it takes the previous step's date."
+          }
+        }
+      }
+    },
+    "El asistente puede comprobar que sigue teniendo sentido. Lo que proponga podrás aceptarlo o descartarlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The assistant can check it still makes sense. You can accept or discard what it proposes."
+          }
+        }
+      }
+    },
+    "Propón los pasos del plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Propose the plan steps"
+          }
+        }
+      }
+    },
+    "Empezar con un plan propuesto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start with a proposed plan"
+          }
+        }
+      }
+    },
+    "%@ aún no tiene pasos. Propón los pasos que hacen falta para conseguirlo, en orden lógico y con fechas hasta la fecha final. Lo decidiré yo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has no steps yet. Propose the steps needed to achieve it, in logical order and with dates up to the end date. I will decide."
+          }
+        }
+      }
+    },
+    "Añadí «%@» como paso %lld.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I added “%@” as step %lld."
           }
         }
       }

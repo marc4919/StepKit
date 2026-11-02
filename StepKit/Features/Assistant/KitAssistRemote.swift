@@ -329,10 +329,12 @@ enum RemoteProposalBuilder {
                 actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes))
             case "add_step":
                 guard let title = change.newTitles?.first else { continue }
+                // En un plan vacío, cada uno detrás del anterior: «al principio» los dejaría al revés.
                 additions.append(PendingAddition(change: change, title: title, changeIndex: changes.count,
-                                                 actionIndex: actions.count, date: date(change.newDate),
+                                                 actionIndex: actions.count,
+                                                 date: date(change.newDate) ?? (steps.isEmpty ? calendar.date(bySettingHour: 12, minute: 0, second: 0, of: .now) : nil),
                                                  // stepNumber = paso tras el que se inserta; 0 = al principio.
-                                                 afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0))
+                                                 afterStepID: step(change.stepNumber)?.id, atStart: change.stepNumber == 0 && !steps.isEmpty))
                 changes.append(additionChange(title: title, minutes: change.newMinutes, date: date(change.newDate)))
                 actions.append(additionAction(additions[additions.count - 1], date: date(change.newDate)))
             case "move_step":

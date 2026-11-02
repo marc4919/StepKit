@@ -41,8 +41,13 @@ struct KitDetailView: View {
     @State private var editingSteps = false
     /// Se reordenó o se quitó un paso de un plan preparado por la IA: se ofrece revisarlo con el asistente.
     @State private var planChangesByHand: String?
-    @State private var offeringPlanReview = false
-    @State private var reviewConversation: KitConversation?
+    @State private var addingStep = false
+    /// Conversación abierta desde el plan: revisar lo cambiado a mano o pedir los pasos de un plan vacío.
+    @State private var planConversation: KitConversation?
+    @State private var planConversationIntent = AssistantIntent.reviewChanges
+    @State private var planFillings = 0
+    @State private var isFillingPlan = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var segment = 0
     @State private var headerHeight: CGFloat = 0
     @State private var barTitleShown = false
@@ -66,7 +71,9 @@ struct KitDetailView: View {
                 header
                     .id("kit.top")
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headerHeight = $0 }
-                if !firstKitCardSeen && !firstKitCardDismissed && !allStepsDone {
+                // En un Kit a mano no hace falta explicar el plan: lo acaba de escribir la propia persona.
+                if !firstKitCardSeen && !firstKitCardDismissed && !allStepsDone && kitEntity.activeStepCount > 0
+                    && kitEntity.sourceModel != StepListDraft.manualSource {
                     firstKitCard
                         .transition(.asymmetric(insertion: .identity,
                                                 removal: .opacity.combined(with: .scale(scale: 0.92, anchor: .top))))
@@ -117,6 +124,10 @@ struct KitDetailView: View {
         .onGeometryChange(for: Bool.self) { TwoColumnLayout.fits($0.size) } action: { wideLayout = $0 }
         // Los pasos que el asistente acaba de tocar se resaltan unos segundos al verse el plan.
         .onAppear { KitAssistantStore.shared.highlights.fade() }
+        .onChange(of: planChangesByHand) { _, changes in
+            guard changes != nil else { return }
+            withAnimation(.smooth(duration: 0.5)) { proxy.scrollTo("kit.planReview", anchor: .center) }
+        }
         .onChange(of: allStepsDone) { _, done in
             guard done else { return }
             // Al completar el último paso: subir arriba y que aparezca el resultado.
@@ -173,32 +184,19 @@ struct KitDetailView: View {
             ProgressLog.importLegacyKitNotes(for: kitEntity, context: modelContext)
             reactToOverdueSteps()
         }
-        .sheet(isPresented: $editingSteps, onDismiss: {
-            // Después de cerrar la hoja: una alerta no se presenta sobre otra que se está yendo.
-            if planChangesByHand != nil { offeringPlanReview = true }
-        }) {
+        .sheet(isPresented: $editingSteps) {
             KitStepsEditorView(kit: kitEntity) { planChanges in
-                planChangesByHand = planChanges
+                withAnimation(.smooth) { planChangesByHand = planChanges }
             }
         }
-        .alert("Has cambiado el plan", isPresented: $offeringPlanReview) {
-            Button("Revisar") {
-                let intent = AssistantIntent.reviewChanges
-                let conversation = KitAssistantStore.shared.newConversation(kit: kitEntity, title: intent.title)
-                conversation.planChanges = planChangesByHand
-                planChangesByHand = nil
-                reviewConversation = conversation
-            }
-            Button("Ahora no", role: .cancel) { planChangesByHand = nil }
-        } message: {
-            Text("¿Quieres que el asistente compruebe el plan y sugiera ajustes? Lo que proponga podrás aceptarlo o descartarlo.")
-        }
+        .sheet(isPresented: $addingStep) { addStepForm }
+        .sensoryFeedback(.success, trigger: planFillings)
         .navigationDestination(isPresented: Binding(
-            get: { reviewConversation != nil },
-            set: { if !$0 { reviewConversation = nil } }
+            get: { planConversation != nil },
+            set: { if !$0 { planConversation = nil } }
         )) {
-            if let reviewConversation {
-                KitAssistantChatView(kit: kitEntity, conversation: reviewConversation, initialIntent: AssistantIntent.reviewChanges.id)
+            if let planConversation {
+                planConversationView(planConversation)
             }
         }
         .sheet(item: $presentedSheet) { sheet in
@@ -334,8 +332,105 @@ struct KitDetailView: View {
 
     /// Cabeceras de sección por semana (por día si el Kit cabe en dos semanas), como las listas agrupadas
     /// de iOS, con la regla que comparte con la vista previa al crear (`PlanGrouping`).
+    private func planConversationView(_ conversation: KitConversation) -> KitAssistantChatView {
+        var onAccept: ((PlanProposal) -> Void)?
+        if planConversationIntent.id == AssistantIntent.suggestSteps.id {
+            onAccept = { proposal in fillPlan(proposal) }
+        }
+        return KitAssistantChatView(kit: kitEntity, conversation: conversation, initialIntent: planConversationIntent.id,
+                                    onAcceptOnPlan: onAccept)
+    }
+
+    private var addStepForm: some View {
+        StepDraftFormView(step: StepDraft(minutes: ManualKit.stepMinutes(for: kitEntity), date: nil),
+                          dateIsOptional: true, unsetDateNote: "Sin fecha, toma la del paso anterior.",
+                          earliest: lastPendingDate, latestDate: kitEntity.targetDate) { step in
+            withAnimation(.smooth) {
+                _ = ManualKit.addStep(step.normalized, to: kitEntity, context: modelContext)
+            }
+            try? modelContext.save()
+            syncManager?.handleDataChange()
+            NotificationService.shared.refreshStepReminders()
+        }
+    }
+
+    private var lastPendingDate: Date? {
+        kitEntity.orderedActiveSteps.last { !$0.isCompleted }?.suggestedDeadline
+    }
+
+    /// En un Kit a mano, añadir pasos es lo principal: va en el plan y no escondido en «···».
+    private var showsAddStepRow: Bool {
+        kitEntity.sourceModel == StepListDraft.manualSource && kitEntity.resultConfirmedAt == nil
+    }
+
+    private func openPlanConversation(_ intent: AssistantIntent) {
+        planConversationIntent = intent
+        let conversation = KitAssistantStore.shared.newConversation(kit: kitEntity, title: intent.title)
+        conversation.planChanges = planChangesByHand
+        withAnimation(.smooth) { planChangesByHand = nil }
+        planConversation = conversation
+    }
+
+    /// Los pasos aceptados entran en el plan a la vista, de uno en uno, y una vibración marca el final.
+    private func fillPlan(_ proposal: PlanProposal) {
+        Task { @MainActor in
+            // Tras volver al plan: antes la animación ocurriría detrás de la conversación.
+            try? await Task.sleep(for: .milliseconds(500))
+            isFillingPlan = true
+            await proposal.accept(in: kitEntity, context: modelContext, highlights: KitAssistantStore.shared.highlights,
+                                  pause: reduceMotion ? .zero : .milliseconds(180),
+                                  animation: reduceMotion ? nil : .smooth(duration: 0.35))
+            KitAssistantChatView.record(proposal, kit: kitEntity, context: modelContext, syncManager: syncManager)
+            withAnimation(.smooth) { isFillingPlan = false }
+            planFillings += 1
+        }
+    }
+
+    /// Tras reordenar, añadir o quitar pasos de un plan preparado. Una tarjeta y no un aviso: es una
+    /// sugerencia, y no debe interrumpir.
+    private var planReviewCard: some View {
+        TintCard(strength: 0.10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Has cambiado el plan").font(.headline)
+                Text("El asistente puede comprobar que sigue teniendo sentido. Lo que proponga podrás aceptarlo o descartarlo.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            HStack(spacing: 10) {
+                Button("Revisar") { openPlanConversation(.reviewChanges) }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.primaryAction)
+                    .accessibilityIdentifier("kit.planReview")
+                Button("Ahora no") { withAnimation(.smooth) { planChangesByHand = nil } }
+                    .buttonStyle(.bordered)
+            }
+        }
+        .id("kit.planReview")
+        .transition(.opacity)
+    }
+
+    private var addStepRow: some View {
+        Button {
+            addingStep = true
+        } label: {
+            Label { Text("Añadir paso") } icon: { Image(systemName: "plus.circle.fill") }
+                .font(.body.weight(.medium))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.tint)
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
+        .accessibilityIdentifier("kit.addStep")
+    }
+
     private var stepsSection: some View {
         Group {
+            if planChangesByHand != nil {
+                planReviewCard
+            }
             if kitEntity.orderedActiveSteps.isEmpty {
                 emptyStepsView
             } else {
@@ -369,6 +464,12 @@ struct KitDetailView: View {
                             }
                             .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
                         }
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    // Fuera mientras entran los pasos: si no, va saltando entre ellos.
+                    if showsAddStepRow && !isFillingPlan {
+                        addStepRow
+                            .transition(.opacity)
                     }
                 }
             }
@@ -376,19 +477,31 @@ struct KitDetailView: View {
     }
 
     // MARK: - Empty Steps View
+    /// Guía lo siguiente que hacer. Un Kit generado no debería quedar vacío, pero si queda, sirve igual.
     private var emptyStepsView: some View {
         VStack(spacing: 12) {
             Image(systemName: "list.bullet.clipboard")
                 .font(.system(size: 36))
                 .foregroundStyle(LinearGradient.accentWithOpacity( 0.6))
                 .accessibilityHidden(true)
-            
-            Text("No hay pasos definidos")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+
+            Text("Aún no hay pasos")
+                .font(.headline)
+            Button {
+                addingStep = true
+            } label: {
+                Text("Crear el primer paso").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.primaryAction)
+            .controlSize(.large)
+            .accessibilityIdentifier("kit.firstStep")
+            Button("Pedir pasos al asistente") { openPlanConversation(.suggestSteps) }
+                .font(.subheadline.weight(.semibold))
+                .accessibilityIdentifier("kit.askSteps")
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 32)
+        .padding(20)
         .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 18))
     }
 }

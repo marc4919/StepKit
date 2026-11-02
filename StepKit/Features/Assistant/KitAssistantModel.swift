@@ -201,18 +201,20 @@ final class PlanProposal: Identifiable {
 
     /// Aplica los cambios de uno en uno, con animación y una pausa breve entre ellos, para que se vea
     /// qué se altera, se recorta o se añade. Cada paso tocado queda marcado en el plan (`ChangeHighlights`).
-    func accept(in kit: GoalEntity, context: ModelContext, highlights: ChangeHighlights) async {
+    /// `pause` y `animation` permiten otro ritmo cuando los pasos entran a la vista en el plan del Kit.
+    func accept(in kit: GoalEntity, context: ModelContext, highlights: ChangeHighlights,
+                pause: Duration = .milliseconds(450), animation: Animation? = .smooth(duration: 0.45)) async {
         guard !applying, state == .pending else { return }
         applying = true
         let now = Date()
         let paired = actions.count == changes.count
         for (index, action) in actions.enumerated() {
-            withAnimation(.smooth(duration: 0.45)) {
+            withAnimation(animation) {
                 apply(action, in: kit, context: context, now: now, highlights: highlights)
                 if paired { appliedChangeIDs.insert(changes[index].id) }
             }
             if index < actions.count - 1 {
-                try? await Task.sleep(for: .milliseconds(450))
+                try? await Task.sleep(for: pause)
             }
         }
         kit.markModified(at: now)

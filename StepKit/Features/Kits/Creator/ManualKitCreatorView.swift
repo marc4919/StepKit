@@ -44,6 +44,52 @@ enum ManualKit {
         }
     }
 
+    /// Kit sin pasos, con lo escrito en el creador: los pasos se añaden después en el propio Kit.
+    @discardableResult
+    static func createEmpty(
+        name: String,
+        dueDate: Date,
+        doneWhen: String = "",
+        obstacles: String = "",
+        startingPoint: String = "",
+        stepMinutes: Int? = nil,
+        ownerID: String,
+        context: ModelContext,
+        calendar: Calendar = .current,
+        at now: Date = Date()
+    ) -> GoalEntity {
+        let kit = create(name: name, dueDate: dueDate, steps: [], ownerID: ownerID, context: context, calendar: calendar, at: now)
+        kit.kpi = doneWhen.trimmingCharacters(in: .whitespacesAndNewlines)
+        let obstacle = obstacles.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !obstacle.isEmpty { kit.risks = [obstacle] }
+        if let stepMinutes { setStepMinutes(stepMinutes, for: kit) }
+        try? context.save()
+        try? ProgressLog.addKitNote(startingPoint, kit: kit, context: context, now: now)
+        return kit
+    }
+
+    /// Tiempo con el que nacen los pasos de un Kit a mano: el que se eligió en el creador. Se guarda en
+    /// este dispositivo porque es solo un valor inicial, y no merece un campo sincronizado.
+    private static func stepMinutesKey(_ kit: GoalEntity) -> String { "manualKitStepMinutes.\(kit.id)" }
+
+    static func setStepMinutes(_ minutes: Int, for kit: GoalEntity) {
+        UserDefaults.standard.set(minutes, forKey: stepMinutesKey(kit))
+    }
+
+    static func stepMinutes(for kit: GoalEntity) -> Int {
+        let saved = UserDefaults.standard.integer(forKey: stepMinutesKey(kit))
+        return saved > 0 ? saved : kit.orderedActiveSteps.last?.estimateMinutes ?? 20
+    }
+
+    /// Añade un paso al final de un Kit ya creado: sin fecha, toma la del anterior o, si es el primero, la de hoy.
+    @discardableResult
+    static func addStep(_ step: StepDraft, to kit: GoalEntity, context: ModelContext, at now: Date = Date()) -> StepEntity {
+        let previous = kit.orderedActiveSteps.last { !$0.isCompleted }?.suggestedDeadline
+        let date = step.date ?? previous ?? Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: now) ?? now
+        return StepListEditor.insert(id: step.id, title: step.title, minutes: step.minutes, date: date,
+                                     short: step.short, long: step.long, into: kit, context: context, at: now)
+    }
+
     @discardableResult
     static func create(
         name: String,
@@ -192,7 +238,7 @@ struct ManualKitCreatorView: View {
             }
         }
         .sheet(item: $form) { form in
-            StepDraftFormView(step: form.step, dateIsOptional: true, latestDate: dueDate) { saved in
+            StepDraftFormView(step: form.step, dateIsOptional: true, unsetDateNote: "Sin fecha, el paso se reparte hasta la fecha final.", latestDate: dueDate) { saved in
                 if let index = steps.firstIndex(where: { $0.id == saved.id }) {
                     steps[index] = saved.normalized
                 } else {
@@ -202,7 +248,7 @@ struct ManualKitCreatorView: View {
         }
         .alert("Se moverán estas fechas", isPresented: $confirmingDates) {
             Button("Crear", action: create)
-            Button("Volver", role: .cancel) {}
+            Button("Cancelar", role: .cancel) {}
         } message: {
             Text(dateChangesMessage)
         }

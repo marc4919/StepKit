@@ -59,6 +59,12 @@ final class KitsViewModel {
         }
     }
 
+    /// Abre un Kit recién creado. Se busca en la base de datos: la lista aún puede no haberlo recibido.
+    func openCreatedKit(id: UUID, context: ModelContext) {
+        let descriptor = FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.id == id })
+        if let kit = try? context.fetch(descriptor).first { selectKit(kit) }
+    }
+
     func clearSelection() {
         selectedKitEntity = nil
         selectedKitId = nil

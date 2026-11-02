@@ -76,12 +76,24 @@ struct KitCreatorView: View {
         return ManualKit.reachesFreeLimit(kits: allKits, ownerID: user.id, isPremium: user.isPremium)
     }
 
+    /// Sin nada escrito, la pantalla de crear a mano. Con el formulario rellenado, el Kit se crea ya, sin
+    /// pasar por otra pantalla, y los pasos se añaden en el propio Kit.
     private func startFromScratch(vm: KitCreatorViewModel) {
         if reachesFreeLimit {
             vm.planLimit = .activeKits
+        } else if vm.hasDraft {
+            createEmptyKit(vm: vm)
         } else {
             withAnimation(.smooth) { manual = true }
         }
+    }
+
+    private func createEmptyKit(vm: KitCreatorViewModel) {
+        guard vm.isFormValid, let dueDate = vm.dueDate, let ownerID = authManager.currentUser?.id else { return }
+        let kit = ManualKit.createEmpty(name: vm.description, dueDate: dueDate, doneWhen: vm.doneWhen,
+                                        obstacles: vm.inconveniences, startingPoint: vm.startingPoint,
+                                        stepMinutes: vm.sessionMinutes, ownerID: ownerID, context: modelContext)
+        finishCreating(kit.toGoal())
     }
 
     var body: some View {
@@ -144,7 +156,9 @@ struct KitCreatorView: View {
                             vm.showingError = true
                         }
                     },
-                    onStartFromScratch: { startFromScratch(vm: vm) }
+                    onStartFromScratch: { startFromScratch(vm: vm) },
+                    startFromScratchTitle: vm.hasDraft ? "Crear los pasos yo" : "Empezar de cero",
+                    canStartFromScratch: !vm.hasDraft || vm.isFormValid
                 )
             case .loading, .streaming:
                 // Una sola pantalla de preparación: arranca en «Preparando» y sigue con los pasos.

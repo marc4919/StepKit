@@ -26,6 +26,8 @@ struct KitCreationFormContent: View {
     let onCreate: () -> Void
     /// Crear el Kit a mano, sin IA.
     var onStartFromScratch: (() -> Void)? = nil
+    var startFromScratchTitle = LocalizedStringKey("Empezar de cero")
+    var canStartFromScratch = true
 
     @State private var width: CGFloat = 0
     /// Interior del iPhone Duo, iPad o iPhone en horizontal: dos columnas en vez de una tira estirada.
@@ -149,8 +151,6 @@ struct KitCreationFormContent: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("kitCreator.context")
-            // La misma vibración ligera que da el interruptor.
-            .sensoryFeedback(.selection, trigger: showsContext)
             if showsContext {
                 field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
                       placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen, next: .startingPoint)
@@ -252,7 +252,8 @@ struct KitCreationFormContent: View {
                         .accessibilityIdentifier("kitCreator.aiNotice")
                 }
                 if let onStartFromScratch {
-                    Button("Empezar de cero", action: onStartFromScratch)
+                    Button(startFromScratchTitle, action: onStartFromScratch)
+                        .disabled(!canStartFromScratch)
                         .font(.subheadline.weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.top, 8)
