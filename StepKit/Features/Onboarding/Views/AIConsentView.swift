@@ -54,11 +54,6 @@ struct AIConsentView: View {
                         Text("El asistente necesita este permiso. Sin él puedes seguir usando StepKit y tus Kits como siempre; puedes darlo o retirarlo cuando quieras en Perfil.")
                     }
                 }
-                Section {
-                    Toggle("Acepto compartir estos datos con el servicio de IA", isOn: $hasAccepted)
-                        .accessibilityIdentifier("consent.accept")
-                        .accessibilityValue(hasAccepted ? String(localized: "Aceptado") : String(localized: "No aceptado"))
-                }
             }
             .navigationTitle("Uso de IA")
             .navigationBarTitleDisplayMode(.inline)
@@ -69,7 +64,12 @@ struct AIConsentView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 4) {
+                // El interruptor junto al botón que activa: siempre a la vista, sin tener que bajar.
+                VStack(spacing: 10) {
+                    Toggle("Acepto compartir estos datos con el servicio de IA", isOn: $hasAccepted)
+                        .font(.subheadline)
+                        .accessibilityIdentifier("consent.accept")
+                        .accessibilityValue(hasAccepted ? String(localized: "Aceptado") : String(localized: "No aceptado"))
                     Button {
                         consentManager.giveConsent()
                         onComplete(true)

@@ -138,7 +138,9 @@ final class KitCreatorViewModel {
     var toolbarTitle: String {
         switch viewState {
         case .form: return String(localized: "Nuevo Kit")
-        case .loading, .streaming: return String(localized: "Creando tu Kit")
+        case .loading, .streaming:
+            // Con el plan ya listo para revisar, ya no se está creando.
+            return streamingState.kit == nil ? String(localized: "Creando tu Kit") : String(localized: "Tu plan")
         }
     }
     

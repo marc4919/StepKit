@@ -50,6 +50,15 @@ struct KitsHomeView: View {
         }
     }
 
+    /// La última nota de ese paso: la tarjeta la enseña junto a él, y la de otro paso confundiría.
+    private func lastProgress(of kit: GoalEntity, onStep step: StepEntity?) -> ProgressEntryEntity? {
+        guard let step else { return nil }
+        return allEntries.first {
+            $0.kitID == kit.id && $0.ownerID == kit.ownerID && $0.deletedAt == nil && $0.stepID == step.id
+                && $0.kind == .progress && !$0.note.isEmpty && !ProgressLog.isAssistantChange($0)
+        }
+    }
+
     /// Kit que se avanzó por última vez: el cambio más reciente en el Kit o en sus pasos.
     private var continueKit: GoalEntity? {
         guard focusLayout else { return nil }
@@ -97,7 +106,7 @@ struct KitsHomeView: View {
                     }
                     if let kit = continueKit {
                         Section {
-                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit)) {
+                            ContinueCard(kit: kit, lastProgress: lastProgress(of: kit, onStep: kit.nextStep)) {
                                 if let step = kit.nextStep {
                                     continuingStep = step
                                 } else {

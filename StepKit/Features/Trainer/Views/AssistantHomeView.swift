@@ -225,6 +225,12 @@ struct AssistantHomeView: View {
                 .focused(isInputFocused)
                 .submitLabel(.send)
                 .onSubmit(onSend)
+                // En un campo de varias líneas la tecla azul escribe un salto en vez de enviar.
+                .onChange(of: draft) { old, new in
+                    guard new == old + "\n" else { return }
+                    draft = old
+                    onSend()
+                }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .glassEffect(.regular.interactive(), in: .capsule)

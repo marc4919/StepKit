@@ -412,6 +412,7 @@ enum KitAssistant {
     /// Reacción automática, solo al bloquear un paso o si se vence: ahí ayuda sin que se lo pidas.
     static func react(
         _ trigger: AssistTrigger,
+        message: String? = nil,
         kit: GoalEntity,
         step: StepEntity?,
         context: ModelContext,
@@ -421,7 +422,11 @@ enum KitAssistant {
         let conversation = step.map { KitAssistantStore.shared.conversation(kit: kit, step: $0) }
             ?? KitAssistantStore.shared.conversations(for: kit.id).first { $0.stepID == nil }
             ?? KitAssistantStore.shared.newConversation(kit: kit, title: String(localized: "Ajustes del plan"))
-        Task { await ask(trigger, kit: kit, step: step, conversation: conversation, context: context,
+        // Lo que ha escrito la persona va al hilo y al asistente: si no, contesta a lo último que se habló.
+        if let message, AIConsentManager().hasConsent {
+            conversation.viewModel.messages.append(ChatMessage(sender: .user, text: message))
+        }
+        Task { await ask(trigger, message: message, kit: kit, step: step, conversation: conversation, context: context,
                          apiClient: apiClient, token: token) }
     }
 }

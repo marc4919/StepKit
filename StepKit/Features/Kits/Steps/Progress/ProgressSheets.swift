@@ -88,6 +88,11 @@ struct SaveProgressSheet: View {
             if reportingBlock { reason = step.blockedReason ?? "" }
             focused = reportingBlock ? .reason : .note
         }
+        // Mientras la hoja sube, el sistema puede no aceptar el foco y el texto acabaría en otro campo.
+        .task {
+            try? await Task.sleep(for: .milliseconds(450))
+            if focused == nil { focused = reportingBlock ? .reason : .note }
+        }
     }
 
     private var canSave: Bool {
@@ -105,7 +110,7 @@ struct SaveProgressSheet: View {
             syncManager?.handleDataChange()
             // Con un bloqueo, el asistente propone cómo seguir. Un avance normal no lo llama.
             if reportingBlock, let kit = step.goal {
-                KitAssistant.react(.blocked, kit: kit, step: step,
+                KitAssistant.react(.blocked, message: reason.trimmingCharacters(in: .whitespacesAndNewlines), kit: kit, step: step,
                                    context: modelContext, apiClient: apiClient, token: authManager.token)
             }
             UINotificationFeedbackGenerator().notificationOccurred(.success)
