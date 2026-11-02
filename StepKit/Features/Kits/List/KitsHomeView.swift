@@ -22,6 +22,7 @@ struct KitsHomeView: View {
     @Query(sort: \ProgressEntryEntity.notedAt, order: .reverse) private var allEntries: [ProgressEntryEntity]
     @State private var reviewingKit: GoalEntity?
     @State private var continuingStep: StepEntity?
+    @State private var openedLastKitAutomatically = false
     /// Hay columna de detalle a la vista. No sirve `isCompact`: dentro de la barra lateral el entorno es compacto.
     private let hasDetailColumn: Bool
 
@@ -112,6 +113,7 @@ struct KitsHomeView: View {
                             ContinueCard(kit: kit, lastProgress: lastProgress(of: kit, onStep: kit.nextStep)) {
                                 if let step = kit.nextStep {
                                     if hasDetailColumn {
+                                        openedLastKitAutomatically = false
                                         viewModel.continueStep(step, of: kit)
                                     } else {
                                         continuingStep = step
@@ -145,10 +147,15 @@ struct KitsHomeView: View {
         // Al borrar el último Kit, la lista da paso al estado vacío con un fundido, sin saltos.
         .animation(.smooth(duration: 0.5), value: isEmpty)
         .navigationTitle("Mis Kits")
-        .onAppear {
-            // iPad: el detalle empieza mostrando el Kit que avanzaste por última vez.
-            if !isCompact, viewModel.selectedKitEntity == nil, let kit = continueKit {
+        .onChange(of: hasDetailColumn, initial: true) { _, hasColumn in
+            // Con dos columnas, el detalle empieza mostrando el Kit que avanzaste por última vez.
+            if hasColumn, viewModel.selectedKitEntity == nil, let kit = continueKit {
                 viewModel.selectKit(kit)
+                openedLastKitAutomatically = true
+            } else if !hasColumn, openedLastKitAutomatically, viewModel.detailPath.isEmpty {
+                // Al plegar se vuelve a Mis Kits: ese Kit no lo abriste tú.
+                viewModel.clearSelection()
+                openedLastKitAutomatically = false
             }
         }
         .navigationDestination(item: $continuingStep) { step in
@@ -198,6 +205,7 @@ struct KitsHomeView: View {
     private func open(_ kit: GoalEntity) {
         // Un paso abierto antes de desplegar el Duo tapaba el Kit y «Ver Kit» no hacía nada.
         continuingStep = nil
+        openedLastKitAutomatically = false
         viewModel.openKitPlan(kit)
     }
 
