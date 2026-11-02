@@ -189,6 +189,8 @@ struct KitsHomeView: View {
     }
 
     private func open(_ kit: GoalEntity) {
+        // Con las dos columnas, un paso abierto con «Continuar» tapaba el Kit y «Ver Kit» no hacía nada.
+        continuingStep = nil
         viewModel.selectKit(kit)
     }
 
