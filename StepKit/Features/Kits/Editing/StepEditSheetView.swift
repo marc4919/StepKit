@@ -119,6 +119,8 @@ struct StepEditSheetView: View {
                 Label { Text("Fecha") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
             }
             .accessibilityIdentifier("stepEdit.date")
+            StepDateShortcuts(selection: draft.deadline ?? stepEntity.suggestedDeadline, earliest: earliestDate,
+                              latest: stepEntity.goal?.targetDate) { draft.deadline = $0 }
             Picker(selection: Binding(
                 get: { draft.estimateMinutes ?? stepEntity.estimateMinutes },
                 set: { draft.estimateMinutes = $0 }

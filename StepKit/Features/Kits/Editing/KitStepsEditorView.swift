@@ -93,7 +93,7 @@ struct KitStepsEditorView: View {
                 }
             }
             .sheet(item: $form) { form in
-                StepDraftFormView(step: form.step) { saved in
+                StepDraftFormView(step: form.step, shortcutsUntil: kit.targetDate) { saved in
                     if form.step.isNew, !draft.pending.contains(where: { $0.id == saved.id }) {
                         draft.add(saved)
                     } else {
@@ -241,14 +241,16 @@ struct StepDraftFormView: View {
     private let unsetDateNote: LocalizedStringKey?
     private let earliest: Date?
     private let latestDate: Date?
+    private let shortcutsUntil: Date?
 
     init(step: StepDraft, dateIsOptional: Bool = false, unsetDateNote: LocalizedStringKey? = nil,
-         earliest: Date? = nil, latestDate: Date? = nil, onSave: @escaping (StepDraft) -> Void) {
+         earliest: Date? = nil, latestDate: Date? = nil, shortcutsUntil: Date? = nil, onSave: @escaping (StepDraft) -> Void) {
         original = step
         self.dateIsOptional = dateIsOptional
         self.unsetDateNote = unsetDateNote
         self.earliest = earliest
         self.latestDate = latestDate
+        self.shortcutsUntil = shortcutsUntil ?? latestDate
         self.onSave = onSave
         _step = State(initialValue: step)
         // Con descripción ya escrita se ve abierto, para que no parezca que se ha perdido.
@@ -325,12 +327,13 @@ struct StepDraftFormView: View {
                         set: { step.date = atNoon($0) }
                     ), in: earliestDate...max(latestDate ?? .distantFuture, earliestDate), displayedComponents: .date) {
                         if dateIsOptional {
-                            Text("Día")
+                            Label { Text("Día") } icon: { IconChip(symbol: "calendar.badge.checkmark", color: MetaTint.date, size: 28) }
                         } else {
                             Label { Text("Fecha") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
                         }
                     }
                     .accessibilityIdentifier("stepDraft.date")
+                    StepDateShortcuts(selection: step.date, earliest: earliestDate, latest: shortcutsUntil) { step.date = $0 }
                 }
                 Picker(selection: $step.minutes) {
                     ForEach(minuteOptions, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }

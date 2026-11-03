@@ -419,15 +419,84 @@ struct KitDueDateField: View {
         .sensoryFeedback(.selection, trigger: showsOtherDate)
     }
 
-    @ViewBuilder
     private func dateChip(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        DateChip(title: title, selected: selected, action: action)
+    }
+}
+
+/// Atajo de fecha: el mismo al crear un Kit y al planificar un paso.
+struct DateChip: View {
+    let title: String
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
         let tap = { withAnimation(.formReveal) { action() } }
-        let label = Text(title).lineLimit(1).frame(maxWidth: .infinity)
+        // A su tamaño: si el texto no cabe, la fila pasa a otra disposición en vez de cortarlo.
+        let label = Text(title).lineLimit(1).fixedSize(horizontal: true, vertical: false).frame(maxWidth: .infinity)
         if selected {
             Button(action: tap) { label }.buttonStyle(.borderedProminent).controlSize(.small)
                 .accessibilityAddTraits(.isSelected)
         } else {
             Button(action: tap) { label }.buttonStyle(.bordered).controlSize(.small)
         }
+    }
+}
+
+/// Atajos de fecha de un paso. Solo aparecen los días que el paso puede usar.
+struct StepDateShortcuts: View {
+    let selection: Date?
+    let earliest: Date
+    let latest: Date?
+    let onPick: (Date) -> Void
+
+    private struct Option: Identifiable {
+        let id: String
+        let title: String
+        let day: Date
+    }
+
+    private var options: [Option] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        let candidates: [(String, String, Calendar.Component, Int)] = [
+            ("today", String(localized: "Hoy"), .day, 0),
+            ("tomorrow", String(localized: "Mañana"), .day, 1),
+            ("week", String(localized: "1 semana"), .day, 7),
+            ("month", String(localized: "1 mes"), .month, 1)
+        ]
+        let first = calendar.startOfDay(for: earliest)
+        let last = latest.map(calendar.startOfDay(for:))
+        return candidates.compactMap { id, title, component, value in
+            guard let day = calendar.date(byAdding: component, value: value, to: today),
+                  day >= first, last.map({ day <= $0 }) ?? true else { return nil }
+            return Option(id: id, title: title, day: day)
+        }
+    }
+
+    var body: some View {
+        let options = options
+        if !options.isEmpty {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    ForEach(options) { chip($0) }
+                }
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible())], spacing: 8) {
+                    ForEach(options) { chip($0) }
+                }
+                VStack(spacing: 8) {
+                    ForEach(options) { chip($0) }
+                }
+            }
+            .transition(.formRow)
+        }
+    }
+
+    private func chip(_ option: Option) -> some View {
+        DateChip(title: option.title,
+                 selected: selection.map { Calendar.current.isDate($0, inSameDayAs: option.day) } ?? false) {
+            onPick(Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: option.day) ?? option.day)
+        }
+        .accessibilityIdentifier("stepDate.\(option.id)")
     }
 }

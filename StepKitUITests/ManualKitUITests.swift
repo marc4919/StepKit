@@ -39,6 +39,13 @@ final class ManualKitUITests: XCTestCase {
         XCTAssertTrue(save.waitForExistence(timeout: 5))
         app.typeText("Amasar")
         audit(app, screen: "Nuevo paso")
+        app.switches["stepDraft.dateToggle"].switches.firstMatch.tap()
+        // El Kit acaba hoy: mañana quedaría después de la fecha final.
+        let todayShortcut = app.buttons["stepDate.today"]
+        XCTAssertTrue(todayShortcut.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["stepDate.tomorrow"].exists)
+        todayShortcut.tap()
+        audit(app, screen: "Nuevo paso con fecha")
         save.tap()
 
         let addStep = app.buttons["kit.addStep"]
