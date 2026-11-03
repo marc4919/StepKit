@@ -1520,6 +1520,26 @@
         }
       }
     },
+    "Permite cambiar el título, el indicador de éxito y la fecha final del Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lets you change the Kit's title, success measure and final date"
+          }
+        }
+      }
+    },
+    "Este Kit acaba el %@. Para ir más allá, cambia la fecha final en Detalles del Kit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Kit ends on %@. To go further, change the final date in Kit Details."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

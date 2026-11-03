@@ -443,7 +443,7 @@ struct DateChip: View {
     }
 }
 
-/// Atajos de fecha de un paso. Solo aparecen los días que el paso puede usar.
+/// Atajos de fecha de un paso. Solo aparecen los días que el paso puede usar, y solo si hay más de uno.
 struct StepDateShortcuts: View {
     let selection: Date?
     let earliest: Date
@@ -476,7 +476,8 @@ struct StepDateShortcuts: View {
 
     var body: some View {
         let options = options
-        if !options.isEmpty {
+        // Con un solo día posible no hay nada que elegir.
+        if options.count > 1 {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {
                     ForEach(options) { chip($0) }

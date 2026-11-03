@@ -39,6 +39,19 @@ struct KitEditSheetView: View {
                 } footer: {
                     Text("Estos cambios se guardarán en el Kit y se sincronizarán con tus otros dispositivos.")
                 }
+
+                Section {
+                    finalDatePicker
+                    if finalDateLeavesStepsBehind, let target = draft.targetDate {
+                        Label {
+                            Text(String(localized: "Algún paso quedaría después de la fecha final del Kit, el \(target.formatted(.dateTime.day().month(.abbreviated)))."))
+                                .font(.subheadline)
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                        }
+                        .transition(.opacity)
+                    }
+                }
             }
             .navigationTitle("Editar Kit")
             .navigationBarTitleDisplayMode(.inline)
@@ -67,6 +80,26 @@ struct KitEditSheetView: View {
         .interactiveDismissDisabled(draft.hasChanges(comparedTo: kitEntity))
     }
 
+    private var finalDatePicker: some View {
+        let today = Calendar.current.startOfDay(for: .now)
+        let shown = draft.targetDate ?? kitEntity.dueDate ?? today
+        // Un Kit ya vencido muestra su fecha, aunque las nuevas empiecen hoy.
+        return DatePicker(selection: Binding(
+            get: { shown },
+            set: { newValue in withAnimation(.smooth) { draft.targetDate = Calendar.current.startOfDay(for: newValue) } }
+        ), in: min(today, shown)..., displayedComponents: .date) {
+            Label { Text("Fecha final") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
+        }
+        .accessibilityIdentifier("kitEdit.finalDate")
+    }
+
+    /// Los pasos sin día elegido se reparten solos: solo cuentan los que tienen el suyo.
+    private var finalDateLeavesStepsBehind: Bool {
+        guard draft.changesTargetDate(of: kitEntity), let target = draft.targetDate,
+              let last = ManualKit.lastFixedDate(of: kitEntity) else { return false }
+        return Calendar.current.startOfDay(for: last) > Calendar.current.startOfDay(for: target)
+    }
+
     private func save() {
         guard let ownerID = authManager.currentUser?.id else {
             showingSaveError = true
@@ -74,9 +107,12 @@ struct KitEditSheetView: View {
         }
 
         do {
+            let datesChange = draft.changesTargetDate(of: kitEntity)
             try modelContext.transaction {
                 _ = try draft.apply(to: kitEntity, expectedOwnerID: ownerID)
+                if datesChange { ManualKit.finalDateChanged(of: kitEntity) }
             }
+            if datesChange { NotificationService.shared.refreshStepReminders() }
             syncManager?.handleDataChange()
             dismiss()
         } catch {

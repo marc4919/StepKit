@@ -81,6 +81,11 @@ enum ManualKit {
         return new
     }
 
+    /// Con otra fecha final, los pasos que no eligieron día se reparten de nuevo; los demás no se mueven.
+    static func finalDateChanged(of kit: GoalEntity, calendar: Calendar = .current, at now: Date = Date()) {
+        redistribute(kit, calendar: calendar, at: now)
+    }
+
     /// Último día que un paso nuevo con fecha elegida debe respetar: el de los pasos que no se mueven solos.
     static func lastFixedDate(of kit: GoalEntity, calendar: Calendar = .current) -> Date? {
         let spread = spreadDates(of: kit, calendar: calendar)

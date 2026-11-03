@@ -346,6 +346,8 @@ struct StepDraftFormView: View {
             } footer: {
                 if dateIsOptional, step.date == nil, let unsetDateNote {
                     Text(unsetDateNote)
+                } else if step.date != nil, let latestDate {
+                    Text(String(localized: "Este Kit acaba el \(latestDate.formatted(.dateTime.day().month(.abbreviated))). Para ir más allá, cambia la fecha final en Detalles del Kit."))
                 }
             }
         }

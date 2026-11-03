@@ -48,7 +48,7 @@ struct KitInfoSheetView: View {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Editar") { showingEdit = true }
                         .accessibilityIdentifier("kit.edit")
-                        .accessibilityHint("Permite cambiar el título y el indicador de éxito del Kit")
+                        .accessibilityHint("Permite cambiar el título, el indicador de éxito y la fecha final del Kit")
                 }
             }
         }

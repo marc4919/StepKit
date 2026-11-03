@@ -33,6 +33,25 @@ struct ContentEditingTests {
         #expect(kit.toSyncDTO().kpi == "Edited KPI")
     }
 
+    @Test("A hand-made Kit without a KPI can change its final date")
+    func finalDateEdit() throws {
+        let calendar = Calendar.current
+        let created = calendar.startOfDay(for: Date(timeIntervalSince1970: 1_700_000_000))
+        let kit = GoalEntity(ownerID: "account-a", planTitle: "Kit", horizonDays: 1, kpi: "", createdAt: created, updatedAt: created)
+        kit.targetDate = created
+        var draft = KitEditDraft(kit: kit)
+        #expect(draft.isValid)
+        #expect(!draft.hasChanges(comparedTo: kit))
+
+        let later = try #require(calendar.date(byAdding: .day, value: 9, to: created))
+        draft.targetDate = later.addingTimeInterval(3_600)
+        #expect(draft.hasChanges(comparedTo: kit))
+        #expect(try draft.apply(to: kit, expectedOwnerID: "account-a", at: created.addingTimeInterval(60)))
+        #expect(kit.targetDate == later)
+        #expect(kit.horizonDays == 10)
+        #expect(kit.toSyncDTO().targetDate == later)
+    }
+
     @Test("A semantic no-op does not advance Kit metadata")
     func kitNoOpDoesNotAdvanceMetadata() throws {
         let initialDate = Date(timeIntervalSince1970: 1_700_000_000)

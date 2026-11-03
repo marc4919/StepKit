@@ -40,11 +40,9 @@ final class ManualKitUITests: XCTestCase {
         app.typeText("Amasar")
         audit(app, screen: "Nuevo paso")
         app.switches["stepDraft.dateToggle"].switches.firstMatch.tap()
-        // El Kit acaba hoy: mañana quedaría después de la fecha final.
-        let todayShortcut = app.buttons["stepDate.today"]
-        XCTAssertTrue(todayShortcut.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["stepDate.tomorrow"].exists)
-        todayShortcut.tap()
+        // El Kit acaba hoy: con un solo día posible no hay atajos.
+        XCTAssertTrue(app.datePickers["stepDraft.date"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["stepDate.today"].exists)
         audit(app, screen: "Nuevo paso con fecha")
         save.tap()
 
@@ -59,6 +57,51 @@ final class ManualKitUITests: XCTestCase {
         editSteps.tap()
         XCTAssertTrue(app.buttons["stepsEditor.add"].waitForExistence(timeout: 5))
         audit(app, screen: "Editar pasos")
+    }
+
+    /// Con una fecha final lejana hay atajos para los pasos, y la fecha final se puede cambiar en Editar Kit.
+    @MainActor
+    func testStepShortcutsAndFinalDate() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-StepKitDesignFixtures", "kits", "-AppleLanguages", "(es)", "-kitsHomeFocusLayout", "YES"]
+        app.launch()
+
+        let create = app.buttons["kit.create"].firstMatch
+        XCTAssertTrue(create.waitForExistence(timeout: 10))
+        create.press(forDuration: 1)
+        let fromScratch = app.buttons["Empezar de cero"].firstMatch
+        XCTAssertTrue(fromScratch.waitForExistence(timeout: 5))
+        fromScratch.tap()
+        let name = app.textFields["manualKit.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.typeText("Hacer pan")
+        app.buttons["1 mes"].tap()
+        app.buttons["manualKit.create"].tap()
+
+        let firstStep = app.buttons["kit.firstStep"]
+        XCTAssertTrue(firstStep.waitForExistence(timeout: 5))
+        firstStep.tap()
+        XCTAssertTrue(app.buttons["stepDraft.save"].waitForExistence(timeout: 5))
+        app.typeText("Amasar")
+        app.switches["stepDraft.dateToggle"].switches.firstMatch.tap()
+        let tomorrow = app.buttons["stepDate.tomorrow"]
+        XCTAssertTrue(tomorrow.waitForExistence(timeout: 5))
+        tomorrow.tap()
+        XCTAssertTrue(tomorrow.isSelected)
+        app.buttons["stepDraft.save"].tap()
+
+        let more = app.buttons["kit.more"]
+        XCTAssertTrue(more.waitForExistence(timeout: 5))
+        more.tap()
+        let info = app.buttons["kit.info"]
+        XCTAssertTrue(info.waitForExistence(timeout: 5))
+        info.tap()
+        let edit = app.buttons["kit.edit"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        edit.tap()
+        // Sin indicador también se puede editar: el Kit se creó a mano.
+        XCTAssertTrue(app.datePickers["kitEdit.finalDate"].waitForExistence(timeout: 5))
+        audit(app, screen: "Editar Kit")
     }
 
     /// Que todo tenga nombre para VoiceOver y se pueda tocar. El texto grande se revisa a ojo: la auditoría

@@ -663,6 +663,20 @@ struct StepListEditorTests {
         #expect(orders(kit) == [0, 1, 2])
     }
 
+    @Test("A new final date spreads the undated steps again and leaves chosen dates alone")
+    func finalDateChangeSpreads() throws {
+        let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(4), ownerID: "a", context: context)
+        ManualKit.addStep(StepDraft(title: "Uno", date: day(2)), to: kit, context: context)
+        ManualKit.addStep(StepDraft(title: "Dos", date: nil), to: kit, context: context)
+        #expect(offsets(kit) == [2, 4])
+
+        var draft = KitEditDraft(kit: kit)
+        draft.targetDate = day(10)
+        #expect(try draft.apply(to: kit, expectedOwnerID: "a"))
+        ManualKit.finalDateChanged(of: kit)
+        #expect(offsets(kit) == [2, 10])
+    }
+
     @Test("A chosen date never moves, and the others spread around it")
     func addStepKeepsChosenDate() throws {
         let kit = ManualKit.createEmpty(name: "Pan", dueDate: day(8), ownerID: "a", context: context)

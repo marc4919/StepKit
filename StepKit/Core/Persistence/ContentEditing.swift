@@ -20,12 +20,17 @@ enum ContentEditingError: Error, Equatable {
 struct KitEditDraft: Equatable {
     var title: String
     var kpi: String
+    /// Fecha final elegida; sin elegir, se queda la que tenga el Kit.
+    var targetDate: Date?
+    /// Un Kit creado a mano puede no tener indicador: no se exige para poder editarlo.
+    private let kpiIsOptional: Bool
     private let baselineVersion: Int?
     private let baselineUpdatedAt: Date?
 
     init(title: String, kpi: String) {
         self.title = title
         self.kpi = kpi
+        self.kpiIsOptional = false
         self.baselineVersion = nil
         self.baselineUpdatedAt = nil
     }
@@ -33,16 +38,24 @@ struct KitEditDraft: Equatable {
     init(kit: GoalEntity) {
         self.title = kit.planTitle
         self.kpi = kit.kpi
+        self.targetDate = kit.targetDate
+        self.kpiIsOptional = kit.kpi.trimmedForEditing.isEmpty
         self.baselineVersion = kit.version
         self.baselineUpdatedAt = kit.updatedAt
     }
 
     var isValid: Bool {
-        !normalizedTitle.isEmpty && !normalizedKPI.isEmpty
+        !normalizedTitle.isEmpty && (kpiIsOptional || !normalizedKPI.isEmpty)
     }
 
     func hasChanges(comparedTo kit: GoalEntity) -> Bool {
-        normalizedTitle != kit.planTitle || normalizedKPI != kit.kpi
+        normalizedTitle != kit.planTitle || normalizedKPI != kit.kpi || changesTargetDate(of: kit)
+    }
+
+    func changesTargetDate(of kit: GoalEntity) -> Bool {
+        guard let targetDate else { return false }
+        guard let current = kit.targetDate else { return true }
+        return !Calendar.current.isDate(targetDate, inSameDayAs: current)
     }
 
     @discardableResult
@@ -54,7 +67,7 @@ struct KitEditDraft: Equatable {
         guard !normalizedTitle.isEmpty else {
             throw ContentEditingError.emptyKitTitle
         }
-        guard !normalizedKPI.isEmpty else {
+        guard kpiIsOptional || !normalizedKPI.isEmpty else {
             throw ContentEditingError.emptyKitKPI
         }
         guard !expectedOwnerID.isEmpty, kit.ownerID == expectedOwnerID else {
@@ -72,6 +85,13 @@ struct KitEditDraft: Equatable {
 
         kit.planTitle = normalizedTitle
         kit.kpi = normalizedKPI
+        if changesTargetDate(of: kit), let targetDate {
+            let calendar = Calendar.current
+            let due = calendar.startOfDay(for: targetDate)
+            let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: kit.createdAt), to: due).day ?? 0
+            kit.targetDate = due
+            kit.horizonDays = max(days + 1, 1)
+        }
         kit.markModified(at: date)
         return true
     }
