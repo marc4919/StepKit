@@ -118,6 +118,8 @@ struct StepEditSheetView: View {
             ), in: earliestDate..., displayedComponents: .date) {
                 Label { Text("Fecha") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
             }
+            // Con animación, el sistema enseña un instante la fecha en formato corto (4/11/26).
+            .transaction { $0.animation = nil }
             .accessibilityIdentifier("stepEdit.date")
             StepDateShortcuts(selection: draft.deadline ?? stepEntity.suggestedDeadline, earliest: earliestDate,
                               latest: stepEntity.goal?.targetDate) { draft.deadline = $0 }

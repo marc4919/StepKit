@@ -332,6 +332,8 @@ struct StepDraftFormView: View {
                             Label { Text("Fecha") } icon: { IconChip(symbol: Symbols.calendar, color: MetaTint.date, size: 28) }
                         }
                     }
+                    // Con animación, el sistema enseña un instante la fecha en formato corto (4/11/26).
+                    .transaction { $0.animation = nil }
                     .accessibilityIdentifier("stepDraft.date")
                     StepDateShortcuts(selection: step.date, earliest: earliestDate, latest: shortcutsUntil) { step.date = $0 }
                 }
