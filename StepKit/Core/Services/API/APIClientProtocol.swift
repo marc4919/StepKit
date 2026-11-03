@@ -10,9 +10,11 @@ import Foundation
 /// Protocolo para el cliente de API, permite mocking en tests y previews
 protocol APIClientProtocol: AuthServiceProtocol {
     /// Autentica con Apple Sign In enviando el identity token al backend
-    /// - Parameter identityToken: El token de identidad de Apple
+    /// - Parameters:
+    ///   - identityToken: El token de identidad de Apple
+    ///   - authorizationCode: El código de un solo uso de Apple, si lo hay
     /// - Returns: Respuesta con JWT y información del usuario
-    func signInWithApple(identityToken: String) async throws -> AuthResponse
+    func signInWithApple(identityToken: String, authorizationCode: String?) async throws -> AuthResponse
     
     /// Genera un kit usando IA a partir de la descripción del objetivo
     /// - Parameters:

@@ -25,8 +25,8 @@ final class APIClient: APIClientProtocol {
     
     // MARK: - APIClientProtocol
     
-    func signInWithApple(identityToken: String) async throws -> AuthResponse {
-        return try await authService.signInWithApple(identityToken: identityToken)
+    func signInWithApple(identityToken: String, authorizationCode: String?) async throws -> AuthResponse {
+        return try await authService.signInWithApple(identityToken: identityToken, authorizationCode: authorizationCode)
     }
 
     #if DEBUG

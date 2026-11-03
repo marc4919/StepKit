@@ -125,8 +125,11 @@ final class NotificationService {
         let context = PersistenceController.shared.container.mainContext
         let kits = ((try? context.fetch(FetchDescriptor<GoalEntity>(predicate: #Predicate { !$0.isDeleted }))) ?? [])
             .filter { $0.ownerID == ownerID && $0.notificationsEnabled && $0.resultConfirmedAt == nil }
+        let entries = (try? context.fetch(FetchDescriptor<ProgressEntryEntity>(predicate: #Predicate { $0.deletedAt == nil }))) ?? []
+        let doneDays = Dictionary(grouping: entries.filter { $0.ownerID == ownerID && $0.kind == .session && $0.stepID != nil }) { $0.stepID! }
+            .mapValues { $0.map(\.notedAt) }
         let items = DailyDigest.plan(
-            kits: kits.map(DailyDigest.KitInfo.init),
+            kits: kits.map { DailyDigest.KitInfo($0, doneDays: doneDays) },
             now: .now,
             hour: defaults.object(forKey: DailyDigest.hourKey) as? Int ?? 9,
             minute: defaults.object(forKey: DailyDigest.minuteKey) as? Int ?? 0,

@@ -475,7 +475,12 @@ struct ProposalCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(proposal.changes) { change in
                     if let step = openableStep(for: change) {
-                        NavigationLink(value: step) { changeRow(change, opens: true) }
+                        // Con destino propio: uno por valor se apilaría por detrás del chat, que no está en la ruta de la pila.
+                        NavigationLink {
+                            StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? 1)
+                        } label: {
+                            changeRow(change, opens: true)
+                        }
                             .buttonStyle(.plain)
                             .accessibilityHint("Abre este paso")
                             .accessibilityIdentifier("proposal.openStep")

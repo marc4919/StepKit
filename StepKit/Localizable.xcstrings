@@ -1470,6 +1470,56 @@
         }
       }
     },
+    "Acepto compartir estos datos con la IA": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I agree to share this data with the AI"
+          }
+        }
+      }
+    },
+    "Código de soporte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support Code"
+          }
+        }
+      }
+    },
+    "Copiado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
+    "Lo copia para pegarlo donde quieras": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies it so you can paste it anywhere"
+          }
+        }
+      }
+    },
+    "Soporte de StepKit (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StepKit Support (%@)"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

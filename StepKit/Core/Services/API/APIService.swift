@@ -26,6 +26,8 @@ struct UserInfo: Codable {
     var monthlyAICalls: Int?
     var monthlyAICallsQuota: Int?
     var activeKitsCount: Int?
+    /// Código que identifica la cuenta ante soporte sin dar datos personales. Vacío si el servidor aún no lo envía.
+    var supportCode: String?
 
     /// Convierte el id string a UUID
     var uuid: UUID? {
@@ -36,7 +38,7 @@ struct UserInfo: Codable {
         tier == "premium"
     }
     
-    init(id: String, tier: String, monthlyTokensUsed: Int, monthlyTokenQuota: Int, monthlyAICalls: Int? = nil, monthlyAICallsQuota: Int? = nil, activeKitsCount: Int? = nil) {
+    init(id: String, tier: String, monthlyTokensUsed: Int, monthlyTokenQuota: Int, monthlyAICalls: Int? = nil, monthlyAICallsQuota: Int? = nil, activeKitsCount: Int? = nil, supportCode: String? = nil) {
         self.id = id
         self.tier = tier
         self.monthlyTokensUsed = monthlyTokensUsed
@@ -44,6 +46,7 @@ struct UserInfo: Codable {
         self.monthlyAICalls = monthlyAICalls
         self.monthlyAICallsQuota = monthlyAICallsQuota
         self.activeKitsCount = activeKitsCount
+        self.supportCode = supportCode
     }
     
     init(from profile: UserProfileResponse) {
@@ -54,6 +57,7 @@ struct UserInfo: Codable {
         self.monthlyAICalls = profile.limits.monthlyAICalls
         self.monthlyAICallsQuota = profile.limits.monthlyAICallsQuota
         self.activeKitsCount = profile.limits.activeKitsCount
+        self.supportCode = profile.supportCode
     }
 }
 
@@ -64,6 +68,7 @@ struct UserProfileResponse: Codable {
     let subscription: SubscriptionInfo?
     let limits: UserLimits
     let aiUsageMonth: AIUsageMonth?
+    let supportCode: String?
 }
 
 struct SubscriptionInfo: Codable {

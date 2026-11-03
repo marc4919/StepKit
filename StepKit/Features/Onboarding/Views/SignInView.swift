@@ -206,12 +206,14 @@ struct SignInView: View {
             return ""
         }()
         
+        let authorizationCode = appleIDCredential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
+
         isSigningIn = true
         errorMessage = nil
         
         Task {
             do {
-                let response = try await apiClient.signInWithApple(identityToken: identityToken)
+                let response = try await apiClient.signInWithApple(identityToken: identityToken, authorizationCode: authorizationCode)
                 
                 await MainActor.run {
                     authManager.saveAuth(token: response.token, user: response.user)

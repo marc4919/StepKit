@@ -89,7 +89,7 @@ struct DesignFixtureRoot: View {
         let token = ProcessInfo.processInfo.environment["STEPKIT_FIXTURE_TOKEN"] ?? "design-fixtures"
         auth.saveAuth(token: token,
                       user: UserInfo(id: DesignFixtureData.owner, tier: scenario == .paywall ? "free" : "premium",
-                                     monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
+                                     monthlyTokensUsed: 0, monthlyTokenQuota: 10_000, supportCode: "SK-7F3K-92QX"))
         auth.updateDisplayName("Alex Martín")
         _authManager = State(initialValue: auth)
         _tab = State(initialValue: [.calendar, .calendarEmpty].contains(scenario) ? 1 : [.profile, .paywall].contains(scenario) ? 3 : 0)
@@ -148,8 +148,12 @@ struct DesignFixtureRoot: View {
                         KitAssistantChatView(kit: kit, conversation: DesignFixtureData.freshStepConversation(kit: kit, step: step))
                     }
                 } else if scenario == .assistantProposal, let step = portfolioStep3, let kit = step.goal {
+                    // Como en la app: el chat se abre encima del Kit, con una pila que tiene destinos propios.
                     NavigationStack {
-                        KitAssistantChatView(kit: kit, conversation: KitAssistantStore.shared.conversation(kit: kit, step: step))
+                        Color.clear
+                            .navigationDestination(isPresented: .constant(true)) {
+                                KitAssistantChatView(kit: kit, conversation: KitAssistantStore.shared.conversation(kit: kit, step: step))
+                            }
                             .stepDestinations()
                     }
                 } else {

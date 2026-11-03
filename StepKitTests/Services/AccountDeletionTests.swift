@@ -3,6 +3,7 @@
 //  StepKitTests
 //
 
+import Foundation
 import Testing
 @testable import StepKit
 
@@ -51,5 +52,29 @@ struct SerialTaskQueueTests {
             events.append("newer")
         }.value
         #expect(events == ["older start", "older end", "newer"])
+    }
+}
+
+@MainActor
+struct SupportContactTests {
+    @Test func theCodeTravelsInTheSubjectOfTheEmail() throws {
+        let url = try #require(AboutView.contactURL(supportCode: "SK-7F3K-92QX"))
+        #expect(url.scheme == "mailto")
+        #expect(url.absoluteString.hasPrefix("mailto:marcgt.dev@icloud.com?subject="))
+        #expect(url.absoluteString.contains("SK-7F3K-92QX"))
+    }
+
+    @Test func withoutACodeTheEmailHasNoSubject() {
+        #expect(AboutView.contactURL(supportCode: nil)?.absoluteString == "mailto:marcgt.dev@icloud.com")
+    }
+
+    /// El servidor actual todavía no envía el código: el perfil se sigue leyendo igual.
+    @Test func aProfileWithoutACodeStillDecodes() throws {
+        let json = """
+        {"id":"7B4C9F70-2C8E-4B7A-9A1D-3E1F0C5D2A11","tier":"free","limits":{"monthlyTokensUsed":0,"monthlyTokenQuota":10,"maxActiveGoalsFree":2,"monthlyAICalls":0,"monthlyAICallsQuota":10,"activeKitsCount":0}}
+        """
+        let profile = try JSONDecoder().decode(UserProfileResponse.self, from: Data(json.utf8))
+        #expect(profile.supportCode == nil)
+        #expect(UserInfo(from: profile).supportCode == nil)
     }
 }

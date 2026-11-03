@@ -8,7 +8,7 @@
 import Foundation
 
 protocol AuthServiceProtocol {
-    func signInWithApple(identityToken: String) async throws -> AuthResponse
+    func signInWithApple(identityToken: String, authorizationCode: String?) async throws -> AuthResponse
 }
 
 /// Servicio encargado de la autenticación
@@ -22,16 +22,20 @@ struct AuthService: AuthServiceProtocol {
     }
     
     /// Autentica con Apple Sign In
-    /// - Parameter identityToken: Token de identidad de Apple
+    /// - Parameters:
+    ///   - identityToken: Token de identidad de Apple
+    ///   - authorizationCode: Código de un solo uso de Apple; el servidor lo cambia por el token con el que
+    ///     desvincular Apple si la cuenta se borra desde el panel de administración.
     /// - Returns: Respuesta con token JWT y usuario
-    func signInWithApple(identityToken: String) async throws -> AuthResponse {
+    func signInWithApple(identityToken: String, authorizationCode: String?) async throws -> AuthResponse {
         let url = baseURL.appending(path: "auth/apple")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let body = ["identityToken": identityToken]
+        var body = ["identityToken": identityToken]
+        if let authorizationCode { body["authorizationCode"] = authorizationCode }
         request.httpBody = try JSONEncoder().encode(body)
         
         return try await client.request(request)

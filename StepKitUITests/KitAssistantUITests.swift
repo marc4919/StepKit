@@ -21,5 +21,9 @@ final class KitAssistantUITests: XCTestCase {
         XCTAssertTrue(openStep.waitForExistence(timeout: 5))
         openStep.tap()
         XCTAssertTrue(app.buttons["step.edit"].waitForExistence(timeout: 5))
+        // Se abre delante del chat: un solo toque atrás vuelve a él.
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(openStep.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["step.edit"].exists)
     }
 }

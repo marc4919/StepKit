@@ -404,6 +404,24 @@ struct AIPrivacyView: View {
 // MARK: - Acerca de
 
 struct AboutView: View {
+    @Environment(AuthManager.self) private var authManager
+    @State private var copiedCode = false
+
+    private var supportCode: String? {
+        authManager.currentUser?.supportCode.flatMap { $0.isEmpty ? nil : $0 }
+    }
+
+    /// Correo a soporte; con el código en el asunto, para encontrar la cuenta sin pedir datos personales.
+    static func contactURL(supportCode: String?) -> URL? {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = "marcgt.dev@icloud.com"
+        if let supportCode {
+            components.queryItems = [URLQueryItem(name: "subject", value: String(localized: "Soporte de StepKit (\(supportCode))"))]
+        }
+        return components.url
+    }
+
     private var version: String {
         let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
@@ -427,7 +445,30 @@ struct AboutView: View {
             }
             Section {
                 LabeledContent("Versión", value: version)
-                if let contact = URL(string: "mailto:marcgt.dev@icloud.com") {
+                if let supportCode {
+                    Button {
+                        UIPasteboard.general.string = supportCode
+                        copiedCode = true
+                    } label: {
+                        LabeledContent("Código de soporte") {
+                            HStack(spacing: 6) {
+                                Text(verbatim: supportCode).monospaced()
+                                Image(systemName: copiedCode ? "checkmark" : "doc.on.doc")
+                                    .contentTransition(.symbolEffect(.replace))
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                    }
+                    .foregroundStyle(.primary)
+                    .accessibilityHint(copiedCode ? "Copiado" : "Lo copia para pegarlo donde quieras")
+                    .accessibilityIdentifier("about.supportCode")
+                    .task(id: copiedCode) {
+                        guard copiedCode else { return }
+                        try? await Task.sleep(for: .seconds(2))
+                        copiedCode = false
+                    }
+                }
+                if let contact = Self.contactURL(supportCode: supportCode) {
                     Link(destination: contact) {
                         Label("Contactar con soporte", systemImage: "envelope")
                     }

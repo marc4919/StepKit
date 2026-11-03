@@ -66,21 +66,12 @@ struct AIConsentView: View {
             .safeAreaInset(edge: .bottom) {
                 // El interruptor junto al botón que activa: siempre a la vista, sin tener que bajar.
                 VStack(spacing: 10) {
-                    Toggle("Acepto compartir estos datos con el servicio de IA", isOn: $hasAccepted)
+                    Toggle("Acepto compartir estos datos con la IA", isOn: $hasAccepted)
                         .font(.subheadline)
                         .accessibilityIdentifier("consent.accept")
                         .accessibilityValue(hasAccepted ? String(localized: "Aceptado") : String(localized: "No aceptado"))
-                    Button {
-                        consentManager.giveConsent()
-                        onComplete(true)
-                    } label: {
-                        Text(purpose == .plan ? LocalizedStringKey("Permitir y preparar el plan") : LocalizedStringKey("Permitir y enviar")).frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.primaryAction)
-                    .controlSize(.large)
-                    .disabled(!hasAccepted)
-                    .accessibilityIdentifier("consent.continue")
+                    continueButton
+                        .accessibilityIdentifier("consent.continue")
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 10)
@@ -90,6 +81,36 @@ struct AIConsentView: View {
                 PrivacyPolicyView()
             }
         }
+    }
+
+    @ViewBuilder private var continueButton: some View {
+        let button = Button {
+            consentManager.giveConsent()
+            onComplete(true)
+        } label: {
+            Text(purpose == .plan ? LocalizedStringKey("Permitir y preparar el plan") : LocalizedStringKey("Permitir y enviar"))
+                .frame(maxWidth: .infinity)
+        }
+        if hasAccepted {
+            button
+                .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
+                .controlSize(.large)
+        } else {
+            button
+                .buttonStyle(ReadableDisabledButtonStyle())
+                .disabled(true)
+        }
+    }
+}
+
+/// El estilo prominente desactivado queda casi invisible sobre la barra: este se lee antes de aceptar.
+private struct ReadableDisabledButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(.secondary)
+            .frame(minHeight: 50)
+            .background(Color(.tertiarySystemFill), in: .capsule)
     }
 }
 

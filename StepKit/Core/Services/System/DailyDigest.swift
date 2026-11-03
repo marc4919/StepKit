@@ -26,10 +26,19 @@ enum DailyDigest {
         let kitID: UUID
     }
 
-    /// Un paso tal como lo necesita el resumen: título, días en que toca y si sigue pendiente.
+    /// Un paso tal como lo necesita el resumen: título, días en que toca y sesiones ya hechas.
     struct StepInfo {
         let title: String
         let days: [Date]
+        var doneDays: [Date] = []
+
+        func isDue(on day: Date, _ calendar: Calendar) -> Bool {
+            days.contains { calendar.isDate($0, inSameDayAs: day) }
+        }
+
+        func isDone(on day: Date, _ calendar: Calendar) -> Bool {
+            doneDays.contains { calendar.isDate($0, inSameDayAs: day) }
+        }
     }
 
     struct KitInfo {
@@ -56,10 +65,13 @@ enum DailyDigest {
                       fire > now,
                       let yesterday = calendar.date(byAdding: .day, value: -1, to: day),
                       let tomorrow = calendar.date(byAdding: .day, value: 1, to: day) else { continue }
-                let due = titles(kit.steps, on: day, calendar)
-                let overdue = titles(kit.steps, on: yesterday, calendar)
+                let due = titles(kit.steps, calendar) { $0.isDue(on: day, calendar) && !$0.isDone(on: day, calendar) }
+                // Un paso que toca hoy solo sale como «Hoy» (o nada, si ya está hecho), no tres veces en el mismo aviso.
+                let elsewhere = kit.steps.filter { !$0.isDue(on: day, calendar) }
+                let overdue = titles(elsewhere, calendar) { $0.isDue(on: yesterday, calendar) && !$0.isDone(on: yesterday, calendar) }
                 // La víspera solo si el Kit ya existía antes de ese día: si se crea hoy para mañana, sobra.
-                let next = includesDayBefore && kit.createdAt < day ? titles(kit.steps, on: tomorrow, calendar) : []
+                let next = includesDayBefore && kit.createdAt < day
+                    ? titles(elsewhere, calendar) { $0.isDue(on: tomorrow, calendar) } : []
                 guard let body = body(today: due, overdue: overdue, tomorrow: next) else { continue }
                 items.append(Item(
                     identifier: identifierPrefix + kit.id.uuidString + "-" + dayKey(day, calendar),
@@ -87,8 +99,8 @@ enum DailyDigest {
         return lines.isEmpty ? nil : lines.joined(separator: "\n")
     }
 
-    private static func titles(_ steps: [StepInfo], on day: Date, _ calendar: Calendar) -> [String] {
-        steps.filter { $0.days.contains { calendar.isDate($0, inSameDayAs: day) } }.map(\.title)
+    private static func titles(_ steps: [StepInfo], _ calendar: Calendar, where matches: (StepInfo) -> Bool) -> [String] {
+        steps.filter(matches).map(\.title)
     }
 
     private static func dayKey(_ day: Date, _ calendar: Calendar) -> String {
@@ -98,12 +110,13 @@ enum DailyDigest {
 }
 
 extension DailyDigest.KitInfo {
-    /// Solo cuentan los pasos pendientes con recordatorio y fecha; un hábito toca cada día de su repetición.
-    init(_ kit: GoalEntity) {
+    /// Solo cuentan los pasos pendientes con recordatorio y fecha; un hábito toca cada día de su repetición,
+    /// salvo los que ya tienen su sesión hecha (`doneDays`, por paso).
+    init(_ kit: GoalEntity, doneDays: [UUID: [Date]] = [:]) {
         let steps: [DailyDigest.StepInfo] = kit.orderedActiveSteps.compactMap { step in
             guard !step.isCompleted, step.notificationEnabled, let first = step.suggestedDeadline else { return nil }
             let days = step.repetition?.dates(from: first) ?? [first]
-            return DailyDigest.StepInfo(title: step.stepTitle, days: days)
+            return DailyDigest.StepInfo(title: step.stepTitle, days: days, doneDays: doneDays[step.id] ?? [])
         }
         self.init(id: kit.id, title: kit.title, createdAt: kit.createdAt, steps: steps)
     }

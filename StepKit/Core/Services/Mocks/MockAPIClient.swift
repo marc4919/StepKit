@@ -57,7 +57,7 @@ final class MockAPIClient: APIClientProtocol {
     
     // MARK: - APIClientProtocol
     
-    func signInWithApple(identityToken: String) async throws -> AuthResponse {
+    func signInWithApple(identityToken: String, authorizationCode: String?) async throws -> AuthResponse {
         // Simular latencia de red
         try await Task.sleep(for: .seconds(simulatedDelay))
         

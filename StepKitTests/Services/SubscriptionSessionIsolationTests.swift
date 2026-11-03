@@ -260,7 +260,7 @@ struct SubscriptionSessionIsolationTests {
             if failingStage == .profile { throw APIError.invalidResponse }
             return profile
         }
-        func signInWithApple(identityToken: String) async throws -> AuthResponse { throw APIError.invalidResponse }
+        func signInWithApple(identityToken: String, authorizationCode: String?) async throws -> AuthResponse { throw APIError.invalidResponse }
         func generateKit(from request: AIGenerateKitRequest, token: String) async throws -> AIGenerateKitResponse { throw APIError.invalidResponse }
         nonisolated func authenticatedRequest(path: String, method: String, token: String) -> URLRequest { URLRequest(url: URL(string: "http://localhost")!) }
         nonisolated func streamKitGeneration(from request: AIGenerateKitRequest, token: String) -> AsyncThrowingStream<AIChatStreamEvent, Error> { AsyncThrowingStream { $0.finish() } }

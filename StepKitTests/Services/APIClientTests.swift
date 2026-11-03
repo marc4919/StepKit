@@ -18,7 +18,7 @@ struct MockAPIClientTests {
         let mockClient = MockAPIClient()
         mockClient.simulatedDelay = 0.01 // Fast for tests
         
-        let response = try await mockClient.signInWithApple(identityToken: "test-token")
+        let response = try await mockClient.signInWithApple(identityToken: "test-token", authorizationCode: nil)
         
         #expect(response.token.starts(with: "mock-jwt-token"))
         #expect(response.user.tier == "premium")
@@ -32,7 +32,7 @@ struct MockAPIClientTests {
         mockClient.simulatedDelay = 0.01
         
         await #expect(throws: APIError.self) {
-            try await mockClient.signInWithApple(identityToken: "test-token")
+            try await mockClient.signInWithApple(identityToken: "test-token", authorizationCode: nil)
         }
     }
     
@@ -43,7 +43,7 @@ struct MockAPIClientTests {
         mockClient.simulatedDelay = 0.01
         
         await #expect(throws: APIError.self) {
-            try await mockClient.signInWithApple(identityToken: "test-token")
+            try await mockClient.signInWithApple(identityToken: "test-token", authorizationCode: nil)
         }
     }
     
@@ -63,7 +63,7 @@ struct MockAPIClientTests {
         mockClient.mockAuthResponse = customResponse
         mockClient.simulatedDelay = 0.01
         
-        let response = try await mockClient.signInWithApple(identityToken: "test-token")
+        let response = try await mockClient.signInWithApple(identityToken: "test-token", authorizationCode: nil)
         
         #expect(response.token == "custom-token")
         #expect(response.user.id == "custom-id")
