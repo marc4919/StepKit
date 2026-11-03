@@ -247,8 +247,13 @@ struct KitInfoSheetView: View {
     private var deleteSection: some View {
         Section {
             Button(role: .destructive) { showingDeleteConfirmation = true } label: {
-                Label("Eliminar Kit", systemImage: "trash")
-                    .frame(maxWidth: .infinity)
+                // El rol solo tiñe el texto: el icono también va en rojo.
+                Label {
+                    Text("Eliminar Kit")
+                } icon: {
+                    Image(systemName: "trash").foregroundStyle(.red)
+                }
+                .frame(maxWidth: .infinity)
             }
             .accessibilityIdentifier("kitInfo.delete")
         }
