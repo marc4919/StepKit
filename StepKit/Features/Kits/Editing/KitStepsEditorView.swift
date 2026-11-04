@@ -31,6 +31,13 @@ struct KitStepsEditorView: View {
         _draft = State(initialValue: StepListDraft(kit: kit))
     }
 
+    /// El orden en que la IA preparó el plan; los pasos añadidos después siguen en su sitio.
+    private var restoredOrder: [UUID] {
+        OriginalPlanOrder.restored(draft.pending.map(\.id), positions: OriginalPlanOrder.positions(of: kit))
+    }
+
+    private var canRestoreOrder: Bool { restoredOrder != draft.pending.map(\.id) }
+
     private struct StepForm: Identifiable {
         let step: StepDraft
         var id: UUID { step.id }
@@ -60,6 +67,15 @@ struct KitStepsEditorView: View {
                     }
                 } footer: {
                     Text("Las fechas se ajustan al guardar.")
+                }
+
+                if canRestoreOrder {
+                    Section {
+                        Button("Restaurar orden original", systemImage: "arrow.uturn.backward") {
+                            withAnimation(.smooth) { draft.setPendingOrder(restoredOrder) }
+                        }
+                        .accessibilityIdentifier("stepsEditor.restoreOrder")
+                    }
                 }
 
                 if !draft.completed.isEmpty {

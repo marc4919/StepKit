@@ -33,6 +33,8 @@ struct AssistRequest: Encodable {
         let repeatEvery: String?
         let repeatTimes: Int?
         let sessionsDone: Int?
+        /// Posición en el plan que preparó la IA (1 = el primero); sin ella, el paso se añadió después.
+        let planPosition: Int?
     }
 
     struct LogEntry: Encodable {
@@ -67,6 +69,8 @@ struct AssistRequest: Encodable {
     /// Tipos de cambio que esta versión sabe aplicar además de los de siempre: el servidor solo propone
     /// «move_step» a quien lo declara, porque las versiones anteriores ignoran lo que no conocen.
     var capabilities: [String] = ["move_step"]
+    /// Revisar el orden tras mover pasos a mano: el servidor lo compara con el plan original.
+    var reviewOrder: Bool?
 }
 
 struct AssistResponse: Decodable {
@@ -130,9 +134,11 @@ enum AssistRequestBuilder {
         trigger: AssistTrigger,
         message: String?,
         conversation: KitConversation?,
-        context: ModelContext
+        context: ModelContext,
+        reviewOrder: Bool = false
     ) -> AssistRequest {
         let steps = kit.orderedActiveSteps
+        let planPositions = OriginalPlanOrder.positions(of: kit)
         let kitID = kit.id
         let entries = ((try? context.fetch(FetchDescriptor<ProgressEntryEntity>(
             predicate: #Predicate { $0.kitID == kitID },
@@ -156,7 +162,8 @@ enum AssistRequestBuilder {
                 repeatEvery: step.repeatEvery,
                 repeatTimes: step.repeatTimes,
                 sessionsDone: step.repetition == nil ? nil
-                    : entries.filter { $0.stepID == step.id && $0.kind == .session }.count
+                    : entries.filter { $0.stepID == step.id && $0.kind == .session }.count,
+                planPosition: planPositions[step.id.uuidString]
             )
         }
 
@@ -183,7 +190,8 @@ enum AssistRequestBuilder {
             busyMinutesByDay: busyMinutes(excluding: kit, context: context),
             conversation: .init(summary: summary(conversation?.serverSummary,
                                                  discarded: conversation?.proposals.filter { $0.state == .discarded }.map(\.title) ?? []),
-                                messages: Array(chat))
+                                messages: Array(chat)),
+            reviewOrder: reviewOrder ? true : nil
         )
     }
 
@@ -519,11 +527,12 @@ enum KitAssistant {
         conversation: KitConversation,
         context: ModelContext,
         apiClient: any APIClientProtocol,
-        token: String?
+        token: String?,
+        reviewOrder: Bool = false
     ) async -> Bool {
         guard let token, AIConsentManager().hasConsent else { return false }
         let request = AssistRequestBuilder.build(kit: kit, focus: step, trigger: trigger, message: message,
-                                                 conversation: conversation, context: context)
+                                                 conversation: conversation, context: context, reviewOrder: reviewOrder)
         let vm = conversation.viewModel
         let visible = trigger == .message
         if visible { vm.isTyping = true; vm.isResponding = true }

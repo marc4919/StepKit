@@ -364,7 +364,7 @@ struct KitAssistantChatView: View {
     /// Va al asistente del servidor (necesita el permiso de IA externa). Si no responde, se ofrece reintentar.
     /// `sending`: lo que recibe el asistente si es distinto de lo que se ve (las acciones rápidas
     /// muestran su título pero mandan la petición completa, con el paso y lo que se espera).
-    private func deliver(_ text: String, sending: String? = nil) {
+    private func deliver(_ text: String, sending: String? = nil, reviewOrder: Bool = false) {
         let vm = conversation.viewModel
         vm.draft = ""
         guard hasConsent else { return }
@@ -372,7 +372,7 @@ struct KitAssistantChatView: View {
         Task {
             let handled = await KitAssistant.ask(.message, message: sending ?? text, kit: kit, step: step,
                                                  conversation: conversation, context: modelContext,
-                                                 apiClient: apiClient, token: authManager.token)
+                                                 apiClient: apiClient, token: authManager.token, reviewOrder: reviewOrder)
             if !handled {
                 vm.messages.append(ChatMessage(sender: .assistant, text: String(localized: "La ayuda no está disponible ahora"), isError: true))
             }
@@ -380,7 +380,8 @@ struct KitAssistantChatView: View {
     }
 
     private func deliver(_ intent: AssistantIntent) {
-        deliver(intent.title, sending: intent.prompt(kit: kit, step: step, planChanges: conversation.planChanges))
+        deliver(intent.title, sending: intent.prompt(kit: kit, step: step, planChanges: conversation.planChanges),
+                reviewOrder: intent.id == AssistantIntent.reviewChanges.id)
     }
 
     /// Reintenta el último mensaje con el asistente del servidor.

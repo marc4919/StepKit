@@ -29,6 +29,23 @@ struct StepListEditorTests {
         try #require(kit.orderedActiveSteps.first { $0.stepTitle == title })
     }
 
+    @Test("The original order comes back, and steps added later keep their place")
+    func originalOrderRestores() {
+        let a = UUID(), b = UUID(), c = UUID(), added = UUID()
+        let positions = [a.uuidString: 1, b.uuidString: 2, c.uuidString: 3]
+        #expect(OriginalPlanOrder.restored([c, added, a, b], positions: positions) == [a, added, b, c])
+        #expect(OriginalPlanOrder.restored([a, b, c], positions: positions) == [a, b, c])
+        #expect(OriginalPlanOrder.restored([b, a], positions: [:]) == [b, a])
+    }
+
+    @Test("A prepared plan remembers each step's position")
+    func originalOrderRecords() {
+        let kit = makeKit()
+        OriginalPlanOrder.record(kit)
+        let steps = kit.orderedActiveSteps
+        #expect(OriginalPlanOrder.positions(of: kit)[steps[2].id.uuidString] == 3)
+    }
+
     @Test("Inserting at the start, in the middle and at the end keeps 0…n")
     func insertPositions() throws {
         let kit = makeKit()

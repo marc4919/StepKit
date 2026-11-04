@@ -1540,6 +1540,16 @@
         }
       }
     },
+    "Restaurar orden original": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore original order"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

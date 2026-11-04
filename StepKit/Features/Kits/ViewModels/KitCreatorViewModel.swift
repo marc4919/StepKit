@@ -358,6 +358,7 @@ final class KitCreatorViewModel {
         // Guardar
         do {
             try modelContext.save()
+            OriginalPlanOrder.record(goalEntity)
             PendingGeneratedKits.remove(goalEntity.id)
             #if DEBUG
             print("✅ Kit guardado con \(goalEntity.steps.count) pasos")
