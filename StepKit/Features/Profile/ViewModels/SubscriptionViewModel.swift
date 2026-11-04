@@ -102,25 +102,39 @@ final class SubscriptionViewModel {
         }
     }
 
+    /// Resultado de verificar con el servidor una suscripción que el iPhone da por activa.
+    enum EntitlementSync: Equatable {
+        case pro
+        /// El servidor la verificó con Apple y no da Pro: ya no está vigente.
+        case expired(Date?)
+        /// Está asociada a otra cuenta de StepKit.
+        case otherAccount
+        /// No se pudo verificar (sin red, sesión cambiada, perfil de otra cuenta…).
+        case unavailable
+    }
+
     /// El iPhone tiene una suscripción activa pero la cuenta no es Pro (un aviso de Apple que no llegó al
-    /// servidor, o una renovación de sandbox): se verifica con el servidor y se refresca el perfil.
-    /// Devuelve si la cuenta queda en Pro. No enseña errores: quien llama decide qué mostrar.
+    /// servidor, una renovación de sandbox, o una caducidad que el iPhone aún no sabe): se verifica con el
+    /// servidor y se refresca el perfil. No enseña errores: quien llama decide qué mostrar.
     @discardableResult
-    func reconcileEntitlement(storeKitManager: any SubscriptionPurchasing, apiClient: any APIClientProtocol, authManager: any AuthManaging) async -> Bool {
-        if authManager.currentUser?.isPremium == true { return true }
+    func reconcileEntitlement(storeKitManager: any SubscriptionPurchasing, apiClient: any APIClientProtocol, authManager: any AuthManaging) async -> EntitlementSync {
+        if authManager.currentUser?.isPremium == true { return .pro }
         guard let session = Session(authManager),
               let transactionID = await storeKitManager.getOriginalTransactionId(),
-              session.isCurrent(authManager), !Task.isCancelled else { return false }
+              session.isCurrent(authManager), !Task.isCancelled else { return .unavailable }
+        let verified: VerifySubscriptionResponse
         do {
-            _ = try await apiClient.verifySubscription(transactionId: transactionID, token: session.token)
-            guard session.isCurrent(authManager), !Task.isCancelled else { return false }
-            let updatedUser = try await apiClient.getUserProfile(token: session.token)
-            guard session.isCurrent(authManager), !Task.isCancelled, updatedUser.uuid == session.userID else { return false }
-            authManager.updateUser(updatedUser)
-            return updatedUser.isPremium
+            verified = try await apiClient.verifySubscription(transactionId: transactionID, token: session.token)
+        } catch APIError.serverError(403, _) {
+            return .otherAccount
         } catch {
-            return false
+            return .unavailable
         }
+        guard session.isCurrent(authManager), !Task.isCancelled,
+              let updatedUser = try? await apiClient.getUserProfile(token: session.token),
+              session.isCurrent(authManager), !Task.isCancelled, updatedUser.uuid == session.userID else { return .unavailable }
+        authManager.updateUser(updatedUser)
+        return updatedUser.isPremium ? .pro : .expired(verified.expiresAt)
     }
 
     /// Trae del servidor el uso de este mes (Kits activos e IA) para mostrarlo al día.

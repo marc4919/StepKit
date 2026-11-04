@@ -87,8 +87,8 @@ struct SubscriptionSessionIsolationTests {
         let fixture = try Fixture(stage: nil)
         defer { fixture.cleanPreferences() }
         #expect(fixture.auth.currentUser?.isPremium == false)
-        let isPro = await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth)
-        #expect(isPro)
+        let sync = await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth)
+        #expect(sync == .pro)
         #expect(fixture.auth.currentUser?.isPremium == true)
         #expect(fixture.api.verificationTokens == ["test-token-a"])
         #expect(!fixture.viewModel.showSuccessAlert)
@@ -100,11 +100,14 @@ struct SubscriptionSessionIsolationTests {
         let fixture = try Fixture(stage: nil)
         defer { fixture.cleanPreferences() }
         fixture.api.profile = fixture.userB
-        #expect(await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth) == false)
+        #expect(await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth) == .unavailable)
         #expect(fixture.auth.currentUser?.tier == "free")
+        // El servidor la verificó y sigue sin ser Pro: Apple la da por caducada.
+        fixture.api.profile = UserInfo(id: fixture.userA.id, tier: "free", monthlyTokensUsed: 0, monthlyTokenQuota: 20)
+        #expect(await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth) == .expired(nil))
         fixture.auth.updateUser(UserInfo(id: fixture.userA.id, tier: "premium", monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
-        #expect(await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth))
-        #expect(fixture.api.verificationTokens == ["test-token-a"])
+        #expect(await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth) == .pro)
+        #expect(fixture.api.verificationTokens == ["test-token-a", "test-token-a"])
     }
 
     @Test("A profile belonging to another identity is rejected", arguments: Action.allCases)

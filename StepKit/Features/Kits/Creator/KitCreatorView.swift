@@ -110,9 +110,9 @@ struct KitCreatorView: View {
                   authManager.currentUser?.isPremium != true else { return }
             reconcilingSubscription = true
             Task {
-                let isPro = await SubscriptionViewModel().reconcileEntitlement(storeKitManager: storeKitManager,
-                                                                               apiClient: apiClient, authManager: authManager)
-                if isPro {
+                let sync = await SubscriptionViewModel().reconcileEntitlement(storeKitManager: storeKitManager,
+                                                                              apiClient: apiClient, authManager: authManager)
+                if sync == .pro {
                     vm.planLimit = nil
                     if limitFromManual {
                         startFromScratch(vm: vm)

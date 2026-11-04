@@ -1105,6 +1105,57 @@
           }
         }
       }
+    },
+    "paywall.sync.expired %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple reports this subscription is no longer active: it expired on %@. Renew it to get Pro back."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple indica que esta suscripción ya no está activa: caducó el %@. Si la renuevas, volverás a tener Pro."
+          }
+        }
+      }
+    },
+    "paywall.sync.expired.noDate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple reports this subscription is no longer active. Renew it to get Pro back."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple indica que esta suscripción ya no está activa. Si la renuevas, volverás a tener Pro."
+          }
+        }
+      }
+    },
+    "paywall.sync.otherAccount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This subscription belongs to another StepKit account."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta suscripción está asociada a otra cuenta de StepKit."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

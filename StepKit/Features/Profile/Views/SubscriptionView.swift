@@ -126,9 +126,21 @@ struct SubscriptionView: View {
                 Text(SubscriptionText.string("paywall.sync.title")).font(.subheadline)
                 Button {
                     Task {
-                        let isPro = await viewModel.reconcileEntitlement(storeKitManager: storeKitManager,
-                                                                          apiClient: apiClient, authManager: authManager)
-                        if isPro { viewModel.showSuccessAlert = true } else { viewModel.errorMessage = SubscriptionText.string("paywall.sync.failed") }
+                        switch await viewModel.reconcileEntitlement(storeKitManager: storeKitManager,
+                                                                    apiClient: apiClient, authManager: authManager) {
+                        case .pro:
+                            viewModel.showSuccessAlert = true
+                        case .expired(let date):
+                            viewModel.errorMessage = date.map {
+                                SubscriptionText.string("paywall.sync.expired \($0.formatted(.dateTime.day().month(.wide).locale(SubscriptionText.locale)))")
+                            } ?? SubscriptionText.string("paywall.sync.expired.noDate")
+                            // El iPhone aún la daba por activa: se pide a Apple el estado al día.
+                            await storeKitManager.restorePurchases()
+                        case .otherAccount:
+                            viewModel.errorMessage = SubscriptionText.string("paywall.sync.otherAccount")
+                        case .unavailable:
+                            viewModel.errorMessage = SubscriptionText.string("paywall.sync.failed")
+                        }
                     }
                 } label: {
                     Text(SubscriptionText.string("paywall.sync.button")).frame(maxWidth: .infinity)
