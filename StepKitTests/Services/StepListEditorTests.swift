@@ -29,6 +29,15 @@ struct StepListEditorTests {
         try #require(kit.orderedActiveSteps.first { $0.stepTitle == title })
     }
 
+    @Test("A plan that all happens today says so")
+    func summaryForToday() {
+        let today = PlanGrouping.summary(stepCount: 3, dates: [.now, .now], totalMinutes: 0)
+        #expect(today.contains(String(localized: "Hoy")))
+        #expect(!today.contains(String(localized: "1 semana")))
+        let later = Calendar.current.date(byAdding: .day, value: 9, to: .now) ?? .now
+        #expect(PlanGrouping.summary(stepCount: 2, dates: [.now, later], totalMinutes: 0).contains(String(localized: "2 semanas")))
+    }
+
     @Test("The original order comes back, and steps added later keep their place")
     func originalOrderRestores() {
         let a = UUID(), b = UUID(), c = UUID(), added = UUID()

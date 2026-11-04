@@ -169,39 +169,44 @@ struct KitCreationFormContent: View {
         .onAppear { if hasContext { showsContext = true } }
     }
 
+    private var dueIsToday: Bool { dueDate.map { Calendar.current.isDateInToday($0) } ?? false }
+
     @ViewBuilder private var timeSection: some View {
         Section {
-            Toggle(isOn: $oneSitting.animation(.formReveal)) {
-                Label {
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("En una sola sesión")
-                        if KitCreationHints.visible {
-                            Text("Para algo que harás de una vez, como una receta o un montaje.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+            // Para hoy no hay semanas que repartir: solo cuenta el tiempo disponible.
+            if !dueIsToday {
+                Toggle(isOn: $oneSitting.animation(.formReveal)) {
+                    Label {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("En una sola sesión")
+                            if KitCreationHints.visible {
+                                Text("Para algo que harás de una vez, como una receta o un montaje.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    } icon: {
+                        IconChip(symbol: "bolt.fill", color: .orange, size: 28)
+                    }
+                }
+                .accessibilityIdentifier("kitCreator.oneSitting")
+                if !oneSitting {
+                    Stepper(value: $sessionsPerWeek, in: 1...14) {
+                        Label {
+                            // «Hasta»: es la disponibilidad que tiene en cuenta el plan, no un horario que vaya a llenar.
+                            Text(sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión por semana") : String(localized: "Hasta \(sessionsPerWeek) sesiones por semana"))
+                        } icon: {
+                            IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                         }
                     }
-                } icon: {
-                    IconChip(symbol: "bolt.fill", color: .orange, size: 28)
+                    .transition(.formRow)
                 }
-            }
-            .accessibilityIdentifier("kitCreator.oneSitting")
-            if !oneSitting {
-                Stepper(value: $sessionsPerWeek, in: 1...14) {
-                    Label {
-                        // «Hasta»: es la disponibilidad que tiene en cuenta el plan, no un horario que vaya a llenar.
-                        Text(sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión por semana") : String(localized: "Hasta \(sessionsPerWeek) sesiones por semana"))
-                    } icon: {
-                        IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
-                    }
-                }
-                .transition(.formRow)
             }
             Picker(selection: $sessionMinutes) {
                 ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
             } label: {
                 Label {
-                    Text(oneSitting ? String(localized: "Tiempo disponible") : String(localized: "Cada sesión"))
+                    Text(oneSitting || dueIsToday ? String(localized: "Tiempo disponible") : String(localized: "Cada sesión"))
                         .contentTransition(.opacity)
                 } icon: {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
@@ -264,7 +269,7 @@ struct KitCreationFormContent: View {
 
     /// Desde ratos cortos hasta una mañana entera.
     private var durations: [Int] {
-        oneSitting ? [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
+        oneSitting || dueIsToday ? [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
     }
 
     private func field(

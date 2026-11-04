@@ -103,7 +103,11 @@ enum PlanGrouping {
         if let first = dates.min(), let last = dates.max() {
             let days = (calendar.dateComponents([.day], from: calendar.startOfDay(for: first), to: calendar.startOfDay(for: last)).day ?? 0) + 1
             let weeks = max(1, Int((Double(days) / 7).rounded(.up)))
-            parts.append(weeks == 1 ? String(localized: "1 semana") : String(localized: "\(weeks) semanas"))
+            if calendar.isDate(first, inSameDayAs: last), calendar.isDateInToday(first) {
+                parts.append(String(localized: "Hoy"))
+            } else {
+                parts.append(weeks == 1 ? String(localized: "1 semana") : String(localized: "\(weeks) semanas"))
+            }
         }
         if totalMinutes > 0 {
             let minutes = totalMinutes >= 60 ? Int((Double(totalMinutes) / 15).rounded()) * 15 : totalMinutes

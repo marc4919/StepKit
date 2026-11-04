@@ -59,7 +59,8 @@ final class KitCreatorViewModel {
         let start = startingPoint.trimmingCharacters(in: .whitespacesAndNewlines)
         if !done.isEmpty { parts.append("Sabré que está listo cuando: \(done)") }
         if !start.isEmpty { parts.append("Punto de partida: \(start)") }
-        parts.append(oneSitting
+        // Para hoy no hay semanas que repartir, aunque el contador de sesiones conserve su valor.
+        parts.append(oneSitting || dueDate.map { Calendar.current.isDateInToday($0) } == true
             ? "Disponibilidad: lo haré en una sola sesión de \(Self.spanishDurationText(sessionMinutes))."
             : "Disponibilidad: \(sessionsPerWeek) \(sessionsPerWeek == 1 ? "sesión" : "sesiones") por semana de \(Self.spanishDurationText(sessionMinutes)).")
         return parts.joined(separator: "\n")
