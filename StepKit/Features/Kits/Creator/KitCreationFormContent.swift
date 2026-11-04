@@ -182,6 +182,7 @@ struct KitCreationFormContent: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            .accessibilityLabel("¿Cómo lo harás?")
             .accessibilityIdentifier("kitCreator.oneSitting")
             if !oneSitting {
                 Stepper(value: $sessionsPerWeek, in: 1...14) {
