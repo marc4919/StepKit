@@ -14,7 +14,7 @@ import Foundation
 /// Mapea 1:1 con AIRequest del backend
 struct AIGenerateKitRequest: Codable {
     let goalDescription: String
-    let dueDate: String // YYYY-MM-DD
+    private(set) var dueDate: String // YYYY-MM-DD
     let today: String // YYYY-MM-DD
     let timezone: String
     let dailyAvailableTime: Int // minutos
@@ -31,6 +31,14 @@ struct AIGenerateKitRequest: Codable {
     var answers: [KitAnswer]? = nil
     /// Idioma de la app («es» o «en»): el plan debe escribirse en este idioma.
     var language: String? = AppLanguage.code
+
+    private static func dayString(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
+    mutating func setDueDate(_ date: Date) { dueDate = Self.dayString(date) }
 
     /// Crea un request a partir de los datos del formulario
     /// - Parameters:
@@ -50,7 +58,7 @@ struct AIGenerateKitRequest: Codable {
         formatter.dateFormat = "yyyy-MM-dd"
         
         self.goalDescription = description
-        self.dueDate = formatter.string(from: dueDate)
+        self.dueDate = Self.dayString(dueDate)
         self.today = formatter.string(from: Date())
         self.timezone = TimeZone.current.identifier
         self.dailyAvailableTime = dailyMinutes
@@ -143,6 +151,8 @@ struct StepDTO: Codable {
     /// Paso que se repite ("day" | "week") y cuántas sesiones; nil si es puntual.
     var repeatEvery: String? = nil
     var repeatTimes: Int? = nil
+    /// Posición en el plan que preparó la IA.
+    var planPosition: Int? = nil
     
     /// Convierte el DTO a un modelo Step local
     func toStep() -> Step {

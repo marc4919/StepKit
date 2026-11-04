@@ -43,6 +43,7 @@ enum ManualKit {
         if !obstacle.isEmpty { kit.risks = [obstacle] }
         if let stepMinutes { setStepMinutes(stepMinutes, for: kit) }
         try? context.save()
+        KitCreationHints.kitCreated()
         try? ProgressLog.addKitNote(startingPoint, kit: kit, context: context, now: now)
         StartFromScratchTip().invalidate(reason: .actionPerformed)
         return kit

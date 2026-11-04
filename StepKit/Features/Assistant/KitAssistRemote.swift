@@ -138,7 +138,6 @@ enum AssistRequestBuilder {
         reviewOrder: Bool = false
     ) -> AssistRequest {
         let steps = kit.orderedActiveSteps
-        let planPositions = OriginalPlanOrder.positions(of: kit)
         let kitID = kit.id
         let entries = ((try? context.fetch(FetchDescriptor<ProgressEntryEntity>(
             predicate: #Predicate { $0.kitID == kitID },
@@ -163,7 +162,7 @@ enum AssistRequestBuilder {
                 repeatTimes: step.repeatTimes,
                 sessionsDone: step.repetition == nil ? nil
                     : entries.filter { $0.stepID == step.id && $0.kind == .session }.count,
-                planPosition: planPositions[step.id.uuidString]
+                planPosition: step.planPosition
             )
         }
 

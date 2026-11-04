@@ -292,7 +292,18 @@ final class KitCreatorViewModel {
 
     /// Responde las preguntas del servidor y genera el plan con ellas.
     func answerQuestions(_ answers: [KitAnswer]) {
+        adjustDueDate(for: answers)
         resumeAfterQuestions(answers: answers, supportsQuestions: true)
+    }
+
+    /// «Prefiero acabar antes» (la segunda opción de la pregunta del plazo): la fecha final pasa a una semana.
+    /// La persona puede cambiarla después en «Editar Kit».
+    private func adjustDueDate(for answers: [KitAnswer]) {
+        guard let question = streamingState.pendingQuestions.first(where: { $0.id == "pace" }), question.options.count > 1,
+              answers.contains(where: { $0.id == question.id && $0.value == question.options[1] }),
+              let sooner = Calendar.current.date(byAdding: .day, value: 7, to: todayStart) else { return }
+        dueDate = sooner
+        lastRequest?.setDueDate(sooner)
     }
 
     /// Sigue sin responder: el servidor genera el plan directamente.
@@ -348,8 +359,9 @@ final class KitCreatorViewModel {
         
         // Añadir los steps
         if let steps = kitDTO.steps {
-            for stepDTO in steps {
+            for (index, stepDTO) in steps.enumerated() {
                 let stepEntity = StepEntity(from: stepDTO, goal: goalEntity)
+                stepEntity.planPosition = stepDTO.planPosition ?? index + 1
                 modelContext.insert(stepEntity)
                 goalEntity.steps.append(stepEntity)
             }
@@ -358,7 +370,7 @@ final class KitCreatorViewModel {
         // Guardar
         do {
             try modelContext.save()
-            OriginalPlanOrder.record(goalEntity)
+            KitCreationHints.kitCreated()
             PendingGeneratedKits.remove(goalEntity.id)
             #if DEBUG
             print("✅ Kit guardado con \(goalEntity.steps.count) pasos")

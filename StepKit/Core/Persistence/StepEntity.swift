@@ -35,6 +35,8 @@ final class StepEntity {
     /// `suggestedDeadline` es la primera sesión y `estimateMinutes`, lo que dura cada una.
     var repeatEvery: String?
     var repeatTimes: Int?
+    /// Posición en el plan que preparó la IA (1 = el primero). `nil` en los pasos añadidos después.
+    var planPosition: Int?
 
     var goal: GoalEntity?
     
@@ -97,6 +99,7 @@ final class StepEntity {
         self.goal = goal
         self.repeatEvery = dto.repeatEvery
         self.repeatTimes = dto.repeatTimes
+        self.planPosition = dto.planPosition
     }
     
     // MARK: - Conversion to Step (view model)
@@ -151,6 +154,7 @@ final class StepEntity {
             blockedAt: blockedAt,
             repeatEvery: repeatEvery,
             repeatTimes: repeatTimes,
+            planPosition: planPosition,
             completedAt: completedAt,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -176,6 +180,7 @@ final class StepEntity {
         blockedAt = dto.blockedAt
         repeatEvery = dto.repeatEvery
         repeatTimes = dto.repeatTimes
+        planPosition = dto.planPosition ?? planPosition
         createdAt = dto.createdAt ?? createdAt
         updatedAt = dto.updatedAt ?? updatedAt
         deletedAt = dto.deletedAt
@@ -206,6 +211,7 @@ final class StepEntity {
         self.completedAt = dto.completed ? dto.completedAt : nil
         self.repeatEvery = dto.repeatEvery
         self.repeatTimes = dto.repeatTimes
+        self.planPosition = dto.planPosition
     }
 }
 

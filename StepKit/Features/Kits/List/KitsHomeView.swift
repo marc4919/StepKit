@@ -584,11 +584,6 @@ struct KitsEmptyView: View {
         .padding(.horizontal, 30)
         .padding(.top, 8)
         .accessibilityIdentifier("emptyState.primaryAction")
-        Text("Empieza por lo que quieres conseguir.")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
-            .fixedSize(horizontal: false, vertical: true)
     }
 }
 

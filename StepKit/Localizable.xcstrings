@@ -1550,6 +1550,16 @@
         }
       }
     },
+    "Es el límite del plan. Podrás cambiarla después.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the plan's limit. You can change it later."
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

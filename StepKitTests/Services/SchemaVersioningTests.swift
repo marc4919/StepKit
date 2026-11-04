@@ -12,7 +12,40 @@ struct SchemaVersioningTests {
         return (folder, folder.appending(path: "default.store"))
     }
 
-    /// Un almacén de TestFlight (esquema V1, sin fecha final) se migra a V2 sin perder nada.
+    /// Un almacén de la build 8 (esquema V2) se migra a V3 sin perder nada.
+    @Test("V2 store migrates to V3 and keeps Kits and steps")
+    func v2StoreMigrates() throws {
+        let (folder, url) = try tempStoreURL()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let target = Date(timeIntervalSince1970: 1_900_000_000)
+
+        do {
+            let v2 = Schema(versionedSchema: StepKitSchemaV2.self)
+            let container = try ModelContainer(for: v2, configurations: [ModelConfiguration(schema: v2, url: url)])
+            let context = container.mainContext
+            let kit = StepKitSchemaV2.GoalEntity()
+            kit.planTitle = "Pan"
+            kit.targetDate = target
+            context.insert(kit)
+            let step = StepKitSchemaV2.StepEntity()
+            step.stepTitle = "Amasar"
+            context.insert(step)
+            kit.steps.append(step)
+            try context.save()
+        }
+
+        let persistence = PersistenceController(storeURL: url)
+        let kit = try #require(try persistence.container.mainContext.fetch(FetchDescriptor<GoalEntity>()).first)
+        #expect(kit.targetDate == target)
+        let step = try #require(kit.steps.first)
+        #expect(step.stepTitle == "Amasar")
+        #expect(step.planPosition == nil)
+        step.planPosition = 1
+        try persistence.container.mainContext.save()
+        withExtendedLifetime(persistence) {}
+    }
+
+    /// Un almacén de TestFlight (esquema V1, sin fecha final) se migra hasta el actual sin perder nada.
     @Test("V1 store migrates to V2 and keeps Kits, steps and progress")
     func v1StoreMigrates() throws {
         let (folder, url) = try tempStoreURL()

@@ -22,7 +22,6 @@ struct KitCreationFormContent: View {
     let todayStart: Date
     let isDateInPast: Bool
     let isFormValid: Bool
-    var aiNotice: String? = nil
     let onCreate: () -> Void
     /// Crear el Kit a mano, sin IA.
     var onStartFromScratch: (() -> Void)? = nil
@@ -106,10 +105,12 @@ struct KitCreationFormContent: View {
             Text("¿Qué quieres conseguir?")
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
-            Text("Revisarás el plan antes de aceptarlo.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            if KitCreationHints.visible {
+                Text("Revisarás el plan antes de aceptarlo.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity)
     }
@@ -135,7 +136,7 @@ struct KitCreationFormContent: View {
                     IconChip(symbol: "text.badge.plus", color: .secondary, size: 28)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(showsContext ? String(localized: "Ocultar contexto") : String(localized: "Añadir contexto (opcional)"))
-                        if !showsContext {
+                        if !showsContext, KitCreationHints.visible {
                             Text("Cómo sabrás que está listo, de dónde partes, qué te puede frenar.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -174,9 +175,11 @@ struct KitCreationFormContent: View {
                 Label {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("En una sola sesión")
-                        Text("Para algo que harás de una vez, como una receta o un montaje.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        if KitCreationHints.visible {
+                            Text("Para algo que harás de una vez, como una receta o un montaje.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 } icon: {
                     IconChip(symbol: "bolt.fill", color: .orange, size: 28)
@@ -208,7 +211,7 @@ struct KitCreationFormContent: View {
         } header: {
             Text("Tu tiempo")
         } footer: {
-            Text("El plan se reparte hasta esta fecha. Podrás cambiarla después con el asistente.")
+            Text("Es el límite del plan. Podrás cambiarla después.")
         }
     }
 
@@ -252,10 +255,6 @@ struct KitCreationFormContent: View {
                         .frame(maxWidth: .infinity)
                         .accessibilityHint("Crea el Kit a mano, sin IA")
                         .accessibilityIdentifier("kitCreator.fromScratch")
-                }
-                if let aiNotice {
-                    Text(aiNotice)
-                        .accessibilityIdentifier("kitCreator.aiNotice")
                 }
             }
             .padding(.top, 4)

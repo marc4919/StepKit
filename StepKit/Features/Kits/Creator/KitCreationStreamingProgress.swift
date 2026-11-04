@@ -449,6 +449,7 @@ struct KitCreationStreamingProgress: View {
                 if reviewWide {
                     // Pantalla ancha (iPhone Duo abierto, iPad): resumen a la izquierda, «A tener en cuenta» a la derecha.
                     reviewHeader
+                    reviewNote
                     // Izquierda: meta y primer paso. Derecha: «A tener en cuenta», la nota y los botones,
                     // siempre a la vista sin tapar la lista de pasos.
                     HStack(alignment: .top, spacing: 24) {
@@ -458,7 +459,6 @@ struct KitCreationStreamingProgress: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         VStack(alignment: .leading, spacing: 18) {
                             reviewRisks
-                            reviewNote
                             reviewActions
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -467,8 +467,8 @@ struct KitCreationStreamingProgress: View {
                     reviewStepsList
                 } else {
                     reviewHeader
-                    reviewKPI
                     reviewNote
+                    reviewKPI
                     reviewStepsList
                     reviewRisks
                 }
@@ -555,9 +555,11 @@ struct KitCreationStreamingProgress: View {
     }
 
     @ViewBuilder private var reviewNote: some View {
-        Text("Revisa el plan antes de empezar. Podrás editar los pasos después.")
-            .foregroundStyle(.secondary)
-            .modifier(Reveal(shown: contentRevealed, order: 2))
+        if KitCreationHints.visible {
+            Text("Revisa el plan antes de empezar. Podrás editar los pasos después.")
+                .foregroundStyle(.secondary)
+                .modifier(Reveal(shown: contentRevealed, order: 2))
+        }
     }
 
     /// Arriba, el total (pasos, semanas y horas con las repeticiones); debajo, las mismas cabeceras por
