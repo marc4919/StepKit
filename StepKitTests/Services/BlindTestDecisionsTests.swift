@@ -17,6 +17,24 @@ struct BlindTestDecisionsTests {
         #expect(vm.isFormValid)   // hoy sigue siendo elegible, para un Kit de una sesión
     }
 
+    @Test("Sessions are weekly from a week away, in total under a week, and today's for today")
+    func sessionsFollowTheDeadline() {
+        let vm = KitCreatorViewModel(apiClient: MockAPIClient())
+        vm.description = "Hacer pesto"
+        vm.sessionsPerWeek = 2
+        vm.dueDate = Calendar.current.date(byAdding: .day, value: 30, to: .now)
+        #expect(vm.sessionScope == .weekly)
+        #expect(vm.composedDescription.contains("2 sesiones por semana"))
+        vm.dueDate = Calendar.current.date(byAdding: .day, value: 2, to: .now)
+        #expect(vm.sessionScope == .total)
+        #expect(vm.composedDescription.contains("hasta 2 sesiones en total"))
+        vm.dueDate = .now
+        #expect(vm.sessionScope == .today)
+        #expect(vm.composedDescription.contains("hoy, hasta 2 sesiones"))
+        vm.oneSitting = true
+        #expect(vm.composedDescription.contains("una sola sesión"))
+    }
+
     @Test("A goal of only spaces cannot prepare a plan and is not a draft to protect")
     func onlySpaces() {
         let vm = KitCreatorViewModel(apiClient: MockAPIClient())

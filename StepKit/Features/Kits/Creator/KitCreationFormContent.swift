@@ -169,6 +169,18 @@ struct KitCreationFormContent: View {
         .onAppear { if hasContext { showsContext = true } }
     }
 
+    /// Con menos de una semana de plazo no hay semanas que repartir: el contador habla de hoy o del total.
+    private var sessionsLabel: String {
+        let days = dueDate.map { Calendar.current.dateComponents([.day], from: todayStart, to: Calendar.current.startOfDay(for: $0)).day ?? 7 } ?? 7
+        if days <= 0 {
+            return sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión hoy") : String(localized: "Hasta \(sessionsPerWeek) sesiones hoy")
+        }
+        if days < 7 {
+            return sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión en total") : String(localized: "Hasta \(sessionsPerWeek) sesiones en total")
+        }
+        return sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión por semana") : String(localized: "Hasta \(sessionsPerWeek) sesiones por semana")
+    }
+
     @ViewBuilder private var timeSection: some View {
         Section {
             // Primero la fecha: lo que cambia al elegirla queda siempre debajo, nunca encima.
@@ -188,7 +200,7 @@ struct KitCreationFormContent: View {
                 Stepper(value: $sessionsPerWeek, in: 1...14) {
                     Label {
                         // «Hasta»: es la disponibilidad que tiene en cuenta el plan, no un horario que vaya a llenar.
-                        Text(sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión por semana") : String(localized: "Hasta \(sessionsPerWeek) sesiones por semana"))
+                        Text(sessionsLabel).contentTransition(.numericText())
                     } icon: {
                         IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                     }

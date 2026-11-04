@@ -60,15 +60,28 @@ final class KitCreatorViewModel {
         if !done.isEmpty { parts.append("Sabré que está listo cuando: \(done)") }
         if !start.isEmpty { parts.append("Punto de partida: \(start)") }
         let sessions = "\(sessionsPerWeek) \(sessionsPerWeek == 1 ? "sesión" : "sesiones")"
+        let minutes = Self.spanishDurationText(sessionMinutes)
         if oneSitting {
-            parts.append("Disponibilidad: lo haré en una sola sesión de \(Self.spanishDurationText(sessionMinutes)).")
-        } else if dueDate.map({ Calendar.current.isDateInToday($0) }) == true {
-            // Para hoy no hay semanas que repartir: ratos de hoy, sin la regla semanal del servidor.
-            parts.append("Disponibilidad: hoy, hasta \(sessions) de \(Self.spanishDurationText(sessionMinutes)).")
+            parts.append("Disponibilidad: lo haré en una sola sesión de \(minutes).")
         } else {
-            parts.append("Disponibilidad: \(sessions) por semana de \(Self.spanishDurationText(sessionMinutes)).")
+            // Con menos de una semana no hay semanas que repartir: ratos en total, sin la regla semanal del servidor.
+            switch sessionScope {
+            case .today: parts.append("Disponibilidad: hoy, hasta \(sessions) de \(minutes).")
+            case .total: parts.append("Disponibilidad: hasta \(sessions) en total de \(minutes), hasta la fecha final.")
+            case .weekly: parts.append("Disponibilidad: \(sessions) por semana de \(minutes).")
+            }
         }
         return parts.joined(separator: "\n")
+    }
+
+    /// A qué se refiere el contador de sesiones según el plazo: hoy, en total (menos de una semana) o por semana.
+    enum SessionScope { case today, total, weekly }
+
+    var sessionScope: SessionScope {
+        guard let dueDate else { return .weekly }
+        let days = Calendar.current.dateComponents([.day], from: todayStart, to: Calendar.current.startOfDay(for: dueDate)).day ?? 7
+        if days <= 0 { return .today }
+        return days < 7 ? .total : .weekly
     }
 
     /// Tiempo de una sesión de trabajo: cada paso debe caber en una.
