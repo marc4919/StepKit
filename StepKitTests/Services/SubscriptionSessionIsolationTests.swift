@@ -82,6 +82,31 @@ struct SubscriptionSessionIsolationTests {
         #expect(!fixture.viewModel.isLoading)
     }
 
+    @Test("An entitlement on the device that the account lacks is verified and the profile refreshed")
+    func reconcileEntitlement() async throws {
+        let fixture = try Fixture(stage: nil)
+        defer { fixture.cleanPreferences() }
+        #expect(fixture.auth.currentUser?.isPremium == false)
+        let isPro = await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth)
+        #expect(isPro)
+        #expect(fixture.auth.currentUser?.isPremium == true)
+        #expect(fixture.api.verificationTokens == ["test-token-a"])
+        #expect(!fixture.viewModel.showSuccessAlert)
+        #expect(fixture.viewModel.errorMessage == nil)
+    }
+
+    @Test("A Pro account is not verified again, and another identity's profile is rejected")
+    func reconcileEntitlementEdges() async throws {
+        let fixture = try Fixture(stage: nil)
+        defer { fixture.cleanPreferences() }
+        fixture.api.profile = fixture.userB
+        #expect(await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth) == false)
+        #expect(fixture.auth.currentUser?.tier == "free")
+        fixture.auth.updateUser(UserInfo(id: fixture.userA.id, tier: "premium", monthlyTokensUsed: 0, monthlyTokenQuota: 10_000))
+        #expect(await fixture.viewModel.reconcileEntitlement(storeKitManager: fixture.store, apiClient: fixture.api, authManager: fixture.auth))
+        #expect(fixture.api.verificationTokens == ["test-token-a"])
+    }
+
     @Test("A profile belonging to another identity is rejected", arguments: Action.allCases)
     func mismatchedProfile(action: Action) async throws {
         let fixture = try Fixture(stage: nil)

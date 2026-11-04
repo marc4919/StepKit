@@ -26,6 +26,10 @@ struct KitCreatorView: View {
     @Environment(\.syncManager) private var syncManager
     @Environment(AuthManager.self) private var authManager
     @Environment(AIConsentManager.self) private var consentManager
+    @Environment(\.storeKitManager) private var storeKitManager
+    /// Con Pro en el iPhone y una cuenta que no lo refleja, se verifica antes de enseñar la pantalla de Pro.
+    @State private var reconcilingSubscription = false
+    @State private var limitFromManual = false
 
     // Callback cuando se crea un kit exitosamente
     var onKitCreated: ((Goal) -> Void)?
@@ -70,6 +74,7 @@ struct KitCreatorView: View {
     /// pasar por otra pantalla, y los pasos se añaden en el propio Kit.
     private func startFromScratch(vm: KitCreatorViewModel) {
         if reachesFreeLimit {
+            limitFromManual = true
             vm.planLimit = .activeKits
         } else if vm.hasDraft {
             createEmptyKit(vm: vm)
@@ -100,14 +105,34 @@ struct KitCreatorView: View {
                 ProgressView()
             }
         }
+        .onChange(of: vm?.planLimit) { _, limit in
+            guard let vm, limit != nil, !reconcilingSubscription, storeKitManager.hasActiveSubscription,
+                  authManager.currentUser?.isPremium != true else { return }
+            reconcilingSubscription = true
+            Task {
+                let isPro = await SubscriptionViewModel().reconcileEntitlement(storeKitManager: storeKitManager,
+                                                                               apiClient: apiClient, authManager: authManager)
+                if isPro {
+                    vm.planLimit = nil
+                    if limitFromManual {
+                        startFromScratch(vm: vm)
+                    } else if let token = authManager.token, consentManager.hasConsent, vm.isFormValid {
+                        vm.createKit(token: token)
+                    }
+                }
+                reconcilingSubscription = false
+            }
+        }
         .task {
             if vm == nil {
                 let model = KitCreatorViewModel(apiClient: apiClient, initialDate: initialDate, initialGoal: initialGoal)
                 vm = model
                 if startsManual, reachesFreeLimit {
                     manual = false
+                    limitFromManual = true
                     model.planLimit = .activeKits
                 }
+                await storeKitManager.updatePurchasedProducts()
             }
         }
     }
@@ -139,6 +164,7 @@ struct KitCreatorView: View {
                         }
                         
                         if let token = authManager.token {
+                            limitFromManual = false
                             vm.createKit(token: token)
                         } else {
                             vm.errorMessage = String(localized: "Necesitas iniciar sesión para crear un kit")
@@ -192,6 +218,7 @@ struct KitCreatorView: View {
             get: {
                 if vm.showingDateSheet { return CreatorSheet.date }
                 if showAIConsent { return CreatorSheet.aiConsent }
+                if reconcilingSubscription { return nil }
                 return vm.planLimit.map { CreatorSheet.subscription($0) }
             },
             set: { if $0 == nil { vm.showingDateSheet = false; showAIConsent = false; vm.planLimit = nil } }

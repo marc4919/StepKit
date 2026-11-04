@@ -1054,6 +1054,57 @@
           }
         }
       }
+    },
+    "paywall.sync.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your subscription is active on this iPhone, but your account doesn't reflect it yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu suscripción está activa en este iPhone, pero tu cuenta aún no la refleja."
+          }
+        }
+      }
+    },
+    "paywall.sync.button": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check subscription"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobar suscripción"
+          }
+        }
+      }
+    },
+    "paywall.sync.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check it. Try again in a moment."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido comprobar. Inténtalo en un momento."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

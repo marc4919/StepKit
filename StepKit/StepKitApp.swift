@@ -230,6 +230,10 @@ struct StepKitApp: App {
 
         if let restoredUser = await authManager.validateStoredSession(using: apiClient) {
             authManager.completeStoredSessionRestore(with: restoredUser)
+            // Si el iPhone tiene Pro y la cuenta no, se pone al día sin esperar a que falle algo.
+            await StoreKitManagerKey.defaultValue.updatePurchasedProducts()
+            await SubscriptionViewModel().reconcileEntitlement(storeKitManager: StoreKitManagerKey.defaultValue,
+                                                                apiClient: apiClient, authManager: authManager)
         }
     }
 

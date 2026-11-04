@@ -40,6 +40,7 @@ struct SubscriptionView: View {
     var body: some View {
         List {
             headerSection
+            if reason != nil, storeKitManager.hasActiveSubscription, authManager.currentUser?.isPremium != true { syncSection }
             if let reason, !isPro { limitSection(reason) }
             if !isPro { usageSection }
             compareSection
@@ -117,6 +118,30 @@ struct SubscriptionView: View {
     }
 
     // MARK: - Límite alcanzado
+
+    /// Pro en el iPhone y una cuenta que no lo refleja: se puede comprobar a mano.
+    private var syncSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(SubscriptionText.string("paywall.sync.title")).font(.subheadline)
+                Button {
+                    Task {
+                        let isPro = await viewModel.reconcileEntitlement(storeKitManager: storeKitManager,
+                                                                          apiClient: apiClient, authManager: authManager)
+                        if isPro { viewModel.showSuccessAlert = true } else { viewModel.errorMessage = SubscriptionText.string("paywall.sync.failed") }
+                    }
+                } label: {
+                    Text(SubscriptionText.string("paywall.sync.button")).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.primaryAction)
+                .disabled(viewModel.isLoading)
+                .accessibilityIdentifier("paywall.sync")
+            }
+            .padding(.vertical, 4)
+            .listRowBackground(Color.orange.opacity(0.12))
+        }
+    }
 
     private func limitSection(_ reason: PlanLimitReason) -> some View {
         Section {

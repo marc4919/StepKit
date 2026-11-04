@@ -224,7 +224,7 @@ enum StoreKitError: LocalizedError {
 
 // MARK: - Environment Key
 
-private struct StoreKitManagerKey: EnvironmentKey {
+struct StoreKitManagerKey: EnvironmentKey {
     @MainActor static let defaultValue = StoreKitManager()
 }
 

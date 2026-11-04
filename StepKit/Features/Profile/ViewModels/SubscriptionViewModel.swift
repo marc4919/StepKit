@@ -102,6 +102,27 @@ final class SubscriptionViewModel {
         }
     }
 
+    /// El iPhone tiene una suscripción activa pero la cuenta no es Pro (un aviso de Apple que no llegó al
+    /// servidor, o una renovación de sandbox): se verifica con el servidor y se refresca el perfil.
+    /// Devuelve si la cuenta queda en Pro. No enseña errores: quien llama decide qué mostrar.
+    @discardableResult
+    func reconcileEntitlement(storeKitManager: any SubscriptionPurchasing, apiClient: any APIClientProtocol, authManager: any AuthManaging) async -> Bool {
+        if authManager.currentUser?.isPremium == true { return true }
+        guard let session = Session(authManager),
+              let transactionID = await storeKitManager.getOriginalTransactionId(),
+              session.isCurrent(authManager), !Task.isCancelled else { return false }
+        do {
+            _ = try await apiClient.verifySubscription(transactionId: transactionID, token: session.token)
+            guard session.isCurrent(authManager), !Task.isCancelled else { return false }
+            let updatedUser = try await apiClient.getUserProfile(token: session.token)
+            guard session.isCurrent(authManager), !Task.isCancelled, updatedUser.uuid == session.userID else { return false }
+            authManager.updateUser(updatedUser)
+            return updatedUser.isPremium
+        } catch {
+            return false
+        }
+    }
+
     /// Trae del servidor el uso de este mes (Kits activos e IA) para mostrarlo al día.
     func refreshUsage(apiClient: any APIClientProtocol, authManager: any AuthManaging) async {
         guard let session = Session(authManager),
