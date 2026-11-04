@@ -169,54 +169,43 @@ struct KitCreationFormContent: View {
         .onAppear { if hasContext { showsContext = true } }
     }
 
-    private var dueIsToday: Bool { dueDate.map { Calendar.current.isDateInToday($0) } ?? false }
-
     @ViewBuilder private var timeSection: some View {
         Section {
-            // Para hoy no hay semanas que repartir: solo cuenta el tiempo disponible.
-            if !dueIsToday {
-                Toggle(isOn: $oneSitting.animation(.formReveal)) {
+            // Primero la fecha: lo que cambia al elegirla queda siempre debajo, nunca encima.
+            KitDueDateField(dueDate: $dueDate, todayStart: todayStart)
+            Picker("¿Cómo lo harás?", selection: Binding(
+                get: { oneSitting ? 0 : 1 },
+                set: { oneSitting = $0 == 0 }
+            ).animation(.formReveal)) {
+                Text("De una vez").tag(0)
+                Text("Poco a poco").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .accessibilityIdentifier("kitCreator.oneSitting")
+            if !oneSitting {
+                Stepper(value: $sessionsPerWeek, in: 1...14) {
                     Label {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("En una sola sesión")
-                            if KitCreationHints.visible {
-                                Text("Para algo que harás de una vez, como una receta o un montaje.")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
+                        // «Hasta»: es la disponibilidad que tiene en cuenta el plan, no un horario que vaya a llenar.
+                        Text(sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión por semana") : String(localized: "Hasta \(sessionsPerWeek) sesiones por semana"))
                     } icon: {
-                        IconChip(symbol: "bolt.fill", color: .orange, size: 28)
+                        IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
                     }
                 }
-                .accessibilityIdentifier("kitCreator.oneSitting")
-                if !oneSitting {
-                    Stepper(value: $sessionsPerWeek, in: 1...14) {
-                        Label {
-                            // «Hasta»: es la disponibilidad que tiene en cuenta el plan, no un horario que vaya a llenar.
-                            Text(sessionsPerWeek == 1 ? String(localized: "Hasta 1 sesión por semana") : String(localized: "Hasta \(sessionsPerWeek) sesiones por semana"))
-                        } icon: {
-                            IconChip(symbol: "repeat", color: MetaTint.time, size: 28)
-                        }
-                    }
-                    .transition(.formRow)
-                }
+                .transition(.formRow)
             }
             Picker(selection: $sessionMinutes) {
                 ForEach(durations, id: \.self) { Text(KitCreatorViewModel.durationText($0)).tag($0) }
             } label: {
                 Label {
-                    Text(oneSitting || dueIsToday ? String(localized: "Tiempo disponible") : String(localized: "Cada sesión"))
+                    Text(oneSitting ? String(localized: "Tiempo disponible") : String(localized: "Tiempo por sesión"))
                         .contentTransition(.opacity)
                 } icon: {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
                 }
             }
-            KitDueDateField(dueDate: $dueDate, todayStart: todayStart)
         } header: {
             Text("Tu tiempo")
-        } footer: {
-            Text("Es el límite del plan. Podrás cambiarla después.")
         }
     }
 
@@ -269,7 +258,7 @@ struct KitCreationFormContent: View {
 
     /// Desde ratos cortos hasta una mañana entera.
     private var durations: [Int] {
-        oneSitting || dueIsToday ? [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
+        oneSitting ? [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360, 480] : [10, 15, 20, 30, 45, 60, 90, 120, 180]
     }
 
     private func field(
@@ -366,21 +355,24 @@ struct KitDueDateField: View {
             // Las chips ocupan todo el ancho: en una fila si caben y, si no, en las que necesite el texto.
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {
-                    todayChip; weekChip; monthChip; threeMonthsChip; sixMonthsChip; otherDateButton
+                    todayChip; tomorrowChip; weekChip; monthChip; threeMonthsChip; otherDateButton
                 }
                 VStack(spacing: 8) {
-                    HStack(spacing: 8) { todayChip; weekChip; monthChip }
-                    HStack(spacing: 8) { threeMonthsChip; sixMonthsChip; otherDateButton }
+                    HStack(spacing: 8) { todayChip; tomorrowChip; weekChip }
+                    HStack(spacing: 8) { monthChip; threeMonthsChip; otherDateButton }
                 }
                 VStack(spacing: 8) {
-                    HStack(spacing: 8) { todayChip; weekChip }
-                    HStack(spacing: 8) { monthChip; threeMonthsChip }
-                    HStack(spacing: 8) { sixMonthsChip; otherDateButton }
+                    HStack(spacing: 8) { todayChip; tomorrowChip }
+                    HStack(spacing: 8) { weekChip; monthChip }
+                    HStack(spacing: 8) { threeMonthsChip; otherDateButton }
                 }
                 VStack(spacing: 8) {
-                    todayChip; weekChip; monthChip; threeMonthsChip; sixMonthsChip; otherDateButton
+                    todayChip; tomorrowChip; weekChip; monthChip; threeMonthsChip; otherDateButton
                 }
             }
+            Text("Es la fecha límite. Puedes terminar antes.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .onAppear {
             // Una fecha que llega desde el Calendario no coincide con ningún atajo.
@@ -389,17 +381,17 @@ struct KitDueDateField: View {
     }
 
     private var todayChip: some View { shortcut(String(localized: "Hoy"), .day, 0).accessibilityIdentifier("kitCreator.today") }
+    private var tomorrowChip: some View { shortcut(String(localized: "Mañana"), .day, 1) }
     private var weekChip: some View { shortcut(String(localized: "1 semana"), .day, 7) }
     private var monthChip: some View { shortcut(String(localized: "1 mes"), .month, 1) }
     private var threeMonthsChip: some View { shortcut(String(localized: "3 meses"), .month, 3) }
-    private var sixMonthsChip: some View { shortcut(String(localized: "6 meses"), .month, 6) }
 
     private func shortcutDate(_ component: Calendar.Component, _ value: Int) -> Date? {
         Calendar.current.date(byAdding: component, value: value, to: todayStart)
     }
 
     private func isShortcut(_ date: Date) -> Bool {
-        [shortcutDate(.day, 0), shortcutDate(.day, 7), shortcutDate(.month, 1), shortcutDate(.month, 3), shortcutDate(.month, 6)].contains { candidate in
+        [shortcutDate(.day, 0), shortcutDate(.day, 1), shortcutDate(.day, 7), shortcutDate(.month, 1), shortcutDate(.month, 3)].contains { candidate in
             candidate.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
         }
     }
@@ -467,7 +459,8 @@ struct StepDateShortcuts: View {
             ("today", String(localized: "Hoy"), .day, 0),
             ("tomorrow", String(localized: "Mañana"), .day, 1),
             ("week", String(localized: "1 semana"), .day, 7),
-            ("month", String(localized: "1 mes"), .month, 1)
+            ("month", String(localized: "1 mes"), .month, 1),
+            ("quarter", String(localized: "3 meses"), .month, 3)
         ]
         let first = calendar.startOfDay(for: earliest)
         let last = latest.map(calendar.startOfDay(for:))

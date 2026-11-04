@@ -1560,6 +1560,56 @@
         }
       }
     },
+    "De una vez": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All at once"
+          }
+        }
+      }
+    },
+    "Poco a poco": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bit by bit"
+          }
+        }
+      }
+    },
+    "Tiempo por sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time per session"
+          }
+        }
+      }
+    },
+    "Es la fecha límite. Puedes terminar antes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's the deadline. You can finish earlier."
+          }
+        }
+      }
+    },
+    "¿Cómo lo harás?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How will you do it?"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {

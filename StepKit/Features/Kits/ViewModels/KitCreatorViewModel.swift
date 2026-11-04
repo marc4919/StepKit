@@ -59,10 +59,15 @@ final class KitCreatorViewModel {
         let start = startingPoint.trimmingCharacters(in: .whitespacesAndNewlines)
         if !done.isEmpty { parts.append("Sabré que está listo cuando: \(done)") }
         if !start.isEmpty { parts.append("Punto de partida: \(start)") }
-        // Para hoy no hay semanas que repartir, aunque el contador de sesiones conserve su valor.
-        parts.append(oneSitting || dueDate.map { Calendar.current.isDateInToday($0) } == true
-            ? "Disponibilidad: lo haré en una sola sesión de \(Self.spanishDurationText(sessionMinutes))."
-            : "Disponibilidad: \(sessionsPerWeek) \(sessionsPerWeek == 1 ? "sesión" : "sesiones") por semana de \(Self.spanishDurationText(sessionMinutes)).")
+        let sessions = "\(sessionsPerWeek) \(sessionsPerWeek == 1 ? "sesión" : "sesiones")"
+        if oneSitting {
+            parts.append("Disponibilidad: lo haré en una sola sesión de \(Self.spanishDurationText(sessionMinutes)).")
+        } else if dueDate.map({ Calendar.current.isDateInToday($0) }) == true {
+            // Para hoy no hay semanas que repartir: ratos de hoy, sin la regla semanal del servidor.
+            parts.append("Disponibilidad: hoy, hasta \(sessions) de \(Self.spanishDurationText(sessionMinutes)).")
+        } else {
+            parts.append("Disponibilidad: \(sessions) por semana de \(Self.spanishDurationText(sessionMinutes)).")
+        }
         return parts.joined(separator: "\n")
     }
 
