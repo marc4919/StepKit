@@ -324,15 +324,13 @@ enum RemoteProposalBuilder {
                                      outcome: change.newOutcome, description: change.newDescription))
             case "split_step":
                 guard let target = step(change.stepNumber), let titles = change.newTitles, titles.count > 1 else { continue }
-                let days = target.suggestedDeadline.map { first in
-                    titles.indices.compactMap { calendar.date(byAdding: .day, value: $0, to: first) }
-                        .map { $0.formatted(.dateTime.day().month(.abbreviated)) }
-                } ?? []
-                let parts = zip(titles, days + Array(repeating: "", count: max(0, titles.count - days.count)))
-                    .map { title, day in day.isEmpty ? String(localized: "«\(title)»") : String(localized: "«\(title)» (\(day))") }
+                // Las partes se quedan el día del paso: se dice el día una vez, no uno por parte.
+                let parts = titles.map { String(localized: "«\($0)»") }.joined(separator: ", ")
+                let detail = target.suggestedDeadline.map {
+                    String(localized: "Se divide en \(titles.count) partes el \($0.formatted(.dateTime.day().month(.abbreviated))): \(parts)")
+                } ?? String(localized: "Se divide en \(titles.count) partes: \(parts)")
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
-                                                  detail: String(localized: "Se divide en: ") + parts.joined(separator: ", "),
-                                                  symbol: "square.split.2x1"))
+                                                  detail: detail, symbol: "square.split.2x1"))
                 actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes))
             case "add_step":
                 guard let title = change.newTitles?.first else { continue }

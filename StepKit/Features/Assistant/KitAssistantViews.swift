@@ -475,7 +475,19 @@ struct ProposalCard: View {
             // pasado en el plan, por encima de lo que diga el resumen. Al aplicarse van recibiendo su check.
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(proposal.changes) { change in
-                    if let step = openableStep(for: change) {
+                    if proposal.state == .accepted, !change.partStepIDs.isEmpty {
+                        // Una división aplicada: cada parte es un paso y se abre por separado.
+                        ForEach(parts(for: change)) { part in
+                            NavigationLink {
+                                StepDetailView(stepEntity: part, stepNumber: part.goal?.position(of: part) ?? 1)
+                            } label: {
+                                partRow(part)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityHint("Abre este paso")
+                            .accessibilityIdentifier("proposal.openStep")
+                        }
+                    } else if let step = openableStep(for: change) {
                         // Con destino propio: uno por valor se apilaría por detrás del chat, que no está en la ruta de la pila.
                         NavigationLink {
                             StepDetailView(stepEntity: step, stepNumber: step.goal?.position(of: step) ?? 1)
@@ -532,6 +544,24 @@ struct ProposalCard: View {
     private func openableStep(for change: ProposedStepChange) -> StepEntity? {
         guard proposal.state == .accepted, let id = change.stepID else { return nil }
         return steps.first { $0.id == id }
+    }
+
+    private func parts(for change: ProposedStepChange) -> [StepEntity] {
+        change.partStepIDs.compactMap { id in steps.first { $0.id == id } }
+    }
+
+    private func partRow(_ step: StepEntity) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "square.split.2x1").foregroundStyle(Color.accentColor).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(String(localized: "Paso \(step.goal?.position(of: step) ?? 1) · \(step.stepTitle)")).font(.subheadline.weight(.medium))
+                Text(String(localized: "\(step.estimateMinutes) min")).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).accessibilityLabel("Aplicado")
+            Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary).accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private func changeRow(_ change: ProposedStepChange, opens: Bool) -> some View {

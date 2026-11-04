@@ -130,6 +130,8 @@ struct ProposedStepChange: Identifiable, Hashable {
     let to: Date?
     var detail: String? = nil
     var symbol: String = Symbols.calendar
+    /// Tras aplicar una división: la primera parte (el paso original) y las nuevas, para abrir cada una.
+    var partStepIDs: [UUID] = []
 }
 
 /// Conjunto coherente de cambios: se acepta o se descarta entero, sin selección parcial.
@@ -155,7 +157,7 @@ final class PlanProposal: Identifiable {
 
     let id = UUID()
     let title: String
-    let changes: [ProposedStepChange]
+    private(set) var changes: [ProposedStepChange]
     let impact: String
     let actions: [Action]
     var state: State = .pending
@@ -210,8 +212,12 @@ final class PlanProposal: Identifiable {
         let paired = actions.count == changes.count
         for (index, action) in actions.enumerated() {
             withAnimation(animation) {
+                splitParts = []
                 apply(action, in: kit, context: context, now: now, highlights: highlights)
-                if paired { appliedChangeIDs.insert(changes[index].id) }
+                if paired {
+                    appliedChangeIDs.insert(changes[index].id)
+                    if case .split = action { changes[index].partStepIDs = splitParts }
+                }
             }
             if index < actions.count - 1 {
                 try? await Task.sleep(for: pause)
@@ -225,6 +231,9 @@ final class PlanProposal: Identifiable {
         }
         applying = false
     }
+
+    /// Pasos que dejó la última división aplicada, en orden.
+    private var splitParts: [UUID] = []
 
     private func apply(_ action: Action, in kit: GoalEntity, context: ModelContext, now: Date,
                        highlights: ChangeHighlights) {
@@ -266,17 +275,16 @@ final class PlanProposal: Identifiable {
             if let minutes { target.estimateMinutes = minutes }
             target.markModified(at: now)
             highlights.record(.edited, for: target.id)
+            splitParts = [target.id]
             var anchor = target
             // Las partes nuevas heredan la descripción del paso original para no quedar vacías.
             let original = target.descriptionLong.isEmpty ? target.descriptionShort : target.descriptionLong
-            for (offset, title) in titles.dropFirst().enumerated() {
-                // Cada parte en su día, uno detrás de otro.
-                let partDate = target.suggestedDeadline.flatMap {
-                    Calendar.current.date(byAdding: .day, value: offset + 1, to: $0)
-                }
-                anchor = insert(title, minutes: minutes ?? target.estimateMinutes, date: partDate, after: anchor,
+            for title in titles.dropFirst() {
+                // Las partes van el mismo día que el paso: dividir no alarga el plan ni se sale de la fecha final.
+                anchor = insert(title, minutes: minutes ?? target.estimateMinutes, date: target.suggestedDeadline, after: anchor,
                                 short: String(localized: "Parte de «\(first)». \(target.descriptionShort)").trimmingCharacters(in: .whitespaces),
                                 long: original)
+                splitParts.append(anchor.id)
             }
         case .add(let afterID, let atStart, let title, let minutes, let date, let outcome, let description):
             insert(title, minutes: minutes, date: date, after: afterID.flatMap(step), atStart: atStart,

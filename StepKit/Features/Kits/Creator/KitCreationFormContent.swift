@@ -386,11 +386,24 @@ struct KitDueDateField: View {
             Text("Es la fecha límite. Puedes terminar antes.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            if lateForToday {
+                // «Hoy» a última hora caduca a medianoche: se avisa, sin cambiar lo que significa la fecha.
+                Text("Queda poco de hoy. Si lo acabarás mañana, elige Mañana.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .transition(.opacity)
+            }
         }
+        .animation(.default, value: lateForToday)
         .onAppear {
             // Una fecha que llega desde el Calendario no coincide con ningún atajo.
             if let dueDate, !isShortcut(dueDate) { showsOtherDate = true }
         }
+    }
+
+    private var lateForToday: Bool {
+        guard let dueDate, Calendar.current.isDateInToday(dueDate) else { return false }
+        return Calendar.current.component(.hour, from: .now) >= 22
     }
 
     private var todayChip: some View { shortcut(String(localized: "Hoy"), .day, 0).accessibilityIdentifier("kitCreator.today") }

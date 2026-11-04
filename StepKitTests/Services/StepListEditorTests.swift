@@ -163,6 +163,23 @@ struct StepListEditorTests {
         #expect(proposal.state == .accepted)
     }
 
+    @Test("Splitting keeps every part on the step's day and remembers the parts to open")
+    func splitStaysOnTheSameDay() async throws {
+        let kit = makeKit(["A", "B"])
+        let b = try step("B", in: kit)
+        b.suggestedDeadline = day(3)
+        let change = ProposedStepChange(stepID: b.id, stepLabel: "Paso 2", from: nil, to: nil)
+        let proposal = PlanProposal(title: "Dividir", changes: [change], impact: "",
+                                    actions: [.split(stepID: b.id, titles: ["B1", "B2", "B3"], minutes: 10)])
+        await proposal.accept(in: kit, context: context, highlights: ChangeHighlights())
+        #expect(titles(kit) == ["A", "B1", "B2", "B3"])
+        for title in ["B1", "B2", "B3"] {
+            #expect(Calendar.current.isDate(try step(title, in: kit).suggestedDeadline ?? .distantPast, inSameDayAs: day(3)))
+        }
+        let parts = try #require(proposal.changes.first?.partStepIDs)
+        #expect(parts == ["B1", "B2", "B3"].compactMap { try? step($0, in: kit).id })
+    }
+
     // MARK: - Fechas de los pasos que añade el asistente
 
     private func day(_ offset: Int, from today: Date = Calendar.current.startOfDay(for: Date())) -> Date {

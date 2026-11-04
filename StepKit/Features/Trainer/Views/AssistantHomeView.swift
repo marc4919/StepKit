@@ -16,24 +16,29 @@ struct AssistantIntent: Identifiable {
     let symbol: String
     let color: Color
 
-    /// Intenciones sobre un paso.
-    static let step: [AssistantIntent] = all + [
-        AssistantIntent(id: "split", title: String(localized: "Ayúdame a dividir esta tarea"),
-                        detail: String(localized: "Partirla en tramos más pequeños"), symbol: "square.split.2x1", color: .teal),
-        AssistantIntent(id: "fifteen", title: String(localized: "¿Qué puedo avanzar en 15 minutos?"),
-                        detail: String(localized: "Un avance concreto para ahora"), symbol: "timer", color: .orange),
+    /// Intenciones sobre un paso, por uso esperado: primero las de ponerse a ello, después las de cambiarlo.
+    static let step: [AssistantIntent] = [
+        AssistantIntent(id: "how-to-start", title: String(localized: "No sé cómo empezar"),
+                        detail: String(localized: "La primera acción concreta"), symbol: "arrow.turn.down.right", color: .accentColor),
+        AssistantIntent(id: "less-time", title: String(localized: "Tengo poco tiempo ahora"),
+                        detail: String(localized: "Un avance pequeño para hoy"), symbol: Symbols.time, color: .blue),
+        AssistantIntent(id: "split", title: String(localized: "Divide este paso"),
+                        detail: String(localized: "Partirlo en tramos más cortos"), symbol: "square.split.2x1", color: .teal),
+        AssistantIntent(id: "missing", title: String(localized: "Me falta algo"),
+                        detail: String(localized: "Resolver un bloqueo sin perder lo hecho"), symbol: Symbols.blocked, color: .red),
+        AssistantIntent(id: "not-fitting", title: String(localized: "Este paso ya no encaja"),
+                        detail: String(localized: "Cambiarlo o quitarlo"), symbol: "pencil", color: .purple),
     ]
 
-    /// Intenciones sobre el Kit completo.
+    /// Intenciones sobre el Kit completo. Recuperar el hilo y cambiar la fecha final ya se hacen en la app
+    /// (portada de Mis Kits, Registro y Detalles del Kit), así que no están aquí.
     static let kit: [AssistantIntent] = [
+        AssistantIntent(id: "still-sense", title: String(localized: "¿Sigue teniendo sentido el plan?"),
+                        detail: String(localized: "Revisar orden y fechas con lo que ya sabes"), symbol: "questionmark.circle", color: .green),
         AssistantIntent(id: "reduce-scope", title: String(localized: "Necesito reducir el alcance"),
                         detail: String(localized: "Quitar o juntar pasos sin perder el resultado"), symbol: "scissors", color: .orange),
-        AssistantIntent(id: "where-left", title: String(localized: "¿Dónde lo dejamos?"),
-                        detail: String(localized: "Recuperar el hilo con tu último avance"), symbol: Symbols.note, color: .accentColor),
-        AssistantIntent(id: "change-date", title: String(localized: "Quiero cambiar la fecha final"),
-                        detail: String(localized: "Ver qué pasos se mueven y por qué"), symbol: Symbols.wantedDate, color: .purple),
-        AssistantIntent(id: "still-sense", title: String(localized: "¿Sigue teniendo sentido este plan?"),
-                        detail: String(localized: "Revisar el plan con lo que ya sabes"), symbol: "questionmark.circle", color: .green),
+        AssistantIntent(id: "add-step", title: String(localized: "Me falta un paso"),
+                        detail: String(localized: "Añadir lo que el plan no tiene"), symbol: "plus.circle", color: .accentColor),
     ]
 
     /// Tras cambiar a mano un plan preparado: se abre desde el aviso, no aparece entre las sugerencias.
@@ -46,16 +51,7 @@ struct AssistantIntent: Identifiable {
                                               detail: String(localized: "Empezar con un plan propuesto"),
                                               symbol: "sparkles", color: .purple)
 
-    static let all: [AssistantIntent] = [
-        AssistantIntent(id: "less-time", title: String(localized: "Tengo menos tiempo"),
-                        detail: String(localized: "Buscar un tramo más pequeño para ahora"), symbol: Symbols.time, color: .blue),
-        AssistantIntent(id: "how-to-start", title: String(localized: "No sé cómo empezar"),
-                        detail: String(localized: "Aclarar la primera acción"), symbol: "arrow.turn.down.right", color: .accentColor),
-        AssistantIntent(id: "missing", title: String(localized: "Me falta algo"),
-                        detail: String(localized: "Revisar un bloqueo sin perder lo hecho"), symbol: Symbols.blocked, color: .red),
-        AssistantIntent(id: "not-fitting", title: String(localized: "Este paso ya no encaja"),
-                        detail: String(localized: "Pensar un cambio que decidirás tú"), symbol: "pencil", color: .purple),
-    ]
+    static let all: [AssistantIntent] = step
 
     /// Mensaje que se envía al modelo; menciona el Kit y el paso para no depender de la memoria.
     func prompt(kit: GoalEntity?, step explicitStep: StepEntity? = nil, planChanges: String? = nil) -> String {
@@ -64,7 +60,7 @@ struct AssistantIntent: Identifiable {
         let stepText = step.map { String(localized: "«\($0.stepTitle)» (\($0.estimateMinutes) min)") } ?? String(localized: "el siguiente paso")
         switch id {
         case "less-time":
-            return String(localized: "Hoy tengo poco tiempo. En \(kitName), ¿qué tramo pequeño de \(stepText) puedo hacer ahora?")
+            return String(localized: "Tengo poco tiempo ahora. ¿Qué avance pequeño y concreto puedo hacer hoy en \(stepText) de \(kitName)?")
         case "how-to-start":
             return String(localized: "No sé cómo empezar \(stepText) en \(kitName). ¿Cuál sería la primera acción concreta?")
         case "missing":
@@ -85,6 +81,8 @@ struct AssistantIntent: Identifiable {
         case "review-changes":
             // El asistente no puede proponer mover pasos de sitio: si el orden falla, debe decirlo con claridad.
             return String(localized: "He cambiado a mano el plan de \(kitName). \(planChanges ?? "") Comprueba si el orden sigue siendo lógico: mira si algún paso necesita otro que ahora va después. Si encaja, dímelo en una o dos frases, sin hablar de problemas. Si no, explica por qué y propón el cambio de orden; si no puedes proponerlo, di qué orden recomiendas y lo haré yo en «Editar pasos». Las fechas y los huecos, solo después. Lo decidiré yo.")
+        case "add-step":
+            return String(localized: "Creo que en \(kitName) falta un paso. ¿Qué paso añadirías y dónde iría? Propónmelo y lo decidiré yo.")
         case "still-sense":
             return String(localized: "¿Sigue teniendo sentido el plan de \(kitName) con lo que llevo hecho? Sé breve.")
         default:

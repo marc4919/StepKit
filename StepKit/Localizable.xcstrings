@@ -1650,6 +1650,156 @@
         }
       }
     },
+    "Tengo poco tiempo ahora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have little time right now"
+          }
+        }
+      }
+    },
+    "Un avance pequeño para hoy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A small step forward for today"
+          }
+        }
+      }
+    },
+    "Divide este paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split this step"
+          }
+        }
+      }
+    },
+    "Partirlo en tramos más cortos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break it into shorter parts"
+          }
+        }
+      }
+    },
+    "La primera acción concreta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first concrete action"
+          }
+        }
+      }
+    },
+    "Resolver un bloqueo sin perder lo hecho": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear a blocker without losing what's done"
+          }
+        }
+      }
+    },
+    "Cambiarlo o quitarlo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change it or remove it"
+          }
+        }
+      }
+    },
+    "Revisar orden y fechas con lo que ya sabes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check order and dates with what you know now"
+          }
+        }
+      }
+    },
+    "Me falta un paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A step is missing"
+          }
+        }
+      }
+    },
+    "Añadir lo que el plan no tiene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add what the plan lacks"
+          }
+        }
+      }
+    },
+    "Creo que en %@ falta un paso. ¿Qué paso añadirías y dónde iría? Propónmelo y lo decidiré yo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I think %1$@ is missing a step. Which step would you add and where would it go? Propose it and I'll decide."
+          }
+        }
+      }
+    },
+    "Tengo poco tiempo ahora. ¿Qué avance pequeño y concreto puedo hacer hoy en %@ de %@?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have little time right now. What small, concrete progress can I make today on %1$@ in %2$@?"
+          }
+        }
+      }
+    },
+    "Queda poco de hoy. Si lo acabarás mañana, elige Mañana.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There's little of today left. If you'll finish tomorrow, choose Tomorrow."
+          }
+        }
+      }
+    },
+    "Se divide en %lld partes el %@: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It splits into %1$lld parts on %2$@: %3$@"
+          }
+        }
+      }
+    },
+    "Se divide en %lld partes: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It splits into %1$lld parts: %2$@"
+          }
+        }
+      }
+    },
     "1 paso": {
       "localizations": {
         "en": {
