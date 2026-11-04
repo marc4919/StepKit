@@ -296,13 +296,14 @@ final class KitCreatorViewModel {
         resumeAfterQuestions(answers: answers, supportsQuestions: true)
     }
 
-    /// «Prefiero acabar antes» (la segunda opción de la pregunta del plazo): la fecha final pasa a una semana.
-    /// La persona puede cambiarla después en «Editar Kit».
+    /// La pregunta del plazo. «Es solo una fecha límite»: el plan se hace para una semana y la fecha final no cambia.
+    /// «Prefiero acabar antes»: también pasa a una semana la fecha final, que se puede cambiar en «Editar Kit».
     private func adjustDueDate(for answers: [KitAnswer]) {
         guard let question = streamingState.pendingQuestions.first(where: { $0.id == "pace" }), question.options.count > 1,
-              answers.contains(where: { $0.id == question.id && $0.value == question.options[1] }),
+              let answer = answers.first(where: { $0.id == question.id })?.value,
+              answer == question.options[0] || answer == question.options[1],
               let sooner = Calendar.current.date(byAdding: .day, value: 7, to: todayStart) else { return }
-        dueDate = sooner
+        if answer == question.options[1] { dueDate = sooner }
         lastRequest?.setDueDate(sooner)
     }
 
