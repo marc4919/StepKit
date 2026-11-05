@@ -170,9 +170,12 @@ struct StepListEditorTests {
         b.suggestedDeadline = day(3)
         let change = ProposedStepChange(stepID: b.id, stepLabel: "Paso 2", from: nil, to: nil)
         let proposal = PlanProposal(title: "Dividir", changes: [change], impact: "",
-                                    actions: [.split(stepID: b.id, titles: ["B1", "B2", "B3"], minutes: 10)])
+                                    actions: [.split(stepID: b.id, titles: ["B1", "B2", "B3"], minutes: 10,
+                                                     outcomes: ["Uno", "Dos", "Tres"], descriptions: ["Cómo uno", "Cómo dos", "Cómo tres"])])
         await proposal.accept(in: kit, context: context, highlights: ChangeHighlights())
         #expect(titles(kit) == ["A", "B1", "B2", "B3"])
+        #expect(try step("B1", in: kit).descriptionShort == "Uno")
+        #expect(try step("B3", in: kit).descriptionLong == "Cómo tres")
         for title in ["B1", "B2", "B3"] {
             #expect(Calendar.current.isDate(try step(title, in: kit).suggestedDeadline ?? .distantPast, inSameDayAs: day(3)))
         }

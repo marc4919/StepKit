@@ -41,7 +41,8 @@ struct SubscriptionView: View {
         List {
             headerSection
             if reason != nil, storeKitManager.hasActiveSubscription, authManager.currentUser?.isPremium != true { syncSection }
-            if let reason, !isPro { limitSection(reason) }
+            // El motivo se ve siempre: también cuando el iPhone cree tener Pro y el servidor no.
+            if let reason { limitSection(reason) }
             if !isPro { usageSection }
             compareSection
             if isPro { manageSection } else { plansSection }

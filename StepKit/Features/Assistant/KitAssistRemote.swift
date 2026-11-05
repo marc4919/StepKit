@@ -86,6 +86,9 @@ struct AssistResponse: Decodable {
         /// add_step y edit_step: qué queda hecho al terminar y cómo hacerlo. `reason` es por qué se propone, no el contenido del paso.
         let newOutcome: String?
         let newDescription: String?
+        /// split_step: qué queda hecho y cómo hacer cada parte, en el orden de `newTitles`.
+        let newOutcomes: [String]?
+        let newDescriptions: [String]?
     }
 
     struct Proposal: Decodable {
@@ -331,7 +334,8 @@ enum RemoteProposalBuilder {
                 } ?? String(localized: "Se divide en \(titles.count) partes: \(parts)")
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
                                                   detail: detail, symbol: "square.split.2x1"))
-                actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes))
+                actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes,
+                                      outcomes: change.newOutcomes, descriptions: change.newDescriptions))
             case "add_step":
                 guard let title = change.newTitles?.first else { continue }
                 // En un plan vacío, cada uno detrás del anterior: «al principio» los dejaría al revés.

@@ -143,7 +143,8 @@ final class PlanProposal: Identifiable {
     enum Action {
         case setDate(stepID: UUID, date: Date)
         case edit(stepID: UUID, title: String?, minutes: Int?, outcome: String? = nil, description: String? = nil)
-        case split(stepID: UUID, titles: [String], minutes: Int?)
+        /// `outcomes` y `descriptions`, una entrada por parte; sin ellas, las partes heredan los textos del paso.
+        case split(stepID: UUID, titles: [String], minutes: Int?, outcomes: [String]? = nil, descriptions: [String]? = nil)
         /// `afterStepID` nil y `atStart` true: al principio; nil y false: al final.
         case add(afterStepID: UUID?, atStart: Bool, title: String, minutes: Int, date: Date?, outcome: String?, description: String?)
         case remove(stepID: UUID)
@@ -185,7 +186,7 @@ final class PlanProposal: Identifiable {
             switch action {
             case .setDate(let id, let date): "date|\(id)|\(day(date))"
             case .edit(let id, let title, let minutes, _, _): "edit|\(id)|\(text(title))|\(minutes ?? 0)"
-            case .split(let id, let titles, _): "split|\(id)|\(titles.map { text($0) })"
+            case .split(let id, let titles, _, _, _): "split|\(id)|\(titles.map { text($0) })"
             case .add(_, _, let title, _, let date, _, _): "add|\(text(title))|\(day(date))"
             case .remove(let id): "remove|\(id)"
             case .reorder(let order, _): "reorder|\(order)"
@@ -266,9 +267,15 @@ final class PlanProposal: Identifiable {
             }
             target.markModified(at: now)
             highlights.record(.edited, for: target.id)
-        case .split(let id, let titles, let minutes):
+        case .split(let id, let titles, let minutes, let outcomes, let descriptions):
             guard let target = step(id), let first = titles.first else { return }
             target.stepTitle = first
+            // Con textos propios por parte, el paso original pasa a ser solo la primera parte.
+            let ownTexts = outcomes?.count == titles.count && descriptions?.count == titles.count
+            if ownTexts, let outcome = outcomes?.first, let description = descriptions?.first {
+                target.descriptionShort = outcome
+                target.descriptionLong = description
+            }
             // Dividir sirve para seguir avanzando: la primera parte deja de estar bloqueada.
             target.blockedReason = nil
             target.blockedAt = nil
@@ -279,11 +286,12 @@ final class PlanProposal: Identifiable {
             var anchor = target
             // Las partes nuevas heredan la descripción del paso original para no quedar vacías.
             let original = target.descriptionLong.isEmpty ? target.descriptionShort : target.descriptionLong
-            for title in titles.dropFirst() {
+            for (offset, title) in titles.dropFirst().enumerated() {
                 // Las partes van el mismo día que el paso: dividir no alarga el plan ni se sale de la fecha final.
+                let short = ownTexts ? outcomes?[offset + 1] ?? "" : String(localized: "Parte de «\(first)». \(target.descriptionShort)").trimmingCharacters(in: .whitespaces)
+                let long = ownTexts ? descriptions?[offset + 1] ?? "" : original
                 anchor = insert(title, minutes: minutes ?? target.estimateMinutes, date: target.suggestedDeadline, after: anchor,
-                                short: String(localized: "Parte de «\(first)». \(target.descriptionShort)").trimmingCharacters(in: .whitespaces),
-                                long: original)
+                                short: short, long: long)
                 splitParts.append(anchor.id)
             }
         case .add(let afterID, let atStart, let title, let minutes, let date, let outcome, let description):
