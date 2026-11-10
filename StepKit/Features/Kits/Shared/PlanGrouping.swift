@@ -98,6 +98,7 @@ enum PlanGrouping {
     }
 
     /// «8 pasos · 5 semanas · ≈ 5 h 45 min en total», con las repeticiones contadas y redondeado al cuarto de hora.
+    /// Con menos de una semana cuenta días («3 días»), y «Hoy» si todo es de hoy.
     static func summary(stepCount: Int, dates: [Date], totalMinutes: Int, calendar: Calendar = .current) -> String {
         var parts = [stepCount == 1 ? String(localized: "1 paso") : String(localized: "\(stepCount) pasos")]
         if let first = dates.min(), let last = dates.max() {
@@ -105,6 +106,9 @@ enum PlanGrouping {
             let weeks = max(1, Int((Double(days) / 7).rounded(.up)))
             if calendar.isDate(first, inSameDayAs: last), calendar.isDateInToday(first) {
                 parts.append(String(localized: "Hoy"))
+            } else if days < 7 {
+                // Un plan de dos o tres días no es «1 semana».
+                parts.append(days == 1 ? String(localized: "1 día") : String(localized: "\(days) días"))
             } else {
                 parts.append(weeks == 1 ? String(localized: "1 semana") : String(localized: "\(weeks) semanas"))
             }
