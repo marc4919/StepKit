@@ -277,9 +277,11 @@ struct KitDetailView: View {
         MetaChip(symbol: "checkmark.circle",
                  text: String(localized: "\(kitEntity.completedStepCount) de \(kitEntity.activeStepCount)"),
                  color: MetaTint.done)
+            .accessibilityLabel(String(localized: "\(kitEntity.completedStepCount) de \(kitEntity.activeStepCount) pasos completados"))
         if let date = kitEntity.dueDate {
             MetaChip(symbol: Symbols.wantedDate, text: PlanGrouping.shortDate(date),
                      color: MetaTint.date)
+                .accessibilityLabel(String(localized: "Fecha final: \(date.formatted(.dateTime.weekday(.wide).day().month(.wide)))"))
         }
     }
 

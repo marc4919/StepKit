@@ -122,9 +122,11 @@ struct MetaChip: View {
     var wraps = false
     var body: some View {
         HStack(spacing: 5) {
-            Image(systemName: symbol, variableValue: level).foregroundStyle(color)
+            // El símbolo es adorno: VoiceOver lo leía aparte («reloj, imagen») antes del dato.
+            Image(systemName: symbol, variableValue: level).foregroundStyle(color).accessibilityHidden(true)
             Text(text).foregroundStyle(.primary).lineLimit(wraps ? nil : 1)
         }
+        .accessibilityElement(children: .combine)
         .fixedSize(horizontal: !wraps, vertical: wraps)
         .font(.subheadline.weight(.medium))
         .padding(.horizontal, 10)

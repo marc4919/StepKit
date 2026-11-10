@@ -414,6 +414,7 @@ struct StepDetailView: View {
         MetaChip(symbol: Symbols.time,
                  text: StepDetailHelpers.formatMinutes(stepEntity.estimateMinutes),
                  color: MetaTint.time)
+            .accessibilityLabel(String(localized: "Duración: \(StepDetailHelpers.formatMinutes(stepEntity.estimateMinutes))"))
         let effort = StepDetailHelpers.effortLevelText(for: stepEntity.effortLevel)
         let effortFull = String(localized: "Esfuerzo \(effort.lowercased())")
         MetaChip(symbol: Symbols.effort,
@@ -434,6 +435,7 @@ struct StepDetailView: View {
                          text: stepEntity.isCompleted ? deadline.formatted(.dateTime.day().month(.abbreviated))
                                                       : PlanGrouping.shortDate(deadline),
                          color: MetaTint.date)
+                    .accessibilityLabel(String(localized: "Día: \(deadline.formatted(.dateTime.weekday(.wide).day().month(.wide)))"))
             }
         }
     }
