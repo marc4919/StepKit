@@ -727,7 +727,8 @@ struct KitCreationStreamingProgress: View {
 
 /// Barra de progreso suave con degradado de la marca y brillo que recorre la parte completada.
 /// Aparición en cascada de «Tu plan» tras dibujarse el anillo.
-private struct Reveal: ViewModifier {
+/// Entrada escalonada: cada elemento aparece un poco después del anterior.
+struct Reveal: ViewModifier {
     let shown: Bool
     let order: Int
 

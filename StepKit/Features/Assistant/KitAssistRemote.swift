@@ -328,12 +328,13 @@ enum RemoteProposalBuilder {
             case "split_step":
                 guard let target = step(change.stepNumber), let titles = change.newTitles, titles.count > 1 else { continue }
                 // Las partes se quedan el día del paso: se dice el día una vez, no uno por parte.
-                let parts = titles.map { String(localized: "«\($0)»") }.joined(separator: ", ")
+                // Las partes van aparte, como lista: en una frase seguida costaba leerlas.
                 let detail = target.suggestedDeadline.map {
-                    String(localized: "Se divide en \(titles.count) partes el \($0.formatted(.dateTime.day().month(.abbreviated))): \(parts)")
-                } ?? String(localized: "Se divide en \(titles.count) partes: \(parts)")
+                    String(localized: "Se divide en \(titles.count) partes · \($0.formatted(.dateTime.day().month(.abbreviated)))")
+                } ?? String(localized: "Se divide en \(titles.count) partes")
                 changes.append(ProposedStepChange(stepID: target.id, stepLabel: label(kit, target), from: nil, to: nil,
-                                                  detail: detail, symbol: "square.split.2x1"))
+                                                  detail: detail, symbol: "square.split.2x1", parts: titles,
+                                                  logDetail: String(localized: "dividido en \(titles.count) partes")))
                 actions.append(.split(stepID: target.id, titles: titles, minutes: change.newMinutes,
                                       outcomes: change.newOutcomes, descriptions: change.newDescriptions))
             case "add_step":

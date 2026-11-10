@@ -291,7 +291,7 @@ struct KitAssistantChatView: View {
             if let to = change.to {
                 return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
             }
-            return [change.stepLabel, change.detail].compactMap { $0 }.joined(separator: ": ")
+            return [change.stepLabel, change.logDetail ?? change.detail].compactMap { $0 }.joined(separator: ": ")
         }
         try? ProgressLog.addAssistantChange(title: proposal.title, lines: lines, kit: kit, context: context)
         syncManager?.handleDataChange()
@@ -590,6 +590,9 @@ struct ProposalCard: View {
                 if let detail = change.detail, !detail.isEmpty {
                     Text(detail).font(.caption).foregroundStyle(.secondary)
                 }
+                if !change.parts.isEmpty {
+                    NumberedPartsList(parts: change.parts).padding(.top, 4)
+                }
             }
             Spacer(minLength: 0)
             if proposal.appliedChangeIDs.contains(change.id) {
@@ -606,6 +609,26 @@ struct ProposalCard: View {
             }
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// Partes de un paso dividido, numeradas y una por línea. Entran una tras otra, como los pasos al crear un Kit.
+private struct NumberedPartsList: View {
+    let parts: [String]
+    @State private var shown = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(Array(parts.enumerated()), id: \.offset) { index, part in
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(index + 1).").monospacedDigit().foregroundStyle(.secondary)
+                    Text(part).fixedSize(horizontal: false, vertical: true)
+                }
+                .modifier(Reveal(shown: shown, order: index))
+            }
+        }
+        .font(.subheadline)
+        .onAppear { shown = true }
     }
 }
 

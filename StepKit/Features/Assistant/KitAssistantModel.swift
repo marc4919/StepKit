@@ -130,6 +130,10 @@ struct ProposedStepChange: Identifiable, Hashable {
     let to: Date?
     var detail: String? = nil
     var symbol: String = Symbols.calendar
+    /// División de un paso: los títulos de las partes, en orden. Se muestran como lista numerada.
+    var parts: [String] = []
+    /// Texto para «Tu recorrido», más corto que `detail` cuando el detalle ya se ve en el plan.
+    var logDetail: String? = nil
     /// Tras aplicar una división: la primera parte (el paso original) y las nuevas, para abrir cada una.
     var partStepIDs: [UUID] = []
 }

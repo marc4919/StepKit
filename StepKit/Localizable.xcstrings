@@ -10284,6 +10284,36 @@
         }
       }
     },
+    "Se divide en %lld partes · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split into %lld parts · %@"
+          }
+        }
+      }
+    },
+    "Se divide en %lld partes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split into %lld parts"
+          }
+        }
+      }
+    },
+    "dividido en %lld partes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "split into %lld parts"
+          }
+        }
+      }
+    },
     "Mensaje para el asistente": {
       "localizations": {
         "en": {
