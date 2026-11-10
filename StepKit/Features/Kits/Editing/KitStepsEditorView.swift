@@ -90,7 +90,7 @@ struct KitStepsEditorView: View {
                 }
             }
             .environment(\.editMode, .constant(.active))
-            .navigationTitle("Editar pasos")
+            .centeredNavigationTitle("Editar pasos")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -391,7 +391,7 @@ struct StepDraftFormView: View {
                 planningSection
                 detailsSection
             }
-            .navigationTitle(original.isNew ? "Nuevo paso" : "Editar paso")
+            .centeredNavigationTitle(original.isNew ? "Nuevo paso" : "Editar paso")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

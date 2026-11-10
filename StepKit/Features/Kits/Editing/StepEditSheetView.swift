@@ -53,7 +53,7 @@ struct StepEditSheetView: View {
                     planningSection
                 }
             }
-            .navigationTitle("Editar paso")
+            .centeredNavigationTitle("Editar paso")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

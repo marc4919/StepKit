@@ -53,7 +53,7 @@ struct KitEditSheetView: View {
                     }
                 }
             }
-            .navigationTitle("Editar Kit")
+            .centeredNavigationTitle("Editar Kit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -686,3 +686,40 @@ extension View {
     func hidesTabBarSmoothly() -> some View { modifier(HidesTabBarSmoothly()) }
 }
 
+
+// MARK: - Título centrado en hojas de acción
+
+/// Hojas con una acción y botones a los lados (Cancelar · título · Guardar): el título va centrado
+/// en todos los iPhone. En el iPhone Duo el sistema lo pega a la izquierda, junto a «Cancelar».
+/// Las pantallas a las que se navega o que solo se leen dejan el título donde lo pone iOS.
+private struct CenteredNavigationTitle: ViewModifier {
+    let title: Text
+    var subtitle: Text? = nil
+
+    func body(content: Content) -> some View {
+        content
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        title.font(.headline).lineLimit(1)
+                        if let subtitle {
+                            subtitle.font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isHeader)
+                }
+            }
+    }
+}
+
+extension View {
+    func centeredNavigationTitle(_ title: LocalizedStringKey) -> some View {
+        modifier(CenteredNavigationTitle(title: Text(title)))
+    }
+
+    func centeredNavigationTitle(verbatim title: String, subtitle: String? = nil) -> some View {
+        modifier(CenteredNavigationTitle(title: Text(verbatim: title), subtitle: subtitle.map { Text(verbatim: $0) }))
+    }
+}

@@ -349,10 +349,7 @@ struct KitCreationStreamingProgress: View {
     }
 
     /// Relevo de textos sin solaparse: lo anterior se va antes de que llegue lo nuevo.
-    private static let swap: AnyTransition = .asymmetric(
-        insertion: .opacity.animation(.easeOut(duration: 0.35).delay(0.25)),
-        removal: .opacity.animation(.easeIn(duration: 0.2))
-    )
+    private static let swap: AnyTransition = .contentSwap
 
     private var headline: String {
         if streamingState.isRestarting { return String(localized: "Ajustando tu plan…") }

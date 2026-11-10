@@ -67,8 +67,8 @@ struct SaveProgressSheet: View {
             }
             // Sin rebote ni desplazamiento cuando el contenido cabe.
             .scrollBounceBehavior(.basedOnSize)
-            .navigationTitle(reportingBlock ? String(localized: "Me he atascado") : String(localized: "Guardar avance"))
-            .navigationSubtitle(String(localized: "Paso \(stepNumber) · \(step.stepTitle)"))
+            .centeredNavigationTitle(verbatim: reportingBlock ? String(localized: "Me he atascado") : String(localized: "Guardar avance"),
+                                     subtitle: String(localized: "Paso \(stepNumber) · \(step.stepTitle)"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -157,7 +157,7 @@ struct EditProgressEntrySheet: View {
                     Button("Eliminar registro", role: .destructive) { confirmingDelete = true }
                 }
             }
-            .navigationTitle("Editar registro")
+            .centeredNavigationTitle("Editar registro")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -210,7 +210,7 @@ struct KitNoteSheet: View {
                     Text("Para apuntes que no son de un paso concreto. La verás en el Registro del Kit.")
                 }
             }
-            .navigationTitle("Nota del Kit")
+            .centeredNavigationTitle("Nota del Kit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

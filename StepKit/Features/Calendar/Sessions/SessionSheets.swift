@@ -129,7 +129,7 @@ struct BookFreeSessionSheet: View {
                 }
             }
             .animation(.smooth, value: trimmedTitle.isEmpty)
-            .navigationTitle("Algo propio")
+            .centeredNavigationTitle("Algo propio")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
@@ -245,7 +245,7 @@ struct BookSessionSheet: View {
                                    detail: step == nil ? nil : kit.title, date: date, minutes: minutes)
                 }
             }
-            .navigationTitle("Sesión de un Kit")
+            .centeredNavigationTitle("Sesión de un Kit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
@@ -451,7 +451,7 @@ struct ReviewSessionSheet: View {
                                        suggested: session.durationMinutes, allowsLongSessions: session.isFree)
                 }
             }
-            .navigationTitle("Revisar sesión")
+            .centeredNavigationTitle("Revisar sesión")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

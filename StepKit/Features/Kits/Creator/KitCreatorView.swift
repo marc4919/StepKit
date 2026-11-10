@@ -92,17 +92,28 @@ struct KitCreatorView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        // Cada formulario lleva su propia barra: el fundido cambia la hoja entera. Con un solo
+        // NavigationStack y la transición dentro, la barra del formulario que entra no aparecía.
+        ZStack {
             if manual {
-                ManualKitCreatorView(initialName: vm?.description ?? initialGoal ?? "",
-                                     initialDueDate: vm?.dueDate ?? initialDate,
-                                     onCreated: { finishCreating($0, asksForNotifications: false) }) {
-                    if startsManual { dismiss() } else { withAnimation(.smooth) { manual = false } }
+                NavigationStack {
+                    ManualKitCreatorView(initialName: vm?.description ?? initialGoal ?? "",
+                                         initialDueDate: vm?.dueDate ?? initialDate,
+                                         focusDelay: startsManual ? nil : .milliseconds(600),
+                                         onCreated: { finishCreating($0, asksForNotifications: false) }) {
+                        if startsManual { dismiss() } else { withAnimation(.smooth) { manual = false } }
+                    }
                 }
-            } else if let vm {
-                content(vm: vm)
+                .transition(.contentSwap)
             } else {
-                ProgressView()
+                NavigationStack {
+                    if let vm {
+                        content(vm: vm)
+                    } else {
+                        ProgressView()
+                    }
+                }
+                .transition(.contentSwap)
             }
         }
         .onChange(of: vm?.planLimit) { _, limit in

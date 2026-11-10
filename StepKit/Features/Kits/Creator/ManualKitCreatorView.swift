@@ -166,8 +166,12 @@ struct ManualKitCreatorView: View {
 
     private let todayStart = Calendar.current.startOfDay(for: .now)
 
-    init(initialName: String = "", initialDueDate: Date? = nil,
+    /// Al llegar desde el formulario asistido, el teclado sube cuando el fundido ha terminado.
+    private let focusDelay: Duration?
+
+    init(initialName: String = "", initialDueDate: Date? = nil, focusDelay: Duration? = nil,
          onCreated: @escaping (Goal) -> Void, onCancel: @escaping () -> Void) {
+        self.focusDelay = focusDelay
         self.onCreated = onCreated
         self.onCancel = onCancel
         _name = State(initialValue: initialName)
@@ -197,7 +201,7 @@ struct ManualKitCreatorView: View {
                 KitDueDateField(dueDate: $dueDate, todayStart: todayStart)
             }
         }
-        .navigationTitle("Nuevo Kit")
+        .centeredNavigationTitle("Nuevo Kit")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -217,8 +221,10 @@ struct ManualKitCreatorView: View {
                     .accessibilityIdentifier("manualKit.create")
             }
         }
-        .onAppear {
-            if trimmedName.isEmpty { nameFocused = true }
+        .task {
+            guard trimmedName.isEmpty else { return }
+            if let focusDelay { try? await Task.sleep(for: focusDelay) }
+            nameFocused = true
         }
     }
 

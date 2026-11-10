@@ -326,6 +326,15 @@ extension Animation {
 }
 
 extension AnyTransition {
+    /// Un contenido sustituye a otro en el mismo sitio: lo viejo se va rápido y lo nuevo entra un
+    /// instante después, sin pisarse. Es el cambio de «Dando forma a tu Kit» y el de «Empezar de cero».
+    static var contentSwap: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.animation(.easeOut(duration: 0.35).delay(0.25)),
+            removal: .opacity.animation(.easeIn(duration: 0.2))
+        )
+    }
+
     static var formRow: AnyTransition {
         // Un recorrido algo mayor que la propia fila, para que se note que baja desde arriba.
         let travel = AnyTransition.opacity.combined(with: .move(edge: .top)).combined(with: .offset(y: -18))
