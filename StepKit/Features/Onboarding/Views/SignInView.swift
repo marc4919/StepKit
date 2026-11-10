@@ -86,14 +86,21 @@ struct SignInView: View {
     // MARK: - Benefits Section
     /// Bloque de ventajas con su ancho natural, centrado y algo separado del lema.
     private var benefitsSection: some View {
+        // Con su ancho natural y centrado mientras quepa; con texto muy grande ocupa el ancho y parte líneas.
+        ViewThatFits(in: .horizontal) {
+            benefitRows.fixedSize(horizontal: true, vertical: false)
+            benefitRows.fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
+    }
+
+    private var benefitRows: some View {
         VStack(alignment: .leading, spacing: 14) {
             WelcomeFeatureRow(symbol: Symbols.kits, color: .accentColor, text: String(localized: "Organiza tus objetivos"))
             WelcomeFeatureRow(symbol: "chart.line.uptrend.xyaxis", color: .green, text: String(localized: "Avanza paso a paso"))
             WelcomeFeatureRow(symbol: "bell.fill", color: .purple, text: String(localized: "Recupera el hilo cuando vuelvas"))
         }
-        .fixedSize(horizontal: true, vertical: false)
-        .frame(maxWidth: .infinity)
-        .padding(.top, 20)
     }
 
     // MARK: - Sign In Section

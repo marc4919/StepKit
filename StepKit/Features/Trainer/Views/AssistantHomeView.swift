@@ -92,6 +92,7 @@ struct AssistantIntent: Identifiable {
 }
 
 struct AssistantHomeView: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     let messages: [ChatMessage]
     @Binding var draft: String
     let isTyping: Bool
@@ -234,7 +235,8 @@ struct AssistantHomeView: View {
                 .disabled(isResponding)
             }
 
-            TextField(hasPendingProposal ? LocalizedStringKey("Responde o pide otro cambio…") : LocalizedStringKey("¿Qué necesitas ahora?"), text: $draft, axis: .vertical)
+            // Con letra de accesibilidad el campo es estrecho y el texto de ejemplo se recortaba.
+            TextField(typeSize.isAccessibilitySize ? LocalizedStringKey("Escribe…") : hasPendingProposal ? LocalizedStringKey("Responde o pide otro cambio…") : LocalizedStringKey("¿Qué necesitas ahora?"), text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 .focused(isInputFocused)
                 .submitLabel(.send)

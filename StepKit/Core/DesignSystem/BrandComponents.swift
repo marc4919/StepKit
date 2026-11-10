@@ -118,16 +118,18 @@ struct MetaChip: View {
     var color: Color
     /// Para símbolos con valor variable (barras de esfuerzo): 0…1.
     var level: Double? = nil
+    /// Para textos largos con letra muy grande: el texto parte líneas en vez de salirse de la pantalla.
+    var wraps = false
     var body: some View {
         HStack(spacing: 5) {
             Image(systemName: symbol, variableValue: level).foregroundStyle(color)
-            Text(text).foregroundStyle(.primary).lineLimit(1)
+            Text(text).foregroundStyle(.primary).lineLimit(wraps ? nil : 1)
         }
-        .fixedSize(horizontal: true, vertical: false)
+        .fixedSize(horizontal: !wraps, vertical: wraps)
         .font(.subheadline.weight(.medium))
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(color.opacity(0.12), in: .capsule)
+        .background(color.opacity(0.12), in: wraps ? AnyShape(.rect(cornerRadius: 14)) : AnyShape(.capsule))
     }
 }
 

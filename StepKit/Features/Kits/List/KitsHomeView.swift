@@ -295,6 +295,7 @@ private struct ContinueCard: View {
         return layout {
             VStack(alignment: .leading, spacing: 6) {
                 Text("\(Text("CONTINUAR").font(.caption2.weight(.bold)).foregroundStyle(.tint))\(Text("  · último que avanzaste").font(.caption2).foregroundStyle(.secondary))")
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(kit.title)
                     .font(.title.bold())
                     .fixedSize(horizontal: false, vertical: true)
@@ -313,7 +314,8 @@ private struct ContinueCard: View {
                     .foregroundStyle(.tint)
                     .padding(.top, 2)
             }
-            Spacer(minLength: 8)
+            // En vertical (letra de accesibilidad) el separador estiraba la tarjeta y dejaba un hueco vacío.
+            if !typeSize.isAccessibilitySize { Spacer(minLength: 8) }
             if typeSize.isAccessibilitySize {
                 HStack(spacing: 12) {
                     ProgressRing(done: kit.completedStepCount, total: kit.activeStepCount, size: 64)

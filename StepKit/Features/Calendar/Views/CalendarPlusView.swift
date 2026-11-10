@@ -338,7 +338,11 @@ struct CalendarPlusView: View {
                 .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
         } header: {
             // Leyenda en la cabecera: siempre legible, sin ocupar una fila propia.
-            HStack(spacing: 10) { legend }
+            // Con letra muy grande las tres etiquetas no caben en una línea: pasan a una columna.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) { legend }
+                VStack(alignment: .leading, spacing: 4) { legend }
+            }
                 .font(.caption)
                 .textCase(nil)
                 .accessibilityElement(children: .combine)

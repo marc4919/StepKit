@@ -799,14 +799,16 @@ private struct CarefulReasonChips: View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: 8) { chips(items) }
             VStack(alignment: .leading, spacing: 8) { chips(items) }
+            // Con letra muy grande un motivo no cabe en una línea: parte líneas.
+            VStack(alignment: .leading, spacing: 8) { chips(items, wraps: true) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
-    @ViewBuilder private func chips(_ items: [(text: String, symbol: String)]) -> some View {
+    @ViewBuilder private func chips(_ items: [(text: String, symbol: String)], wraps: Bool = false) -> some View {
         ForEach(items, id: \.text) { item in
-            MetaChip(symbol: item.symbol, text: item.text, color: .accentColor)
+            MetaChip(symbol: item.symbol, text: item.text, color: .accentColor, wraps: wraps)
         }
     }
 }

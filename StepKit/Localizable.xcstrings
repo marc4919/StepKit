@@ -4690,6 +4690,16 @@
         }
       }
     },
+    "Escribe…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type…"
+          }
+        }
+      }
+    },
     "Escribe tu respuesta": {
       "localizations": {
         "en": {

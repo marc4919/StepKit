@@ -288,18 +288,28 @@ struct KitCreationFormContent: View {
             IconChip(symbol: symbol, color: color, size: 28).padding(.top, 2)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.caption).foregroundStyle(.secondary)
-                TextField(placeholder, text: text, axis: .vertical)
-                    .lineLimit(1...4)
-                    .focused(focusedField, equals: focus)
-                    // Intro no hace salto de línea: pasa al campo siguiente (y en el último cierra el teclado).
-                    .submitLabel(next == nil ? .done : .next)
-                    .onChange(of: text.wrappedValue) { _, value in
-                        guard value.contains("\n") else { return }
-                        text.wrappedValue = value.replacingOccurrences(of: "\n", with: "")
-                        withAnimation(.smooth) { focusedField.wrappedValue = next }
+                // El ejemplo va aparte para que parta líneas con letra grande; el del sistema se recorta.
+                ZStack(alignment: .topLeading) {
+                    if text.wrappedValue.isEmpty {
+                        Text(placeholder)
+                            .foregroundStyle(Color(.placeholderText))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityHidden(true)
+                            .allowsHitTesting(false)
                     }
-                    .accessibilityIdentifier(identifier ?? "")
-                    .accessibilityLabel(title)
+                    TextField("", text: text, axis: .vertical)
+                        .lineLimit(1...4)
+                        .focused(focusedField, equals: focus)
+                        // Intro no hace salto de línea: pasa al campo siguiente (y en el último cierra el teclado).
+                        .submitLabel(next == nil ? .done : .next)
+                        .onChange(of: text.wrappedValue) { _, value in
+                            guard value.contains("\n") else { return }
+                            text.wrappedValue = value.replacingOccurrences(of: "\n", with: "")
+                            withAnimation(.smooth) { focusedField.wrappedValue = next }
+                        }
+                        .accessibilityIdentifier(identifier ?? "")
+                        .accessibilityLabel(title)
+                }
             }
         }
         .id(focus)
