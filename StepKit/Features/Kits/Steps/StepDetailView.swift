@@ -54,6 +54,9 @@ struct StepDetailView: View {
     /// En el iPhone Duo (cerrado, o abierto en horizontal) la barra de botones va en vertical junto al
     /// borde derecho y su zona segura llega después del primer fotograma: se reserva a mano.
     private var reservesSideColumn: Bool { DeviceKind.isDuo && (sideControls || landscape) }
+    /// «Completar» y «Marcar como pendiente» llevan texto cuando la barra va abajo. En la franja lateral
+    /// del Duo (cerrado, o abierto en horizontal) no cabe: solo icono.
+    private var actionsShowText: Bool { !reservesSideColumn }
 
     /// Siguiente paso abierto desde el aviso de completado.
     @State private var openedNextStep: StepEntity?
@@ -101,13 +104,9 @@ struct StepDetailView: View {
         .navigationTitle(stepEntity.goal?.title ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .hidesTabBarSmoothly()
-        .onChange(of: horizontalSizeClass) {
-            showsBottomActions = false
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(350))
-                showsBottomActions = true
-            }
-        }
+        .onChange(of: horizontalSizeClass) { recreateBottomActions() }
+        // Con texto o sin él son botones distintos: al girar el Duo abierto también se rehace la barra.
+        .onChange(of: actionsShowText) { recreateBottomActions() }
         // Con el paso abierto ya se ha podido ver el consejo de las acciones: el siguiente puede salir.
         .onAppear { TipFlow.stepActionsSeen = true }
         .toolbar {
@@ -474,6 +473,14 @@ struct StepDetailView: View {
         .accessibilityIdentifier("step.resolveBlock")
     }
 
+    private func recreateBottomActions() {
+        showsBottomActions = false
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            showsBottomActions = true
+        }
+    }
+
     static func isNearlySquare(_ size: CGSize) -> Bool {
         size.width < 700 && size.height < 760 && size.width / max(size.height, 1) > 0.6
     }
@@ -492,7 +499,8 @@ struct StepDetailView: View {
             Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
             } label: {
-                StepActionLabel(title: String(localized: "Marcar como pendiente"), symbol: "arrow.uturn.backward")
+                StepActionLabel(title: String(localized: "Marcar como pendiente"), symbol: "arrow.uturn.backward",
+                                showsText: actionsShowText)
             }
             .accessibilityIdentifier("step.toggleCompletion")
         case .blocked:
@@ -519,7 +527,8 @@ struct StepDetailView: View {
             Button {
                 withAnimation(.smooth) { toggleStepCompletion() }
             } label: {
-                StepActionLabel(title: String(localized: "Completar"), symbol: "checkmark", tint: .white)
+                StepActionLabel(title: String(localized: "Completar"), symbol: "checkmark", tint: .white,
+                                showsText: actionsShowText)
             }
             .buttonStyle(.glassProminent)
             .tint(.primaryAction)
@@ -595,9 +604,10 @@ private struct StepActionLabel: View {
     let symbol: String
     /// En la barra, en modo oscuro, el sistema pone negro el texto del botón principal: 3,9:1 sobre el azul.
     var tint: Color = .primary
+    var showsText = true
 
     var body: some View {
-        if DeviceKind.isDuo {
+        if !showsText {
             Label(title, systemImage: symbol)
                 .foregroundStyle(tint)
         } else {
