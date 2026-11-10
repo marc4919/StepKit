@@ -55,6 +55,10 @@ final class KitConversation: Identifiable {
     /// El cupo mensual de IA se agotó al preguntar: se ofrece Pro en lugar de un error.
     var quotaReached = false
     var preview: String? { viewModel.messages.last(where: { $0.sender == .assistant && !$0.isError })?.text }
+    /// Lo último que pidió la persona: en el historial dice de qué va la conversación mejor que el nombre del paso.
+    var lastAsk: String? {
+        viewModel.messages.last(where: { $0.sender == .user })?.text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 /// Pasos que el asistente acaba de tocar: el plan los resalta unos segundos cuando vuelve a verse,

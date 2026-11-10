@@ -128,17 +128,27 @@ private extension View {
 private struct ConversationRow: View {
     let conversation: KitConversation
 
+    private var stepAsk: String? {
+        guard conversation.stepID != nil, let ask = conversation.lastAsk, !ask.isEmpty else { return nil }
+        return ask
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             IconChip(symbol: conversation.stepID == nil ? Symbols.kits : "list.bullet",
                      color: conversation.stepID == nil ? .accentColor : .purple, size: 30)
             VStack(alignment: .leading, spacing: 3) {
-                Text(conversation.title).font(.headline).foregroundStyle(.primary).lineLimit(1)
+                // De un paso: el título es lo que se pidió y el paso va debajo. El nombre del paso solo se cortaba
+                // y no decía de qué se habló.
+                Text(stepAsk ?? conversation.title).font(.headline).foregroundStyle(.primary).lineLimit(2)
+                if stepAsk != nil {
+                    Text(conversation.title).font(.caption.weight(.semibold)).foregroundStyle(.purple).lineLimit(1)
+                }
                 if let preview = conversation.preview {
                     Text(preview).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
                 }
                 HStack(spacing: 6) {
-                    if conversation.stepID != nil {
+                    if conversation.stepID != nil, stepAsk == nil {
                         Text("Vinculada al paso")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.purple)
@@ -160,11 +170,8 @@ private struct ConversationRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            // Sin flecha propia: la pone `navigationRow()`, y con las dos salían dos.
             Spacer(minLength: 0)
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
-                .accessibilityHidden(true)
         }
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
@@ -290,6 +297,11 @@ struct KitAssistantChatView: View {
         let lines = proposal.changes.map { change -> String in
             if let to = change.to {
                 return "\(change.stepLabel): \(to.formatted(.dateTime.day().month(.abbreviated)))"
+            }
+            if !change.parts.isEmpty, let logDetail = change.logDetail {
+                // Las partes, numeradas y una por línea: en el recorrido se mira justo qué cambió.
+                let list = change.parts.enumerated().map { "   \($0.offset + 1). \($0.element)" }.joined(separator: "\n")
+                return "\(change.stepLabel), \(logDetail):\n\(list)"
             }
             return [change.stepLabel, change.logDetail ?? change.detail].compactMap { $0 }.joined(separator: ": ")
         }
