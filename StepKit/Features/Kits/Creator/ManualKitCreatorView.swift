@@ -179,7 +179,7 @@ struct ManualKitCreatorView: View {
 
     var body: some View {
         Form {
-            Section("Nombre") {
+            Section {
                 TextField("Por ejemplo, Aprender a hacer pan", text: $name)
                     .focused($nameFocused)
                     .textInputAutocapitalization(.sentences)
@@ -188,6 +188,10 @@ struct ManualKitCreatorView: View {
                         if value.count > 200 { name = String(value.prefix(200)) }
                     }
                     .accessibilityIdentifier("manualKit.name")
+            } header: {
+                Text("Nombre")
+            } footer: {
+                if KitCreationHints.visible { Text("Lo creas tú, sin IA. Los pasos los añades después.") }
             }
             Section {
                 KitDueDateField(dueDate: $dueDate, todayStart: todayStart)

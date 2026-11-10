@@ -230,7 +230,7 @@ struct KitStepsEditorView: View {
         try? modelContext.save()
         StepListEditor.refreshReminders(of: detached, kit: kit)
         syncManager?.handleDataChange()
-        NotificationService.shared.refreshStepReminders()
+        NotificationService.shared.refreshStepRemindersAskingIfNeeded()
         if let planChanges { onPlanChanged(planChanges) }
         dismiss()
     }

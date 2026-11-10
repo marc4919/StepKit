@@ -1380,12 +1380,12 @@
         }
       }
     },
-    "Mantén pulsado «+» y elige «Empezar de cero» para escribir tú los pasos, sin IA.": {
+    "Al crear un Kit, elige «Empezar de cero» para crear tú los pasos, sin IA.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Touch and hold “+” and choose “Start from Scratch” to write the steps yourself, without AI."
+            "value": "When you create a Kit, choose “Start from Scratch” to create the steps yourself, without AI."
           }
         }
       }
@@ -10260,6 +10260,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shows options to book a session or create a Kit"
+          }
+        }
+      }
+    },
+    "Lo creas tú, sin IA. Los pasos los añades después.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You create it yourself, without AI. You add the steps afterward."
+          }
+        }
+      }
+    },
+    "Créalos tú o pídeselos al asistente.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create them yourself or ask the assistant."
           }
         }
       }

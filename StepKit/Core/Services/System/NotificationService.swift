@@ -99,6 +99,15 @@ final class NotificationService {
     private var queue = SerialTaskQueue()
 
     /// Rehace los avisos de pasos tras un cambio (completar, editar, sincronizar…), agrupando cambios seguidos.
+    /// Para cuando la persona añade pasos a mano: si aún no se le ha preguntado, este es el primer
+    /// momento en que un aviso tiene sentido.
+    func refreshStepRemindersAskingIfNeeded() {
+        Task {
+            await requestAuthorizationIfNeeded()
+            refreshStepReminders()
+        }
+    }
+
     func refreshStepReminders() {
         digestTask?.cancel()
         digestTask = Task {

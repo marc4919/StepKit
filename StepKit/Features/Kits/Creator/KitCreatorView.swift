@@ -88,7 +88,7 @@ struct KitCreatorView: View {
         let kit = ManualKit.createEmpty(name: vm.description, dueDate: dueDate, doneWhen: vm.doneWhen,
                                         obstacles: vm.inconveniences, startingPoint: vm.startingPoint,
                                         stepMinutes: vm.sessionMinutes, ownerID: ownerID, context: modelContext)
-        finishCreating(kit.toGoal())
+        finishCreating(kit.toGoal(), asksForNotifications: false)
     }
 
     var body: some View {
@@ -96,7 +96,7 @@ struct KitCreatorView: View {
             if manual {
                 ManualKitCreatorView(initialName: vm?.description ?? initialGoal ?? "",
                                      initialDueDate: vm?.dueDate ?? initialDate,
-                                     onCreated: finishCreating) {
+                                     onCreated: { finishCreating($0, asksForNotifications: false) }) {
                     if startsManual { dismiss() } else { withAnimation(.smooth) { manual = false } }
                 }
             } else if let vm {
@@ -284,14 +284,15 @@ struct KitCreatorView: View {
         }
     }
 
-    private func finishCreating(_ goal: Goal) {
+    /// Un Kit hecho a mano nace sin pasos: el permiso de avisos se pide al añadir el primero.
+    private func finishCreating(_ goal: Goal, asksForNotifications: Bool = true) {
         // Trigger sync
         syncManager?.handleDataChange()
         let goalID = goal.id
         let context = modelContext
         Task {
             // Primer momento en que un recordatorio tiene sentido: hay pasos con fecha.
-            await NotificationService.shared.requestAuthorizationIfNeeded()
+            if asksForNotifications { await NotificationService.shared.requestAuthorizationIfNeeded() }
             let descriptor = FetchDescriptor<GoalEntity>(predicate: #Predicate { $0.id == goalID })
             if let entity = try? context.fetch(descriptor).first {
                 await NotificationService.shared.scheduleNotifications(for: entity)

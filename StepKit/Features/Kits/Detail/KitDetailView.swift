@@ -362,7 +362,7 @@ struct KitDetailView: View {
             }
             try? modelContext.save()
             syncManager?.handleDataChange()
-            NotificationService.shared.refreshStepReminders()
+            NotificationService.shared.refreshStepRemindersAskingIfNeeded()
         }
     }
 
@@ -496,6 +496,10 @@ struct KitDetailView: View {
 
             Text("Aún no hay pasos")
                 .font(.headline)
+            Text("Créalos tú o pídeselos al asistente.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
             Button {
                 addingStep = true
             } label: {
