@@ -233,6 +233,7 @@ struct AssistantHomeView: View {
                 .buttonStyle(.glass)
                 .controlSize(.large)
                 .disabled(isResponding)
+                .accessibilityHint("Muestra preguntas ya preparadas")
             }
 
             // Con letra de accesibilidad el campo es estrecho y el texto de ejemplo se recortaba.

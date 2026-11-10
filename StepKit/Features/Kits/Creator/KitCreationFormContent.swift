@@ -152,6 +152,7 @@ struct KitCreationFormContent: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("kitCreator.context")
+            .accessibilityHint(showsContext ? String(localized: "Oculta los campos de contexto") : String(localized: "Muestra más campos para describir tu objetivo"))
             if showsContext {
                 field("checklist", .green, String(localized: "Cómo sabré que está listo (opcional)"),
                       placeholder: String(localized: "Ej.: Los corro en menos de 35 min"), text: $doneWhen, focus: .doneWhen, next: .startingPoint)

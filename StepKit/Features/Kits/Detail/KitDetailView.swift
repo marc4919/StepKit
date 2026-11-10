@@ -163,6 +163,7 @@ struct KitDetailView: View {
                 }
                 .badge(pendingProposals)
                 .accessibilityIdentifier("kit.assistant")
+                .accessibilityHint("Abre el asistente de este Kit")
                 .accessibilityValue(pendingProposals == 0 ? "" : pendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(pendingProposals) propuestas pendientes"))
                 Menu("Más opciones", systemImage: "ellipsis") {
                     // Con el resultado ya confirmado, el plan es historial: no se edita.
@@ -178,6 +179,7 @@ struct KitDetailView: View {
                         .accessibilityHint("Muestra los detalles del Kit y permite editarlos")
                 }
                 .accessibilityIdentifier("kit.more")
+                .accessibilityHint("Muestra las acciones para editar el Kit")
             }
         }
         .navigationDestination(isPresented: $showingResultReview) { ResultReviewView(kit: kitEntity) }
@@ -627,7 +629,7 @@ private struct PlanStepRow: View {
             .accessibilityElement(children: .combine)
             .accessibilityLabel(String(localized: "Paso \(number): \(step.stepTitle). \(state.label)"))
             .accessibilityValue(step.suggestedDeadline.map { $0.formatted(.dateTime.weekday(.wide).day().month(.wide)) } ?? "")
-            .accessibilityHint("Toca dos veces para abrir los detalles del paso")
+            .accessibilityHint("Abre el paso")
             .accessibilityIdentifier("step.row")
         }
         .animation(.easeInOut(duration: 0.6), value: highlight)

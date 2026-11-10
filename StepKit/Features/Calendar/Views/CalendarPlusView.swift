@@ -152,6 +152,7 @@ struct CalendarPlusView: View {
                         Label("Añadir", systemImage: "plus")
                     }
                     .accessibilityIdentifier("calendar.add")
+                    .accessibilityHint("Muestra opciones para reservar una sesión o crear un Kit")
                 }
             }
             .stepDestinations()

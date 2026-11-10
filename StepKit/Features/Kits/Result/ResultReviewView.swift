@@ -87,6 +87,7 @@ struct ResultReviewView: View {
                 .tint(.primaryAction)
                 .disabled(!achieved)
                 .accessibilityIdentifier("result.confirm")
+                .accessibilityHint("Da el Kit por conseguido")
                 Button {
                     if let onBackToPlan { onBackToPlan() } else { dismiss() }
                 } label: {
@@ -191,6 +192,7 @@ private struct ResultConfirmedContent: View {
                 }
                     .padding(.vertical, -13)
                     .font(.subheadline)
+                    .accessibilityHint("Deja el resultado pendiente de confirmar")
             }
             .frame(maxWidth: 460)
             .padding(.horizontal)

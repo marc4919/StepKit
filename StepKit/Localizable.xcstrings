@@ -10104,6 +10104,166 @@
         }
       }
     },
+    "Abre el asistente para este paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the assistant for this step"
+          }
+        }
+      }
+    },
+    "Quita el bloqueo del paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clears the block on this step"
+          }
+        }
+      }
+    },
+    "Anota lo que llevas hecho sin completar el paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes what you've done without completing the step"
+          }
+        }
+      }
+    },
+    "Anota qué te frena para retomarlo después": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes what's holding you back so you can pick it up later"
+          }
+        }
+      }
+    },
+    "Abre el asistente de este Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the assistant for this Kit"
+          }
+        }
+      }
+    },
+    "Muestra las acciones para editar el Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows actions for editing the Kit"
+          }
+        }
+      }
+    },
+    "Abre el paso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the step"
+          }
+        }
+      }
+    },
+    "Aplica los cambios propuestos al Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies the proposed changes to the Kit"
+          }
+        }
+      }
+    },
+    "Deja el Kit como está": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaves the Kit as it is"
+          }
+        }
+      }
+    },
+    "Da el Kit por conseguido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marks the Kit as achieved"
+          }
+        }
+      }
+    },
+    "Devuelve los pasos al orden del plan original": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puts the steps back in the original plan order"
+          }
+        }
+      }
+    },
+    "Oculta los campos de contexto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hides the context fields"
+          }
+        }
+      }
+    },
+    "Muestra más campos para describir tu objetivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows more fields to describe your goal"
+          }
+        }
+      }
+    },
+    "Muestra preguntas ya preparadas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows ready-made questions"
+          }
+        }
+      }
+    },
+    "Deja el resultado pendiente de confirmar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaves the result waiting for confirmation"
+          }
+        }
+      }
+    },
+    "Muestra opciones para reservar una sesión o crear un Kit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows options to book a session or create a Kit"
+          }
+        }
+      }
+    },
     "Mensaje para el asistente": {
       "localizations": {
         "en": {

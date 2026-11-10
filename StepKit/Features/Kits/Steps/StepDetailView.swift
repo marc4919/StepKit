@@ -116,6 +116,7 @@ struct StepDetailView: View {
                 }
                 .badge(stepPendingProposals)
                 .accessibilityIdentifier("step.assistant")
+                .accessibilityHint("Abre el asistente para este paso")
                 .accessibilityValue(stepPendingProposals == 0 ? "" : stepPendingProposals == 1 ? String(localized: "Propuesta pendiente") : String(localized: "\(stepPendingProposals) propuestas pendientes"))
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -459,6 +460,7 @@ struct StepDetailView: View {
             Text("Guardar avance").frame(maxWidth: .infinity)
         }
         .accessibilityIdentifier("step.saveProgress")
+        .accessibilityHint("Anota lo que llevas hecho sin completar el paso")
     }
 
     /// El asistente ya respondió a este mismo bloqueo: el botón lleva a esa ayuda en vez de pedirla.
@@ -479,6 +481,7 @@ struct StepDetailView: View {
         .tint(.primaryAction)
         .foregroundStyle(.white)
         .accessibilityIdentifier("step.resolveBlock")
+        .accessibilityHint("Quita el bloqueo del paso")
     }
 
     private func recreateBottomActions() {
@@ -516,21 +519,25 @@ struct StepDetailView: View {
                 confirmingResolve = true
             }
             .accessibilityIdentifier("step.resolveBlock")
+            .accessibilityHint("Quita el bloqueo del paso")
             Button(String(localized: "Guardar avance"), systemImage: Symbols.note) {
                 savingBlocked = false
                 showingSaveProgress = true
             }
+            .accessibilityHint("Anota lo que llevas hecho sin completar el paso")
         case .pending, .inProgress:
             Button(String(localized: "Guardar avance"), systemImage: Symbols.note) {
                 savingBlocked = false
                 showingSaveProgress = true
             }
             .accessibilityIdentifier("step.saveProgress")
+            .accessibilityHint("Anota lo que llevas hecho sin completar el paso")
             Button(String(localized: "Me he atascado"), systemImage: "hand.raised") {
                 savingBlocked = true
                 showingSaveProgress = true
             }
             .accessibilityIdentifier("step.reportBlock")
+            .accessibilityHint("Anota qué te frena para retomarlo después")
             // Destacado en el color de la app: es la acción principal del paso.
             Button {
                 withAnimation(.smooth) { toggleStepCompletion() }

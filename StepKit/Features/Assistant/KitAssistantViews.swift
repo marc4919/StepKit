@@ -516,11 +516,13 @@ struct ProposalCard: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.primaryAction)
                     .accessibilityIdentifier("proposal.accept")
+                    .accessibilityHint("Aplica los cambios propuestos al Kit")
                     Button(action: onDiscard) {
                         Text("Descartar").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
                     .accessibilityIdentifier("proposal.discard")
+                    .accessibilityHint("Deja el Kit como está")
                 }
                 .controlSize(.large)
                 Text(proposal.changes.count > 1

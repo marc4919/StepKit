@@ -75,6 +75,7 @@ struct KitStepsEditorView: View {
                             withAnimation(.smooth) { draft.setPendingOrder(restoredOrder) }
                         }
                         .accessibilityIdentifier("stepsEditor.restoreOrder")
+                        .accessibilityHint("Devuelve los pasos al orden del plan original")
                     }
                 }
 
