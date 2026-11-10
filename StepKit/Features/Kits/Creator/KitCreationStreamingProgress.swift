@@ -532,11 +532,10 @@ struct KitCreationStreamingProgress: View {
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 6) {
                     MetaChip(symbol: "list.bullet", text: String(localized: "\(streamingState.steps.count) pasos"), color: .accentColor)
-                    // Un plan para hoy no tiene horizonte que mostrar.
-                    if let days = streamingState.horizonDays, days > 0 {
-                        MetaChip(symbol: Symbols.wantedDate,
-                                 text: days == 1 ? String(localized: "1 día") : String(localized: "\(days) días"),
-                                 color: MetaTint.date)
+                    // La fecha final, como en el chip del Kit: los días los cuenta el resumen de abajo.
+                    if let days = streamingState.horizonDays, days >= 0,
+                       let due = Calendar.current.date(byAdding: .day, value: days, to: Calendar.current.startOfDay(for: .now)) {
+                        MetaChip(symbol: Symbols.wantedDate, text: PlanGrouping.shortDate(due), color: MetaTint.date)
                     }
                 }
             }
