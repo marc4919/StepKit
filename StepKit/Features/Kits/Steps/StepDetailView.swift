@@ -344,9 +344,15 @@ struct StepDetailView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Button("Editar nota", systemImage: "pencil") { editingEntry = entry }
+                            // El lápiz es pequeño: la zona que responde al toque es mayor que el dibujo.
+                            Button { editingEntry = entry } label: {
+                                Label("Editar nota", systemImage: "pencil")
+                                    .labelStyle(.iconOnly)
+                                    .padding(14)
+                                    .contentShape(.rect)
+                            }
+                                .padding(-14)
                                 .font(.subheadline)
-                                .labelStyle(.iconOnly)
                                 .accessibilityIdentifier("progress.editNote")
                         }
                     }

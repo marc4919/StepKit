@@ -186,7 +186,10 @@ private struct ResultConfirmedContent: View {
                 .buttonStyle(.borderedProminent)
                 .tint(.primaryAction)
                 .controlSize(.large)
-                Button("Reabrir resultado", action: onReopen)
+                Button(action: onReopen) {
+                    Text("Reabrir resultado").padding(.vertical, 13).padding(.horizontal, 20).contentShape(.rect)
+                }
+                    .padding(.vertical, -13)
                     .font(.subheadline)
             }
             .frame(maxWidth: 460)

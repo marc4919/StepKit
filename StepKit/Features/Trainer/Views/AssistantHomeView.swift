@@ -251,6 +251,7 @@ struct AssistantHomeView: View {
                 .padding(.vertical, 10)
                 .glassEffect(.regular.interactive(), in: .capsule)
                 .accessibilityIdentifier("assistant.input")
+                .accessibilityLabel("Mensaje para el asistente")
 
             Button("Enviar", systemImage: "arrow.up", action: onSend)
                 .labelStyle(.iconOnly)

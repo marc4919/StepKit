@@ -163,9 +163,10 @@ struct SignInView: View {
                     .foregroundStyle(.secondary)
                 
                 HStack(spacing: 4) {
-                    Button("Términos de uso") {
-                        showingTermsOfService = true
+                    Button { showingTermsOfService = true } label: {
+                        Text("Términos de uso").padding(.vertical, 14).contentShape(.rect)
                     }
+                    .padding(.vertical, -14)
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
                     .accessibilityAddTraits(.isButton)
@@ -174,9 +175,10 @@ struct SignInView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    Button("Política de privacidad") {
-                        showingPrivacyPolicy = true
+                    Button { showingPrivacyPolicy = true } label: {
+                        Text("Política de privacidad").padding(.vertical, 14).contentShape(.rect)
                     }
+                    .padding(.vertical, -14)
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)
                     .accessibilityAddTraits(.isButton)
