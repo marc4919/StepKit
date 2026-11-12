@@ -92,8 +92,13 @@ struct KitCreationFormContent: View {
 
     @ViewBuilder private var headerSection: some View {
         Section {
-            headerContent.listRowBackground(Color.clear)
+            // Algo más abajo y pegada al formulario: suelta arriba parecía de otra pantalla.
+            headerContent
+                .padding(.top, 18)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
         }
+        .listSectionSpacing(14)
     }
 
     private var headerContent: some View {

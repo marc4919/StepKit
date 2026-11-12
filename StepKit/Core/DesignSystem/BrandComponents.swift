@@ -246,7 +246,8 @@ struct OrbitMark: View {
     var liftOff = false
     /// Oculta la esfera sin moverla: otra vista la toma desde aquí (transición a «Tu plan»).
     var hidesSphere = false
-    /// 0…1: la esfera avanza por el recorrido desde su sitio de reposo (cambio de modo en «Nuevo Kit»).
+    /// 0…1: la esfera retrocede por el recorrido desde su sitio de reposo hasta el inicio de la S
+    /// (crear a mano en «Nuevo Kit»: se empieza de cero).
     var travel: CGFloat = 0
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -342,12 +343,12 @@ struct OrbitMark: View {
             let spherePoint = buildProgress == nil
                 ? restingPoint
                 : CGPoint(x: w / 2, y: liftOff ? -h * 0.9 : h / 2)
-            // La esfera recorre la S: del punto del trazo más cercano a su sitio de reposo hasta el tramo de arriba.
+            // La esfera recorre la S: del punto del trazo más cercano a su sitio de reposo hasta donde empieza.
             let rides = buildProgress == nil && milestones.isEmpty
             let restT = rides ? Self.nearestFraction(on: path, to: junction) : 0
             let rideOffset = rides ? CGSize(width: junction.x - point(on: path, at: restT).x,
                                             height: junction.y - point(on: path, at: restT).y) : .zero
-            let rideT = restT + (0.8 - restT) * (reduceMotion ? 0 : travel)
+            let rideT = restT + (Self.pathStart - restT) * (reduceMotion ? 0 : travel)
             ZStack {
                 if bloom {
                     RadialGradient(colors: [Color(red: 0.2, green: 0.6, blue: 1).opacity(scheme == .dark ? 0.35 : 0.20), .clear],
@@ -407,6 +408,9 @@ struct OrbitMark: View {
     private func point(on path: Path, at t: CGFloat) -> CGPoint {
         path.trimmedPath(from: 0, to: max(0.001, t)).currentPoint ?? .zero
     }
+
+    /// Donde el trazo empieza a verse, abajo a la izquierda.
+    private static let pathStart: CGFloat = 0.07
 
     /// Fracción del trazo (en su primera mitad) que pasa más cerca de un punto.
     private static func nearestFraction(on path: Path, to target: CGPoint) -> CGFloat {
