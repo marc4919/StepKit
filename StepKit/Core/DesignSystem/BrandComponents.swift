@@ -786,7 +786,7 @@ struct KitCreationModePicker: View {
     var body: some View {
         Picker("Cómo crear el Kit", selection: $manual) {
             Image(systemName: "sparkles").accessibilityLabel(Text("Con IA")).tag(false)
-            Image(systemName: "square.and.pencil").accessibilityLabel(Text("A mano")).tag(true)
+            Image(systemName: "pencil").accessibilityLabel(Text("A mano")).tag(true)
         }
         .pickerStyle(.segmented)
         .labelsHidden()
