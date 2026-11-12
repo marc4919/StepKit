@@ -216,6 +216,8 @@ struct KitCreatorView: View {
                         withAnimation(.formReveal) { manual = value }
                     }))
                 }
+                // El selector ya es una cápsula: con el fondo de cristal de la barra se veían dos, una dentro de otra.
+                .sharedBackgroundVisibility(.hidden)
             }
         }
         // Una sola hoja para el formulario: dos .sheet en la misma jerarquía no conviven.
