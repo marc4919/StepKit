@@ -35,7 +35,7 @@ struct StepListEditorTests {
         #expect(today.contains(String(localized: "Hoy")))
         #expect(!today.contains(String(localized: "1 semana")))
         let later = Calendar.current.date(byAdding: .day, value: 9, to: .now) ?? .now
-        #expect(PlanGrouping.summary(stepCount: 2, dates: [.now, later], totalMinutes: 0).contains(String(localized: "2 semanas")))
+        #expect(PlanGrouping.summary(stepCount: 2, dates: [.now, later], totalMinutes: 0).contains(String(localized: "\(2) semanas")))
         let soon = Calendar.current.date(byAdding: .day, value: 2, to: .now) ?? .now
         let short = PlanGrouping.summary(stepCount: 2, dates: [.now, soon], totalMinutes: 0)
         #expect(short.contains(String(localized: "\(3) días")))
