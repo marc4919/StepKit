@@ -203,7 +203,7 @@ struct DesignFixtureRoot: View {
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
             KitCreatorView(onKitCreated: { newKit in
                 viewModel.openCreatedKit(id: newKit.id, context: container.mainContext)
-            }, startsManual: viewModel.creatorStartsManual)
+            })
         }
     }
 }

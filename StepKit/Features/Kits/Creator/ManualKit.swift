@@ -1,5 +1,5 @@
 //
-//  ManualKitCreatorView.swift
+//  ManualKit.swift
 //  StepKit
 //
 //  Crear un Kit a mano: nombre y fecha final; los pasos se añaden en el propio Kit. Sin IA, sin permiso de IA y sin gastar usos.
@@ -149,88 +149,5 @@ enum ManualKit {
 
     private static func noon(_ date: Date, _ calendar: Calendar) -> Date? {
         calendar.date(bySettingHour: 12, minute: 0, second: 0, of: date)
-    }
-}
-
-struct ManualKitCreatorView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(AuthManager.self) private var authManager
-
-    let onCreated: (Goal) -> Void
-    let onCancel: () -> Void
-
-    @State private var name: String
-    @State private var dueDate: Date?
-    @State private var confirmingDiscard = false
-    @FocusState private var nameFocused: Bool
-
-    private let todayStart = Calendar.current.startOfDay(for: .now)
-
-    /// Al llegar desde el formulario asistido, el teclado sube cuando el fundido ha terminado.
-    private let focusDelay: Duration?
-
-    init(initialName: String = "", initialDueDate: Date? = nil, focusDelay: Duration? = nil,
-         onCreated: @escaping (Goal) -> Void, onCancel: @escaping () -> Void) {
-        self.focusDelay = focusDelay
-        self.onCreated = onCreated
-        self.onCancel = onCancel
-        _name = State(initialValue: initialName)
-        _dueDate = State(initialValue: initialDueDate)
-    }
-
-    private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
-    private var canCreate: Bool { !trimmedName.isEmpty && dueDate != nil }
-
-    var body: some View {
-        Form {
-            Section {
-                TextField("Por ejemplo, Aprender a hacer pan", text: $name)
-                    .focused($nameFocused)
-                    .textInputAutocapitalization(.sentences)
-                    .submitLabel(.done)
-                    .onChange(of: name) { _, value in
-                        if value.count > 200 { name = String(value.prefix(200)) }
-                    }
-                    .accessibilityIdentifier("manualKit.name")
-            } header: {
-                Text("Nombre")
-            } footer: {
-                if KitCreationHints.visible { Text("Lo creas tú, sin IA. Los pasos los añades después.") }
-            }
-            Section {
-                KitDueDateField(dueDate: $dueDate, todayStart: todayStart)
-            }
-        }
-        .centeredNavigationTitle("Nuevo Kit")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancelar") {
-                    if trimmedName.isEmpty { onCancel() } else { confirmingDiscard = true }
-                }
-                .confirmationDialog("¿Descartar este Kit?", isPresented: $confirmingDiscard, titleVisibility: .visible) {
-                    Button("Descartar", role: .destructive, action: onCancel)
-                    Button("Seguir editando", role: .cancel) {}
-                } message: {
-                    Text("Se perderá lo que has escrito.")
-                }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Crear", action: create)
-                    .disabled(!canCreate)
-                    .accessibilityIdentifier("manualKit.create")
-            }
-        }
-        .task {
-            guard trimmedName.isEmpty else { return }
-            if let focusDelay { try? await Task.sleep(for: focusDelay) }
-            nameFocused = true
-        }
-    }
-
-    private func create() {
-        guard let dueDate, let ownerID = authManager.currentUser?.id else { return }
-        let kit = ManualKit.createEmpty(name: name, dueDate: dueDate, ownerID: ownerID, context: modelContext)
-        onCreated(kit.toGoal())
     }
 }

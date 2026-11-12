@@ -15,19 +15,22 @@ final class ManualKitUITests: XCTestCase {
 
         let create = app.buttons["kit.create"].firstMatch
         XCTAssertTrue(create.waitForExistence(timeout: 10))
-        create.press(forDuration: 1)
-        let fromScratch = app.buttons["Empezar de cero"].firstMatch
-        XCTAssertTrue(fromScratch.waitForExistence(timeout: 5))
-        fromScratch.tap()
+        create.tap()
+        // «A mano» se elige en la barra de «Nuevo Kit»; el formulario es el mismo.
+        let byHand = app.segmentedControls["kitCreator.mode"].buttons["A mano"]
+        XCTAssertTrue(byHand.waitForExistence(timeout: 5))
+        byHand.tap()
 
-        let name = app.textFields["manualKit.name"]
+        let name = app.descendants(matching: .any)["kitCreator.description"].firstMatch
         XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
         name.typeText("Hacer pan")
-        XCTAssertFalse(app.buttons["manualKit.create"].isEnabled)
+        XCTAssertFalse(app.buttons["kitCreator.create"].isEnabled)
         audit(app, screen: "Nuevo Kit")
         app.buttons["kitCreator.today"].tap()
-        XCTAssertTrue(app.buttons["manualKit.create"].isEnabled)
-        app.buttons["manualKit.create"].tap()
+        XCTAssertTrue(app.buttons["kitCreator.create"].isEnabled)
+        XCTAssertEqual(app.buttons["kitCreator.create"].label, "Crear Kit")
+        app.buttons["kitCreator.create"].tap()
 
         let firstStep = app.buttons["kit.firstStep"]
         XCTAssertTrue(firstStep.waitForExistence(timeout: 5))
@@ -68,15 +71,18 @@ final class ManualKitUITests: XCTestCase {
 
         let create = app.buttons["kit.create"].firstMatch
         XCTAssertTrue(create.waitForExistence(timeout: 10))
-        create.press(forDuration: 1)
-        let fromScratch = app.buttons["Empezar de cero"].firstMatch
-        XCTAssertTrue(fromScratch.waitForExistence(timeout: 5))
-        fromScratch.tap()
-        let name = app.textFields["manualKit.name"]
+        create.tap()
+        // «A mano» se elige en la barra de «Nuevo Kit»; el formulario es el mismo.
+        let byHand = app.segmentedControls["kitCreator.mode"].buttons["A mano"]
+        XCTAssertTrue(byHand.waitForExistence(timeout: 5))
+        byHand.tap()
+
+        let name = app.descendants(matching: .any)["kitCreator.description"].firstMatch
         XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
         name.typeText("Hacer pan")
         app.buttons["1 mes"].tap()
-        app.buttons["manualKit.create"].tap()
+        app.buttons["kitCreator.create"].tap()
 
         let firstStep = app.buttons["kit.firstStep"]
         XCTAssertTrue(firstStep.waitForExistence(timeout: 5))

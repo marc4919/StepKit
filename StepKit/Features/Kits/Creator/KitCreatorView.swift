@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 import UIKit
 
 // MARK: - Shared Types
@@ -40,9 +41,10 @@ struct KitCreatorView: View {
     /// Resultado ya escrito (cuando el asistente propone otro Kit).
     var initialGoal: String?
 
-    /// Abrir directamente la creación a mano (menú del «+» en Mis Kits).
-    private let startsManual: Bool
-    @State private var manual: Bool
+    /// «Con IA» o «A mano»: se elige en la barra y se puede cambiar en cualquier momento sin perder lo escrito.
+    @State private var manual = false
+    /// La IA no puede preparar el plan (sin permiso, o falló): se ofrece seguir a mano.
+    @State private var offersManualAfterConsent = false
     @Query private var allKits: [GoalEntity]
 
     // MARK: - ViewModel
@@ -56,12 +58,10 @@ struct KitCreatorView: View {
     
     // MARK: - Initialization
     
-    init(onKitCreated: ((Goal) -> Void)? = nil, initialDate: Date? = nil, initialGoal: String? = nil, startsManual: Bool = false) {
+    init(onKitCreated: ((Goal) -> Void)? = nil, initialDate: Date? = nil, initialGoal: String? = nil) {
         self.onKitCreated = onKitCreated
         self.initialDate = initialDate
         self.initialGoal = initialGoal
-        self.startsManual = startsManual
-        _manual = State(initialValue: startsManual)
     }
 
     /// Los Kits a mano cuentan para el límite del plan gratis: la app lo comprueba antes de abrir la pantalla.
@@ -70,17 +70,20 @@ struct KitCreatorView: View {
         return ManualKit.reachesFreeLimit(kits: allKits, ownerID: user.id, isPremium: user.isPremium)
     }
 
-    /// Sin nada escrito, la pantalla de crear a mano. Con el formulario rellenado, el Kit se crea ya, sin
-    /// pasar por otra pantalla, y los pasos se añaden en el propio Kit.
-    private func startFromScratch(vm: KitCreatorViewModel) {
+    /// Crea el Kit a mano con lo escrito en el formulario; los pasos se añaden en el propio Kit.
+    private func createByHand(vm: KitCreatorViewModel) {
         if reachesFreeLimit {
             limitFromManual = true
             vm.planLimit = .activeKits
-        } else if vm.hasDraft {
-            createEmptyKit(vm: vm)
         } else {
-            withAnimation(.smooth) { manual = true }
+            createEmptyKit(vm: vm)
         }
+    }
+
+    /// Cuando la IA no va a ayudar: pasa a «A mano» conservando el borrador y, si ya está completo, crea el Kit.
+    private func continueByHand(vm: KitCreatorViewModel) {
+        withAnimation(.formReveal) { manual = true }
+        if vm.isFormValid { createByHand(vm: vm) }
     }
 
     private func createEmptyKit(vm: KitCreatorViewModel) {
@@ -92,28 +95,11 @@ struct KitCreatorView: View {
     }
 
     var body: some View {
-        // Cada formulario lleva su propia barra: el fundido cambia la hoja entera. Con un solo
-        // NavigationStack y la transición dentro, la barra del formulario que entra no aparecía.
-        ZStack {
-            if manual {
-                NavigationStack {
-                    ManualKitCreatorView(initialName: vm?.description ?? initialGoal ?? "",
-                                         initialDueDate: vm?.dueDate ?? initialDate,
-                                         focusDelay: startsManual ? nil : .milliseconds(600),
-                                         onCreated: { finishCreating($0, asksForNotifications: false) }) {
-                        if startsManual { dismiss() } else { withAnimation(.smooth) { manual = false } }
-                    }
-                }
-                .transition(.contentSwap)
+        NavigationStack {
+            if let vm {
+                content(vm: vm)
             } else {
-                NavigationStack {
-                    if let vm {
-                        content(vm: vm)
-                    } else {
-                        ProgressView()
-                    }
-                }
-                .transition(.contentSwap)
+                ProgressView()
             }
         }
         .onChange(of: vm?.planLimit) { _, limit in
@@ -126,7 +112,7 @@ struct KitCreatorView: View {
                 if sync == .pro {
                     vm.planLimit = nil
                     if limitFromManual {
-                        startFromScratch(vm: vm)
+                        createByHand(vm: vm)
                     } else if let token = authManager.token, consentManager.hasConsent, vm.isFormValid {
                         vm.createKit(token: token)
                     }
@@ -138,11 +124,6 @@ struct KitCreatorView: View {
             if vm == nil {
                 let model = KitCreatorViewModel(apiClient: apiClient, initialDate: initialDate, initialGoal: initialGoal)
                 vm = model
-                if startsManual, reachesFreeLimit {
-                    manual = false
-                    limitFromManual = true
-                    model.planLimit = .activeKits
-                }
                 await storeKitManager.updatePurchasedProducts()
             }
         }
@@ -168,6 +149,10 @@ struct KitCreatorView: View {
                     isDateInPast: vm.isDateInPast,
                     isFormValid: vm.isFormValid,
                     onCreate: {
+                        if manual {
+                            createByHand(vm: vm)
+                            return
+                        }
                         // Verificar consentimiento de IA antes de crear
                         guard consentManager.hasConsent else {
                             showAIConsent = true
@@ -182,9 +167,7 @@ struct KitCreatorView: View {
                             vm.showingError = true
                         }
                     },
-                    onStartFromScratch: { startFromScratch(vm: vm) },
-                    startFromScratchTitle: vm.hasDraft ? "Crear los pasos yo" : "Empezar de cero",
-                    canStartFromScratch: !vm.hasDraft || vm.isFormValid
+                    manual: manual
                 )
             case .loading, .streaming:
                 // Una sola pantalla de preparación: arranca en «Preparando» y sigue con los pasos.
@@ -223,6 +206,17 @@ struct KitCreatorView: View {
                     }
                 }
             }
+
+            // El modo se elige en la barra, donde iOS pone lo que afecta a toda la pantalla.
+            if vm.viewState == .form {
+                ToolbarItem(placement: .topBarTrailing) {
+                    KitCreationModePicker(manual: Binding(get: { manual }, set: { value in
+                        focusedField = nil
+                        if value { StartFromScratchTip().invalidate(reason: .actionPerformed) }
+                        withAnimation(.formReveal) { manual = value }
+                    }))
+                }
+            }
         }
         // Una sola hoja para el formulario: dos .sheet en la misma jerarquía no conviven.
         .sheet(item: Binding(
@@ -246,6 +240,9 @@ struct KitCreatorView: View {
                     // Con permiso, se sigue con lo que el usuario había pedido: crear el plan.
                     if granted, let token = authManager.token {
                         vm.createKit(token: token)
+                    } else if !granted {
+                        // Sin permiso la IA no prepara el plan, pero el Kit se puede crear igual.
+                        offersManualAfterConsent = true
                     }
                 }
                 .interactiveDismissDisabled()
@@ -255,11 +252,21 @@ struct KitCreatorView: View {
                 }
             }
         }
+        .alert("Puedes crear el Kit a mano", isPresented: $offersManualAfterConsent) {
+            Button("Crear el Kit a mano") { continueByHand(vm: vm) }
+            Button("Ahora no", role: .cancel) { }
+        } message: {
+            Text("Sin ese permiso la IA no puede proponer los pasos. Los añades tú.")
+        }
         .alert("Error", isPresented: $vm.showingError) {
             Button("Reintentar") {
                 if let token = authManager.token {
                     vm.createKit(token: token)
                 }
+            }
+            // La IA falló o no hay conexión: el Kit se puede crear igual, con lo ya escrito.
+            if !manual {
+                Button("Crear el Kit a mano") { continueByHand(vm: vm) }
             }
             Button("Cancelar", role: .cancel) { }
         } message: {

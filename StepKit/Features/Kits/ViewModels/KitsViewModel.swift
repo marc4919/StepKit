@@ -15,8 +15,6 @@ final class KitsViewModel {
     var selectedKitId: UUID?
     /// Pasos abiertos encima del plan del Kit elegido. Vaciarla vuelve al plan.
     var detailPath: [StepEntity] = []
-    /// El creador se abre directamente en «Empezar de cero».
-    var creatorStartsManual = false
     /// El plan del Kit elegido tiene otra pantalla encima (paso, asistente, resultado…).
     var isKitPlanCovered = false
     /// Kits que se están eliminando: salen de la lista con animación antes del borrado real.

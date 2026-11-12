@@ -23,10 +23,8 @@ struct KitCreationFormContent: View {
     let isDateInPast: Bool
     let isFormValid: Bool
     let onCreate: () -> Void
-    /// Crear el Kit a mano, sin IA.
-    var onStartFromScratch: (() -> Void)? = nil
-    var startFromScratchTitle = LocalizedStringKey("Empezar de cero")
-    var canStartFromScratch = true
+    /// A mano: la persona añade los pasos. Se ocultan las filas que solo usa la IA para repartir el plan.
+    var manual = false
 
     @State private var width: CGFloat = 0
     /// Interior del iPhone Duo, iPad o iPhone en horizontal: dos columnas en vez de una tira estirada.
@@ -101,18 +99,21 @@ struct KitCreationFormContent: View {
     private var headerContent: some View {
         VStack(spacing: 8) {
             // En horizontal la pantalla es baja: el dibujo se reduce para dejar sitio al formulario.
-            if !landscape { OrbitMark(height: 86).frame(maxWidth: 240) }
+            if !landscape { OrbitMark(height: 86, travel: manual ? 1 : 0).frame(maxWidth: 240) }
             Text("¿Qué quieres conseguir?")
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
-            if KitCreationHints.visible {
-                Text("Revisarás el plan antes de aceptarlo.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+            // Siempre visible: dice en qué modo estás. Cambia con un fundido al tocar el selector.
+            Text(manual ? String(localized: "Tú añades los pasos") : String(localized: "La IA propone los pasos; tú los revisas"))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .contentTransition(.opacity)
+                .id(manual)
+                .transition(.opacity)
         }
         .frame(maxWidth: .infinity)
+        .animation(.formReveal, value: manual)
     }
 
     /// Los tres campos opcionales van plegados bajo una fila: la primera pantalla queda con el
@@ -186,6 +187,15 @@ struct KitCreationFormContent: View {
         Section {
             // Primero la fecha: lo que cambia al elegirla queda siempre debajo, nunca encima.
             KitDueDateField(dueDate: $dueDate, todayStart: todayStart)
+            if !manual { planningRows }
+        } header: {
+            Text("Tu tiempo")
+        }
+    }
+
+    /// Lo que la IA necesita para repartir el plan. A mano no hace falta: los pasos los pone la persona.
+    @ViewBuilder private var planningRows: some View {
+        Group {
             Picker("¿Cómo lo harás?", selection: Binding(
                 get: { oneSitting ? 0 : 1 },
                 set: { oneSitting = $0 == 0 }
@@ -218,9 +228,8 @@ struct KitCreationFormContent: View {
                     IconChip(symbol: "timer", color: MetaTint.time, size: 28)
                 }
             }
-        } header: {
-            Text("Tu tiempo")
         }
+        .transition(.formRow)
     }
 
     /// Cambiar un control que no es de texto retira el teclado, para que no tape el formulario.
@@ -242,7 +251,9 @@ struct KitCreationFormContent: View {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 onCreate()
             } label: {
-                Text("Preparar plan").frame(maxWidth: .infinity)
+                Text(manual ? String(localized: "Crear Kit") : String(localized: "Preparar plan"))
+                    .contentTransition(.interpolate)
+                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .tint(.primaryAction)
@@ -252,22 +263,7 @@ struct KitCreationFormContent: View {
             .listRowInsets(EdgeInsets())
             .accessibilityHint(missingField ?? "")
             .accessibilityIdentifier("kitCreator.create")
-        } footer: {
-            VStack(alignment: .leading, spacing: 6) {
-                if let onStartFromScratch {
-                    Button(action: onStartFromScratch) {
-                        Text(startFromScratchTitle).frame(minHeight: 44)
-                    }
-                        .disabled(!canStartFromScratch)
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .accessibilityHint("Crea el Kit a mano, sin IA")
-                        .accessibilityIdentifier("kitCreator.fromScratch")
-                }
-            }
-            .padding(.top, 4)
         }
-    
     }
 
     /// Desde ratos cortos hasta una mañana entera.
@@ -327,7 +323,7 @@ extension Animation {
 
 extension AnyTransition {
     /// Un contenido sustituye a otro en el mismo sitio: lo viejo se va rápido y lo nuevo entra un
-    /// instante después, sin pisarse. Es el cambio de «Dando forma a tu Kit» y el de «Empezar de cero».
+    /// instante después, sin pisarse. Es el cambio de «Dando forma a tu Kit».
     static var contentSwap: AnyTransition {
         .asymmetric(
             insertion: .opacity.animation(.easeOut(duration: 0.35).delay(0.25)),

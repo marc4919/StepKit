@@ -23,7 +23,7 @@ struct TipFlow {
 
 struct StartFromScratchTip: Tip {
     var title: Text { Text("Crea un Kit a tu manera") }
-    var message: Text? { Text("Al crear un Kit, elige «Empezar de cero» para crear tú los pasos, sin IA.") }
+    var message: Text? { Text("Al crear un Kit, toca el lápiz de arriba para añadir tú los pasos, sin IA.") }
     var image: Image? { Image(systemName: "square.and.pencil") }
 }
 

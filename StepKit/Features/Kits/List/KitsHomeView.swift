@@ -172,15 +172,8 @@ struct KitsHomeView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                // Un toque abre el creador; mantener pulsado ofrece también crearlo a mano.
-                Menu {
-                    Button("Ayúdame a planificar", systemImage: "sparkles") { openCreator() }
-                    Button("Empezar de cero", systemImage: "square.and.pencil") { openCreator(manual: true) }
-                } label: {
-                    Label("Crear Kit", systemImage: "plus")
-                } primaryAction: {
-                    openCreator()
-                }
+                // Crear a mano o con IA se elige dentro, en la barra de «Nuevo Kit».
+                Button("Crear Kit", systemImage: "plus") { openCreator() }
                     .accessibilityIdentifier("kit.create")
                     .accessibilityHint("Abre el creador de kits")
             }
@@ -222,9 +215,7 @@ struct KitsHomeView: View {
         viewModel.selectKit(kit)
     }
 
-    private func openCreator(manual: Bool = false) {
-        if manual { StartFromScratchTip().invalidate(reason: .actionPerformed) }
-        viewModel.creatorStartsManual = manual
+    private func openCreator() {
         viewModel.showingKitCreator = true
     }
 }

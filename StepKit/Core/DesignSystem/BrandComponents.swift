@@ -246,6 +246,8 @@ struct OrbitMark: View {
     var liftOff = false
     /// Oculta la esfera sin moverla: otra vista la toma desde aquí (transición a «Tu plan»).
     var hidesSphere = false
+    /// 0…1: la esfera avanza por el recorrido desde su sitio de reposo (cambio de modo en «Nuevo Kit»).
+    var travel: CGFloat = 0
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var drawn: CGFloat
@@ -253,7 +255,8 @@ struct OrbitMark: View {
     @State private var appeared: Bool
 
     init(height: CGFloat = 160, milestones: [CGFloat] = [], bloom: Bool = false, animated: Bool = false,
-         buildProgress: Double? = nil, liftOff: Bool = false, hidesSphere: Bool = false) {
+         buildProgress: Double? = nil, liftOff: Bool = false, hidesSphere: Bool = false, travel: CGFloat = 0) {
+        self.travel = travel
         self.height = height
         self.milestones = milestones
         self.bloom = bloom
@@ -339,6 +342,12 @@ struct OrbitMark: View {
             let spherePoint = buildProgress == nil
                 ? restingPoint
                 : CGPoint(x: w / 2, y: liftOff ? -h * 0.9 : h / 2)
+            // La esfera recorre la S: del punto del trazo más cercano a su sitio de reposo hasta el tramo de arriba.
+            let rides = buildProgress == nil && milestones.isEmpty
+            let restT = rides ? Self.nearestFraction(on: path, to: junction) : 0
+            let rideOffset = rides ? CGSize(width: junction.x - point(on: path, at: restT).x,
+                                            height: junction.y - point(on: path, at: restT).y) : .zero
+            let rideT = restT + (0.8 - restT) * (reduceMotion ? 0 : travel)
             ZStack {
                 if bloom {
                     RadialGradient(colors: [Color(red: 0.2, green: 0.6, blue: 1).opacity(scheme == .dark ? 0.35 : 0.20), .clear],
@@ -349,7 +358,8 @@ struct OrbitMark: View {
                     .fill(RadialGradient(colors: [Color(red: 0.2, green: 0.58, blue: 1).opacity(scheme == .dark ? 0.38 : 0.22), .clear],
                                          center: .center, startRadius: 0, endRadius: h * 0.6))
                     .frame(width: h * 1.2, height: h * 1.2)
-                    .position(spherePoint)
+                    .modifier(OrbitRide(t: rideT, path: path, offset: rideOffset, fixed: rides ? nil : spherePoint))
+                    .animation(.smooth(duration: 0.7), value: travel)
                 OrbitPathShape().trim(from: 0, to: pathFraction).stroke(LinearGradient(stops: [.init(color: Color(red: 0.05, green: 0.50, blue: 1.0).opacity(0), location: 0),
                                                    .init(color: Color(red: 0.05, green: 0.50, blue: 1.0), location: 0.2),
                                                    .init(color: Color(red: 0.32, green: 0.70, blue: 1.0), location: 0.55),
@@ -370,7 +380,9 @@ struct OrbitMark: View {
                     .scaleEffect(sphereScale)
                     .opacity(sphereOpacity)
                     .offset(y: floating ? -sphereSize * 0.08 : sphereSize * 0.04)
-                    .position(x: spherePoint.x, y: spherePoint.y - (milestones.isEmpty ? 0 : sphereSize * 0.32))
+                    .modifier(OrbitRide(t: rideT, path: path, offset: rideOffset,
+                                        fixed: rides ? nil : CGPoint(x: spherePoint.x, y: spherePoint.y - (milestones.isEmpty ? 0 : sphereSize * 0.32))))
+                    .animation(.smooth(duration: 0.7), value: travel)
             }
         }
         .frame(height: height)
@@ -394,6 +406,42 @@ struct OrbitMark: View {
 
     private func point(on path: Path, at t: CGFloat) -> CGPoint {
         path.trimmedPath(from: 0, to: max(0.001, t)).currentPoint ?? .zero
+    }
+
+    /// Fracción del trazo (en su primera mitad) que pasa más cerca de un punto.
+    private static func nearestFraction(on path: Path, to target: CGPoint) -> CGFloat {
+        var best: CGFloat = 0.3, distance = CGFloat.greatestFiniteMagnitude
+        for step in 2...50 {
+            let t = CGFloat(step) / 100
+            guard let p = path.trimmedPath(from: 0, to: t).currentPoint else { continue }
+            let d = hypot(p.x - target.x, p.y - target.y)
+            if d < distance { distance = d; best = t }
+        }
+        return best
+    }
+}
+
+/// Coloca una vista en un punto del recorrido. Es animable: al cambiar `t`, la vista sigue la curva
+/// en vez de ir en línea recta.
+private struct OrbitRide: ViewModifier, Animatable {
+    var t: CGFloat
+    let path: Path
+    let offset: CGSize
+    /// Posición fija, para los usos que no recorren la curva.
+    let fixed: CGPoint?
+
+    var animatableData: CGFloat {
+        get { t }
+        set { t = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        if let fixed {
+            content.position(fixed)
+        } else {
+            let p = path.trimmedPath(from: 0, to: max(0.001, t)).currentPoint ?? .zero
+            content.position(x: p.x + offset.width, y: p.y + offset.height)
+        }
     }
 }
 
@@ -721,5 +769,26 @@ extension View {
 
     func centeredNavigationTitle(verbatim title: String, subtitle: String? = nil) -> some View {
         modifier(CenteredNavigationTitle(title: Text(verbatim: title), subtitle: subtitle.map { Text(verbatim: $0) }))
+    }
+}
+
+// MARK: - Modo de creación de un Kit
+
+/// «Con IA» o «A mano», en la barra de «Nuevo Kit». Una cápsula con dos segmentos: el control segmentado
+/// del sistema marca la selección con su fondo y su contraste, no solo con el color.
+struct KitCreationModePicker: View {
+    @Binding var manual: Bool
+
+    var body: some View {
+        Picker("Cómo crear el Kit", selection: $manual) {
+            Image(systemName: "sparkles").accessibilityLabel(Text("Con IA")).tag(false)
+            Image(systemName: "square.and.pencil").accessibilityLabel(Text("A mano")).tag(true)
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .frame(width: 96)
+        .sensoryFeedback(.selection, trigger: manual)
+        .accessibilityLabel("Cómo crear el Kit")
+        .accessibilityIdentifier("kitCreator.mode")
     }
 }

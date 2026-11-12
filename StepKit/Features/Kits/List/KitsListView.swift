@@ -68,7 +68,7 @@ struct KitsListView: View {
         .fullScreenCover(isPresented: $viewModel.showingKitCreator) {
             KitCreatorView(onKitCreated: { newKit in
                 viewModel.openCreatedKit(id: newKit.id, context: modelContext)
-            }, startsManual: viewModel.creatorStartsManual)
+            })
         }
     }
 }
