@@ -233,6 +233,8 @@ final class StepKitUITests: XCTestCase {
         application.launchArguments = [
             "-StepKitAPIBaseURL", baseURL,
             "-StepKitE2ESuppressNotifications",
+            // Las comprobaciones usan los textos en español.
+            "-AppleLanguages", "(es)", "-AppleLocale", "es_ES",
         ] + arguments
         application.launch()
         app = application
@@ -309,6 +311,12 @@ final class StepKitUITests: XCTestCase {
         revealTabBar()
         app.tabBars.buttons["Perfil"].tap()
         let signOut = element(Identifier.signOut)
+        // v4.4: «Cerrar sesión» está al final de la lista, que carga sus filas al desplazarse.
+        var remainingSwipes = 6
+        while !signOut.waitForExistence(timeout: 2), remainingSwipes > 0 {
+            app.swipeUp()
+            remainingSwipes -= 1
+        }
         XCTAssertTrue(signOut.waitForExistence(timeout: defaultTimeout))
         scrollUpUntilHittable(signOut)
         signOut.tap()
@@ -363,6 +371,10 @@ final class StepKitUITests: XCTestCase {
         XCTAssertTrue(description.waitForExistence(timeout: defaultTimeout))
         description.tap()
         description.typeText("Recorrido funcional determinista GOAL-003")
+        // v4.4: sin fecha final el botón de crear está desactivado.
+        let dueDate = app.buttons["1 mes"]
+        XCTAssertTrue(dueDate.waitForExistence(timeout: defaultTimeout))
+        dueDate.tap()
 
         // v4.4: el botón está al final del Form, que carga sus filas al desplazarse.
         let submit = element(Identifier.submitKit)
@@ -461,8 +473,8 @@ final class StepKitUITests: XCTestCase {
 
         let completionButton = element(Identifier.toggleCompletion)
         XCTAssertTrue(completionButton.waitForExistence(timeout: defaultTimeout))
+        // v4.4: el botón de un paso hecho está en la barra y solo cambia de nombre (no lleva valor).
         XCTAssertEqual(completionButton.label, "Marcar como pendiente")
-        XCTAssertEqual(completionButton.value as? String, "Completado")
     }
 
     @MainActor

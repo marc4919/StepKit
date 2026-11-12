@@ -10,7 +10,10 @@ final class ManualKitUITests: XCTestCase {
     @MainActor
     func testCreatingKitByHandIsAccessible() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["-StepKitDesignFixtures", "kits", "-AppleLanguages", "(es)", "-kitsHomeFocusLayout", "YES"]
+        // Sin el aviso de notificaciones del sistema, que tapa la app al guardar un paso con fecha
+        // y hace fallar la auditoría con «Invalid target app».
+        app.launchArguments = ["-StepKitDesignFixtures", "kits", "-AppleLanguages", "(es)", "-kitsHomeFocusLayout", "YES",
+                               "-StepKitE2ESuppressNotifications"]
         app.launch()
 
         let create = app.buttons["kit.create"].firstMatch

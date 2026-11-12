@@ -5,7 +5,7 @@ final class KitAssistantUITests: XCTestCase {
     @MainActor
     func testProposalFromStepIsAcceptedAsAWhole() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["-StepKitDesignFixtures", "assistantProposal"]
+        app.launchArguments = ["-StepKitDesignFixtures", "assistantProposal", "-AppleLanguages", "(es)", "-AppleLocale", "es_ES"]
         app.launch()
 
         let accept = app.buttons["proposal.accept"]
