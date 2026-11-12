@@ -4,14 +4,14 @@
 //
 
 import Foundation
+import os
 
 /// Diagnóstico de red deliberadamente limitado a metadatos no sensibles.
 enum NetworkDiagnostics {
     #if DEBUG
     nonisolated static func logEnvironment(_ environment: AppEnvironment) {
-        print(
-            "🌐 Network environment: \(environment.buildConfiguration.rawValue), " +
-            "host=\(environment.apiBaseURL.host ?? "unknown")"
+        AppLog.network.debug(
+            "Network environment: \(environment.buildConfiguration.rawValue, privacy: .public), host=\(environment.apiBaseURL.host ?? "unknown", privacy: .public)"
         )
     }
 
@@ -21,9 +21,9 @@ enum NetworkDiagnostics {
         itemCount: Int? = nil
     ) {
         if let itemCount {
-            print("📤 \(operation): bytes=\(byteCount), items=\(itemCount)")
+            AppLog.network.debug("\(operation, privacy: .public) request: bytes=\(byteCount), items=\(itemCount)")
         } else {
-            print("📤 \(operation): bytes=\(byteCount)")
+            AppLog.network.debug("\(operation, privacy: .public) request: bytes=\(byteCount)")
         }
     }
 
@@ -32,40 +32,38 @@ enum NetworkDiagnostics {
         statusCode: Int,
         byteCount: Int
     ) {
-        print("📥 \(operation): status=\(statusCode), bytes=\(byteCount)")
+        AppLog.network.debug("\(operation, privacy: .public) response: status=\(statusCode), bytes=\(byteCount)")
     }
 
     nonisolated static func logError(_ error: Error, operation: String) {
         if case let APIError.serverError(statusCode, _) = error {
-            print("❌ \(operation): server status=\(statusCode)")
+            AppLog.network.error("\(operation, privacy: .public): server status=\(statusCode)")
         } else {
-            print("❌ \(operation): type=\(String(describing: type(of: error)))")
+            AppLog.network.error("\(operation, privacy: .public): type=\(String(describing: type(of: error)), privacy: .public)")
         }
     }
 
     nonisolated static func logDecodingError(_ error: Error, operation: String) {
         guard let decodingError = error as? DecodingError else {
-            print("❌ \(operation): decoding error")
+            AppLog.network.error("\(operation, privacy: .public): decoding error")
             return
         }
 
         switch decodingError {
         case .keyNotFound(let key, let context):
-            print("❌ \(operation): missing key=\(key.stringValue), path=\(path(context.codingPath))")
+            AppLog.network.error("\(operation, privacy: .public): missing key=\(key.stringValue, privacy: .public), path=\(path(context.codingPath), privacy: .public)")
         case .typeMismatch(let expectedType, let context):
-            print(
-                "❌ \(operation): type mismatch=\(String(describing: expectedType)), " +
-                "path=\(path(context.codingPath))"
+            AppLog.network.error(
+                "\(operation, privacy: .public): type mismatch=\(String(describing: expectedType), privacy: .public), path=\(path(context.codingPath), privacy: .public)"
             )
         case .valueNotFound(let expectedType, let context):
-            print(
-                "❌ \(operation): missing value=\(String(describing: expectedType)), " +
-                "path=\(path(context.codingPath))"
+            AppLog.network.error(
+                "\(operation, privacy: .public): missing value=\(String(describing: expectedType), privacy: .public), path=\(path(context.codingPath), privacy: .public)"
             )
         case .dataCorrupted(let context):
-            print("❌ \(operation): corrupted data, path=\(path(context.codingPath))")
+            AppLog.network.error("\(operation, privacy: .public): corrupted data, path=\(path(context.codingPath), privacy: .public)")
         @unknown default:
-            print("❌ \(operation): unknown decoding error")
+            AppLog.network.error("\(operation, privacy: .public): unknown decoding error")
         }
     }
 

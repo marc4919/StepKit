@@ -9,6 +9,7 @@ import SwiftUI
 import TipKit
 import SwiftData
 import NaturalLanguage
+import os
 
 struct StepDetailView: View {
     @Bindable var stepEntity: StepEntity
@@ -570,7 +571,7 @@ struct StepDetailView: View {
             try modelContext.save()
         } catch {
             #if DEBUG
-            print("Step notification preference persistence failed")
+            AppLog.notifications.error("Step notification preference persistence failed")
             #endif
         }
 

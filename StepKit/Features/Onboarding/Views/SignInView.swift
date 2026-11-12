@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AuthenticationServices
+import os
 
 struct SignInView: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -240,7 +241,7 @@ struct SignInView: View {
                     // Mostrar mensaje amigable según el tipo de error
                     errorMessage = userFriendlyAuthErrorMessage(from: error)
                     #if DEBUG
-                    print("Authentication failed: type=\(String(describing: type(of: error)))")
+                    AppLog.auth.error("Authentication failed: type=\(String(describing: type(of: error)), privacy: .public)")
                     #endif
                 }
             }
@@ -256,7 +257,7 @@ struct SignInView: View {
         // Errores provenientes directamente de Sign in with Apple
         errorMessage = userFriendlyAuthErrorMessage(from: error)
         #if DEBUG
-        print("Apple authorization failed: type=\(String(describing: type(of: error)))")
+        AppLog.auth.error("Apple authorization failed: type=\(String(describing: type(of: error)), privacy: .public)")
         #endif
     }
     

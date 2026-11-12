@@ -1,5 +1,6 @@
 import StoreKit
 import SwiftUI
+import os
 
 /// Manages StoreKit 2 subscriptions for StepKit Pro
 @Observable
@@ -57,7 +58,7 @@ final class StoreKitManager {
         } catch {
             self.error = error
             #if DEBUG
-            print("StoreKit products load failed: type=\(String(describing: type(of: error)))")
+            AppLog.store.error("StoreKit products load failed: type=\(String(describing: type(of: error)), privacy: .public)")
             #endif
         }
 
@@ -111,7 +112,7 @@ final class StoreKitManager {
         } catch {
             self.error = error
             #if DEBUG
-            print("StoreKit restore failed: type=\(String(describing: type(of: error)))")
+            AppLog.store.error("StoreKit restore failed: type=\(String(describing: type(of: error)), privacy: .public)")
             #endif
         }
 
@@ -180,7 +181,7 @@ final class StoreKitManager {
             await transaction.finish()
         } catch {
             #if DEBUG
-            print("StoreKit verification failed: type=\(String(describing: type(of: error)))")
+            AppLog.store.error("StoreKit verification failed: type=\(String(describing: type(of: error)), privacy: .public)")
             #endif
         }
     }

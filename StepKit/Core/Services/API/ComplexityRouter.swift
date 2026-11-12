@@ -22,6 +22,7 @@
 
 import Foundation
 import FoundationModels
+import os
 
 // MARK: - Model Recommendation (from Foundation Model)
 
@@ -115,7 +116,7 @@ actor ComplexityRouter {
         // porque esta estimación no es imprescindible para crear el plan.
         guard model.availability == .available, model.supportsLocale() else {
             #if DEBUG
-            print("⚠️ ComplexityRouter: Foundation Model unavailable → using LIGHTWEIGHT")
+            AppLog.ai.notice("ComplexityRouter: Foundation Model unavailable, using lightweight")
             #endif
             return ComplexityResult(
                 useHeavyweight: false,
@@ -147,9 +148,8 @@ actor ComplexityRouter {
             let useHeavyweight = recommendation.recommendedModel == "heavyweight"
 
             #if DEBUG
-            print(
-                "🧠 ComplexityRouter: model=\(useHeavyweight ? "heavyweight" : "lightweight"), " +
-                "confidence=\(recommendation.confidence)"
+            AppLog.ai.debug(
+                "ComplexityRouter: model=\(useHeavyweight ? "heavyweight" : "lightweight", privacy: .public), confidence=\(recommendation.confidence)"
             )
             #endif
 
@@ -161,9 +161,8 @@ actor ComplexityRouter {
             
         } catch {
             #if DEBUG
-            print(
-                "⚠️ ComplexityRouter: fallback=lightweight, " +
-                "errorType=\(String(describing: type(of: error)))"
+            AppLog.ai.notice(
+                "ComplexityRouter: fallback=lightweight, errorType=\(String(describing: type(of: error)), privacy: .public)"
             )
             #endif
             return ComplexityResult(

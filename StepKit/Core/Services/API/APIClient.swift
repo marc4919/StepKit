@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 
 /// Cliente HTTP real para comunicarse con el backend
 final class APIClient: APIClientProtocol {
@@ -67,7 +68,7 @@ final class APIClient: APIClientProtocol {
             do {
                 let response = try decoder.decode(AIGenerateKitResponse.self, from: data)
                 #if DEBUG
-                print("✅ Kit decoded: steps=\(response.kit?.steps?.count ?? 0)")
+                AppLog.network.debug("Kit decoded: steps=\(response.kit?.steps?.count ?? 0)")
                 #endif
                 return response
             } catch {
@@ -260,7 +261,7 @@ final class APIClient: APIClientProtocol {
                     let eventStream = SSEParser.parse(bytes, as: AIChatStreamEvent.self)
                     for try await event in eventStream {
                         #if DEBUG
-                        print("✅ SSE Event: type=\(event.type), step=\(event.step != nil ? "present" : "nil")")
+                        AppLog.network.debug("SSE event: type=\(event.type, privacy: .public), step=\(event.step != nil ? "present" : "nil", privacy: .public)")
                         #endif
                         continuation.yield(event)
                     }

@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import os
 
 /// Servicio principal de sincronización que orquesta la comunicación entre Core Data y el Backend
 @Observable
@@ -267,7 +268,7 @@ final class SyncService {
                         context.insert(newStep)
                     } else {
                         #if DEBUG
-                        print("⚠️ Orphaned step received: id=\(id), kit=\(kitId)")
+                        AppLog.sync.notice("Orphaned step received: id=\(id), kit=\(kitId)")
                         #endif
                     }
                 }

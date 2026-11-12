@@ -8,6 +8,7 @@
 import Foundation
 import UserNotifications
 import SwiftData
+import os
 
 /// Ejecuta trabajos asíncronos de uno en uno, en el orden en que llegan.
 @MainActor
@@ -73,9 +74,8 @@ final class NotificationService {
             return granted
         } catch {
             #if DEBUG
-            print(
-                "❌ NotificationService: authorization failed, " +
-                "errorType=\(String(describing: type(of: error)))"
+            AppLog.notifications.error(
+                "Authorization failed, errorType=\(String(describing: type(of: error)), privacy: .public)"
             )
             #endif
             return false
@@ -153,7 +153,7 @@ final class NotificationService {
             try? await center.add(UNNotificationRequest(identifier: item.identifier, content: content, trigger: trigger))
         }
         #if DEBUG
-        print("🔔 NotificationService: \(items.count) daily reminders scheduled")
+        AppLog.notifications.debug("\(items.count) daily reminders scheduled")
         #endif
     }
 
@@ -171,7 +171,7 @@ final class NotificationService {
         queue.enqueue { [center] in center.removeAllPendingNotificationRequests() }
 
         #if DEBUG
-        print("🔕 NotificationService: Todas las notificaciones canceladas")
+        AppLog.notifications.debug("All notifications cancelled")
         #endif
     }
 
@@ -199,7 +199,7 @@ final class NotificationService {
             try await center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger))
         } catch {
             #if DEBUG
-            print("❌ NotificationService: session reminder failed, errorType=\(String(describing: type(of: error)))")
+            AppLog.notifications.error("Session reminder failed, errorType=\(String(describing: type(of: error)), privacy: .public)")
             #endif
         }
     }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import os
 
 @Observable
 final class KitsViewModel {
@@ -104,7 +105,7 @@ final class KitsViewModel {
 
         // Trigger sync
         #if DEBUG
-        print("🗑️ KitsViewModel: Deleting kit, syncManager is \(syncManager == nil ? "nil" : "available")")
+        AppLog.kits.debug("Deleting Kit, syncManager is \(syncManager == nil ? "nil" : "available", privacy: .public)")
         #endif
         syncManager?.handleDataChange()
         

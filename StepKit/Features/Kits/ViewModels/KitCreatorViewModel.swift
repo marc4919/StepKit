@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import os
 
 @Observable
 @MainActor
@@ -216,7 +217,7 @@ final class KitCreatorViewModel {
             )
             
             #if DEBUG
-            print("📤 Enviando request con promptVersion: \(request.promptVersion)")
+            AppLog.kits.debug("Sending Kit request, promptVersion=\(request.promptVersion)")
             #endif
             
             // 2. Consumir stream (puede terminar en preguntas si el Kit es delicado)
@@ -393,12 +394,12 @@ final class KitCreatorViewModel {
             KitCreationHints.kitCreated()
             PendingGeneratedKits.remove(goalEntity.id)
             #if DEBUG
-            print("✅ Kit guardado con \(goalEntity.steps.count) pasos")
+            AppLog.kits.debug("Kit saved with \(goalEntity.steps.count) steps")
             #endif
             return goalEntity.toGoal()
         } catch {
             #if DEBUG
-            print("❌ Kit persistence failed: type=\(String(describing: type(of: error)))")
+            AppLog.kits.error("Kit persistence failed: type=\(String(describing: type(of: error)), privacy: .public)")
             #endif
             return nil
         }
@@ -514,11 +515,11 @@ final class KitCreatorViewModel {
             try modelContext.save()
             PendingGeneratedKits.remove(kitId)
             #if DEBUG
-            print("🗑️ Kit \(kitId) marked as deleted locally (cancelled by user)")
+            AppLog.kits.debug("Kit \(kitId) marked as deleted locally (cancelled by user)")
             #endif
         } catch {
             #if DEBUG
-            print("❌ Kit tombstone persistence failed: type=\(String(describing: type(of: error)))")
+            AppLog.kits.error("Kit tombstone persistence failed: type=\(String(describing: type(of: error)), privacy: .public)")
             #endif
         }
     }
@@ -527,7 +528,7 @@ final class KitCreatorViewModel {
     private func markSessionAsCancelled() {
         UserDefaults.standard.set(Date(), forKey: "lastCancelledKitCreationAt")
         #if DEBUG
-        print("⚠️ Kit creation session marked as cancelled")
+        AppLog.kits.debug("Kit creation session marked as cancelled")
         #endif
     }
 }

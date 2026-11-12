@@ -81,7 +81,5 @@ struct EmptyStateMessageView: View {
         title: String(localized: "Da el primer paso"),
         subtitle: String(localized: "Crea tu primer kit y empieza a avanzar"),
         buttonTitle: String(localized: "Crear kit")
-    ) {
-        print("Crear kit tapped")
-    }
+    ) {}
 }

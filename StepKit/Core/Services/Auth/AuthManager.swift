@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import os
 
 /// Gestiona el estado de autenticación de la app usando @Observable (Swift 6)
 @MainActor
@@ -61,7 +62,7 @@ final class AuthManager: AuthManaging {
                     sessionID = UUID()
                 } catch {
                     #if DEBUG
-                    print("Could not update stored authentication token")
+                    AppLog.auth.error("Could not update stored authentication token")
                     #endif
                 }
             } else {
@@ -97,7 +98,7 @@ final class AuthManager: AuthManaging {
             isRestoringSession = false
             isAuthenticated = false
             #if DEBUG
-            print("Could not persist authentication session")
+            AppLog.auth.error("Could not persist authentication session")
             #endif
             return
         }
@@ -121,7 +122,7 @@ final class AuthManager: AuthManaging {
             try keychain.save(user, forKey: userKey)
         } catch {
             #if DEBUG
-            print("Could not update stored user information")
+            AppLog.auth.error("Could not update stored user information")
             #endif
         }
     }
@@ -176,7 +177,7 @@ final class AuthManager: AuthManaging {
             try keychain.saveString(name, forKey: profileNameKey)
         } catch {
             #if DEBUG
-            print("Could not update stored profile name")
+            AppLog.auth.error("Could not update stored profile name")
             #endif
         }
     }
@@ -227,7 +228,7 @@ final class AuthManager: AuthManaging {
             _ = try legacyRecovery.prepareClaimIfNeeded(previousOwnerID: currentUser?.id)
         } catch {
             #if DEBUG
-            print("Could not prepare legacy ownership recovery")
+            AppLog.auth.error("Could not prepare legacy ownership recovery")
             #endif
         }
     }
@@ -239,7 +240,7 @@ final class AuthManager: AuthManaging {
             // La sesión puede continuar, pero los datos legacy permanecen ocultos
             // y el marcador se conserva para reintentar en el siguiente login.
             #if DEBUG
-            print("Could not complete legacy ownership recovery")
+            AppLog.auth.error("Could not complete legacy ownership recovery")
             #endif
         }
     }
@@ -310,7 +311,7 @@ final class AuthManager: AuthManaging {
             }
         } catch {
             #if DEBUG
-            print("Could not load stored authentication")
+            AppLog.auth.error("Could not load stored authentication")
             #endif
             isAuthenticated = false
             isRestoringSession = false

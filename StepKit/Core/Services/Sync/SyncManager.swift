@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import os
 
 /// Coordinador de sincronización que decide cuándo ejecutar sync
 @Observable
@@ -60,7 +61,7 @@ final class SyncManager {
     /// Inicia la sincronización automática (llamar al autenticarse)
     func startAutoSync() {
         #if DEBUG
-        print("🚀 SyncManager: Starting auto sync")
+        AppLog.sync.debug("Starting auto sync")
         #endif
 
         // Sincronizar inmediatamente
@@ -73,7 +74,7 @@ final class SyncManager {
     /// Detiene la sincronización automática (llamar al cerrar sesión)
     func stopAutoSync() {
         #if DEBUG
-        print("🛑 SyncManager: Stopping auto sync")
+        AppLog.sync.debug("Stopping auto sync")
         #endif
 
         syncTask?.cancel()
@@ -106,7 +107,7 @@ final class SyncManager {
     /// Maneja el evento de app entrando a foreground
     func handleAppForeground() {
         #if DEBUG
-        print("📱 SyncManager: App entered foreground")
+        AppLog.sync.debug("App entered foreground")
         #endif
 
         // También este origen pasa por la misma cola: ninguna petición puede
@@ -124,7 +125,7 @@ final class SyncManager {
     func handleDataChange() {
         NotificationService.shared.refreshStepReminders()
         #if DEBUG
-        print("📡 SyncManager: handleDataChange called, triggering sync...")
+        AppLog.sync.debug("Data changed, triggering sync")
         #endif
         triggerSync()
     }
@@ -157,7 +158,7 @@ final class SyncManager {
 
         if let syncTask {
             #if DEBUG
-            print("⏳ SyncManager: Sync already running, queuing...")
+            AppLog.sync.debug("Sync already running, queuing")
             #endif
             await syncTask.value
             return
@@ -183,18 +184,18 @@ final class SyncManager {
 
             do {
                 #if DEBUG
-                print("🔄 SyncManager: Starting sync...")
+                AppLog.sync.debug("Starting sync")
                 #endif
                 try await syncService.syncAll()
                 // Lo que llega de otros dispositivos (fechas, pasos completados) cambia los avisos.
                 NotificationService.shared.refreshStepReminders()
                 #if DEBUG
                 completedSyncCount += 1
-                print("✅ SyncManager: Sync completed successfully")
+                AppLog.sync.debug("Sync completed")
                 #endif
             } catch {
                 #if DEBUG
-                print("❌ SyncManager: Sync failed")
+                AppLog.sync.error("Sync failed")
                 #endif
                 // El siguiente trigger puede reintentar; no se expone contenido
                 // del error ni se avanza el cursor en la pasada fallida.
@@ -214,7 +215,7 @@ final class SyncManager {
                 guard !Task.isCancelled else { break }
 
                 #if DEBUG
-                print("⏰ SyncManager: Periodic sync triggered")
+                AppLog.sync.debug("Periodic sync triggered")
                 #endif
 
                 await executeSync()
