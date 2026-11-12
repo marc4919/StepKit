@@ -2,8 +2,6 @@
 //  DateSelectionSheet.swift
 //  StepKit
 //
-//  Created by Assistant on 14/12/25.
-//
 
 import SwiftUI
 import UIKit

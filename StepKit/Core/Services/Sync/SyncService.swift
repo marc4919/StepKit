@@ -2,8 +2,6 @@
 //  SyncService.swift
 //  StepKit
 //
-//  Created by StepKit Refactoring Agent
-//
 
 import Foundation
 import SwiftData

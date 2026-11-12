@@ -2,8 +2,6 @@
 //  AIConsentManager.swift
 //  StepKit
 //
-//  Created by Assistant on 2025-12-13.
-//
 
 import Foundation
 

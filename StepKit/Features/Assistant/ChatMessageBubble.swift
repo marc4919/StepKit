@@ -2,8 +2,6 @@
 //  ChatMessageBubble.swift
 //  StepKit
 //
-//  Extracted from TrainerView.swift
-//
 
 import SwiftUI
 

@@ -2,8 +2,6 @@
 //  StepDetailHeaderView.swift
 //  StepKit
 //
-//  Created by Assistant on 2024-12-13.
-//
 
 import SwiftUI
 
