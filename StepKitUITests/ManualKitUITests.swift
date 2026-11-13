@@ -10,10 +10,7 @@ final class ManualKitUITests: XCTestCase {
     @MainActor
     func testCreatingKitByHandIsAccessible() throws {
         let app = XCUIApplication()
-        // Sin el aviso de notificaciones del sistema, que tapa la app al guardar un paso con fecha
-        // y hace fallar la auditoría con «Invalid target app».
-        app.launchArguments = ["-StepKitDesignFixtures", "kits", "-AppleLanguages", "(es)", "-kitsHomeFocusLayout", "YES",
-                               "-StepKitE2ESuppressNotifications"]
+        app.launchArguments = ["-StepKitDesignFixtures", "kits", "-AppleLanguages", "(es)", "-kitsHomeFocusLayout", "YES"]
         app.launch()
 
         let create = app.buttons["kit.create"].firstMatch
@@ -117,6 +114,9 @@ final class ManualKitUITests: XCTestCase {
     /// avisa también de los botones del sistema en la barra.
     @MainActor
     private func audit(_ app: XCUIApplication, screen: String) {
+        // El aviso de permiso de notificaciones (al guardar un paso con fecha) tapa la app y la
+        // auditoría falla con «Invalid target app»: se acepta antes de auditar.
+        dismissSystemAlert()
         // Justo tras cambiar de pantalla la auditoría falla con «Invalid target app».
         Thread.sleep(forTimeInterval: 1)
         do {
@@ -127,5 +127,13 @@ final class ManualKitUITests: XCTestCase {
         } catch {
             XCTFail("Auditoría de \(screen): \(error)")
         }
+    }
+
+    /// Acepta el aviso del sistema que haya delante de la app (su último botón: «Permitir»).
+    @MainActor
+    private func dismissSystemAlert() {
+        let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
+        guard alert.waitForExistence(timeout: 2) else { return }
+        alert.buttons.element(boundBy: alert.buttons.count - 1).tap()
     }
 }
