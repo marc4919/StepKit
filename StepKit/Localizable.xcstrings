@@ -2080,16 +2080,6 @@
         }
       }
     },
-    "Activa Apple Intelligence en Ajustes para usar el asistente": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Turn on Apple Intelligence in Settings to use the assistant"
-          }
-        }
-      }
-    },
     "Activa las notificaciones globales en tu Perfil": {
       "localizations": {
         "en": {
@@ -3232,16 +3222,6 @@
         }
       }
     },
-    "Consejos": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tips"
-          }
-        }
-      }
-    },
     "Contacto": {
       "localizations": {
         "en": {
@@ -3624,26 +3604,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shape a goal, save your progress and pick up with a concrete action."
-          }
-        }
-      }
-    },
-    "Dame consejos para avanzar en mis kits actuales": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Give me tips to move forward with my current Kits"
-          }
-        }
-      }
-    },
-    "Dame motivación para seguir con mi objetivo": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Give me motivation to keep going with my goal"
           }
         }
       }
@@ -4074,16 +4034,6 @@
         }
       }
     },
-    "El asistente no está disponible en este momento": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The assistant isn't available right now"
-          }
-        }
-      }
-    },
     "El asistente te acompaña": {
       "localizations": {
         "en": {
@@ -4120,16 +4070,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "The step's status doesn't change."
-          }
-        }
-      }
-    },
-    "El modelo aún no está listo. Inténtalo de nuevo más tarde": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The model isn't ready yet. Try again later"
           }
         }
       }
@@ -4830,16 +4770,6 @@
         }
       }
     },
-    "Este dispositivo no es compatible con Apple Intelligence": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This device doesn't support Apple Intelligence"
-          }
-        }
-      }
-    },
     "Este paso ya no encaja": {
       "localizations": {
         "en": {
@@ -5216,16 +5146,6 @@
         }
       }
     },
-    "Hola 👋 Soy tu asistente de StepKit. Puedo ayudarte con tu progreso, motivación o dudas. ¿Qué necesitas?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hi 👋 I'm your StepKit assistant. I can help with your progress, motivation or questions. What do you need?"
-          }
-        }
-      }
-    },
     "Hora del aviso": {
       "localizations": {
         "en": {
@@ -5518,16 +5438,6 @@
         }
       }
     },
-    "La conversación es muy larga. Se ha reiniciado.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The conversation got too long. It has been restarted."
-          }
-        }
-      }
-    },
     "La creación de kits con IA requiere una suscripción premium": {
       "localizations": {
         "en": {
@@ -5614,16 +5524,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "The sign-in request needs your input."
-          }
-        }
-      }
-    },
-    "La solicitud fue cancelada": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The request was canceled"
           }
         }
       }
@@ -6034,32 +5934,12 @@
         }
       }
     },
-    "Modelo no disponible": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Model not available"
-          }
-        }
-      }
-    },
     "Modificaciones": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Changes"
-          }
-        }
-      }
-    },
-    "Motivación": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Motivation"
           }
         }
       }
@@ -6280,16 +6160,6 @@
         }
       }
     },
-    "No puedo responder a eso. ¿Hay algo más en lo que pueda ayudarte?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I can't answer that. Is there anything else I can help with?"
-          }
-        }
-      }
-    },
     "No se encontraron compras anteriores": {
       "localizations": {
         "en": {
@@ -6386,16 +6256,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't save the step"
-          }
-        }
-      }
-    },
-    "No se pudo iniciar la conversación": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn't start the conversation"
           }
         }
       }
@@ -9960,26 +9820,6 @@
           "stringUnit": {
             "state": "new",
             "value": "«%1$@» → «%2$@»"
-          }
-        }
-      }
-    },
-    "¿Cuáles son las preguntas más frecuentes?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "What are the most common questions?"
-          }
-        }
-      }
-    },
-    "¿Cómo voy con mi progreso?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "How am I doing?"
           }
         }
       }
